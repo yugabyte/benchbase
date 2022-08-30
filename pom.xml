@@ -113,6 +113,26 @@
             </dependencies>
         </profile>
         <profile>
+            <id>yugabyte</id>
+            <properties>
+                <classifier>yugabyte</classifier>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>com.yugabyte</groupId>
+                    <artifactId>jdbc-yugabytedb</artifactId>
+                    <version>42.3.0</version>
+                </dependency>
+
+                <!-- https://mvnrepository.com/artifact/com.zaxxer/HikariCP -->
+                <dependency>
+                    <groupId>com.zaxxer</groupId>
+                    <artifactId>HikariCP</artifactId>
+                    <version>4.0.3</version>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
             <id>phoenix</id>
             <properties>
                 <classifier>phoenix</classifier>
