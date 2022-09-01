@@ -120,8 +120,6 @@ public abstract class Procedure {
         else {
             pStmt = conn.prepareStatement(stmt.getSQL());
         }
-
-
         return (pStmt);
     }
 

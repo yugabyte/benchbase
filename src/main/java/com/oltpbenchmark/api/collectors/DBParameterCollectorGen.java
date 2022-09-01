@@ -30,6 +30,8 @@ public class DBParameterCollectorGen {
                 return new PostgresCollector(dbUrl, username, password);
             case COCKROACHDB:
                 return new CockroachCollector(dbUrl, username, password);
+            case YUGABYTE:
+                return new YuagbyteCollector(dbUrl, username, password);
             default:
                 return new DBCollector();
         }
