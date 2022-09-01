@@ -4,7 +4,7 @@
     <!-- Connection details -->
     <type>YUGABYTE</type>
     <driver>com.yugabyte.Driver</driver>
-    <url>jdbc:yugabytedb://172.151.18.185:5433/yugabyte</url>
+    <url>jdbc:yugabytedb://localhost:5433/yugabyte</url>
     <username>yugabyte</username>
     <password></password>
     <isolation>TRANSACTION_REPEATABLE_READ</isolation>
