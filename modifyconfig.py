@@ -4,7 +4,7 @@ import sys
 import json
 
 
-tree = ET.parse('config/postgres/sample_{}_config.xml'.format(sys.argv[2]))
+tree = ET.parse('config/yugabyte/sample_{}_config.xml'.format(sys.argv[2]))
 root = tree.getroot()
 
 data=json.loads(sys.argv[1])
@@ -15,7 +15,7 @@ for key,value in data.items():
     print(key,value)
 
 
-tree.write('config/postgres/sample_{}_config.xml'.format(sys.argv[2]))
+tree.write('config/yugabyte/sample_{}_config.xml'.format(sys.argv[2]))
 
 
 # python modifyconfig.py '{"url":"jdbc:postgresql://localhost:5433/yugabyte","username":"yugabyte","password":""}' seats
