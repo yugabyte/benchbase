@@ -109,7 +109,7 @@ public abstract class Procedure {
 
         // HACK: If the target system is Postgres, wrap the PreparedStatement in a special
         //       one that fakes the getGeneratedKeys().
-        if (is != null && (this.dbType == DatabaseType.POSTGRES || this.dbType == DatabaseType.COCKROACHDB)) {
+        if (is != null && (this.dbType == DatabaseType.POSTGRES || this.dbType == DatabaseType.COCKROACHDB || this.dbType==DatabaseType.YUGABYTE)) {
             pStmt = new AutoIncrementPreparedStatement(this.dbType, conn.prepareStatement(stmt.getSQL()));
         }
         // Everyone else can use the regular getGeneratedKeys() method
@@ -120,8 +120,6 @@ public abstract class Procedure {
         else {
             pStmt = conn.prepareStatement(stmt.getSQL());
         }
-
-
         return (pStmt);
     }
 

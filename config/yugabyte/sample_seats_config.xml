@@ -2,12 +2,12 @@
 <parameters>
 
     <!-- Connection details -->
-    <type>POSTGRES</type>
-    <driver>org.postgresql.Driver</driver>
-    <url>jdbc:postgresql://localhost:5432/benchbase?sslmode=disable&amp;ApplicationName=seats&amp;reWriteBatchedInserts=true</url>
-    <username>admin</username>
-    <password>password</password>
-    <isolation>TRANSACTION_SERIALIZABLE</isolation>
+    <type>YUGABYTE</type>
+    <driver>com.yugabyte.Driver</driver>
+    <url>jdbc:yugabytedb://172.151.18.185:5433/yugabyte</url>
+    <username>yugabyte</username>
+    <password></password>
+    <isolation>TRANSACTION_REPEATABLE_READ</isolation>
     <batchsize>128</batchsize>
 
     <!-- Scalefactor in SEATS scales by *1000 the number of customers-->
@@ -17,7 +17,7 @@
     <terminals>1</terminals>
     <works>
         <work>
-            <time>60</time>
+            <time>300</time>
             <rate>10000</rate>
             <weights>10, 10, 35, 20, 10, 15</weights>
         </work>

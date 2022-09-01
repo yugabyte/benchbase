@@ -162,6 +162,7 @@ public abstract class BenchmarkModule {
             DatabaseType ddl_db_type = db_type;
             // HACK: Use MySQL if we're given MariaDB
             if (ddl_db_type == DatabaseType.MARIADB) ddl_db_type = DatabaseType.MYSQL;
+
             names.add("ddl-" + ddl_db_type.name().toLowerCase() + ".sql");
         }
         names.add("ddl-generic.sql");
@@ -221,7 +222,7 @@ public abstract class BenchmarkModule {
     public final void createDatabase(DatabaseType dbType, Connection conn) throws SQLException, IOException {
 
             ScriptRunner runner = new ScriptRunner(conn, true, true);
-
+           
             if (workConf.getDDLPath() != null) {
                 String ddlPath = workConf.getDDLPath();
                 LOG.warn("Overriding default DDL script path");
