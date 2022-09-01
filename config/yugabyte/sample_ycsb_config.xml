@@ -4,7 +4,7 @@
     <!-- Connection details -->
     <type>YUGABYTE</type>
     <driver>com.yugabyte.Driver</driver>
-    <url>jdbc:yugabytedb://localhost:5433/yugabyte?sslmode=require</url>
+    <url>jdbc:yugabytedb://localhost:5433/yugabyte?sslmode=disable&amp;ApplicationName=ycsb&amp;reWriteBatchedInserts=true</url>
     <username>yugabyte</username>
     <password></password>
     <isolation>TRANSACTION_REPEATABLE_READ</isolation>
@@ -12,7 +12,7 @@
 
     <!-- Scalefactor in YCSB is *1000 the number of rows in the USERTABLE-->
     <scalefactor>1</scalefactor>
-    
+
     <!-- Optional: Override the field size for each column in USERTABLE -->
     <!-- <fieldSize>8</fieldSize> -->
 
