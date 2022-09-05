@@ -111,9 +111,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                     ArrayList<BindParams> bp = queryDetails.getBindParams();
                     bind_params_based_on_func(bp, stmt);
                 }
-
             }
-            ybm.cleanUp(conn);
             return TransactionStatus.SUCCESS;
 
         } catch (ClassNotFoundException | InvocationTargetException |

@@ -124,9 +124,7 @@ public class YBMicroBenchmarkImplementation implements YBMicroBenchmark, Feature
         stmtOBj.executeUpdate(DROP_DATABASE);
         logger.info("\n=======DATABASE IS SUCCESSFULLY DROPPED=======");*/
         try {
-
             stmtOBj.close();
-            conn.close();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
