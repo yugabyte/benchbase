@@ -16,7 +16,7 @@ public class YBSmallBankApp implements YBMicroBenchmark, FeatureBenchConstants {
     public final static Logger logger = Logger.getLogger(YBSmallBankApp.class);
 
     @Override
-    public void createDB(Connection conn, WorkloadConfiguration wc) throws SQLException {
+    public void createDB(Connection conn) throws SQLException {
 
         Statement stmtOBj = null;
         stmtOBj= conn.createStatement();

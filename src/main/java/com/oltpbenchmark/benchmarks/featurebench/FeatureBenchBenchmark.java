@@ -53,21 +53,11 @@ public class FeatureBenchBenchmark extends BenchmarkModule {
         LOG.info("\nSub benchmark for featurebench : {}\n", workConf.getMicroBenchmark());
         HierarchicalConfiguration<ImmutableNode> conf = workConf.getMicroBenchmark();
         String cls = conf.getString("class");
-//        HierarchicalConfiguration<ImmutableNode> props = conf.configurationAt("properties");
-        /*try {
-            YBMicroBenchmark ybm = (YBMicroBenchmark)Class.forName(cls).getDeclaredConstructor().newInstance();
-//            ybm.createDB(workConf);
-            ArrayList<LoadRule> loadRules = ybm.loadRule();
-            ArrayList<ExecuteRule> executeRules = ybm.executeRule();
-
-        } catch (InstantiationException | IllegalAccessException |
-                 InvocationTargetException | NoSuchMethodException |
-                 ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }*/
 
         for (int i = 0; i < workConf.getTerminals(); ++i) {
-            workers.add(new FeatureBenchWorker(this, i));
+            FeatureBenchWorker worker = new FeatureBenchWorker(this, i);
+            worker.workloadClass = cls;
+            workers.add(worker);
         }
         return workers;
     }

@@ -4,13 +4,13 @@
     <!-- Connection details -->
     <type>YUGABYTE</type>
     <driver>com.yugabyte.Driver</driver>
-    <url>jdbc:yugabytedb://localhost:5433/yugabyte?sslmode=disable&amp;ApplicationName=featurebench&amp;reWriteBatchedInserts=true</url>
+    <url>jdbc:yugabytedb://localhost:5433/test_db?sslmode=disable&amp;ApplicationName=featurebench&amp;reWriteBatchedInserts=true</url>
     <username>yugabyte</username>
     <password></password>
     <isolation>TRANSACTION_REPEATABLE_READ</isolation>
     <batchsize>128</batchsize>
     <microbenchmark>
-        <class>com.oltpbenchmark.benchmarks.featurebench.customworkload.CopyCommandBenchmark</class>
+        <class>com.oltpbenchmark.benchmarks.featurebench.customworkload.YBMicroBenchmarkImplementation</class>
         <properties>
             <csvpath>path/to/csv</csvpath>
             <table>sbtest</table>
@@ -30,7 +30,7 @@
     <terminals>1</terminals>
     <works>
         <work>
-            <time>60</time>
+            <time>10</time>
             <rate>1000</rate>
             <weights>100</weights>
         </work>

@@ -1,15 +1,13 @@
 package com.oltpbenchmark.benchmarks.featurebench.util;
 
 
-import com.oltpbenchmark.WorkloadConfiguration;
-
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
 public interface YBMicroBenchmark {
 
-    public void createDB(Connection conn, WorkloadConfiguration wc) throws SQLException;
+    public void createDB(Connection conn) throws SQLException;
 
     public ArrayList<LoadRule> loadRule();
 
@@ -17,5 +15,4 @@ public interface YBMicroBenchmark {
 
 
     public void cleanUp(Connection conn) throws SQLException;
-
 }

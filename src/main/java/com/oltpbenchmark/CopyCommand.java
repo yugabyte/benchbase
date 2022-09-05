@@ -1,15 +1,11 @@
 package com.oltpbenchmark;
 
 import com.oltpbenchmark.api.Procedure;
-import com.oltpbenchmark.api.SQLStmt;
-import com.oltpbenchmark.benchmarks.smallbank.SmallBankConstants;
 import com.yugabyte.copy.CopyManager;
 import com.yugabyte.core.BaseConnection;
-import org.apache.commons.jxpath.ri.compiler.CoreOperationUnion;
 import org.apache.commons.lang3.RandomStringUtils;
 
 import java.io.*;
-import java.security.SecureRandom;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;

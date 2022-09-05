@@ -15,13 +15,12 @@ public class CopyCommandBenchmark implements YBMicroBenchmark {
     private static final Logger LOG = LoggerFactory.getLogger(CopyCommandBenchmark.class);
 
     @Override
-    public void createDB(Connection conn, WorkloadConfiguration wc) throws SQLException {
+    public void createDB(Connection conn) throws SQLException {
         LOG.info("CreateDB called");
     }
 
     @Override
     public ArrayList<LoadRule> loadRule() {
-
         LOG.info("loadRule Called");
         return null;
     }
