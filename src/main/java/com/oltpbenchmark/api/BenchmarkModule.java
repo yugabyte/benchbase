@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -222,7 +223,7 @@ public abstract class BenchmarkModule {
     public final void createDatabase(DatabaseType dbType, Connection conn) throws SQLException, IOException {
 
             ScriptRunner runner = new ScriptRunner(conn, true, true);
-           
+
             if (workConf.getDDLPath() != null) {
                 String ddlPath = workConf.getDDLPath();
                 LOG.warn("Overriding default DDL script path");

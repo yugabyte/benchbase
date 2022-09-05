@@ -9,7 +9,19 @@
     <password></password>
     <isolation>TRANSACTION_REPEATABLE_READ</isolation>
     <batchsize>128</batchsize>
+    <microbenchmark>
+        <class>com.oltpbenchmark.benchmarks.featurebench.customworkload.CopyCommandBenchmark</class>
+        <properties>
+            <csvpath>path/to/csv</csvpath>
+            <table>sbtest</table>
+        </properties>
+    </microbenchmark>
 
+
+    <benchmark>
+        <csvpath>/path/to/the/file</csvpath>
+
+    </benchmark>
     <!-- This parameter has no affect on this benchmark-->
     <!-- There is no data to load -->
     <scalefactor>1</scalefactor>

@@ -26,6 +26,7 @@ import com.oltpbenchmark.types.DatabaseType;
 import com.oltpbenchmark.util.*;
 import org.apache.commons.cli.*;
 import org.apache.commons.collections4.map.ListOrderedMap;
+import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.XMLConfiguration;
 import org.apache.commons.configuration2.builder.FileBasedConfigurationBuilder;
@@ -126,6 +127,10 @@ public class DBWorkload {
             wrkld.setBatchSize(xmlConfig.getInt("batchsize", 128));
             wrkld.setMaxRetries(xmlConfig.getInt("retries", 3));
             wrkld.setNewConnectionPerTxn(xmlConfig.getBoolean("newConnectionPerTxn", false));
+
+            if(plugin.equalsIgnoreCase("featurebench")) {
+                wrkld.setMicroBenchmark(xmlConfig.configurationAt("microbenchmark"));
+            }
 
             int terminals = xmlConfig.getInt("terminals[not(@bench)]", 0);
             terminals = xmlConfig.getInt("terminals" + pluginTest, terminals);
