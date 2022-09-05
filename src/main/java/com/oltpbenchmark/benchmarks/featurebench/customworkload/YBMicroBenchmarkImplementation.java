@@ -3,6 +3,8 @@ package com.oltpbenchmark.benchmarks.featurebench.customworkload;
 
 import com.oltpbenchmark.benchmarks.featurebench.FeatureBenchConstants;
 import com.oltpbenchmark.benchmarks.featurebench.util.*;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.log4j.Logger;
 
 import java.sql.Connection;
@@ -44,7 +46,7 @@ public class YBMicroBenchmarkImplementation implements YBMicroBenchmark, Feature
 
     }
 
-    public ArrayList<LoadRule> loadRule() {
+    public ArrayList<LoadRule> loadRule(HierarchicalConfiguration<ImmutableNode> properties) {
         int startIndex = 0;
         int endIndex = 10000;
         ArrayList<Integer> range = new ArrayList<>();
@@ -74,7 +76,7 @@ public class YBMicroBenchmarkImplementation implements YBMicroBenchmark, Feature
 
     }
 
-    public ArrayList<ExecuteRule> executeRule() {
+    public ArrayList<ExecuteRule> executeRule(HierarchicalConfiguration<ImmutableNode> properties) {
 
         int startIndex = 1;
         int endIndex = 10;

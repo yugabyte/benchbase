@@ -50,13 +50,11 @@ public class FeatureBenchBenchmark extends BenchmarkModule {
     @Override
     protected List<Worker<? extends BenchmarkModule>> makeWorkersImpl() {
         List<Worker<? extends BenchmarkModule>> workers = new ArrayList<>();
-        LOG.info("\nSub benchmark for featurebench : {}\n", workConf.getMicroBenchmark());
         HierarchicalConfiguration<ImmutableNode> conf = workConf.getMicroBenchmark();
-        String cls = conf.getString("class");
-
         for (int i = 0; i < workConf.getTerminals(); ++i) {
             FeatureBenchWorker worker = new FeatureBenchWorker(this, i);
-            worker.workloadClass = cls;
+            worker.workloadClass = conf.getString("class");
+            worker.properties = conf.configurationAt("properties");
             workers.add(worker);
         }
         return workers;
@@ -67,9 +65,9 @@ public class FeatureBenchBenchmark extends BenchmarkModule {
 
         LOG.info("\nLoader implt for Sub benchmark for featurebench : {}\n", workConf.getMicroBenchmark());
         HierarchicalConfiguration<ImmutableNode> conf = workConf.getMicroBenchmark();
-        String cls = conf.getString("class");
         FeatureBenchLoader loader = new FeatureBenchLoader(this);
-        loader.workloadClass = cls;
+        loader.workloadClass = conf.getString("class");
+        loader.properties = conf.configurationAt("properties");
         return loader;
     }
 

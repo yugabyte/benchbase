@@ -20,6 +20,8 @@ package com.oltpbenchmark.benchmarks.featurebench;
 import com.oltpbenchmark.api.Loader;
 import com.oltpbenchmark.api.LoaderThread;
 import com.oltpbenchmark.benchmarks.featurebench.util.*;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.tree.ImmutableNode;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -38,6 +40,7 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
 
 
     public String workloadClass = null;
+    public HierarchicalConfiguration<ImmutableNode> properties = null;
     public YBMicroBenchmark ybm = null;
     PreparedStatement stmt;
     public FeatureBenchLoader(FeatureBenchBenchmark benchmark) {
@@ -51,7 +54,7 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
             ybm = (YBMicroBenchmark)Class.forName(workloadClass).getDeclaredConstructor().newInstance();
 //            boolean loadOnce = useReflectionToCheckIfLoadOnceIsImplemented();
 //            boolean loadOnce = false;
-            ArrayList<LoadRule> loadRules = ybm.loadRule();
+            ArrayList<LoadRule> loadRules = ybm.loadRule(this.properties);
             /*if (loadOnce) {
                 // Make a single thread and call loadOnce from there
                 ArrayList<LoaderThread> lt = new ArrayList<>();
@@ -122,9 +125,9 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
                 stmt = conn.prepareStatement(insertStmt);
 
 
-                for(int i=0;i<no_of_rows;i++) {
-                    for (int j = 0; j < no_of_columns; j++) {
-                        UtilityFunc uf = cd.get(j).getUtilFunc();
+                for(int i=0; i<no_of_rows; i++) {
+                    for (ColumnsDetails columnsDetails : cd) {
+                        UtilityFunc uf = columnsDetails.getUtilFunc();
                         bindParamBasedOnType(uf);
                     }
                 }

@@ -23,6 +23,8 @@ import com.oltpbenchmark.api.Worker;
 import com.oltpbenchmark.benchmarks.featurebench.util.*;
 import com.oltpbenchmark.types.TransactionStatus;
 import com.oltpbenchmark.util.RowRandomBoundedInt;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,6 +47,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
     private static final Logger LOG = LoggerFactory.getLogger(FeatureBenchWorker.class);
 
     public String workloadClass = null;
+    public HierarchicalConfiguration<ImmutableNode> properties = null;
     public YBMicroBenchmark ybm = null;
 
     public FeatureBenchWorker(FeatureBenchBenchmark benchmarkModule, int id) {
@@ -81,7 +84,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
 
         try {
             ybm = (YBMicroBenchmark)Class.forName(workloadClass).getDeclaredConstructor().newInstance();
-            ArrayList<ExecuteRule> listOfAllExecuteRules = ybm.executeRule();
+            ArrayList<ExecuteRule> listOfAllExecuteRules = ybm.executeRule(properties);
             LOG.info("In ExecuteWork\n");
 
             // Validating sum of transaction weights =100
@@ -119,7 +122,5 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                  IllegalAccessException | NoSuchMethodException e) {
             throw new RuntimeException(e);
         }
-
-
     }
 }
