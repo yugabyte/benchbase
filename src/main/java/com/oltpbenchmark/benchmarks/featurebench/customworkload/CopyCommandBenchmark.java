@@ -23,22 +23,12 @@ public class CopyCommandBenchmark implements YBMicroBenchmark {
 
     @Override
     public ArrayList<LoadRule> loadRule(HierarchicalConfiguration<ImmutableNode> properties) {
-        return null;
-    }
-
-    @Override
-    public ArrayList<ExecuteRule> executeRule(HierarchicalConfiguration<ImmutableNode> properties) {
-        return null;
-    }
-
-    @Override
-    public ArrayList<LoadRule> loadRule() {
         LOG.info("loadRule Called");
         return null;
     }
 
     @Override
-    public ArrayList<ExecuteRule> executeRule() {
+    public ArrayList<ExecuteRule> executeRule(HierarchicalConfiguration<ImmutableNode> properties) {
         LOG.info("executeRule called");
         return null;
     }
