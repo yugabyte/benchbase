@@ -22,7 +22,8 @@ import com.oltpbenchmark.api.TransactionType;
 import com.oltpbenchmark.api.Worker;
 import com.oltpbenchmark.benchmarks.featurebench.util.*;
 import com.oltpbenchmark.types.TransactionStatus;
-import com.oltpbenchmark.util.RowRandomBoundedInt;
+import com.oltpbenchmark.util.RandomGenerator;
+
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.slf4j.Logger;
@@ -31,13 +32,12 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
-
-
 
 
 /**
@@ -53,59 +53,73 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
     public FeatureBenchWorker(FeatureBenchBenchmark benchmarkModule, int id) {
         super(benchmarkModule, id);
     }
-    int get_transaction_id(int no,ArrayList<Integer> weights)
-    {
-        int len=weights.size();
-        for(int i=0;i<len;i++)
-        {
-            if(no<=weights.get(i))
+
+    int get_transaction_id(int no, ArrayList<Integer> weights) {
+        int len = weights.size();
+        for (int i = 0; i < len; i++) {
+            if (no <= weights.get(i))
                 return i;
         }
         return 0;
     }
-    public void bind_params_based_on_func(ArrayList<BindParams> bp,PreparedStatement stmt) throws SQLException {
+
+    public void bind_params_based_on_func(ArrayList<BindParams> bp, PreparedStatement stmt) throws SQLException {
         for (BindParams ob : bp) {
             ArrayList<UtilityFunc> ufs = ob.getUtilFunc();
             for (int j = 0; j < ufs.size(); j++) {
-                if (Objects.equals(ufs.get(j).getName(), "RowRandomBoundedInt")) {
+                if (Objects.equals(ufs.get(j).getName(), "astring")) {
                     ArrayList<ParamsForUtilFunc> pfuf = ufs.get(j).getParams();
-                    int lower_range = pfuf.get(0).getParameters().get(0);
-                    int upper_range = pfuf.get(0).getParameters().get(1);
-                    RowRandomBoundedInt rno = new RowRandomBoundedInt(1, lower_range, upper_range);
-                    stmt.setInt(j + 1, rno.nextValue());
+                    int min_len = pfuf.get(0).getParameters().get(0);
+                    int max_len = pfuf.get(0).getParameters().get(1);
+                    int randomNum = ThreadLocalRandom.current().nextInt(1, 100 + 1);
+                    if (randomNum % 2 == 0) {
+                        RandomGenerator rno = new RandomGenerator(1);
+                        String dname = rno.astring(min_len, max_len);
+                        stmt.setString(j + 1, dname);
+                    } else {
+                        String dname = (FeatureBenchConstants2.random_names.values()[new Random().nextInt(FeatureBenchConstants2.random_names.values().length)]).toString();
+                        stmt.setString(j + 1, dname);
+                    }
+                }else if(Objects.equals(ufs.get(j).getName(), "RowRandomBoundedInt"))
+                {
+                    ArrayList<ParamsForUtilFunc> pfuf = ufs.get(j).getParams();
+                    int min_range = pfuf.get(0).getParameters().get(0);
+                    int max_range = pfuf.get(0).getParameters().get(1);
+                    UtilGenerators.setLower_range_for_primary_int_keys(min_range);
+                    UtilGenerators.setUpper_range_for_primary_int_keys(max_range);
+
                 }
             }
         }
         stmt.executeQuery();
     }
+
     @Override
     protected TransactionStatus executeWork(Connection conn, TransactionType txnType) throws
         UserAbortException, SQLException {
 
         try {
-            ybm = (YBMicroBenchmark)Class.forName(workloadClass).getDeclaredConstructor().newInstance();
+            ybm = (YBMicroBenchmark) Class.forName(workloadClass).getDeclaredConstructor().newInstance();
             ArrayList<ExecuteRule> listOfAllExecuteRules = ybm.executeRule(properties);
             LOG.info("In ExecuteWork\n");
 
             // Validating sum of transaction weights =100
-            int sum=0;
+            int sum = 0;
             int weight;
-            ArrayList<Integer> call_acc_to_weight=new ArrayList<>();
+            ArrayList<Integer> call_acc_to_weight = new ArrayList<>();
             for (ExecuteRule listOfAllExecuteRule : listOfAllExecuteRules) {
                 TransactionDetails transaction_det = listOfAllExecuteRule.getTransactionDetails();
                 weight = transaction_det.getWeight_transaction_type();
                 sum += weight;
                 call_acc_to_weight.add(sum);
             }
-            if(sum>100 || sum<=0)
-            {
+            if (sum > 100 || sum <= 0) {
                 throw new RuntimeException("Transaction weights incorrect");
             }
-            for(int i=0; i<100; i++)
-            {
+            for (int i = 0; i < 100; i++) {
 
                 int randomNum = ThreadLocalRandom.current().nextInt(1, 100 + 1);
-                int getid = get_transaction_id(randomNum,call_acc_to_weight);
+                int getid = get_transaction_id(randomNum, call_acc_to_weight);
                 TransactionDetails transaction_det = listOfAllExecuteRules.get(getid).getTransactionDetails();
                 ArrayList<QueryDetails> qd = transaction_det.getQuery();
                 for (QueryDetails queryDetails : qd) {

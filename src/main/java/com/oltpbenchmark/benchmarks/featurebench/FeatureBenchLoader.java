@@ -20,6 +20,7 @@ package com.oltpbenchmark.benchmarks.featurebench;
 import com.oltpbenchmark.api.Loader;
 import com.oltpbenchmark.api.LoaderThread;
 import com.oltpbenchmark.benchmarks.featurebench.util.*;
+import com.oltpbenchmark.util.RandomGenerator;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.tree.ImmutableNode;
 
@@ -31,10 +32,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Random;
 
 /**
  * This doesn't load any data!
- *
  */
 public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
 
@@ -43,6 +44,7 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
     public HierarchicalConfiguration<ImmutableNode> properties = null;
     public YBMicroBenchmark ybm = null;
     PreparedStatement stmt;
+
     public FeatureBenchLoader(FeatureBenchBenchmark benchmark) {
         super(benchmark);
     }
@@ -51,26 +53,13 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
     public List<LoaderThread> createLoaderThreads() {
 
         try {
-            ybm = (YBMicroBenchmark)Class.forName(workloadClass).getDeclaredConstructor().newInstance();
-//            boolean loadOnce = useReflectionToCheckIfLoadOnceIsImplemented();
-//            boolean loadOnce = false;
+            ybm = (YBMicroBenchmark) Class.forName(workloadClass).getDeclaredConstructor().newInstance();
             ArrayList<LoadRule> loadRules = ybm.loadRule(this.properties);
-            /*if (loadOnce) {
-                // Make a single thread and call loadOnce from there
-                ArrayList<LoaderThread> lt = new ArrayList<>();
-                lt.add(new GeneratorOnce(lrs.get(0), cfile));
-                return lt;
-            }*/
-
-
             ArrayList<LoaderThread> loaderThreads = new ArrayList<>();
 
             for (LoadRule loadRule : loadRules) {
                 loaderThreads.add(new Generator(loadRule));
             }
-            /*for(int i= 0; i < lrs.size(); i++) {
-                lt.add(new Generator(lrs.get(i)));
-            }*/
             return loaderThreads;
         } catch (InstantiationException | IllegalAccessException |
                  InvocationTargetException | NoSuchMethodException |
@@ -79,27 +68,14 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
         }
     }
 
-    /*private class GeneratorOnce extends LoaderThread {
-        public GeneratorOnce(File cfiile) {
-            super(benchmark);
-        }
-        @Override
-        public void load(Connection conn) {
-            ybm.loadOnce(conn, cFile);
-        }
-    }*/
     private class Generator extends LoaderThread {
         final LoadRule loadRule;
+
         public Generator(LoadRule loadRule) {
             super(benchmark);
             this.loadRule = loadRule;
         }
 
-        /*void bindParamBasedOnType(UtilityFunc utilf, PreparedStatement ps, int index) {
-            if (utilf.getName().equalsIgnoreCase("randomString")) {
-                stmtChecking.setInt(index, this.randomString(utilf.param1, utilf.param2));
-            }
-        }*/
 
         @Override
         public void load(Connection conn) throws SQLException {
@@ -125,22 +101,28 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
                 stmt = conn.prepareStatement(insertStmt);
 
 
-                for(int i=0; i<no_of_rows; i++) {
+                for (int i = 0; i < no_of_rows; i++) {
                     for (ColumnsDetails columnsDetails : cd) {
                         UtilityFunc uf = columnsDetails.getUtilFunc();
                         bindParamBasedOnType(uf);
                     }
                 }
 
-                for(int i=0;i<no_of_rows;i++)
-                {
-                    for(int j=0;j<no_of_columns;j++) {
+                for (int i = 0; i < no_of_rows; i++) {
+                    for (int j = 0; j < no_of_columns; j++) {
                         UtilityFunc uf = cd.get(j).getUtilFunc();
                         String funcname = findFuncname(uf);
-                        if (Objects.equals(funcname, "get_int_primary_key")) {
-                            stmt.setInt(j + 1, UtilGenerators.get_int_primary_key());
-                        } else if (Objects.equals(funcname, "numberToIdString")) {
-                            stmt.setString(j + 1, UtilGenerators.numberToIdString());
+                        if (Objects.equals(funcname, "nextval")) {
+                            // do nothing
+                        } else if (Objects.equals(funcname, "astring")) {
+                            if (i % 2 == 0) {
+                                RandomGenerator rno = new RandomGenerator(1);
+                                String dname = rno.astring(UtilGenerators.getMin_len_string(), UtilGenerators.getMax_len_string());
+                                stmt.setString(j + 1, dname);
+                            } else {
+                                String dname = (FeatureBenchConstants2.random_names.values()[new Random().nextInt(FeatureBenchConstants2.random_names.values().length)]).toString();
+                                stmt.setString(j + 1, dname);
+                            }
                         }
                     }
                     stmt.addBatch();
@@ -160,36 +142,33 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
         }
 
         public void bindParamBasedOnType(UtilityFunc uf) throws SQLException {
-            if(Objects.equals(uf.getName(), "get_int_primary_key"))
-            {
-                ArrayList<ParamsForUtilFunc> ob1=uf.getParams();
-                ParamsForUtilFunc puf=ob1.get(0);
-                ArrayList<Integer> range=puf.getParameters();
-                int upper_range=range.get(1);
-                int lower_range=range.get(0);
+            if (Objects.equals(uf.getName(), "nextval")) {
+                ArrayList<ParamsForUtilFunc> ob1 = uf.getParams();
+                ParamsForUtilFunc puf = ob1.get(0);
+                ArrayList<Integer> range = puf.getParameters();
+                int upper_range = range.get(1);
+                int lower_range = range.get(0);
                 UtilGenerators.setUpper_range_for_primary_int_keys(upper_range);
                 UtilGenerators.setLower_range_for_primary_int_keys(lower_range);
-            }
-            else if(Objects.equals(uf.getName(), "numberToIdString"))
-            {
-                ArrayList<ParamsForUtilFunc> ob1=uf.getParams();
-                ParamsForUtilFunc puf=ob1.get(0);
-                ArrayList<Integer> max_len=puf.getParameters();
-                int desired_len=max_len.get(0);
-                UtilGenerators.setDesired_length_string_pkeys(desired_len);
+            } else if (Objects.equals(uf.getName(), "astring")) {
+                ArrayList<ParamsForUtilFunc> ob1 = uf.getParams();
+                ParamsForUtilFunc puf = ob1.get(0);
+                ArrayList<Integer> len_range = puf.getParameters();
+                int min_len = len_range.get(0);
+                int max_len = len_range.get(1);
+                UtilGenerators.setMax_len_string(max_len);
+                UtilGenerators.setMin_len_string(min_len);
+
             }
 
         }
 
-        public String findFuncname(UtilityFunc uf){
-            if(Objects.equals(uf.getName(), "get_int_primary_key"))
-            {
-                return "get_int_primary_key";
-            }
-            else if(Objects.equals(uf.getName(), "numberToIdString")){
-                return "numberToIdString";
-            }
-            else return null;
+        public String findFuncname(UtilityFunc uf) {
+            if (Objects.equals(uf.getName(), "nextval")) {
+                return "nextval";
+            } else if (Objects.equals(uf.getName(), "astring")) {
+                return "astring";
+            } else return null;
 
         }
 

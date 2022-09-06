@@ -10,32 +10,7 @@
     <isolation>TRANSACTION_REPEATABLE_READ</isolation>
     <batchsize>128</batchsize>
     <microbenchmark>
-        <class>com.oltpbenchmark.benchmarks.featurebench.customworkload.YBMicroBenchmarkImplementation</class>
-        <properties>
-<!--            <csvpath>path/to/csv</csvpath>-->
-            <tables>
-                <table>
-                    <name>accounts</name>
-                    <columns>
-                        <column>
-                            <name>id</name>
-                            <utilityFunction>
-                                <name>randomString</name>
-                                <constraints>
-                                    <minLen>8</minLen>
-                                    <maxLen>16</maxLen>
-                                </constraints>
-                            </utilityFunction>
-                        </column>
-                        <column>
-                            <name>name</name>
-                        </column>
-                    </columns>
-                </table>
-
-            </tables>
-
-        </properties>
+        <class>com.oltpbenchmark.benchmarks.featurebench.customworkload.YBMicroBenchmarkImplementation2</class>
     </microbenchmark>
 
 
