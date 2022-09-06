@@ -3,6 +3,8 @@ package com.oltpbenchmark.benchmarks.featurebench.customworkload;
 import com.oltpbenchmark.WorkloadConfiguration;
 import com.oltpbenchmark.benchmarks.featurebench.FeatureBenchConstants;
 import com.oltpbenchmark.benchmarks.featurebench.util.*;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.log4j.Logger;
 
 import java.sql.Connection;
@@ -64,7 +66,7 @@ public class YBSmallBankApp implements YBMicroBenchmark, FeatureBenchConstants {
 
 
     @Override
-    public ArrayList<LoadRule> loadRule(){
+    public ArrayList<LoadRule> loadRule(HierarchicalConfiguration<ImmutableNode> properties){
         long startIndex = 0;
         long endIndex = 10000;
         long fix_len = 20;
@@ -92,7 +94,7 @@ public class YBSmallBankApp implements YBMicroBenchmark, FeatureBenchConstants {
         createCsvFile();
     }*/
 
-    public ArrayList<ExecuteRule> executeRule(){
+    public ArrayList<ExecuteRule> executeRule(HierarchicalConfiguration<ImmutableNode> properties){
 
         long startIndex = 0;
         long endIndex = 10000;
