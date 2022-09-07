@@ -12,41 +12,17 @@
     <microbenchmark>
         <class>com.oltpbenchmark.benchmarks.featurebench.customworkload.YBMicroBenchmarkImplementation</class>
         <properties>
-<!--            <csvpath>path/to/csv</csvpath>-->
-            <tables>
-                <table>
-                    <name>accounts</name>
-                    <columns>
-                        <column>
-                            <name>id</name>
-                            <utilityFunction>
-                                <name>randomString</name>
-                                <constraints>
-                                    <minLen>8</minLen>
-                                    <maxLen>16</maxLen>
-                                </constraints>
-                            </utilityFunction>
-                        </column>
-                        <column>
-                            <name>name</name>
-                        </column>
-                    </columns>
-                </table>
-
-            </tables>
-
+            <rows>100</rows>
+            <columns>10</columns>
+            <indexes>2</indexes>
+            <rowspertransaction>1000</rowspertransaction>
         </properties>
     </microbenchmark>
 
 
-    <benchmark>
-        <csvpath>/path/to/the/file</csvpath>
-
-    </benchmark>
     <!-- This parameter has no affect on this benchmark-->
     <!-- There is no data to load -->
-    <scalefactor>1</scalefactor>
-
+    <loaderthreads>1</loaderthreads>
     <!-- The workload -->
     <terminals>1</terminals>
     <works>

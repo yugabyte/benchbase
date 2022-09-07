@@ -1,7 +1,7 @@
 package com.oltpbenchmark.benchmarks.featurebench.customworkload;
 
 
-import com.oltpbenchmark.benchmarks.featurebench.FeatureBenchConstants;
+import com.oltpbenchmark.benchmarks.featurebench.YBMicroBenchmark;
 import com.oltpbenchmark.benchmarks.featurebench.util.*;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.tree.ImmutableNode;
@@ -11,34 +11,32 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 
-public class YBMicroBenchmarkImplementation implements YBMicroBenchmark, FeatureBenchConstants {
+public class YBMicroBenchmarkImplementation extends YBMicroBenchmark {
 
-    public final static Logger logger = Logger.getLogger(YBMicroBenchmarkImplementation.class);
+    public final static Logger LOG = Logger.getLogger(YBMicroBenchmarkImplementation.class);
+
+    public YBMicroBenchmarkImplementation() {
+        this.executeOnceImplemented = false;
+        this.loadOnceImplemented = false;
+        this.afterLoadImplemented = false;
+    }
 
     @Override
-    public void createDB(Connection conn) throws SQLException {
-
-        Statement stmtOBj = null;
-        stmtOBj = conn.createStatement();
-
-        // DDL Statement 1 - DROP EXISTING TABLES IF THEY EXIST
-        logger.info("\n=======DROPPING TABLES IF THEY EXIST=======");
-        stmtOBj.executeUpdate(DROP_QUERY_1);
-//        stmtOBj.execute(DROP_QUERY_1);
-        /*logger.info("\n=======DROPPING DATABASE IF IT EXISTS=======");
-        stmtOBj.executeUpdate(DROP_DB);*/
-
-        // DDL Statement 2 - CREATE ALL THE DATABASE AND TABLES
-        /*logger.info("\n=======CREATE " + DB_NAME + " DATABASE=======");
-        stmtOBj.executeUpdate(USE_DATABASE_QUERY);*/
-
-        logger.info("\n=======DATABASE IS SUCCESSFULLY CREATED=======\n");
-        stmtOBj.execute(CREATE_TABLE_1);
-        stmtOBj.execute(INDEX_TABLE_1);
-
+    public void createDB(Connection conn, HierarchicalConfiguration<ImmutableNode> properties) throws SQLException {
         try {
+            Statement stmtOBj = conn.createStatement();
+            LOG.info("Recreating tables if already exists");
+            stmtOBj.executeUpdate("DROP TABLE IF EXISTS accounts");
+            stmtOBj.execute(" CREATE TABLE accounts ("
+                + "id int NOT NULL,"
+                + "name varchar(64) NOT NULL,"
+                + "CONSTRAINT pk_accounts PRIMARY KEY (id)"
+                + ");");
+            stmtOBj.execute("CREATE INDEX idx_accounts_name ON accounts (name);");
             stmtOBj.close();
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -46,91 +44,81 @@ public class YBMicroBenchmarkImplementation implements YBMicroBenchmark, Feature
 
     }
 
-    public ArrayList<LoadRule> loadRule(HierarchicalConfiguration<ImmutableNode> properties) {
+    public ArrayList<LoadRule> loadRules(HierarchicalConfiguration<ImmutableNode> properties) {
         int startIndex = 0;
         int endIndex = 10000;
-        ArrayList<Integer> range = new ArrayList<>();
-        range.add(startIndex);
-        range.add(endIndex);
-        ParamsForUtilFunc paramsFunc1 = new ParamsForUtilFunc(range);
-        ArrayList<Integer> string_len = new ArrayList<>();
-        int desired_len = 10;
-        string_len.add(desired_len);
-        ParamsForUtilFunc paramsFunc2 = new ParamsForUtilFunc(string_len);
-        ArrayList<ParamsForUtilFunc> list1 = new ArrayList<>();
-        ArrayList<ParamsForUtilFunc> list2 = new ArrayList<>();
-        list1.add(paramsFunc1);
-        list2.add(paramsFunc2);
-        UtilityFunc uf1 = new UtilityFunc("get_int_primary_key", list1);
-        UtilityFunc uf2 = new UtilityFunc("numberToIdString", list2);
-        ColumnsDetails cd1 = new ColumnsDetails("id", uf1);
-        ColumnsDetails cd2 = new ColumnsDetails("name", uf2);
-        ArrayList<ColumnsDetails> col_det = new ArrayList<>();
-        col_det.add(cd1);
-        col_det.add(cd2);
-        TableInfo ti = new TableInfo(10, "accounts", col_det);
-        LoadRule lr = new LoadRule(ti);
-        ArrayList<LoadRule> rule = new ArrayList<>();
-        rule.add(lr);
-        return rule;
+        int desiredLen = 10;
+        // utility parameters for int primary key generation with range
+        ParamsForUtilFunc idParams = new ParamsForUtilFunc(new ArrayList<>(Arrays.asList(startIndex, endIndex)));
 
+        // util parameter for string name generation of desired length
+        ParamsForUtilFunc nameParams = new ParamsForUtilFunc(new ArrayList<>(List.of(desiredLen)));
+
+        // util function name and params initialization
+        UtilityFunc idUtilityFunc = new UtilityFunc("get_int_primary_key", new ArrayList<>(List.of(idParams)));
+        UtilityFunc nameUtilityFunc = new UtilityFunc("numberToIdString", new ArrayList<>(List.of(nameParams)));
+
+        // binding the column details(id, name) with the utility functions
+        ColumnsDetails idColumnsDetails = new ColumnsDetails("id", idUtilityFunc);
+        ColumnsDetails nameColumnsDetails = new ColumnsDetails("name", nameUtilityFunc);
+
+        //add table information to the tableInfo object:- no_of_rows, table_name and column details
+        TableInfo tableInfo =
+            new TableInfo(
+                10, "accounts",
+                new ArrayList<>(Arrays.asList(idColumnsDetails, nameColumnsDetails)));
+
+        //creating and return load rule
+        LoadRule loadRule = new LoadRule(tableInfo);
+        return new ArrayList<>(List.of(loadRule));
     }
 
-    public ArrayList<ExecuteRule> executeRule(HierarchicalConfiguration<ImmutableNode> properties) {
-
+    public ArrayList<ExecuteRule> executeRules(HierarchicalConfiguration<ImmutableNode> properties) {
         int startIndex = 1;
         int endIndex = 10;
-        int fix_len = 20;
-        ArrayList<Integer> range = new ArrayList<>();
-        range.add(startIndex);
-        range.add(endIndex);
-        ArrayList<Integer> string_len = new ArrayList<>();
-        string_len.add(fix_len);
-        ParamsForUtilFunc paramsFunc1 = new ParamsForUtilFunc(range);
-        ParamsForUtilFunc paramsFunc2 = new ParamsForUtilFunc(string_len);
-        ArrayList<ParamsForUtilFunc> list1 = new ArrayList<>();
-        ArrayList<ParamsForUtilFunc> list2 = new ArrayList<>();
-        list1.add(paramsFunc1);
-        list2.add(paramsFunc2);
-        UtilityFunc uf1 = new UtilityFunc("RowRandomBoundedInt", list1);
-        UtilityFunc uf2 = new UtilityFunc("numberToIdString", list2);
-        ArrayList<UtilityFunc> list_of_util = new ArrayList<>();
-        list_of_util.add(uf1);
-        list_of_util.add(uf2);
-        BindParams bd = new BindParams(list_of_util);
         String query = "SELECT * FROM ACCOUNTS WHERE ID > ?";
-        ArrayList<BindParams> bp = new ArrayList<>();
-        bp.add(bd);
-        QueryDetails qd = new QueryDetails(query, bp);
-        ArrayList<QueryDetails> list3 = new ArrayList<>();
-        list3.add(qd);
-        TransactionDetails td = new TransactionDetails("Account_query", 100, list3);
-        ExecuteRule ob = new ExecuteRule(td);
-        ArrayList<ExecuteRule> list4 = new ArrayList<>();
-        list4.add(ob);
-        return list4;
+
+        // utility parameters for int primary key generation with range
+        ParamsForUtilFunc idParams = new ParamsForUtilFunc(new ArrayList<>(Arrays.asList(startIndex, endIndex)));
+        UtilityFunc IdUtilityFunc = new UtilityFunc("RandomNoWithinRange", new ArrayList<>(List.of(idParams)));
+
+        BindParams bindParams = new BindParams(new ArrayList<>(List.of(IdUtilityFunc)));
+        QueryDetails queryDetails = new QueryDetails(query, new ArrayList<>(List.of(bindParams)));
+
+        // add the transaction details with queryName, weight and queryDetails
+        TransactionDetails transactionDetails =
+            new TransactionDetails(
+                "Account_query", 100,
+                new ArrayList<>(List.of(queryDetails)));
+
+        // create and return execute rule with transaction Details
+        ExecuteRule executeRule = new ExecuteRule(transactionDetails);
+        return new ArrayList<>(List.of(executeRule));
     }
 
     @Override
     public void cleanUp(Connection conn) throws SQLException {
-
-        Statement stmtOBj = null;
-        stmtOBj = conn.createStatement();
-
-        // DDL Statement - DROP TABLES
-        logger.info("\n=======DROP ALL THE TABLES=======");
-        stmtOBj.executeUpdate(DROP_TABLE_1);
-        logger.info("\n=======TABLES ARE SUCCESSFULLY DROPPED FROM THE DATABASE=======\n");
-        // DDL Statement DROP DATABASE
-        /*logger.info("\n=======DROP DATABASE=======");
-        stmtOBj.executeUpdate(DROP_DATABASE);
-        logger.info("\n=======DATABASE IS SUCCESSFULLY DROPPED=======");*/
         try {
+            Statement stmtOBj = conn.createStatement();
+            LOG.info("\n=======DROP ALL THE TABLES=======");
+            stmtOBj.executeUpdate("DROP TABLE accounts");
+            LOG.info("\n=======TABLES ARE SUCCESSFULLY DROPPED FROM THE DATABASE=======\n");
             stmtOBj.close();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
+
+    @Override
+    public void loadOnce(Connection conn, HierarchicalConfiguration<ImmutableNode> properties) {
+
+    }
+
+    @Override
+    public void executeOnce(Connection conn, HierarchicalConfiguration<ImmutableNode> properties) {
+
+    }
+
 
 }
 

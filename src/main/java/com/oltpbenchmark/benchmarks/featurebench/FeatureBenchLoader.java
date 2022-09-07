@@ -23,7 +23,6 @@ import com.oltpbenchmark.benchmarks.featurebench.util.*;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.tree.ImmutableNode;
 
-import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -31,6 +30,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
 
 /**
  * This doesn't load any data!
@@ -49,13 +49,13 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
 
     @Override
     public List<LoaderThread> createLoaderThreads() {
-
         try {
             ybm = (YBMicroBenchmark)Class.forName(workloadClass).getDeclaredConstructor().newInstance();
+
 //            boolean loadOnce = useReflectionToCheckIfLoadOnceIsImplemented();
 //            boolean loadOnce = false;
-            ArrayList<LoadRule> loadRules = ybm.loadRule(this.properties);
-            /*if (loadOnce) {
+            ArrayList<LoadRule> loadRules = ybm.loadRules(this.properties);
+            /*if (ybm.loadOnceImplemented) {
                 // Make a single thread and call loadOnce from there
                 ArrayList<LoaderThread> lt = new ArrayList<>();
                 lt.add(new GeneratorOnce(lrs.get(0), cfile));
@@ -104,56 +104,68 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
         @Override
         public void load(Connection conn) throws SQLException {
             try {
-                ybm.createDB(conn);
-                int batchSize = 0;
-                TableInfo t = loadRule.getTableInfo();
-                long no_of_rows = t.getNo_of_rows();
-                String table_name = t.get_table_name();
-                ArrayList<ColumnsDetails> cd = t.getColumn_Det();
-                int no_of_columns = cd.size();
-                StringBuilder columnString = new StringBuilder();
-                StringBuilder valueString = new StringBuilder();
-
-
-                for (ColumnsDetails columnsDetails : cd) {
-                    columnString.append(columnsDetails.getName()).append(",");
-                    valueString.append("?,");
+                if (ybm.createDBImplemented) {
+                    ybm.createDB(conn, properties);
+                    LOG.info("CREATE DB is implemented");
                 }
-                columnString.setLength(columnString.length() - 1);
-                valueString.setLength(valueString.length() - 1);
-                String insertStmt = "INSERT INTO " + table_name + " (" + columnString + ") VALUES " + "(" + valueString + ")";
-                stmt = conn.prepareStatement(insertStmt);
+                if(ybm.loadOnceImplemented) {
+                    ybm.loadOnce(conn, properties);
+                }
+                else {
+                    int batchSize = 0;
+                    TableInfo t = loadRule.getTableInfo();
+                    long no_of_rows = t.getNo_of_rows();
+                    String table_name = t.get_table_name();
+                    ArrayList<ColumnsDetails> cd = t.getColumn_Det();
+                    int no_of_columns = cd.size();
+                    StringBuilder columnString = new StringBuilder();
+                    StringBuilder valueString = new StringBuilder();
 
 
-                for(int i=0; i<no_of_rows; i++) {
                     for (ColumnsDetails columnsDetails : cd) {
-                        UtilityFunc uf = columnsDetails.getUtilFunc();
-                        bindParamBasedOnType(uf);
+                        columnString.append(columnsDetails.getName()).append(",");
+                        valueString.append("?,");
                     }
-                }
+                    columnString.setLength(columnString.length() - 1);
+                    valueString.setLength(valueString.length() - 1);
+                    String insertStmt = "INSERT INTO " + table_name + " (" + columnString + ") VALUES " + "(" + valueString + ")";
+                    stmt = conn.prepareStatement(insertStmt);
 
-                for(int i=0;i<no_of_rows;i++)
-                {
-                    for(int j=0;j<no_of_columns;j++) {
-                        UtilityFunc uf = cd.get(j).getUtilFunc();
-                        String funcname = findFuncname(uf);
-                        if (Objects.equals(funcname, "get_int_primary_key")) {
-                            stmt.setInt(j + 1, UtilGenerators.get_int_primary_key());
-                        } else if (Objects.equals(funcname, "numberToIdString")) {
-                            stmt.setString(j + 1, UtilGenerators.numberToIdString());
+
+                    for(int i=0; i<no_of_rows; i++) {
+                        for (ColumnsDetails columnsDetails : cd) {
+                            UtilityFunc uf = columnsDetails.getUtilFunc();
+                            bindParamBasedOnType(uf);
                         }
                     }
-                    stmt.addBatch();
-                    if (++batchSize >= workConf.getBatchSize()) {
+
+                    for(int i=0;i<no_of_rows;i++)
+                    {
+                        for(int j=0;j<no_of_columns;j++) {
+                            UtilityFunc uf = cd.get(j).getUtilFunc();
+                            String funcname = findFuncname(uf);
+                            if (Objects.equals(funcname, "get_int_primary_key")) {
+                                stmt.setInt(j + 1, UtilGenerators.get_int_primary_key());
+                            } else if (Objects.equals(funcname, "numberToIdString")) {
+                                stmt.setString(j + 1, UtilGenerators.numberToIdString());
+                            }
+                        }
+                        stmt.addBatch();
+                        if (++batchSize >= workConf.getBatchSize()) {
+                            this.loadTables(conn);
+                            batchSize = 0;
+                        }
+                    }
+                    stmt.executeBatch();
+                    if (batchSize > 0) {
                         this.loadTables(conn);
-                        batchSize = 0;
                     }
                 }
-                stmt.executeBatch();
-                if (batchSize > 0) {
-                    this.loadTables(conn);
-                }
 
+                if (ybm.afterLoadImplemented) {
+                    ybm.afterLoad(conn, properties);
+                    LOG.info("afterLoad is implemented");
+                }
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }

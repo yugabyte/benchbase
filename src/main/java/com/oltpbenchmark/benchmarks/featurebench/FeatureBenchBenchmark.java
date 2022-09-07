@@ -21,19 +21,14 @@ import com.oltpbenchmark.DBWorkload;
 import com.oltpbenchmark.WorkloadConfiguration;
 import com.oltpbenchmark.api.BenchmarkModule;
 import com.oltpbenchmark.api.Loader;
-import com.oltpbenchmark.api.LoaderThread;
 import com.oltpbenchmark.api.Worker;
 import com.oltpbenchmark.benchmarks.featurebench.procedures.FeatureBench;
 
-import com.oltpbenchmark.benchmarks.featurebench.util.ExecuteRule;
-import com.oltpbenchmark.benchmarks.featurebench.util.LoadRule;
-import com.oltpbenchmark.benchmarks.featurebench.util.YBMicroBenchmark;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -62,8 +57,6 @@ public class FeatureBenchBenchmark extends BenchmarkModule {
 
     @Override
     protected Loader<FeatureBenchBenchmark> makeLoaderImpl() {
-
-        LOG.info("\nLoader implt for Sub benchmark for featurebench : {}\n", workConf.getMicroBenchmark());
         HierarchicalConfiguration<ImmutableNode> conf = workConf.getMicroBenchmark();
         FeatureBenchLoader loader = new FeatureBenchLoader(this);
         loader.workloadClass = conf.getString("class");

@@ -1,7 +1,7 @@
 package com.oltpbenchmark.benchmarks.featurebench.customworkload;
 
-import com.oltpbenchmark.WorkloadConfiguration;
 import com.oltpbenchmark.benchmarks.featurebench.FeatureBenchConstants;
+import com.oltpbenchmark.benchmarks.featurebench.YBMicroBenchmark;
 import com.oltpbenchmark.benchmarks.featurebench.util.*;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.tree.ImmutableNode;
@@ -13,12 +13,18 @@ import java.sql.Statement;
 import java.util.ArrayList;
 
 
-public class YBSmallBankApp implements YBMicroBenchmark, FeatureBenchConstants {
+public class YBSmallBankApp extends YBMicroBenchmark implements FeatureBenchConstants {
 
     public final static Logger logger = Logger.getLogger(YBSmallBankApp.class);
 
+    public YBSmallBankApp() {
+        this.executeOnceImplemented = false;
+        this.loadOnceImplemented = false;
+        this.afterLoadImplemented = false;
+    }
+
     @Override
-    public void createDB(Connection conn) throws SQLException {
+    public void createDB(Connection conn, HierarchicalConfiguration<ImmutableNode> properties) throws SQLException {
 
         Statement stmtOBj = null;
         stmtOBj= conn.createStatement();
@@ -66,7 +72,7 @@ public class YBSmallBankApp implements YBMicroBenchmark, FeatureBenchConstants {
 
 
     @Override
-    public ArrayList<LoadRule> loadRule(HierarchicalConfiguration<ImmutableNode> properties){
+    public ArrayList<LoadRule> loadRules(HierarchicalConfiguration<ImmutableNode> properties){
         long startIndex = 0;
         long endIndex = 10000;
         long fix_len = 20;
@@ -94,7 +100,7 @@ public class YBSmallBankApp implements YBMicroBenchmark, FeatureBenchConstants {
         createCsvFile();
     }*/
 
-    public ArrayList<ExecuteRule> executeRule(HierarchicalConfiguration<ImmutableNode> properties){
+    public ArrayList<ExecuteRule> executeRules(HierarchicalConfiguration<ImmutableNode> properties){
 
         long startIndex = 0;
         long endIndex = 10000;
@@ -196,6 +202,16 @@ public class YBSmallBankApp implements YBMicroBenchmark, FeatureBenchConstants {
         catch(Exception ex){
             ex.printStackTrace();
         }
+    }
+
+    @Override
+    public void loadOnce(Connection conn, HierarchicalConfiguration<ImmutableNode> properties) {
+
+    }
+
+    @Override
+    public void executeOnce(Connection conn, HierarchicalConfiguration<ImmutableNode> properties) {
+
     }
 
 }

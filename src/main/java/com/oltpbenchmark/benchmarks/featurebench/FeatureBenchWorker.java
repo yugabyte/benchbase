@@ -31,7 +31,6 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Objects;
@@ -67,7 +66,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
         for (BindParams ob : bp) {
             ArrayList<UtilityFunc> ufs = ob.getUtilFunc();
             for (int j = 0; j < ufs.size(); j++) {
-                if (Objects.equals(ufs.get(j).getName(), "RowRandomBoundedInt")) {
+                if (Objects.equals(ufs.get(j).getName(), "RandomNoWithinRange")) {
                     ArrayList<ParamsForUtilFunc> pfuf = ufs.get(j).getParams();
                     int lower_range = pfuf.get(0).getParameters().get(0);
                     int upper_range = pfuf.get(0).getParameters().get(1);
@@ -84,15 +83,15 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
 
         try {
             ybm = (YBMicroBenchmark)Class.forName(workloadClass).getDeclaredConstructor().newInstance();
-            ArrayList<ExecuteRule> listOfAllExecuteRules = ybm.executeRule(properties);
+            ArrayList<ExecuteRule> executeRules = ybm.executeRules(properties);
             LOG.info("In ExecuteWork\n");
 
             // Validating sum of transaction weights =100
             int sum=0;
             int weight;
             ArrayList<Integer> call_acc_to_weight=new ArrayList<>();
-            for (ExecuteRule listOfAllExecuteRule : listOfAllExecuteRules) {
-                TransactionDetails transaction_det = listOfAllExecuteRule.getTransactionDetails();
+            for (ExecuteRule executeRule : executeRules) {
+                TransactionDetails transaction_det = executeRule.getTransactionDetails();
                 weight = transaction_det.getWeight_transaction_type();
                 sum += weight;
                 call_acc_to_weight.add(sum);
@@ -105,8 +104,8 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             {
 
                 int randomNum = ThreadLocalRandom.current().nextInt(1, 100 + 1);
-                int getid = get_transaction_id(randomNum,call_acc_to_weight);
-                TransactionDetails transaction_det = listOfAllExecuteRules.get(getid).getTransactionDetails();
+                int getId = get_transaction_id(randomNum,call_acc_to_weight);
+                TransactionDetails transaction_det = executeRules.get(getId).getTransactionDetails();
                 ArrayList<QueryDetails> qd = transaction_det.getQuery();
                 for (QueryDetails queryDetails : qd) {
                     String query = queryDetails.getQuery();
