@@ -24,6 +24,9 @@ public class YBMicroBenchmarkImplementation2 implements YBMicroBenchmark, Featur
         // DDL Statement 1 - DROP EXISTING TABLES IF THEY EXIST
         logger.info("\n=======DROPPING TABLES IF THEY EXIST=======");
         stmtOBj.executeUpdate(DROP_QUERY_1);
+
+        stmtOBj.executeUpdate(drop_sequence);
+        logger.info("\n========DROP SEQUENCE IF THEY EXIST========\n");
         logger.info("\n========Creating sequence for ids===========\n");
         stmtOBj.execute(Sequence_generator);
         stmtOBj.execute(CREATE_TABLE_1);
@@ -53,7 +56,7 @@ public class YBMicroBenchmarkImplementation2 implements YBMicroBenchmark, Featur
         ArrayList<ParamsForUtilFunc> list2 = new ArrayList<>();
         list1.add(paramsFunc1);
         list2.add(paramsFunc2);
-        UtilityFunc uf1 = new UtilityFunc("nextval", list1);
+        UtilityFunc uf1 = new UtilityFunc("serial_no.nextval", list1);
         UtilityFunc uf2 = new UtilityFunc("astring", list2);
         ColumnsDetails cd1 = new ColumnsDetails("did", uf1);
         ColumnsDetails cd2 = new ColumnsDetails("dname", uf2);
@@ -86,7 +89,7 @@ public class YBMicroBenchmarkImplementation2 implements YBMicroBenchmark, Featur
         ArrayList<ParamsForUtilFunc> list2 = new ArrayList<>();
         list1.add(paramsFunc1);
         list2.add(paramsFunc2);
-        UtilityFunc uf1 = new UtilityFunc("RowRandomBoundedInt", list1);
+        UtilityFunc uf1 = new UtilityFunc("nextval", list1);
         UtilityFunc uf2 = new UtilityFunc("astring", list2);
         ArrayList<UtilityFunc> list_of_util = new ArrayList<>();
         list_of_util.add(uf1);

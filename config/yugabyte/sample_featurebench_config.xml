@@ -11,6 +11,8 @@
     <batchsize>128</batchsize>
     <microbenchmark>
         <class>com.oltpbenchmark.benchmarks.featurebench.customworkload.YBMicroBenchmarkImplementation2</class>
+        <properties>
+        </properties>
     </microbenchmark>
 
 
