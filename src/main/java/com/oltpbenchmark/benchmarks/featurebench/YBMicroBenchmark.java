@@ -31,11 +31,11 @@ public abstract class YBMicroBenchmark {
 
     public abstract void cleanUp(Connection conn) throws SQLException;
 
-    public void loadOnce(Connection conn) {};
+    public void loadOnce(Connection conn) throws SQLException{};
 
-    public void executeOnce(Connection conn) {};
+    public void executeOnce(Connection conn) throws SQLException{};
 
-    public void afterLoad(Connection conn) {};
+    public void afterLoad(Connection conn) throws SQLException{};
 
-    public void transaction(Connection conn) {};
+    public void transaction(Connection conn) throws SQLException{};
 }

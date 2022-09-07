@@ -20,13 +20,13 @@ import java.util.List;
 
 public class CopyCommandBenchmark extends YBMicroBenchmark {
     private static final Logger LOG = LoggerFactory.getLogger(CopyCommandBenchmark.class);
-    int numOfColumns = 10;
+    /*int numOfColumns = 10;
     int indexCount = 2;
     int numOfRows = 1000;
 
     int rowsPerTransaction = 1000;
     String tableName = "orders";
-    String file = "orders.csv";
+    String file = "orders.csv";*/
 
     public CopyCommandBenchmark(HierarchicalConfiguration<ImmutableNode> config) {
         super(config);
@@ -36,19 +36,21 @@ public class CopyCommandBenchmark extends YBMicroBenchmark {
 
     @Override
     public void create(Connection conn) throws SQLException {
-        try {
-            Statement stmtOBj = conn.createStatement();
-            LOG.info("Recreate table if it exists");
-            stmtOBj.executeUpdate(String.format("DROP TABLE IF EXISTS %s", tableName));
-            createTable(conn, tableName, numOfColumns, indexCount);
+        String tableName = config.getString("/tableName");
+        int numOfColumns = config.getInt("/columns");
+        int numOfRows = config.getInt("/rows");
+        int indexCount = config.getInt("/indexes");
+        String filePath = config.getString("/filePath");
 
-            LOG.info("Create CSV file with data");
-            createCSV(numOfColumns, numOfRows, file);
-            stmtOBj.close();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+        Statement stmtOBj = conn.createStatement();
+        LOG.info("Recreate table if it exists");
+        stmtOBj.executeUpdate(String.format("DROP TABLE IF EXISTS %s", tableName));
+        createTable(conn, tableName, numOfColumns, indexCount);
+        LOG.info("Create CSV file with data");
+        createCSV(numOfColumns, numOfRows, filePath);
+        stmtOBj.close();
     }
+
 
     @Override
     public ArrayList<LoadRule> loadRules() {
@@ -64,6 +66,11 @@ public class CopyCommandBenchmark extends YBMicroBenchmark {
 
     @Override
     public void cleanUp(Connection conn) throws SQLException {
+        String tableName = config.getString("/tableName");
+        int numOfColumns = config.getInt("/columns");
+        int numOfRows = config.getInt("/rows");
+        int indexCount = config.getInt("/indexes");
+        String filePath = config.getString("/filePath");
         try {
             Statement stmtOBj = conn.createStatement();
             LOG.info("=======DROP ALL THE TABLES=======");
@@ -76,27 +83,33 @@ public class CopyCommandBenchmark extends YBMicroBenchmark {
 
     @Override
     public void loadOnce(Connection conn) {
-        runCopyCommand(conn, tableName, file, rowsPerTransaction);
+        String tableName = config.getString("/tableName");
+        String filePath = config.getString("/filePath");
+        int rowsPerTransaction = config.getInt("/rowsPerTransaction");
+        runCopyCommand(conn, tableName, filePath, rowsPerTransaction);
     }
 
     @Override
     public void executeOnce(Connection conn) {
-        runCopyCommand(conn, tableName, file, rowsPerTransaction);
+        String tableName = config.getString("/tableName");
+        String filePath = config.getString("/filePath");
+        int rowsPerTransaction = config.getInt("/rowsPerTransaction");
+        runCopyCommand(conn, tableName, filePath, rowsPerTransaction);
     }
 
 
     public void createTable(Connection conn, String tableName, int numberOfColums, int indexCount) {
         List<String> ddls = new ArrayList<>();
-        StringBuilder ddl1 = new StringBuilder();
-        ddl1.append(String.format("CREATE TABLE %s (id INT primary key, ", tableName));
+        StringBuilder createStmt = new StringBuilder();
+        createStmt.append(String.format("CREATE TABLE %s (id INT primary key, ", tableName));
         for (int i = 1; i <= numberOfColums; i++) {
-            ddl1.append(String.format("col%d TEXT", i));
+            createStmt.append(String.format("col%d TEXT", i));
             if (i != numberOfColums)
-                ddl1.append(",");
+                createStmt.append(",");
             else
-                ddl1.append(");");
+                createStmt.append(");");
         }
-        ddls.add(ddl1.toString());
+        ddls.add(createStmt.toString());
 
         if (indexCount > 0 && indexCount <= numberOfColums) {
             for (int i = 0; i < indexCount; i++) {
