@@ -19,15 +19,15 @@ public class YBMicroBenchmarkImplementation extends YBMicroBenchmark {
 
     public final static Logger LOG = Logger.getLogger(YBMicroBenchmarkImplementation.class);
 
-    public YBMicroBenchmarkImplementation(HierarchicalConfiguration<ImmutableNode> properties) {
-        super(properties);
+    public YBMicroBenchmarkImplementation(HierarchicalConfiguration<ImmutableNode> config) {
+        super(config);
         this.executeOnceImplemented = false;
         this.loadOnceImplemented = false;
         this.afterLoadImplemented = false;
     }
 
     @Override
-    public void createDB(Connection conn) throws SQLException {
+    public void create(Connection conn) throws SQLException {
         try {
             Statement stmtOBj = conn.createStatement();
             LOG.info("Recreating tables if already exists");

@@ -17,15 +17,15 @@ public class YBSmallBankApp extends YBMicroBenchmark implements FeatureBenchCons
 
     public final static Logger logger = Logger.getLogger(YBSmallBankApp.class);
 
-    public YBSmallBankApp(HierarchicalConfiguration<ImmutableNode> properties) {
-        super(properties);
+    public YBSmallBankApp(HierarchicalConfiguration<ImmutableNode> config) {
+        super(config);
         this.executeOnceImplemented = false;
         this.loadOnceImplemented = false;
         this.afterLoadImplemented = false;
     }
 
     @Override
-    public void createDB(Connection conn) throws SQLException {
+    public void create(Connection conn) throws SQLException {
 
         Statement stmtOBj = null;
         stmtOBj = conn.createStatement();

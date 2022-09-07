@@ -17,13 +17,13 @@ public abstract class YBMicroBenchmark {
     public boolean executeOnceImplemented = false;
 
     public boolean afterLoadImplemented = false;
-    public HierarchicalConfiguration<ImmutableNode> properties;
+    public HierarchicalConfiguration<ImmutableNode> config;
 
-    public YBMicroBenchmark(HierarchicalConfiguration<ImmutableNode> properties) {
-        this.properties = properties;
+    public YBMicroBenchmark(HierarchicalConfiguration<ImmutableNode> config) {
+        this.config = config;
     }
 
-    public abstract void createDB(Connection conn) throws SQLException;
+    public abstract void create(Connection conn) throws SQLException;
 
     public abstract ArrayList<LoadRule> loadRules();
 
@@ -31,11 +31,11 @@ public abstract class YBMicroBenchmark {
 
     public abstract void cleanUp(Connection conn) throws SQLException;
 
-    public abstract void loadOnce(Connection conn);
+    public void loadOnce(Connection conn) {};
 
-    public abstract void executeOnce(Connection conn);
+    public void executeOnce(Connection conn) {};
 
-    public void afterLoad(Connection conn) {
-    }
+    public void afterLoad(Connection conn) {};
 
+    public void transaction(Connection conn) {};
 }

@@ -44,7 +44,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
     private static final Logger LOG = LoggerFactory.getLogger(FeatureBenchWorker.class);
 
     public String workloadClass = null;
-    public HierarchicalConfiguration<ImmutableNode> properties = null;
+    public HierarchicalConfiguration<ImmutableNode> config = null;
     public YBMicroBenchmark ybm = null;
 
     public FeatureBenchWorker(FeatureBenchBenchmark benchmarkModule, int id) {
@@ -83,7 +83,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
         try {
             ybm = (YBMicroBenchmark) Class.forName(workloadClass)
                 .getDeclaredConstructor(HierarchicalConfiguration.class)
-                .newInstance(properties);
+                .newInstance(config);
             ArrayList<ExecuteRule> executeRules = ybm.executeRules();
             LOG.info("In ExecuteWork\n");
 

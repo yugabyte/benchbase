@@ -37,7 +37,7 @@ import java.util.Objects;
  */
 public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
     public String workloadClass = null;
-    public HierarchicalConfiguration<ImmutableNode> properties = null;
+    public HierarchicalConfiguration<ImmutableNode> config = null;
     public YBMicroBenchmark ybm = null;
     PreparedStatement stmt;
 
@@ -50,7 +50,7 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
         try {
             ybm = (YBMicroBenchmark) Class.forName(workloadClass)
                 .getDeclaredConstructor(HierarchicalConfiguration.class)
-                .newInstance(properties);
+                .newInstance(config);
 
             ArrayList<LoaderThread> loaderThreads = new ArrayList<>();
             if (!ybm.loadOnceImplemented) {
@@ -85,7 +85,7 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
         public void load(Connection conn) throws SQLException {
             try {
                 if (ybm.createDBImplemented) {
-                    ybm.createDB(conn);
+                    ybm.create(conn);
                     LOG.info("CREATE DB is implemented");
                 }
                 if (ybm.loadOnceImplemented) {

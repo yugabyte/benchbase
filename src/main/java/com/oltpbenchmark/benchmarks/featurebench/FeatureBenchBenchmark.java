@@ -50,7 +50,7 @@ public class FeatureBenchBenchmark extends BenchmarkModule {
         for (int i = 0; i < workConf.getTerminals(); ++i) {
             FeatureBenchWorker worker = new FeatureBenchWorker(this, i);
             worker.workloadClass = conf.getString("class");
-            worker.properties = conf.configurationAt("properties");
+            worker.config = conf.configurationAt("properties");
             workers.add(worker);
         }
         return workers;
@@ -61,7 +61,7 @@ public class FeatureBenchBenchmark extends BenchmarkModule {
         HierarchicalConfiguration<ImmutableNode> conf = workConf.getMicroBenchmark();
         FeatureBenchLoader loader = new FeatureBenchLoader(this);
         loader.workloadClass = conf.getString("class");
-        loader.properties = conf.configurationAt("properties");
+        loader.config = conf.configurationAt("properties");
         return loader;
     }
 

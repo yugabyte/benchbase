@@ -28,14 +28,14 @@ public class CopyCommandBenchmark extends YBMicroBenchmark {
     String tableName = "orders";
     String file = "orders.csv";
 
-    public CopyCommandBenchmark(HierarchicalConfiguration<ImmutableNode> properties) {
-        super(properties);
+    public CopyCommandBenchmark(HierarchicalConfiguration<ImmutableNode> config) {
+        super(config);
         this.executeOnceImplemented = true;
         this.loadOnceImplemented = true;
     }
 
     @Override
-    public void createDB(Connection conn) throws SQLException {
+    public void create(Connection conn) throws SQLException {
         try {
             Statement stmtOBj = conn.createStatement();
             LOG.info("Recreate table if it exists");
