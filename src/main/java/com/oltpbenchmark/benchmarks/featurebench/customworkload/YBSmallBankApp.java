@@ -17,14 +17,15 @@ public class YBSmallBankApp extends YBMicroBenchmark implements FeatureBenchCons
 
     public final static Logger logger = Logger.getLogger(YBSmallBankApp.class);
 
-    public YBSmallBankApp() {
+    public YBSmallBankApp(HierarchicalConfiguration<ImmutableNode> properties) {
+        super(properties);
         this.executeOnceImplemented = false;
         this.loadOnceImplemented = false;
         this.afterLoadImplemented = false;
     }
 
     @Override
-    public void createDB(Connection conn, HierarchicalConfiguration<ImmutableNode> properties) throws SQLException {
+    public void createDB(Connection conn) throws SQLException {
 
         Statement stmtOBj = null;
         stmtOBj= conn.createStatement();
@@ -72,7 +73,7 @@ public class YBSmallBankApp extends YBMicroBenchmark implements FeatureBenchCons
 
 
     @Override
-    public ArrayList<LoadRule> loadRules(HierarchicalConfiguration<ImmutableNode> properties){
+    public ArrayList<LoadRule> loadRules(){
         long startIndex = 0;
         long endIndex = 10000;
         long fix_len = 20;
@@ -100,7 +101,7 @@ public class YBSmallBankApp extends YBMicroBenchmark implements FeatureBenchCons
         createCsvFile();
     }*/
 
-    public ArrayList<ExecuteRule> executeRules(HierarchicalConfiguration<ImmutableNode> properties){
+    public ArrayList<ExecuteRule> executeRules(){
 
         long startIndex = 0;
         long endIndex = 10000;
@@ -205,12 +206,12 @@ public class YBSmallBankApp extends YBMicroBenchmark implements FeatureBenchCons
     }
 
     @Override
-    public void loadOnce(Connection conn, HierarchicalConfiguration<ImmutableNode> properties) {
+    public void loadOnce(Connection conn) {
 
     }
 
     @Override
-    public void executeOnce(Connection conn, HierarchicalConfiguration<ImmutableNode> properties) {
+    public void executeOnce(Connection conn) {
 
     }
 

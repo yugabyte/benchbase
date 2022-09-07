@@ -28,13 +28,14 @@ public class CopyCommandBenchmark extends YBMicroBenchmark {
     String tableName = "orders";
     String file = "orders.csv";
 
-    public CopyCommandBenchmark() {
+    public CopyCommandBenchmark(HierarchicalConfiguration<ImmutableNode> properties) {
+        super(properties);
         this.executeOnceImplemented = true;
         this.loadOnceImplemented = true;
     }
 
     @Override
-    public void createDB(Connection conn, HierarchicalConfiguration<ImmutableNode> properties) throws SQLException {
+    public void createDB(Connection conn) throws SQLException {
         try {
             Statement stmtOBj = conn.createStatement();
             LOG.info("Recreate table if it exists");
@@ -50,13 +51,13 @@ public class CopyCommandBenchmark extends YBMicroBenchmark {
     }
 
     @Override
-    public ArrayList<LoadRule> loadRules(HierarchicalConfiguration<ImmutableNode> properties) {
+    public ArrayList<LoadRule> loadRules() {
 //        return new ArrayList<>();
         return null;
     }
 
     @Override
-    public ArrayList<ExecuteRule> executeRules(HierarchicalConfiguration<ImmutableNode> properties) {
+    public ArrayList<ExecuteRule> executeRules() {
         ArrayList<ExecuteRule> list4 = new ArrayList<>();
         return list4;
     }
@@ -74,12 +75,12 @@ public class CopyCommandBenchmark extends YBMicroBenchmark {
     }
 
     @Override
-    public void loadOnce(Connection conn, HierarchicalConfiguration<ImmutableNode> properties) {
+    public void loadOnce(Connection conn) {
         runCopyCommand(conn, tableName, file, rowsPerTransaction);
     }
 
     @Override
-    public void executeOnce(Connection conn, HierarchicalConfiguration<ImmutableNode> properties) {
+    public void executeOnce(Connection conn) {
         runCopyCommand(conn, tableName, file, rowsPerTransaction);
     }
 

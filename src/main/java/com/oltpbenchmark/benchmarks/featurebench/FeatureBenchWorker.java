@@ -82,8 +82,10 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
         UserAbortException, SQLException {
 
         try {
-            ybm = (YBMicroBenchmark)Class.forName(workloadClass).getDeclaredConstructor().newInstance();
-            ArrayList<ExecuteRule> executeRules = ybm.executeRules(properties);
+            ybm = (YBMicroBenchmark)Class.forName(workloadClass)
+                    .getDeclaredConstructor(HierarchicalConfiguration.class)
+                    .newInstance(properties);
+            ArrayList<ExecuteRule> executeRules = ybm.executeRules();
             LOG.info("In ExecuteWork\n");
 
             // Validating sum of transaction weights =100
@@ -102,7 +104,6 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             }
             for(int i=0; i<100; i++)
             {
-
                 int randomNum = ThreadLocalRandom.current().nextInt(1, 100 + 1);
                 int getId = get_transaction_id(randomNum,call_acc_to_weight);
                 TransactionDetails transaction_det = executeRules.get(getId).getTransactionDetails();

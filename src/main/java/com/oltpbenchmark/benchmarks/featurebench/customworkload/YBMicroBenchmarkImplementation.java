@@ -19,14 +19,15 @@ public class YBMicroBenchmarkImplementation extends YBMicroBenchmark {
 
     public final static Logger LOG = Logger.getLogger(YBMicroBenchmarkImplementation.class);
 
-    public YBMicroBenchmarkImplementation() {
+    public YBMicroBenchmarkImplementation(HierarchicalConfiguration<ImmutableNode> properties) {
+        super(properties);
         this.executeOnceImplemented = false;
         this.loadOnceImplemented = false;
         this.afterLoadImplemented = false;
     }
 
     @Override
-    public void createDB(Connection conn, HierarchicalConfiguration<ImmutableNode> properties) throws SQLException {
+    public void createDB(Connection conn) throws SQLException {
         try {
             Statement stmtOBj = conn.createStatement();
             LOG.info("Recreating tables if already exists");
@@ -44,7 +45,7 @@ public class YBMicroBenchmarkImplementation extends YBMicroBenchmark {
 
     }
 
-    public ArrayList<LoadRule> loadRules(HierarchicalConfiguration<ImmutableNode> properties) {
+    public ArrayList<LoadRule> loadRules() {
         int startIndex = 0;
         int endIndex = 10000;
         int desiredLen = 10;
@@ -73,7 +74,7 @@ public class YBMicroBenchmarkImplementation extends YBMicroBenchmark {
         return new ArrayList<>(List.of(loadRule));
     }
 
-    public ArrayList<ExecuteRule> executeRules(HierarchicalConfiguration<ImmutableNode> properties) {
+    public ArrayList<ExecuteRule> executeRules() {
         int startIndex = 1;
         int endIndex = 10;
         String query = "SELECT * FROM ACCOUNTS WHERE ID > ?";
@@ -110,12 +111,12 @@ public class YBMicroBenchmarkImplementation extends YBMicroBenchmark {
     }
 
     @Override
-    public void loadOnce(Connection conn, HierarchicalConfiguration<ImmutableNode> properties) {
+    public void loadOnce(Connection conn) {
 
     }
 
     @Override
-    public void executeOnce(Connection conn, HierarchicalConfiguration<ImmutableNode> properties) {
+    public void executeOnce(Connection conn) {
 
     }
 

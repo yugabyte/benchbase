@@ -17,18 +17,22 @@ public abstract class YBMicroBenchmark {
     public boolean executeOnceImplemented = false;
 
     public boolean afterLoadImplemented = false;
+    public HierarchicalConfiguration<ImmutableNode> properties;
+    public YBMicroBenchmark(HierarchicalConfiguration<ImmutableNode> properties) {
+        this.properties = properties;
+    }
 
-    public abstract void createDB(Connection conn, HierarchicalConfiguration<ImmutableNode> properties) throws SQLException;
+    public abstract void createDB(Connection conn) throws SQLException;
 
-    public abstract ArrayList<LoadRule> loadRules(HierarchicalConfiguration<ImmutableNode> properties);
+    public abstract ArrayList<LoadRule> loadRules();
 
-    public abstract ArrayList<ExecuteRule> executeRules(HierarchicalConfiguration<ImmutableNode> properties);
+    public abstract ArrayList<ExecuteRule> executeRules();
 
     public abstract void cleanUp(Connection conn) throws SQLException;
 
-    public abstract void loadOnce(Connection conn, HierarchicalConfiguration<ImmutableNode> properties);
+    public abstract void loadOnce(Connection conn);
 
-    public abstract void executeOnce(Connection conn, HierarchicalConfiguration<ImmutableNode> properties);
+    public abstract void executeOnce(Connection conn);
 
-    public void afterLoad(Connection conn, HierarchicalConfiguration<ImmutableNode> properties) {};
+    public void afterLoad(Connection conn) {};
 }

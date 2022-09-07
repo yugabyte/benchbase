@@ -37,8 +37,6 @@ import java.util.Objects;
  *
  */
 public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
-
-
     public String workloadClass = null;
     public HierarchicalConfiguration<ImmutableNode> properties = null;
     public YBMicroBenchmark ybm = null;
@@ -50,27 +48,17 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
     @Override
     public List<LoaderThread> createLoaderThreads() {
         try {
-            ybm = (YBMicroBenchmark)Class.forName(workloadClass).getDeclaredConstructor().newInstance();
-
-//            boolean loadOnce = useReflectionToCheckIfLoadOnceIsImplemented();
-//            boolean loadOnce = false;
-            ArrayList<LoadRule> loadRules = ybm.loadRules(this.properties);
-            /*if (ybm.loadOnceImplemented) {
-                // Make a single thread and call loadOnce from there
-                ArrayList<LoaderThread> lt = new ArrayList<>();
-                lt.add(new GeneratorOnce(lrs.get(0), cfile));
-                return lt;
-            }*/
-
+            ybm = (YBMicroBenchmark)Class.forName(workloadClass)
+                                        .getDeclaredConstructor(HierarchicalConfiguration.class)
+                                        .newInstance(properties);
 
             ArrayList<LoaderThread> loaderThreads = new ArrayList<>();
-
-            for (LoadRule loadRule : loadRules) {
-                loaderThreads.add(new Generator(loadRule));
+            if(!ybm.loadOnceImplemented) {
+                ArrayList<LoadRule> loadRules = ybm.loadRules();
+                for (LoadRule loadRule : loadRules) {
+                    loaderThreads.add(new Generator(loadRule));
+                }
             }
-            /*for(int i= 0; i < lrs.size(); i++) {
-                lt.add(new Generator(lrs.get(i)));
-            }*/
             return loaderThreads;
         } catch (InstantiationException | IllegalAccessException |
                  InvocationTargetException | NoSuchMethodException |
@@ -79,15 +67,6 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
         }
     }
 
-    /*private class GeneratorOnce extends LoaderThread {
-        public GeneratorOnce(File cfiile) {
-            super(benchmark);
-        }
-        @Override
-        public void load(Connection conn) {
-            ybm.loadOnce(conn, cFile);
-        }
-    }*/
     private class Generator extends LoaderThread {
         final LoadRule loadRule;
         public Generator(LoadRule loadRule) {
@@ -105,12 +84,13 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
         public void load(Connection conn) throws SQLException {
             try {
                 if (ybm.createDBImplemented) {
-                    ybm.createDB(conn, properties);
+                    ybm.createDB(conn);
                     LOG.info("CREATE DB is implemented");
                 }
                 if(ybm.loadOnceImplemented) {
-                    ybm.loadOnce(conn, properties);
+                    ybm.loadOnce(conn);
                 }
+                // we will run loadRules here
                 else {
                     int batchSize = 0;
                     TableInfo t = loadRule.getTableInfo();
@@ -120,7 +100,6 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
                     int no_of_columns = cd.size();
                     StringBuilder columnString = new StringBuilder();
                     StringBuilder valueString = new StringBuilder();
-
 
                     for (ColumnsDetails columnsDetails : cd) {
                         columnString.append(columnsDetails.getName()).append(",");
@@ -163,8 +142,8 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
                 }
 
                 if (ybm.afterLoadImplemented) {
-                    ybm.afterLoad(conn, properties);
                     LOG.info("afterLoad is implemented");
+                    ybm.afterLoad(conn);
                 }
             } catch (SQLException e) {
                 throw new RuntimeException(e);
