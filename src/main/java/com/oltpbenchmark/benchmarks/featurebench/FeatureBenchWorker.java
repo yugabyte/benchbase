@@ -37,8 +37,6 @@ import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
 
 
-
-
 /**
  *
  */
@@ -52,17 +50,17 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
     public FeatureBenchWorker(FeatureBenchBenchmark benchmarkModule, int id) {
         super(benchmarkModule, id);
     }
-    int get_transaction_id(int no,ArrayList<Integer> weights)
-    {
-        int len=weights.size();
-        for(int i=0;i<len;i++)
-        {
-            if(no<=weights.get(i))
+
+    int get_transaction_id(int no, ArrayList<Integer> weights) {
+        int len = weights.size();
+        for (int i = 0; i < len; i++) {
+            if (no <= weights.get(i))
                 return i;
         }
         return 0;
     }
-    public void bind_params_based_on_func(ArrayList<BindParams> bp,PreparedStatement stmt) throws SQLException {
+
+    public void bind_params_based_on_func(ArrayList<BindParams> bp, PreparedStatement stmt) throws SQLException {
         for (BindParams ob : bp) {
             ArrayList<UtilityFunc> ufs = ob.getUtilFunc();
             for (int j = 0; j < ufs.size(); j++) {
@@ -77,35 +75,34 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
         }
         stmt.executeQuery();
     }
+
     @Override
     protected TransactionStatus executeWork(Connection conn, TransactionType txnType) throws
         UserAbortException, SQLException {
 
         try {
-            ybm = (YBMicroBenchmark)Class.forName(workloadClass)
-                    .getDeclaredConstructor(HierarchicalConfiguration.class)
-                    .newInstance(properties);
+            ybm = (YBMicroBenchmark) Class.forName(workloadClass)
+                .getDeclaredConstructor(HierarchicalConfiguration.class)
+                .newInstance(properties);
             ArrayList<ExecuteRule> executeRules = ybm.executeRules();
             LOG.info("In ExecuteWork\n");
 
             // Validating sum of transaction weights =100
-            int sum=0;
+            int sum = 0;
             int weight;
-            ArrayList<Integer> call_acc_to_weight=new ArrayList<>();
+            ArrayList<Integer> call_acc_to_weight = new ArrayList<>();
             for (ExecuteRule executeRule : executeRules) {
                 TransactionDetails transaction_det = executeRule.getTransactionDetails();
                 weight = transaction_det.getWeight_transaction_type();
                 sum += weight;
                 call_acc_to_weight.add(sum);
             }
-            if(sum>100 || sum<=0)
-            {
+            if (sum > 100 || sum <= 0) {
                 throw new RuntimeException("Transaction weights incorrect");
             }
-            for(int i=0; i<100; i++)
-            {
+            for (int i = 0; i < 100; i++) {
                 int randomNum = ThreadLocalRandom.current().nextInt(1, 100 + 1);
-                int getId = get_transaction_id(randomNum,call_acc_to_weight);
+                int getId = get_transaction_id(randomNum, call_acc_to_weight);
                 TransactionDetails transaction_det = executeRules.get(getId).getTransactionDetails();
                 ArrayList<QueryDetails> qd = transaction_det.getQuery();
                 for (QueryDetails queryDetails : qd) {

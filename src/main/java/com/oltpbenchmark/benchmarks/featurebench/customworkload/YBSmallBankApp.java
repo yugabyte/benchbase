@@ -28,13 +28,12 @@ public class YBSmallBankApp extends YBMicroBenchmark implements FeatureBenchCons
     public void createDB(Connection conn) throws SQLException {
 
         Statement stmtOBj = null;
-        stmtOBj= conn.createStatement();
+        stmtOBj = conn.createStatement();
 
         stmtOBj.executeUpdate("create table savings (accountid int primary key, balance float)");
-        try{
+        try {
             stmtOBj.close();
-        }
-        catch(Exception ex){
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
@@ -73,7 +72,7 @@ public class YBSmallBankApp extends YBMicroBenchmark implements FeatureBenchCons
 
 
     @Override
-    public ArrayList<LoadRule> loadRules(){
+    public ArrayList<LoadRule> loadRules() {
         long startIndex = 0;
         long endIndex = 10000;
         long fix_len = 20;
@@ -81,12 +80,12 @@ public class YBSmallBankApp extends YBMicroBenchmark implements FeatureBenchCons
         ParamsForUtilFunc paramsFunc = new ParamsForUtilFunc(new ArrayList<Integer>());
         ArrayList<ParamsForUtilFunc> list1 = new ArrayList<>();
         list1.add(paramsFunc);
-        UtilityFunc uf = new UtilityFunc("",list1);
-        ColumnsDetails cd = new ColumnsDetails("id",uf);
-        ArrayList<ColumnsDetails> list2=new ArrayList<ColumnsDetails>();
+        UtilityFunc uf = new UtilityFunc("", list1);
+        ColumnsDetails cd = new ColumnsDetails("id", uf);
+        ArrayList<ColumnsDetails> list2 = new ArrayList<ColumnsDetails>();
         list2.add(cd);
 //        TableInfo ti=new TableInfo("",10,"",list2);
-        TableInfo ti = new TableInfo(10,"sshaikh", list2);
+        TableInfo ti = new TableInfo(10, "sshaikh", list2);
         LoadRule lr = new LoadRule(ti);
         ArrayList<LoadRule> rule = new ArrayList<>();
         rule.add(lr);
@@ -101,7 +100,7 @@ public class YBSmallBankApp extends YBMicroBenchmark implements FeatureBenchCons
         createCsvFile();
     }*/
 
-    public ArrayList<ExecuteRule> executeRules(){
+    public ArrayList<ExecuteRule> executeRules() {
 
         long startIndex = 0;
         long endIndex = 10000;
@@ -110,7 +109,7 @@ public class YBSmallBankApp extends YBMicroBenchmark implements FeatureBenchCons
         ParamsForUtilFunc paramsFunc = new ParamsForUtilFunc(new ArrayList<Integer>());
         ArrayList<ParamsForUtilFunc> list1 = new ArrayList<>();
         list1.add(paramsFunc);
-        UtilityFunc uf = new UtilityFunc("",list1);
+        UtilityFunc uf = new UtilityFunc("", list1);
 
         ArrayList<UtilityFunc> ufList = new ArrayList<>();
         ufList.add(uf);
@@ -118,10 +117,10 @@ public class YBSmallBankApp extends YBMicroBenchmark implements FeatureBenchCons
         BindParams bd = new BindParams(ufList);
         ArrayList<BindParams> list2 = new ArrayList<>();
         list2.add(bd);
-        QueryDetails qd = new QueryDetails("",list2);
+        QueryDetails qd = new QueryDetails("", list2);
         ArrayList<QueryDetails> list3 = new ArrayList<>();
         list3.add(qd);
-        TransactionDetails td = new TransactionDetails("",10,list3);
+        TransactionDetails td = new TransactionDetails("", 10, list3);
         ExecuteRule ob = new ExecuteRule(td);
         ArrayList<ExecuteRule> list4 = new ArrayList<>();
         list4.add(ob);
@@ -183,7 +182,7 @@ public class YBSmallBankApp extends YBMicroBenchmark implements FeatureBenchCons
     public void cleanUp(Connection conn) throws SQLException {
 
         Statement stmtOBj = null;
-        stmtOBj= conn.createStatement();
+        stmtOBj = conn.createStatement();
 
         // DDL Statement - DROP TABLES
         logger.info("\n=======DROP ALL THE TABLES=======");
@@ -195,12 +194,11 @@ public class YBSmallBankApp extends YBMicroBenchmark implements FeatureBenchCons
         logger.info("\n=======DROP DATABASE=======");
         stmtOBj.executeUpdate(DROP_DATABASE);
         logger.info("\n=======DATABASE IS SUCCESSFULLY DROPPED=======");
-        try{
+        try {
 
             stmtOBj.close();
             conn.close();
-        }
-        catch(Exception ex){
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
     }

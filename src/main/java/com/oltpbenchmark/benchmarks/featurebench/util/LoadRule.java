@@ -1,7 +1,7 @@
 package com.oltpbenchmark.benchmarks.featurebench.util;
 
 public class LoadRule {
-    private TableInfo tableInfo;
+    private final TableInfo tableInfo;
 
     public LoadRule(TableInfo tableInfo) {
         this.tableInfo = tableInfo;
@@ -11,4 +11,3 @@ public class LoadRule {
         return tableInfo;
     }
 }
-

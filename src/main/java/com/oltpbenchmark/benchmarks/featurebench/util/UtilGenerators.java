@@ -1,6 +1,6 @@
 package com.oltpbenchmark.benchmarks.featurebench.util;
 
-public abstract class UtilGenerators  {
+public abstract class UtilGenerators {
     private static int counter;
     private static int starter_for_string_counter = 0;
     private static int upper_range_for_primary_int_keys;
@@ -12,7 +12,7 @@ public abstract class UtilGenerators  {
         return upper_range_for_primary_int_keys;
     }
 
-    public  static void setUpper_range_for_primary_int_keys(int upper_range_for_primary_int_keys) {
+    public static void setUpper_range_for_primary_int_keys(int upper_range_for_primary_int_keys) {
         UtilGenerators.upper_range_for_primary_int_keys = upper_range_for_primary_int_keys;
     }
 

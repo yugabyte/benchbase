@@ -98,9 +98,9 @@ public class CopyCommandBenchmark extends YBMicroBenchmark {
         }
         ddls.add(ddl1.toString());
 
-        if(indexCount > 0 && indexCount <= numberOfColums) {
-            for(int i=0; i < indexCount; i++) {
-                ddls.add(String.format("CREATE INDEX idx%d on %s(col%d);", i+1, tableName, i+1));
+        if (indexCount > 0 && indexCount <= numberOfColums) {
+            for (int i = 0; i < indexCount; i++) {
+                ddls.add(String.format("CREATE INDEX idx%d on %s(col%d);", i + 1, tableName, i + 1));
             }
         }
 

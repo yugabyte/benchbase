@@ -16,17 +16,3 @@ public class ExecuteRule {
         this.transactionDetails = transactionDetails;
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

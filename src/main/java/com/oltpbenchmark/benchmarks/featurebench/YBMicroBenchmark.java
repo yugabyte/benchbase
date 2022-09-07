@@ -18,6 +18,7 @@ public abstract class YBMicroBenchmark {
 
     public boolean afterLoadImplemented = false;
     public HierarchicalConfiguration<ImmutableNode> properties;
+
     public YBMicroBenchmark(HierarchicalConfiguration<ImmutableNode> properties) {
         this.properties = properties;
     }
@@ -34,5 +35,7 @@ public abstract class YBMicroBenchmark {
 
     public abstract void executeOnce(Connection conn);
 
-    public void afterLoad(Connection conn) {};
+    public void afterLoad(Connection conn) {
+    }
+
 }

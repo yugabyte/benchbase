@@ -34,13 +34,13 @@ import java.util.Objects;
 
 /**
  * This doesn't load any data!
- *
  */
 public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
     public String workloadClass = null;
     public HierarchicalConfiguration<ImmutableNode> properties = null;
     public YBMicroBenchmark ybm = null;
     PreparedStatement stmt;
+
     public FeatureBenchLoader(FeatureBenchBenchmark benchmark) {
         super(benchmark);
     }
@@ -48,12 +48,12 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
     @Override
     public List<LoaderThread> createLoaderThreads() {
         try {
-            ybm = (YBMicroBenchmark)Class.forName(workloadClass)
-                                        .getDeclaredConstructor(HierarchicalConfiguration.class)
-                                        .newInstance(properties);
+            ybm = (YBMicroBenchmark) Class.forName(workloadClass)
+                .getDeclaredConstructor(HierarchicalConfiguration.class)
+                .newInstance(properties);
 
             ArrayList<LoaderThread> loaderThreads = new ArrayList<>();
-            if(!ybm.loadOnceImplemented) {
+            if (!ybm.loadOnceImplemented) {
                 ArrayList<LoadRule> loadRules = ybm.loadRules();
                 for (LoadRule loadRule : loadRules) {
                     loaderThreads.add(new Generator(loadRule));
@@ -69,6 +69,7 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
 
     private class Generator extends LoaderThread {
         final LoadRule loadRule;
+
         public Generator(LoadRule loadRule) {
             super(benchmark);
             this.loadRule = loadRule;
@@ -87,7 +88,7 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
                     ybm.createDB(conn);
                     LOG.info("CREATE DB is implemented");
                 }
-                if(ybm.loadOnceImplemented) {
+                if (ybm.loadOnceImplemented) {
                     ybm.loadOnce(conn);
                 }
                 // we will run loadRules here
@@ -111,16 +112,15 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
                     stmt = conn.prepareStatement(insertStmt);
 
 
-                    for(int i=0; i<no_of_rows; i++) {
+                    for (int i = 0; i < no_of_rows; i++) {
                         for (ColumnsDetails columnsDetails : cd) {
                             UtilityFunc uf = columnsDetails.getUtilFunc();
                             bindParamBasedOnType(uf);
                         }
                     }
 
-                    for(int i=0;i<no_of_rows;i++)
-                    {
-                        for(int j=0;j<no_of_columns;j++) {
+                    for (int i = 0; i < no_of_rows; i++) {
+                        for (int j = 0; j < no_of_columns; j++) {
                             UtilityFunc uf = cd.get(j).getUtilFunc();
                             String funcname = findFuncname(uf);
                             if (Objects.equals(funcname, "get_int_primary_key")) {
@@ -151,36 +151,30 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
         }
 
         public void bindParamBasedOnType(UtilityFunc uf) throws SQLException {
-            if(Objects.equals(uf.getName(), "get_int_primary_key"))
-            {
-                ArrayList<ParamsForUtilFunc> ob1=uf.getParams();
-                ParamsForUtilFunc puf=ob1.get(0);
-                ArrayList<Integer> range=puf.getParameters();
-                int upper_range=range.get(1);
-                int lower_range=range.get(0);
+            if (Objects.equals(uf.getName(), "get_int_primary_key")) {
+                ArrayList<ParamsForUtilFunc> ob1 = uf.getParams();
+                ParamsForUtilFunc puf = ob1.get(0);
+                ArrayList<Integer> range = puf.getParameters();
+                int upper_range = range.get(1);
+                int lower_range = range.get(0);
                 UtilGenerators.setUpper_range_for_primary_int_keys(upper_range);
                 UtilGenerators.setLower_range_for_primary_int_keys(lower_range);
-            }
-            else if(Objects.equals(uf.getName(), "numberToIdString"))
-            {
-                ArrayList<ParamsForUtilFunc> ob1=uf.getParams();
-                ParamsForUtilFunc puf=ob1.get(0);
-                ArrayList<Integer> max_len=puf.getParameters();
-                int desired_len=max_len.get(0);
+            } else if (Objects.equals(uf.getName(), "numberToIdString")) {
+                ArrayList<ParamsForUtilFunc> ob1 = uf.getParams();
+                ParamsForUtilFunc puf = ob1.get(0);
+                ArrayList<Integer> max_len = puf.getParameters();
+                int desired_len = max_len.get(0);
                 UtilGenerators.setDesired_length_string_pkeys(desired_len);
             }
 
         }
 
-        public String findFuncname(UtilityFunc uf){
-            if(Objects.equals(uf.getName(), "get_int_primary_key"))
-            {
+        public String findFuncname(UtilityFunc uf) {
+            if (Objects.equals(uf.getName(), "get_int_primary_key")) {
                 return "get_int_primary_key";
-            }
-            else if(Objects.equals(uf.getName(), "numberToIdString")){
+            } else if (Objects.equals(uf.getName(), "numberToIdString")) {
                 return "numberToIdString";
-            }
-            else return null;
+            } else return null;
 
         }
 

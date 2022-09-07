@@ -38,6 +38,7 @@ import java.util.List;
 public class FeatureBenchBenchmark extends BenchmarkModule {
 
     private static final Logger LOG = LoggerFactory.getLogger(DBWorkload.class);
+
     public FeatureBenchBenchmark(WorkloadConfiguration workConf) {
         super(workConf);
     }
