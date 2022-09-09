@@ -19,13 +19,10 @@ package com.oltpbenchmark.benchmarks.featurebench;
 
 import com.oltpbenchmark.api.Loader;
 import com.oltpbenchmark.api.LoaderThread;
-import com.oltpbenchmark.benchmarks.featurebench.customworkload.YBMicroBenchmarkImplementation;
-import com.oltpbenchmark.benchmarks.featurebench.customworkload.YBMicroBenchmarkImplementation2;
 import com.oltpbenchmark.benchmarks.featurebench.util.*;
 import com.oltpbenchmark.util.RandomGenerator;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.tree.ImmutableNode;
-
 
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
@@ -35,16 +32,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Random;
-import java.util.logging.Logger;
+
 
 /**
  * This doesn't load any data!
  */
 public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
-    public final static org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(YBMicroBenchmarkImplementation2.class);
-
     public String workloadClass = null;
-    public HierarchicalConfiguration<ImmutableNode> properties = null;
+    public HierarchicalConfiguration<ImmutableNode> config = null;
     public YBMicroBenchmark ybm = null;
     PreparedStatement stmt;
 
@@ -54,14 +49,17 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
 
     @Override
     public List<LoaderThread> createLoaderThreads() {
-
         try {
-            ybm = (YBMicroBenchmark) Class.forName(workloadClass).getDeclaredConstructor().newInstance();
-            ArrayList<LoadRule> loadRules = ybm.loadRule(this.properties);
-            ArrayList<LoaderThread> loaderThreads = new ArrayList<>();
+            ybm = (YBMicroBenchmark) Class.forName(workloadClass)
+                .getDeclaredConstructor(HierarchicalConfiguration.class)
+                .newInstance(config);
 
-            for (LoadRule loadRule : loadRules) {
-                loaderThreads.add(new Generator(loadRule));
+            ArrayList<LoaderThread> loaderThreads = new ArrayList<>();
+            if (!ybm.loadOnceImplemented) {
+                ArrayList<LoadRule> loadRules = ybm.loadRules();
+                for (LoadRule loadRule : loadRules) {
+                    loaderThreads.add(new Generator(loadRule));
+                }
             }
             return loaderThreads;
         } catch (InstantiationException | IllegalAccessException |
@@ -79,90 +77,96 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
             this.loadRule = loadRule;
         }
 
+        /*void bindParamBasedOnType(UtilityFunc utilf, PreparedStatement ps, int index) {
+            if (utilf.getName().equalsIgnoreCase("randomString")) {
+                stmtChecking.setInt(index, this.randomString(utilf.param1, utilf.param2));
+            }
+        }*/
 
         @Override
         public void load(Connection conn) throws SQLException {
             try {
-                ybm.createDB(conn);
-                int batchSize = 0;
-                TableInfo t = loadRule.getTableInfo();
-                long no_of_rows = t.getNo_of_rows();
-                String table_name = t.get_table_name();
-                ArrayList<ColumnsDetails> cd = t.getColumn_Det();
-                int no_of_columns = cd.size();
-                //System.out.println(no_of_columns);
-                StringBuilder columnString = new StringBuilder();
-                StringBuilder valueString = new StringBuilder();
+                if (ybm.createDBImplemented) {
+                    ybm.create(conn);
+                    LOG.info("CREATE DB is implemented");
+                }
+                if (ybm.loadOnceImplemented) {
+                    ybm.loadOnce(conn);
+                }
+                // we will run loadRules here
+                else {
+                    int batchSize = 0;
+                    TableInfo t = loadRule.getTableInfo();
+                    long no_of_rows = t.getNo_of_rows();
+                    String table_name = t.get_table_name();
+                    ArrayList<ColumnsDetails> cd = t.getColumn_Det();
+                    int no_of_columns = cd.size();
+                    StringBuilder columnString = new StringBuilder();
+                    StringBuilder valueString = new StringBuilder();
 
-                int c=0;
-                for (ColumnsDetails columnsDetails : cd) {
-                    //System.out.println(++c);
-                    columnString.append(columnsDetails.getName()).append(",");
-                    if(Objects.equals(columnsDetails.getUtilFunc().getName(), "serial_no.nextval")){
-                        valueString.append("DEFAULT,");
-                        //System.out.println("Yes");
-                    }
-                    else{
+                    for (ColumnsDetails columnsDetails : cd) {
+                        if(Objects.equals(columnsDetails.getUtilFunc().getName(), "serial_no.nextval"))
+                            continue;
+                        columnString.append(columnsDetails.getName()).append(",");
                         valueString.append("?,");
                     }
 
-                }
-                columnString.setLength(columnString.length() - 1);
-                valueString.setLength(valueString.length() - 1);
-                String insertStmt = "INSERT INTO " + table_name + " (" + columnString + ") VALUES " + "(" + valueString + ")";
-                System.out.println(insertStmt);
-                stmt = conn.prepareStatement(insertStmt);
+                    columnString.setLength(columnString.length() - 1);
+                    valueString.setLength(valueString.length() - 1);
+                    String insertStmt = "INSERT INTO " + table_name + " (" + columnString + ") VALUES " + "(" + valueString + ")";
+                    System.out.println(insertStmt);
+                    stmt = conn.prepareStatement(insertStmt);
 
 
-                for (int i = 0; i < no_of_rows; i++) {
-                    for (ColumnsDetails columnsDetails : cd) {
-                        UtilityFunc uf = columnsDetails.getUtilFunc();
-                        bindParamBasedOnType(uf);
+                    for (int i = 0; i < no_of_rows; i++) {
+                        for (ColumnsDetails columnsDetails : cd) {
+                            UtilityFunc uf = columnsDetails.getUtilFunc();
+                            bindParamBasedOnType(uf);
+                        }
                     }
-                }
 
-                for (int i = 0; i < no_of_rows; i++) {
-                    for (int j = 0; j < no_of_columns; j++) {
-
-                        UtilityFunc uf = cd.get(j).getUtilFunc();
-                        String funcname = findFuncname(uf);
-                        if (Objects.equals(funcname, "astring")) {
-                            if (i % 2 == 0) {
-                                RandomGenerator rno = new RandomGenerator(1);
-                                String dname = rno.astring(UtilGenerators.getMin_len_string(), UtilGenerators.getMax_len_string());
-                                stmt.setString(j + 1, dname);
-                            } else {
-                                String dname = (FeatureBenchConstants2.random_names.values()[new Random().nextInt(FeatureBenchConstants2.random_names.values().length)]).toString();
-                                stmt.setString(j + 1, dname);
+                    for (int i = 0; i < no_of_rows; i++) {
+                        for (int j = 0; j < no_of_columns; j++) {
+                            UtilityFunc uf = cd.get(j).getUtilFunc();
+                            String funcname = findFuncname(uf);
+                            if (Objects.equals(funcname, "get_int_primary_key")) {
+                                stmt.setInt(j + 1, UtilGenerators.get_int_primary_key());
+                            } else if (Objects.equals(funcname, "numberToIdString")) {
+                                stmt.setString(j + 1, UtilGenerators.numberToIdString());
+                            }else if (Objects.equals(funcname, "astring")) {
+                                if (i % 2 == 0) {
+                                    RandomGenerator rno = new RandomGenerator(1);
+                                    String dname = rno.astring(UtilGenerators.getMin_len_string(), UtilGenerators.getMax_len_string());
+                                    stmt.setString(j + 1, dname);
+                                } else {
+                                    String dname = (FeatureBenchConstants2.random_names.values()[new Random().nextInt(FeatureBenchConstants2.random_names.values().length)]).toString();
+                                    stmt.setString(j + 1, dname);
+                                }
                             }
                         }
-                        else if (Objects.equals(funcname, "get_int_primary_key")) {
-                            stmt.setInt(j + 1, UtilGenerators.get_int_primary_key());
+                        stmt.addBatch();
+                        if (++batchSize >= workConf.getBatchSize()) {
+                            this.loadTables(conn);
+                            batchSize = 0;
                         }
-                        else if (Objects.equals(funcname, "numberToIdString")) {
-                            stmt.setString(j + 1, UtilGenerators.numberToIdString());
-                        }
-
                     }
-                    stmt.addBatch();
-                    if (++batchSize >= workConf.getBatchSize()) {
+                    stmt.executeBatch();
+                    if (batchSize > 0) {
                         this.loadTables(conn);
-                        batchSize = 0;
                     }
                 }
-                stmt.executeBatch();
-                if (batchSize > 0) {
-                    this.loadTables(conn);
-                }
 
+                if (ybm.afterLoadImplemented) {
+                    LOG.info("afterLoad is implemented");
+                    ybm.afterLoad(conn);
+                }
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
         }
 
         public void bindParamBasedOnType(UtilityFunc uf) throws SQLException {
-
-            if (Objects.equals(uf.getName(), "serial_no.nextval")) {
+            if (Objects.equals(uf.getName(), "get_int_primary_key")) {
                 ArrayList<ParamsForUtilFunc> ob1 = uf.getParams();
                 ParamsForUtilFunc puf = ob1.get(0);
                 ArrayList<Integer> range = puf.getParameters();
@@ -170,8 +174,13 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
                 int lower_range = range.get(0);
                 UtilGenerators.setUpper_range_for_primary_int_keys(upper_range);
                 UtilGenerators.setLower_range_for_primary_int_keys(lower_range);
-            }
-            else if (Objects.equals(uf.getName(), "astring")) {
+            } else if (Objects.equals(uf.getName(), "numberToIdString")) {
+                ArrayList<ParamsForUtilFunc> ob1 = uf.getParams();
+                ParamsForUtilFunc puf = ob1.get(0);
+                ArrayList<Integer> max_len = puf.getParameters();
+                int desired_len = max_len.get(0);
+                UtilGenerators.setDesired_length_string_pkeys(desired_len);
+            } else if (Objects.equals(uf.getName(), "astring")) {
                 ArrayList<ParamsForUtilFunc> ob1 = uf.getParams();
                 ParamsForUtilFunc puf = ob1.get(0);
                 ArrayList<Integer> len_range = puf.getParameters();
@@ -180,41 +189,21 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
                 UtilGenerators.setMax_len_string(max_len);
                 UtilGenerators.setMin_len_string(min_len);
             }
-            else if(Objects.equals(uf.getName(), "get_int_primary_key"))
-            {
-                ArrayList<ParamsForUtilFunc> ob1=uf.getParams();
-                ParamsForUtilFunc puf=ob1.get(0);
-                ArrayList<Integer> range=puf.getParameters();
-                int upper_range=range.get(1);
-                int lower_range=range.get(0);
-                UtilGenerators.setUpper_range_for_primary_int_keys(upper_range);
-                UtilGenerators.setLower_range_for_primary_int_keys(lower_range);
-            }
-            else if(Objects.equals(uf.getName(), "numberToIdString"))
-            {
-                ArrayList<ParamsForUtilFunc> ob1=uf.getParams();
-                ParamsForUtilFunc puf=ob1.get(0);
-                ArrayList<Integer> max_len=puf.getParameters();
-                int desired_len=max_len.get(0);
-                UtilGenerators.setDesired_length_string_pkeys(desired_len);
-            }
 
         }
 
         public String findFuncname(UtilityFunc uf) {
-
-            if (Objects.equals(uf.getName(), "serial_no.nextval")) {
-                return "serial_no.nextval";
-            } else if (Objects.equals(uf.getName(), "astring")) {
-                return "astring";
-            } else if(Objects.equals(uf.getName(), "get_int_primary_key"))
-            {
+            if (Objects.equals(uf.getName(), "get_int_primary_key")) {
                 return "get_int_primary_key";
-            }
-            else if(Objects.equals(uf.getName(), "numberToIdString")){
+            } else if (Objects.equals(uf.getName(), "numberToIdString")) {
                 return "numberToIdString";
+            } else if (Objects.equals(uf.getName(), "serial_no.nextval")) {
+                return "serial_no.nextval";
+            }else if (Objects.equals(uf.getName(), "astring")) {
+                return "astring";
             }
-         else return null;
+                else return null;
+
         }
 
         private void loadTables(Connection conn) throws SQLException {

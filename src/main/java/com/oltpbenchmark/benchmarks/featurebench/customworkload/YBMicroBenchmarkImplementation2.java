@@ -1,5 +1,6 @@
 package com.oltpbenchmark.benchmarks.featurebench.customworkload;
 import com.oltpbenchmark.benchmarks.featurebench.FeatureBenchConstants2;
+import com.oltpbenchmark.benchmarks.featurebench.YBMicroBenchmark;
 import com.oltpbenchmark.benchmarks.featurebench.util.*;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.tree.ImmutableNode;
@@ -11,13 +12,19 @@ import java.sql.Statement;
 import java.util.ArrayList;
 
 
-public class YBMicroBenchmarkImplementation2 implements YBMicroBenchmark, FeatureBenchConstants2 {
+public class YBMicroBenchmarkImplementation2 extends YBMicroBenchmark implements FeatureBenchConstants2 {
 
     public final static Logger logger = Logger.getLogger(YBMicroBenchmarkImplementation.class);
+    public YBMicroBenchmarkImplementation2(HierarchicalConfiguration<ImmutableNode> config) {
+        super(config);
+        this.executeOnceImplemented = false;
+        this.loadOnceImplemented = false;
+        this.afterLoadImplemented = false;
+    }
+
 
     @Override
-    public void createDB(Connection conn) throws SQLException {
-
+    public void create(Connection conn) throws SQLException {
         Statement stmtOBj = null;
         stmtOBj = conn.createStatement();
 
@@ -36,10 +43,10 @@ public class YBMicroBenchmarkImplementation2 implements YBMicroBenchmark, Featur
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-
     }
 
-    public ArrayList<LoadRule> loadRule(HierarchicalConfiguration<ImmutableNode> properties) {
+    @Override
+    public ArrayList<LoadRule> loadRules() {
         int startIndex = 1;
         int endIndex = 10;
         ArrayList<Integer> range = new ArrayList<>();
@@ -68,11 +75,10 @@ public class YBMicroBenchmarkImplementation2 implements YBMicroBenchmark, Featur
         ArrayList<LoadRule> rule = new ArrayList<>();
         rule.add(lr);
         return rule;
-
     }
 
-    public ArrayList<ExecuteRule> executeRule(HierarchicalConfiguration<ImmutableNode> properties) {
-
+    @Override
+    public ArrayList<ExecuteRule> executeRules() {
         int startIndex = 1;
         int endIndex = 10;
         int min_len=1;

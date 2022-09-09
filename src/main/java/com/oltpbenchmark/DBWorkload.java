@@ -505,10 +505,10 @@ public class DBWorkload {
 
         Parameters params = new Parameters();
         FileBasedConfigurationBuilder<XMLConfiguration> builder = new FileBasedConfigurationBuilder<>(XMLConfiguration.class)
-                .configure(params.xml()
-                        .setFileName(filename)
-                        .setListDelimiterHandler(new DisabledListDelimiterHandler())
-                        .setExpressionEngine(new XPathExpressionEngine()));
+            .configure(params.xml()
+                .setFileName(filename)
+                .setListDelimiterHandler(new DisabledListDelimiterHandler())
+                .setExpressionEngine(new XPathExpressionEngine()));
         return builder.getConfiguration();
 
     }

@@ -1,7 +1,7 @@
 package com.oltpbenchmark.benchmarks.featurebench.customworkload;
 
-import com.oltpbenchmark.WorkloadConfiguration;
 import com.oltpbenchmark.benchmarks.featurebench.FeatureBenchConstants;
+import com.oltpbenchmark.benchmarks.featurebench.YBMicroBenchmark;
 import com.oltpbenchmark.benchmarks.featurebench.util.*;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.tree.ImmutableNode;
@@ -13,21 +13,27 @@ import java.sql.Statement;
 import java.util.ArrayList;
 
 
-public class YBSmallBankApp implements YBMicroBenchmark, FeatureBenchConstants {
+public class YBSmallBankApp extends YBMicroBenchmark implements FeatureBenchConstants {
 
     public final static Logger logger = Logger.getLogger(YBSmallBankApp.class);
 
+    public YBSmallBankApp(HierarchicalConfiguration<ImmutableNode> config) {
+        super(config);
+        this.executeOnceImplemented = false;
+        this.loadOnceImplemented = false;
+        this.afterLoadImplemented = false;
+    }
+
     @Override
-    public void createDB(Connection conn) throws SQLException {
+    public void create(Connection conn) throws SQLException {
 
         Statement stmtOBj = null;
-        stmtOBj= conn.createStatement();
+        stmtOBj = conn.createStatement();
 
         stmtOBj.executeUpdate("create table savings (accountid int primary key, balance float)");
-        try{
+        try {
             stmtOBj.close();
-        }
-        catch(Exception ex){
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
@@ -66,7 +72,7 @@ public class YBSmallBankApp implements YBMicroBenchmark, FeatureBenchConstants {
 
 
     @Override
-    public ArrayList<LoadRule> loadRule(HierarchicalConfiguration<ImmutableNode> properties){
+    public ArrayList<LoadRule> loadRules() {
         long startIndex = 0;
         long endIndex = 10000;
         long fix_len = 20;
@@ -74,12 +80,12 @@ public class YBSmallBankApp implements YBMicroBenchmark, FeatureBenchConstants {
         ParamsForUtilFunc paramsFunc = new ParamsForUtilFunc(new ArrayList<Integer>());
         ArrayList<ParamsForUtilFunc> list1 = new ArrayList<>();
         list1.add(paramsFunc);
-        UtilityFunc uf = new UtilityFunc("",list1);
-        ColumnsDetails cd = new ColumnsDetails("id",uf);
-        ArrayList<ColumnsDetails> list2=new ArrayList<ColumnsDetails>();
+        UtilityFunc uf = new UtilityFunc("", list1);
+        ColumnsDetails cd = new ColumnsDetails("id", uf);
+        ArrayList<ColumnsDetails> list2 = new ArrayList<ColumnsDetails>();
         list2.add(cd);
 //        TableInfo ti=new TableInfo("",10,"",list2);
-        TableInfo ti = new TableInfo(10,"sshaikh", list2);
+        TableInfo ti = new TableInfo(10, "sshaikh", list2);
         LoadRule lr = new LoadRule(ti);
         ArrayList<LoadRule> rule = new ArrayList<>();
         rule.add(lr);
@@ -89,12 +95,11 @@ public class YBSmallBankApp implements YBMicroBenchmark, FeatureBenchConstants {
     /*public void loadOnce(WorkloadConfiguration wc, Connection conn){
         createCsvFile();
     }
-
     public void executeOnce(WorkloadConfiguration wc, Connection conn){
         createCsvFile();
     }*/
 
-    public ArrayList<ExecuteRule> executeRule(HierarchicalConfiguration<ImmutableNode> properties){
+    public ArrayList<ExecuteRule> executeRules() {
 
         long startIndex = 0;
         long endIndex = 10000;
@@ -103,7 +108,7 @@ public class YBSmallBankApp implements YBMicroBenchmark, FeatureBenchConstants {
         ParamsForUtilFunc paramsFunc = new ParamsForUtilFunc(new ArrayList<Integer>());
         ArrayList<ParamsForUtilFunc> list1 = new ArrayList<>();
         list1.add(paramsFunc);
-        UtilityFunc uf = new UtilityFunc("",list1);
+        UtilityFunc uf = new UtilityFunc("", list1);
 
         ArrayList<UtilityFunc> ufList = new ArrayList<>();
         ufList.add(uf);
@@ -111,10 +116,10 @@ public class YBSmallBankApp implements YBMicroBenchmark, FeatureBenchConstants {
         BindParams bd = new BindParams(ufList);
         ArrayList<BindParams> list2 = new ArrayList<>();
         list2.add(bd);
-        QueryDetails qd = new QueryDetails("",list2);
+        QueryDetails qd = new QueryDetails("", list2);
         ArrayList<QueryDetails> list3 = new ArrayList<>();
         list3.add(qd);
-        TransactionDetails td = new TransactionDetails("",10,list3);
+        TransactionDetails td = new TransactionDetails("", 10, list3);
         ExecuteRule ob = new ExecuteRule(td);
         ArrayList<ExecuteRule> list4 = new ArrayList<>();
         list4.add(ob);
@@ -176,7 +181,7 @@ public class YBSmallBankApp implements YBMicroBenchmark, FeatureBenchConstants {
     public void cleanUp(Connection conn) throws SQLException {
 
         Statement stmtOBj = null;
-        stmtOBj= conn.createStatement();
+        stmtOBj = conn.createStatement();
 
         // DDL Statement - DROP TABLES
         logger.info("\n=======DROP ALL THE TABLES=======");
@@ -188,14 +193,23 @@ public class YBSmallBankApp implements YBMicroBenchmark, FeatureBenchConstants {
         logger.info("\n=======DROP DATABASE=======");
         stmtOBj.executeUpdate(DROP_DATABASE);
         logger.info("\n=======DATABASE IS SUCCESSFULLY DROPPED=======");
-        try{
+        try {
 
             stmtOBj.close();
             conn.close();
-        }
-        catch(Exception ex){
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
+    }
+
+    @Override
+    public void loadOnce(Connection conn) {
+
+    }
+
+    @Override
+    public void executeOnce(Connection conn) {
+
     }
 
 }
