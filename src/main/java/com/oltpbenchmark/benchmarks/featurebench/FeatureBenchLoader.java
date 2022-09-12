@@ -77,11 +77,7 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
             this.loadRule = loadRule;
         }
 
-        /*void bindParamBasedOnType(UtilityFunc utilf, PreparedStatement ps, int index) {
-            if (utilf.getName().equalsIgnoreCase("randomString")) {
-                stmtChecking.setInt(index, this.randomString(utilf.param1, utilf.param2));
-            }
-        }*/
+
 
         @Override
         public void load(Connection conn) throws SQLException {
@@ -103,14 +99,16 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
                     int no_of_columns = cd.size();
                     StringBuilder columnString = new StringBuilder();
                     StringBuilder valueString = new StringBuilder();
+                    // INSERT INTO distributors (did,dname) VALUES (nextval('serial_no'), ?);
+                    // INSERT INTO distributors (dname) VALUES (?);
 
                     for (ColumnsDetails columnsDetails : cd) {
-                        if(Objects.equals(columnsDetails.getUtilFunc().getName(), "serial_no.nextval"))
-                            continue;
+                        if (Objects.equals(columnsDetails.getUtilFunc().getName(), "serial_no.nextval"))
+                        continue;
                         columnString.append(columnsDetails.getName()).append(",");
                         valueString.append("?,");
-                    }
 
+                    }
                     columnString.setLength(columnString.length() - 1);
                     valueString.setLength(valueString.length() - 1);
                     String insertStmt = "INSERT INTO " + table_name + " (" + columnString + ") VALUES " + "(" + valueString + ")";
@@ -133,7 +131,7 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
                                 stmt.setInt(j + 1, UtilGenerators.get_int_primary_key());
                             } else if (Objects.equals(funcname, "numberToIdString")) {
                                 stmt.setString(j + 1, UtilGenerators.numberToIdString());
-                            }else if (Objects.equals(funcname, "astring")) {
+                            } else if (Objects.equals(funcname, "astring")) {
                                 if (i % 2 == 0) {
                                     RandomGenerator rno = new RandomGenerator(1);
                                     String dname = rno.astring(UtilGenerators.getMin_len_string(), UtilGenerators.getMax_len_string());
@@ -144,6 +142,8 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
                                 }
                             }
                         }
+
+                        System.out.println(stmt);
                         stmt.addBatch();
                         if (++batchSize >= workConf.getBatchSize()) {
                             this.loadTables(conn);
