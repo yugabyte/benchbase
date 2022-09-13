@@ -29,6 +29,7 @@ import org.apache.commons.collections4.map.ListOrderedMap;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.XMLConfiguration;
+import org.apache.commons.configuration2.YAMLConfiguration;
 import org.apache.commons.configuration2.builder.FileBasedConfigurationBuilder;
 import org.apache.commons.configuration2.builder.fluent.Parameters;
 import org.apache.commons.configuration2.convert.DisabledListDelimiterHandler;
@@ -102,12 +103,16 @@ public class DBWorkload {
 
         String configFile = argsLine.getOptionValue("c");
 
-        XMLConfiguration xmlConfig = buildConfiguration(configFile);
+        XMLConfiguration xmlConfig = null;
 
         // Load the configuration for each benchmark
         int lastTxnId = 0;
         for (String plugin : targetList) {
             String pluginTest = "[@bench='" + plugin + "']";
+            if(plugin.equalsIgnoreCase("featurebench"))
+                 xmlConfig = buildConfigurationFromYaml(configFile);
+            else
+                xmlConfig = buildConfiguration(configFile);
 
             // ----------------------------------------------------------------
             // BEGIN LOADING WORKLOAD CONFIGURATION
@@ -510,6 +515,22 @@ public class DBWorkload {
                         .setListDelimiterHandler(new DisabledListDelimiterHandler())
                         .setExpressionEngine(new XPathExpressionEngine()));
         return builder.getConfiguration();
+
+    }
+
+    private static XMLConfiguration buildConfigurationFromYaml(String filename) throws ConfigurationException {
+
+        Parameters params = new Parameters();
+        FileBasedConfigurationBuilder<YAMLConfiguration> builder = new FileBasedConfigurationBuilder<>(YAMLConfiguration.class)
+            .configure(params.hierarchical()
+                .setFileName(filename)
+                .setListDelimiterHandler(new DisabledListDelimiterHandler())
+                .setExpressionEngine(new XPathExpressionEngine()));
+
+        XMLConfiguration conf = new XMLConfiguration(builder.getConfiguration());
+        conf.setListDelimiterHandler(new DisabledListDelimiterHandler());
+        conf.setExpressionEngine(new XPathExpressionEngine());
+        return conf;
 
     }
 
