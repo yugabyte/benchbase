@@ -133,9 +133,6 @@ public class DBWorkload {
             wrkld.setMaxRetries(xmlConfig.getInt("retries", 3));
             wrkld.setNewConnectionPerTxn(xmlConfig.getBoolean("newConnectionPerTxn", false));
 
-            if(plugin.equalsIgnoreCase("featurebench")) {
-                wrkld.setMicroBenchmark(xmlConfig.configurationAt("microbenchmark"));
-            }
 
             int terminals = xmlConfig.getInt("terminals[not(@bench)]", 0);
             terminals = xmlConfig.getInt("terminals" + pluginTest, terminals);

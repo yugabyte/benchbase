@@ -1,6 +1,6 @@
 type: YUGABYTE
 driver: com.yugabyte.Driver
-url: jdbc:yugabytedb://localhost:5433/test_db?sslmode=disable
+url: jdbc:yugabytedb://localhost:5433/test_db?sslmode=disable&ApplicationName=featurebench&reWriteBatchedInserts=true
 username: yugabyte
 password:
 batchsize: 128

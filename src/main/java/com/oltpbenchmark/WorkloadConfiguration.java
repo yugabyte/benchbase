@@ -21,10 +21,7 @@ package com.oltpbenchmark;
 import com.oltpbenchmark.api.TransactionTypes;
 import com.oltpbenchmark.types.DatabaseType;
 import com.oltpbenchmark.util.ThreadUtil;
-import org.apache.commons.configuration2.Configuration;
-import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.XMLConfiguration;
-import org.apache.commons.configuration2.tree.ImmutableNode;
 
 import java.sql.Connection;
 import java.util.ArrayList;
@@ -58,8 +55,6 @@ public class WorkloadConfiguration {
      * session. This is useful to measure the connection overhead.
      */
     private boolean newConnectionPerTxn = false;
-
-    private HierarchicalConfiguration<ImmutableNode> microBenchmark = null;
 
     public String getBenchmarkName() {
         return benchmarkName;
@@ -127,14 +122,6 @@ public class WorkloadConfiguration {
 
     public void setMaxRetries(int maxRetries) {
         this.maxRetries = maxRetries;
-    }
-
-    public HierarchicalConfiguration<ImmutableNode> getMicroBenchmark() {
-        return microBenchmark;
-    }
-
-    public void setMicroBenchmark(HierarchicalConfiguration<ImmutableNode> microBenchmark) {
-        this.microBenchmark = microBenchmark;
     }
 
     /**

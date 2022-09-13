@@ -58,7 +58,6 @@ public class PointQuery extends YBMicroBenchmark {
             if (!result.next()) {
                 throw new UserAbortException("msg");
             }
-            int temp = result.getInt(1);
         }
     }
 

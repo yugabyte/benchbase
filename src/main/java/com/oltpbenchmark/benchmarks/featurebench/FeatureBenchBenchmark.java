@@ -46,7 +46,7 @@ public class FeatureBenchBenchmark extends BenchmarkModule {
     @Override
     protected List<Worker<? extends BenchmarkModule>> makeWorkersImpl() {
         List<Worker<? extends BenchmarkModule>> workers = new ArrayList<>();
-        HierarchicalConfiguration<ImmutableNode> conf = workConf.getMicroBenchmark();
+        HierarchicalConfiguration<ImmutableNode> conf = workConf.getXmlConfig().configurationAt("microbenchmark");
         for (int i = 0; i < workConf.getTerminals(); ++i) {
             FeatureBenchWorker worker = new FeatureBenchWorker(this, i);
             worker.workloadClass = conf.getString("class");
@@ -58,7 +58,7 @@ public class FeatureBenchBenchmark extends BenchmarkModule {
 
     @Override
     protected Loader<FeatureBenchBenchmark> makeLoaderImpl() {
-        HierarchicalConfiguration<ImmutableNode> conf = workConf.getMicroBenchmark();
+        HierarchicalConfiguration<ImmutableNode> conf = workConf.getXmlConfig().configurationAt("microbenchmark");
         FeatureBenchLoader loader = new FeatureBenchLoader(this);
         loader.workloadClass = conf.getString("class");
         loader.config = conf.configurationAt("properties");
