@@ -1,3 +1,5 @@
+package com.oltpbenchmark.benchmarks.featurebench.BindingFunctions;
+
 /*
  * Copyright 2020 Trino
  *
@@ -13,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.oltpbenchmark.benchmarks.featurebench.bindings.from_benchbase;
+
 
 public class RowRandomLong {
     private static final long MULTIPLIER = 6364136223846793005L;

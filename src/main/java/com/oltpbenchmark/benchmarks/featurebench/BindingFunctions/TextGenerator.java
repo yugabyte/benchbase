@@ -1,3 +1,5 @@
+package com.oltpbenchmark.benchmarks.featurebench.BindingFunctions;
+
 /*
  * Copyright 2020 by OLTPBenchmark Project
  *
@@ -15,7 +17,7 @@
  *
  */
 
-package com.oltpbenchmark.benchmarks.featurebench.bindings.from_benchbase;
+
 
 import java.util.Arrays;
 import java.util.Random;
@@ -38,16 +40,16 @@ public abstract class TextGenerator {
     }
 
     private static final int[] FAST_MASKS = {
-            554189328, // 10000
-            277094664, // 01000
-            138547332, // 00100
-            69273666,  // 00010
-            34636833,  // 00001
-            346368330, // 01010
-            727373493, // 10101
-            588826161, // 10001
-            935194491, // 11011
-            658099827, // 10011
+        554189328, // 10000
+        277094664, // 01000
+        138547332, // 00100
+        69273666,  // 00010
+        34636833,  // 00001
+        346368330, // 01010
+        727373493, // 10101
+        588826161, // 10001
+        935194491, // 11011
+        658099827, // 10011
     };
 
 
@@ -164,3 +166,4 @@ public abstract class TextGenerator {
     }
 
 }
+
