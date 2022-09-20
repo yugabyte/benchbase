@@ -16,5 +16,9 @@ transactiontypes:
     transactiontype:
         name: FeatureBench
 microbenchmark:
-    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBMicroBenchmarkImplementation
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.CreateAndDeleteTables
     properties:
+        testDrop: true
+#        testCreate: true
+        numTables: 10
+

@@ -16,5 +16,6 @@ transactiontypes:
     transactiontype:
         name: FeatureBench
 microbenchmark:
-    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBMicroBenchmarkImplementation
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.PointQuery
     properties:
+
