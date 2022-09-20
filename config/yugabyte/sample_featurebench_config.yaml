@@ -5,16 +5,24 @@ username: yugabyte
 password:
 batchsize: 128
 isolation: TRANSACTION_REPEATABLE_READ
-loaderthreads: 1
-terminals: 1
+loaderThreads: 6
+terminals: 6
 works:
     work:
-        time: 10
-        rate: 1000
+#        time: 10
+        serial: true
+#        active_terminals: 1
+#        rate: 1000
         weights: 100
 transactiontypes:
     transactiontype:
         name: FeatureBench
 microbenchmark:
-    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBMicroBenchmarkImplementation
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.CopyCommandBenchmark
     properties:
+        tableName: accounts
+        columns: 10
+        rows: 1000
+        indexes: 2
+        filePath: accounts.csv
+        rowsPerTransaction: 2000

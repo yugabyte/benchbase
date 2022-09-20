@@ -32,7 +32,7 @@ public class YBMicroBenchmarkImplementation extends YBMicroBenchmark {
             Statement stmtOBj = conn.createStatement();
             LOG.info("Recreating tables if already exists");
             stmtOBj.executeUpdate("DROP TABLE IF EXISTS accounts");
-            stmtOBj.execute(" CREATE TABLE accounts ("
+            stmtOBj.execute("CREATE TABLE accounts ("
                 + "id int NOT NULL,"
                 + "name varchar(64) NOT NULL,"
                 + "CONSTRAINT pk_accounts PRIMARY KEY (id)"
@@ -42,7 +42,6 @@ public class YBMicroBenchmarkImplementation extends YBMicroBenchmark {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-
     }
 
     public ArrayList<LoadRule> loadRules() {
@@ -72,6 +71,24 @@ public class YBMicroBenchmarkImplementation extends YBMicroBenchmark {
         //creating and return load rule
         LoadRule loadRule = new LoadRule(tableInfo);
         return new ArrayList<>(List.of(loadRule));
+
+        /*
+        TableInfo tableInfo =
+            new TableInfo(
+                10, "accounts",
+                new ArrayList<>(Arrays.asList(idColumnsDetails, nameColumnsDetails)));
+
+
+        TableInfo tableInfo1 =
+            new TableInfo(
+                10, "orders",
+                new ArrayList<>(Arrays.asList(idColumnsDetails, nameColumnsDetails)));
+
+        //creating and return load rule
+        LoadRule loadRule = new LoadRule(tableInfo);
+        LoadRule loadRule1 = new LoadRule(tableInfo1);
+        return new ArrayList<>(Arrays.asList(loadRule, loadRule1));
+        */
     }
 
     public ArrayList<ExecuteRule> executeRules() {

@@ -53,8 +53,13 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
                 .newInstance(config);
 
             ArrayList<LoaderThread> loaderThreads = new ArrayList<>();
-            if (!ybm.loadOnceImplemented) {
+
+            if(ybm.loadOnceImplemented) {
+                loaderThreads.add(new GeneratorOnce(ybm));
+            }
+            else {
                 ArrayList<LoadRule> loadRules = ybm.loadRules();
+                // TODO: list of loaderthreads will call beforeLoad and afterLoad everytime
                 for (LoadRule loadRule : loadRules) {
                     loaderThreads.add(new Generator(loadRule));
                 }
@@ -67,6 +72,49 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
         }
     }
 
+    private class GeneratorOnce extends LoaderThread {
+        final YBMicroBenchmark ybm;
+        public GeneratorOnce(YBMicroBenchmark ybm) {
+            super(benchmark);
+            this.ybm = ybm;
+        }
+
+        @Override
+        public void beforeLoad() {
+            try {
+                // TODO: see if we can utilise connection object instead of creating new one
+                Connection conn = benchmark.makeConnection();
+                if(ybm.createDBImplemented) {
+                    ybm.create(conn);
+                    ybm.createDBImplemented = false;
+                }
+                if(ybm.beforeLoadImplemented) {
+                    ybm.beforeLoad(conn);
+                }
+                conn.close();
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        @Override
+        public void load(Connection conn) throws SQLException {
+            ybm.loadOnce(conn);
+        }
+
+        @Override
+        public void afterLoad() {
+            try {
+                if(ybm.afterLoadImplemented) {
+                    // TODO: see if we can utilise connection object instead of creating new one
+                    Connection conn = benchmark.makeConnection();
+                    ybm.afterLoad(conn);
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
     private class Generator extends LoaderThread {
         final LoadRule loadRule;
 
@@ -82,68 +130,71 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
         }*/
 
         @Override
+        public void beforeLoad() {
+            try {
+                // TODO: see if we can utilise connection object instead of creating new one
+                Connection conn = benchmark.makeConnection();
+                if(ybm.createDBImplemented) {
+                    ybm.create(conn);
+                    ybm.createDBImplemented = false;
+                }
+                if(ybm.beforeLoadImplemented) {
+                    ybm.beforeLoad(conn);
+                }
+                conn.close();
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        @Override
         public void load(Connection conn) throws SQLException {
             try {
-                if (ybm.createDBImplemented) {
-                    ybm.create(conn);
-                    LOG.info("CREATE DB is implemented");
-                }
-                if (ybm.loadOnceImplemented) {
-                    ybm.loadOnce(conn);
-                }
-                // we will run loadRules here
-                else {
-                    int batchSize = 0;
-                    TableInfo t = loadRule.getTableInfo();
-                    long no_of_rows = t.getNo_of_rows();
-                    String table_name = t.get_table_name();
-                    ArrayList<ColumnsDetails> cd = t.getColumn_Det();
-                    int no_of_columns = cd.size();
-                    StringBuilder columnString = new StringBuilder();
-                    StringBuilder valueString = new StringBuilder();
+                int batchSize = 0;
+                TableInfo t = loadRule.getTableInfo();
+                long no_of_rows = t.getNo_of_rows();
+                String table_name = t.get_table_name();
+                ArrayList<ColumnsDetails> cd = t.getColumn_Det();
+                int no_of_columns = cd.size();
+                StringBuilder columnString = new StringBuilder();
+                StringBuilder valueString = new StringBuilder();
 
+                for (ColumnsDetails columnsDetails : cd) {
+                    columnString.append(columnsDetails.getName()).append(",");
+                    valueString.append("?,");
+                }
+                columnString.setLength(columnString.length() - 1);
+                valueString.setLength(valueString.length() - 1);
+                String insertStmt = "INSERT INTO " + table_name + " (" + columnString + ") VALUES " + "(" + valueString + ")";
+                stmt = conn.prepareStatement(insertStmt);
+
+
+                for (int i = 0; i < no_of_rows; i++) {
                     for (ColumnsDetails columnsDetails : cd) {
-                        columnString.append(columnsDetails.getName()).append(",");
-                        valueString.append("?,");
-                    }
-                    columnString.setLength(columnString.length() - 1);
-                    valueString.setLength(valueString.length() - 1);
-                    String insertStmt = "INSERT INTO " + table_name + " (" + columnString + ") VALUES " + "(" + valueString + ")";
-                    stmt = conn.prepareStatement(insertStmt);
-
-
-                    for (int i = 0; i < no_of_rows; i++) {
-                        for (ColumnsDetails columnsDetails : cd) {
-                            UtilityFunc uf = columnsDetails.getUtilFunc();
-                            bindParamBasedOnType(uf);
-                        }
-                    }
-
-                    for (int i = 0; i < no_of_rows; i++) {
-                        for (int j = 0; j < no_of_columns; j++) {
-                            UtilityFunc uf = cd.get(j).getUtilFunc();
-                            String funcname = findFuncname(uf);
-                            if (Objects.equals(funcname, "get_int_primary_key")) {
-                                stmt.setInt(j + 1, UtilGenerators.get_int_primary_key());
-                            } else if (Objects.equals(funcname, "numberToIdString")) {
-                                stmt.setString(j + 1, UtilGenerators.numberToIdString());
-                            }
-                        }
-                        stmt.addBatch();
-                        if (++batchSize >= workConf.getBatchSize()) {
-                            this.loadTables(conn);
-                            batchSize = 0;
-                        }
-                    }
-                    stmt.executeBatch();
-                    if (batchSize > 0) {
-                        this.loadTables(conn);
+                        UtilityFunc uf = columnsDetails.getUtilFunc();
+                        bindParamBasedOnType(uf);
                     }
                 }
 
-                if (ybm.afterLoadImplemented) {
-                    LOG.info("afterLoad is implemented");
-                    ybm.afterLoad(conn);
+                for (int i = 0; i < no_of_rows; i++) {
+                    for (int j = 0; j < no_of_columns; j++) {
+                        UtilityFunc uf = cd.get(j).getUtilFunc();
+                        String funcname = findFuncname(uf);
+                        if (Objects.equals(funcname, "get_int_primary_key")) {
+                            stmt.setInt(j + 1, UtilGenerators.get_int_primary_key());
+                        } else if (Objects.equals(funcname, "numberToIdString")) {
+                            stmt.setString(j + 1, UtilGenerators.numberToIdString());
+                        }
+                    }
+                    stmt.addBatch();
+                    if (++batchSize >= workConf.getBatchSize()) {
+                        this.loadTables(conn);
+                        batchSize = 0;
+                    }
+                }
+                stmt.executeBatch();
+                if (batchSize > 0) {
+                    this.loadTables(conn);
                 }
             } catch (SQLException e) {
                 throw new RuntimeException(e);
@@ -180,6 +231,20 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
 
         private void loadTables(Connection conn) throws SQLException {
             stmt.executeBatch();
+        }
+
+        @Override
+        public void afterLoad() {
+            try {
+                if(ybm.afterLoadImplemented) {
+                    // TODO: see if we can utilise connection object instead of creating new one
+                    Connection conn = benchmark.makeConnection();
+                    ybm.afterLoad(conn);
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
