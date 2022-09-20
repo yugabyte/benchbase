@@ -39,6 +39,7 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
     public String workloadClass = null;
     public HierarchicalConfiguration<ImmutableNode> config = null;
     public YBMicroBenchmark ybm = null;
+    public int sizeOfLoadRule = 0;
     PreparedStatement stmt;
 
     public FeatureBenchLoader(FeatureBenchBenchmark benchmark) {
@@ -47,18 +48,22 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
 
     @Override
     public List<LoaderThread> createLoaderThreads() {
+
+
         try {
             ybm = (YBMicroBenchmark) Class.forName(workloadClass)
                 .getDeclaredConstructor(HierarchicalConfiguration.class)
                 .newInstance(config);
 
+            createPhaseAndBeforeLoad();
+
             ArrayList<LoaderThread> loaderThreads = new ArrayList<>();
 
-            if(ybm.loadOnceImplemented) {
+            if (ybm.loadOnceImplemented) {
                 loaderThreads.add(new GeneratorOnce(ybm));
-            }
-            else {
+            } else {
                 ArrayList<LoadRule> loadRules = ybm.loadRules();
+                sizeOfLoadRule = loadRules.size();
                 // TODO: list of loaderthreads will call beforeLoad and afterLoad everytime
                 for (LoadRule loadRule : loadRules) {
                     loaderThreads.add(new Generator(loadRule));
@@ -72,30 +77,59 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
         }
     }
 
+    private void createPhaseAndBeforeLoad() {
+        try {
+            Connection conn = benchmark.makeConnection();
+            if (ybm.createDBImplemented) {
+                ybm.create(conn);
+            }
+            if (ybm.beforeLoadImplemented) {
+                ybm.beforeLoad(conn);
+            }
+            conn.close();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void afterLoadPhase() {
+        try {
+            if (ybm.afterLoadImplemented) {
+                // TODO: see if we can utilise connection object instead of creating new one
+                Connection conn = benchmark.makeConnection();
+                ybm.afterLoad(conn);
+                conn.close();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private class GeneratorOnce extends LoaderThread {
         final YBMicroBenchmark ybm;
+
         public GeneratorOnce(YBMicroBenchmark ybm) {
             super(benchmark);
             this.ybm = ybm;
         }
 
-        @Override
-        public void beforeLoad() {
-            try {
-                // TODO: see if we can utilise connection object instead of creating new one
-                Connection conn = benchmark.makeConnection();
-                if(ybm.createDBImplemented) {
-                    ybm.create(conn);
-                    ybm.createDBImplemented = false;
-                }
-                if(ybm.beforeLoadImplemented) {
-                    ybm.beforeLoad(conn);
-                }
-                conn.close();
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
-        }
+        //        @Override
+//        public void beforeLoad() {
+//            try {
+//                // TODO: see if we can utilise connection object instead of creating new one
+//                Connection conn = benchmark.makeConnection();
+//                if(ybm.createDBImplemented) {
+//                    ybm.create(conn);
+//                    ybm.createDBImplemented = false;
+//                }
+//                if(ybm.beforeLoadImplemented) {
+//                    ybm.beforeLoad(conn);
+//                }
+//                conn.close();
+//            } catch (SQLException e) {
+//                throw new RuntimeException(e);
+//            }
+//        }
         @Override
         public void load(Connection conn) throws SQLException {
             ybm.loadOnce(conn);
@@ -103,19 +137,12 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
 
         @Override
         public void afterLoad() {
-            try {
-                if(ybm.afterLoadImplemented) {
-                    // TODO: see if we can utilise connection object instead of creating new one
-                    Connection conn = benchmark.makeConnection();
-                    ybm.afterLoad(conn);
-                    conn.close();
-                }
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
+            afterLoadPhase();
         }
     }
+
     private class Generator extends LoaderThread {
+        static int numberOfGeneratorFinished = 0;
         final LoadRule loadRule;
 
         public Generator(LoadRule loadRule) {
@@ -129,23 +156,23 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
             }
         }*/
 
-        @Override
-        public void beforeLoad() {
-            try {
-                // TODO: see if we can utilise connection object instead of creating new one
-                Connection conn = benchmark.makeConnection();
-                if(ybm.createDBImplemented) {
-                    ybm.create(conn);
-                    ybm.createDBImplemented = false;
-                }
-                if(ybm.beforeLoadImplemented) {
-                    ybm.beforeLoad(conn);
-                }
-                conn.close();
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
-        }
+//        @Override
+//        public void beforeLoad() {
+//            try {
+//                // TODO: see if we can utilise connection object instead of creating new one
+//                Connection conn = benchmark.makeConnection();
+//                if(ybm.createDBImplemented) {
+//                    ybm.create(conn);
+//                    ybm.createDBImplemented = false;
+//                }
+//                if(ybm.beforeLoadImplemented) {
+//                    ybm.beforeLoad(conn);
+//                }
+//                conn.close();
+//            } catch (SQLException e) {
+//                throw new RuntimeException(e);
+//            }
+//        }
 
         @Override
         public void load(Connection conn) throws SQLException {
@@ -197,8 +224,10 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
                     this.loadTables(conn);
                 }
             } catch (SQLException e) {
+                numberOfGeneratorFinished += 1;
                 throw new RuntimeException(e);
             }
+            numberOfGeneratorFinished += 1;
         }
 
         public void bindParamBasedOnType(UtilityFunc uf) throws SQLException {
@@ -235,16 +264,8 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
 
         @Override
         public void afterLoad() {
-            try {
-                if(ybm.afterLoadImplemented) {
-                    // TODO: see if we can utilise connection object instead of creating new one
-                    Connection conn = benchmark.makeConnection();
-                    ybm.afterLoad(conn);
-                    conn.close();
-                }
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
+            if (numberOfGeneratorFinished != sizeOfLoadRule) return;
+            afterLoadPhase();
         }
     }
 
