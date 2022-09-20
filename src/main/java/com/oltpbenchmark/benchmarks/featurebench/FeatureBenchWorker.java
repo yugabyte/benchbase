@@ -21,6 +21,7 @@ import com.oltpbenchmark.api.Procedure.UserAbortException;
 import com.oltpbenchmark.api.TransactionType;
 import com.oltpbenchmark.api.Worker;
 import com.oltpbenchmark.benchmarks.featurebench.util.*;
+import com.oltpbenchmark.types.State;
 import com.oltpbenchmark.types.TransactionStatus;
 import com.oltpbenchmark.util.RowRandomBoundedInt;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
@@ -117,12 +118,30 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                     }
                 }
             }
+
             return TransactionStatus.SUCCESS;
 
         } catch (ClassNotFoundException | InvocationTargetException |
                  InstantiationException |
                  IllegalAccessException | NoSuchMethodException e) {
             throw new RuntimeException(e);
+        }
+
+    }
+
+    @Override
+    public void tearDown() {
+
+        if (!this.configuration.getNewConnectionPerTxn() && this.conn != null) {
+            try {
+                //this.workloadState.benchmarkState.state.name
+                if(this.configuration.getWorkloadState().getGlobalState() == State.MEASURE){
+                    ybm.cleanUp(conn);
+                }
+                conn.close();
+            } catch (SQLException e) {
+                LOG.error("Connection couldn't be closed.", e);
+            }
         }
     }
 }
