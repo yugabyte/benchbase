@@ -50,6 +50,7 @@ public class PointQuery extends YBMicroBenchmark {
 
     @Override
 
+
     public void execute(Connection conn) throws SQLException {
 
         Random random = new Random();
@@ -61,7 +62,9 @@ public class PointQuery extends YBMicroBenchmark {
                 throw new UserAbortException("msg");
             }
 
+
         }
     }
 
 }
+

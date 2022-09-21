@@ -3,6 +3,7 @@ package com.oltpbenchmark.benchmarks.featurebench;
 import com.oltpbenchmark.api.Loader;
 import com.oltpbenchmark.api.LoaderThread;
 import com.oltpbenchmark.benchmarks.featurebench.util.*;
+import com.oltpbenchmark.util.RandomGenerator;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.tree.ImmutableNode;
 
@@ -13,6 +14,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Random;
+
 
 
 /**
@@ -31,12 +34,11 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
 
     @Override
     public List<LoaderThread> createLoaderThreads() {
-
-
         try {
             ybm = (YBMicroBenchmark) Class.forName(workloadClass)
                 .getDeclaredConstructor(HierarchicalConfiguration.class)
                 .newInstance(config);
+
 
             createPhaseAndBeforeLoad();
 
@@ -124,6 +126,7 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
         }
     }
 
+
     private class Generator extends LoaderThread {
         static int numberOfGeneratorFinished = 0;
         final LoadRule loadRule;
@@ -132,7 +135,6 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
             super(benchmark);
             this.loadRule = loadRule;
         }
-
 
 
 //        @Override
@@ -153,10 +155,10 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
 //            }
 //        }
 
+
         @Override
         public void load(Connection conn) throws SQLException {
             try {
-
                 int batchSize = 0;
                 TableInfo t = loadRule.getTableInfo();
                 long no_of_rows = t.getNo_of_rows();
@@ -173,17 +175,14 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
                 columnString.setLength(columnString.length() - 1);
                 valueString.setLength(valueString.length() - 1);
                 String insertStmt = "INSERT INTO " + table_name + " (" + columnString + ") VALUES " + "(" + valueString + ")";
+                System.out.println(insertStmt);
                 stmt = conn.prepareStatement(insertStmt);
-
-
-
                 for (int i = 0; i < no_of_rows; i++) {
                     for (ColumnsDetails columnsDetails : cd) {
                         UtilityFunc uf = columnsDetails.getUtilFunc();
                         bindParamBasedOnType(uf);
                     }
                 }
-
 
                 for (int i = 0; i < no_of_rows; i++) {
                     for (int j = 0; j < no_of_columns; j++) {
@@ -193,7 +192,6 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
                             stmt.setInt(j + 1, UtilGenerators.get_int_primary_key());
                         } else if (Objects.equals(funcname, "numberToIdString")) {
                             stmt.setString(j + 1, UtilGenerators.numberToIdString());
-
                         }
                     }
                     stmt.addBatch();
@@ -251,6 +249,8 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
             afterLoadPhase();
         }
     }
-
-
 }
+
+
+
+

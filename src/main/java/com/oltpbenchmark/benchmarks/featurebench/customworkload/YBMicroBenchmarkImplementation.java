@@ -3,7 +3,9 @@ package com.oltpbenchmark.benchmarks.featurebench.customworkload;
 
 
 
+
 import com.oltpbenchmark.benchmarks.featurebench.YBMicroBenchmark;
+
 
 
 import com.oltpbenchmark.benchmarks.featurebench.util.*;
@@ -21,20 +23,20 @@ import java.util.List;
 
 
 
+
 public class YBMicroBenchmarkImplementation extends YBMicroBenchmark {
 
 
     public final static Logger LOG = Logger.getLogger(YBMicroBenchmarkImplementation.class);
-
 
     public YBMicroBenchmarkImplementation(HierarchicalConfiguration<ImmutableNode> config) {
         super(config);
         this.executeOnceImplemented = false;
         this.loadOnceImplemented = false;
         this.afterLoadImplemented = false;
+
         this.createDBImplemented=true;
     }
-
 
 
     @Override
@@ -43,7 +45,6 @@ public class YBMicroBenchmarkImplementation extends YBMicroBenchmark {
             Statement stmtOBj = conn.createStatement();
             LOG.info("Recreating tables if already exists");
             stmtOBj.executeUpdate("DROP TABLE IF EXISTS accounts");
-
             stmtOBj.execute("CREATE TABLE accounts ("
                 + "id int NOT NULL,"
                 + "name varchar(64) NOT NULL,"
@@ -55,8 +56,6 @@ public class YBMicroBenchmarkImplementation extends YBMicroBenchmark {
             ex.printStackTrace();
         }
     }
-
-
     public ArrayList<LoadRule> loadRules() {
         int startIndex = 0;
         int endIndex = 10000;
@@ -83,10 +82,8 @@ public class YBMicroBenchmarkImplementation extends YBMicroBenchmark {
 
         //creating and return load rule
         LoadRule loadRule = new LoadRule(tableInfo);
-
         LoadRule loadRule2 = new LoadRule(tableInfo);
         return new ArrayList<>(List.of(loadRule));
-
         /*
         TableInfo tableInfo =
             new TableInfo(
@@ -106,6 +103,9 @@ public class YBMicroBenchmarkImplementation extends YBMicroBenchmark {
         */
 
     }
+
+
+
 
     public ArrayList<ExecuteRule> executeRules() {
         int startIndex = 1;
@@ -128,7 +128,6 @@ public class YBMicroBenchmarkImplementation extends YBMicroBenchmark {
         // create and return execute rule with transaction Details
         ExecuteRule executeRule = new ExecuteRule(transactionDetails);
         return new ArrayList<>(List.of(executeRule));
-
     }
 
     @Override
@@ -148,6 +147,7 @@ public class YBMicroBenchmarkImplementation extends YBMicroBenchmark {
     public void loadOnce(Connection conn) {
 
     }
+
     @Override
     public void executeOnce(Connection conn) {
 

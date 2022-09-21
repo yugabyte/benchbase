@@ -20,7 +20,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
-import com.oltpbenchmark.benchmarks.featurebench.YBMicroBenchmark;
+
 
 /**
  *
@@ -49,8 +49,6 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
         for (BindParams ob : bp) {
             ArrayList<UtilityFunc> ufs = ob.getUtilFunc();
             for (int j = 0; j < ufs.size(); j++) {
-
-
                 if (Objects.equals(ufs.get(j).getName(), "RandomNoWithinRange")) {
                     ArrayList<ParamsForUtilFunc> pfuf = ufs.get(j).getParams();
                     int lower_range = pfuf.get(0).getParameters().get(0);
@@ -58,11 +56,21 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                     RowRandomBoundedInt rno = new RowRandomBoundedInt(1, lower_range, upper_range);
                     stmt.setInt(j + 1, rno.nextValue());
                 }
+                else if (Objects.equals(ufs.get(j).getName(), "astring")) {
+                    ArrayList<ParamsForUtilFunc> pfuf = ufs.get(j).getParams();
+                    int min_len = pfuf.get(0).getParameters().get(0);
+                    int max_len = pfuf.get(0).getParameters().get(1);
+                    int randomNum = ThreadLocalRandom.current().nextInt(1, 100 + 1);
+                    if (randomNum % 2 == 0) {
+                        RandomGenerator rno = new RandomGenerator(1);
+                        String dname = rno.astring(min_len, max_len);
+                        stmt.setString(j + 1, dname);
+                    }
+                }
             }
         }
         stmt.executeQuery();
     }
-
 
     @Override
     protected TransactionStatus executeWork(Connection conn, TransactionType txnType) throws
@@ -72,6 +80,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             ybm = (YBMicroBenchmark) Class.forName(workloadClass)
                 .getDeclaredConstructor(HierarchicalConfiguration.class)
                 .newInstance(config);
+
             System.out.println(this.configuration.getWorkloadState().getGlobalState());
             if(ybm.executeOnceImplemented) {
                 ybm.executeOnce(conn);
@@ -103,7 +112,6 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                         ArrayList<BindParams> bp = queryDetails.getBindParams();
                         bind_params_based_on_func(bp, stmt);
                     }
-
 
                 }
             }

@@ -18,6 +18,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+
 public class CopyCommandBenchmark extends YBMicroBenchmark {
     private static final Logger LOG = LoggerFactory.getLogger(CopyCommandBenchmark.class);
     /*int numOfColumns = 10;
