@@ -130,9 +130,7 @@ public class DBWorkload {
             wrkld.setPassword(xmlConfig.getString("password"));
             wrkld.setRandomSeed(xmlConfig.getInt("randomSeed", -1));
             wrkld.setBatchSize(xmlConfig.getInt("batchsize", 128));
-
-            //TODO: rjain setting default value of retries to 1
-            wrkld.setMaxRetries(xmlConfig.getInt("retries", 1));
+            wrkld.setMaxRetries(xmlConfig.getInt("retries", 3));
             wrkld.setNewConnectionPerTxn(xmlConfig.getBoolean("newConnectionPerTxn", false));
 
 
@@ -629,8 +627,11 @@ public class DBWorkload {
 
         String configFileName = baseFileName + ".config.xml";
         try (PrintStream ps = new PrintStream(FileUtil.joinPath(outputDirectory, configFileName))) {
-            LOG.info("Output benchmark config into file: {}", configFileName);
-            rw.writeConfig(ps);
+            if( DatabaseType.get(xmlConfig.getString("type")) != DatabaseType.YUGABYTE ){
+                LOG.info("Output benchmark config into file: {}", configFileName);
+                rw.writeConfig(ps);
+            }
+
         }
 
         String resultsFileName = baseFileName + ".results.csv";

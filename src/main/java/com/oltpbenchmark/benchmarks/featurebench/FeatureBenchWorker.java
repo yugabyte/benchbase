@@ -77,6 +77,8 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
         stmt.executeQuery();
     }
 
+
+
     @Override
     protected TransactionStatus executeWork(Connection conn, TransactionType txnType) throws
         UserAbortException, SQLException {
@@ -85,7 +87,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             ybm = (YBMicroBenchmark) Class.forName(workloadClass)
                 .getDeclaredConstructor(HierarchicalConfiguration.class)
                 .newInstance(config);
-
+            System.out.println(this.configuration.getWorkloadState().getGlobalState());
             if(ybm.executeOnceImplemented) {
                 ybm.executeOnce(conn);
                 conn.close();
@@ -129,14 +131,16 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
 
     }
 
+
+    static boolean isCleanUpDone=false;
     @Override
     public void tearDown() {
 
-        if (!this.configuration.getNewConnectionPerTxn() && this.conn != null) {
+        if (!this.configuration.getNewConnectionPerTxn() && this.conn != null && ybm != null) {
             try {
-                //this.workloadState.benchmarkState.state.name
-                if(this.configuration.getWorkloadState().getGlobalState() == State.MEASURE){
+                if(this.configuration.getWorkloadState().getGlobalState() == State.EXIT && !isCleanUpDone){
                     ybm.cleanUp(conn);
+                    isCleanUpDone=true;
                 }
                 conn.close();
             } catch (SQLException e) {
