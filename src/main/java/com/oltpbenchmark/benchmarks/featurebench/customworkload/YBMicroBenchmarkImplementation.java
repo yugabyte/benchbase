@@ -1,7 +1,9 @@
 package com.oltpbenchmark.benchmarks.featurebench.customworkload;
 
 
+
 import com.oltpbenchmark.benchmarks.featurebench.YBMicroBenchmark;
+
 import com.oltpbenchmark.benchmarks.featurebench.util.*;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.tree.ImmutableNode;
@@ -15,9 +17,12 @@ import java.util.Arrays;
 import java.util.List;
 
 
+
 public class YBMicroBenchmarkImplementation extends YBMicroBenchmark {
 
+
     public final static Logger LOG = Logger.getLogger(YBMicroBenchmarkImplementation.class);
+
 
     public YBMicroBenchmarkImplementation(HierarchicalConfiguration<ImmutableNode> config) {
         super(config);
@@ -26,6 +31,7 @@ public class YBMicroBenchmarkImplementation extends YBMicroBenchmark {
         this.afterLoadImplemented = false;
         this.createDBImplemented=true;
     }
+
 
     @Override
     public void create(Connection conn) throws SQLException {
@@ -44,6 +50,7 @@ public class YBMicroBenchmarkImplementation extends YBMicroBenchmark {
             ex.printStackTrace();
         }
     }
+
 
     public ArrayList<LoadRule> loadRules() {
         int startIndex = 0;
@@ -114,6 +121,7 @@ public class YBMicroBenchmarkImplementation extends YBMicroBenchmark {
         // create and return execute rule with transaction Details
         ExecuteRule executeRule = new ExecuteRule(transactionDetails);
         return new ArrayList<>(List.of(executeRule));
+
     }
 
     @Override

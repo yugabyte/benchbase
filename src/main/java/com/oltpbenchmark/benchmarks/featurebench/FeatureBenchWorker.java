@@ -25,6 +25,7 @@ import com.oltpbenchmark.types.State;
 import com.oltpbenchmark.types.TransactionStatus;
 import com.oltpbenchmark.util.RandomGenerator;
 
+import com.oltpbenchmark.util.RowRandomBoundedInt;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.slf4j.Logger;
@@ -68,14 +69,17 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
         for (BindParams ob : bp) {
             ArrayList<UtilityFunc> ufs = ob.getUtilFunc();
             for (int j = 0; j < ufs.size(); j++) {
-                if (Objects.equals(ufs.get(j).getName(), "RandomNoWithinRange")) {
-                    ArrayList<ParamsForUtilFunc> pfuf = ufs.get(j).getParams();
-                    int min_range = pfuf.get(0).getParameters().get(0);
-                    int max_range = pfuf.get(0).getParameters().get(1);
-                    UtilGenerators.setLower_range_for_primary_int_keys(min_range);
-                    UtilGenerators.setUpper_range_for_primary_int_keys(max_range);
 
+                if (Objects.equals(ufs.get(j).getName(), "RandomNoWithinRange")) {
+
+                    ArrayList<ParamsForUtilFunc> pfuf = ufs.get(j).getParams();
+                    int lower_range = pfuf.get(0).getParameters().get(0);
+                    int upper_range = pfuf.get(0).getParameters().get(1);
+                    RowRandomBoundedInt rno = new RowRandomBoundedInt(1, lower_range, upper_range);
+                    stmt.setInt(j + 1, rno.nextValue());
                 }
+
+
             }
         }
         stmt.executeQuery();

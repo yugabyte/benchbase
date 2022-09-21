@@ -24,6 +24,7 @@ import com.oltpbenchmark.util.RandomGenerator;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.tree.ImmutableNode;
 
+
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -38,6 +39,7 @@ import java.util.Random;
  * This doesn't load any data!
  */
 public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
+
     public String workloadClass = null;
     public HierarchicalConfiguration<ImmutableNode> config = null;
     public YBMicroBenchmark ybm = null;
@@ -182,16 +184,26 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
                 String table_name = t.get_table_name();
                 ArrayList<ColumnsDetails> cd = t.getColumn_Det();
                 int no_of_columns = cd.size();
+                //System.out.println(no_of_columns);
                 StringBuilder columnString = new StringBuilder();
                 StringBuilder valueString = new StringBuilder();
 
                 for (ColumnsDetails columnsDetails : cd) {
+                    //System.out.println(++c);
                     columnString.append(columnsDetails.getName()).append(",");
-                    valueString.append("?,");
+                    if(Objects.equals(columnsDetails.getUtilFunc().getName(), "serial_no.nextval")){
+                        valueString.append("DEFAULT,");
+                        //System.out.println("Yes");
+                    }
+                    else{
+                        valueString.append("?,");
+                    }
+
                 }
                 columnString.setLength(columnString.length() - 1);
                 valueString.setLength(valueString.length() - 1);
                 String insertStmt = "INSERT INTO " + table_name + " (" + columnString + ") VALUES " + "(" + valueString + ")";
+                System.out.println(insertStmt);
                 stmt = conn.prepareStatement(insertStmt);
 
 
@@ -204,11 +216,10 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
 
                 for (int i = 0; i < no_of_rows; i++) {
                     for (int j = 0; j < no_of_columns; j++) {
+
                         UtilityFunc uf = cd.get(j).getUtilFunc();
                         String funcname = findFuncname(uf);
-                        if (Objects.equals(funcname, "nextval")) {
-                            // do nothing
-                        } else if (Objects.equals(funcname, "astring")) {
+                        if (Objects.equals(funcname, "astring")) {
                             if (i % 2 == 0) {
                                 RandomGenerator rno = new RandomGenerator(1);
                                 String dname = rno.astring(UtilGenerators.getMin_len_string(), UtilGenerators.getMax_len_string());
@@ -218,6 +229,13 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
                                 stmt.setString(j + 1, dname);
                             }
                         }
+                        else if (Objects.equals(funcname, "get_int_primary_key")) {
+                            stmt.setInt(j + 1, UtilGenerators.get_int_primary_key());
+                        }
+                        else if (Objects.equals(funcname, "numberToIdString")) {
+                            stmt.setString(j + 1, UtilGenerators.numberToIdString());
+                        }
+
                     }
                     stmt.addBatch();
                     if (++batchSize >= workConf.getBatchSize()) {
@@ -238,7 +256,9 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
 
         public void bindParamBasedOnType(UtilityFunc uf) throws SQLException {
 
+
             if (Objects.equals(uf.getName(), "get_int_primary_key")) {
+
 
                 ArrayList<ParamsForUtilFunc> ob1 = uf.getParams();
                 ParamsForUtilFunc puf = ob1.get(0);
@@ -248,6 +268,7 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
                 UtilGenerators.setUpper_range_for_primary_int_keys(upper_range);
                 UtilGenerators.setLower_range_for_primary_int_keys(lower_range);
 
+
             } else if (Objects.equals(uf.getName(), "numberToIdString")) {
                 ArrayList<ParamsForUtilFunc> ob1 = uf.getParams();
                 ParamsForUtilFunc puf = ob1.get(0);
@@ -255,12 +276,12 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
                 int desired_len = max_len.get(0);
                 UtilGenerators.setDesired_length_string_pkeys(desired_len);
 
+
             }
 
         }
 
         public String findFuncname(UtilityFunc uf) {
-
             if (Objects.equals(uf.getName(), "get_int_primary_key")) {
                 return "get_int_primary_key";
             } else if (Objects.equals(uf.getName(), "numberToIdString")) {

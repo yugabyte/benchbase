@@ -20,7 +20,12 @@
         </properties>
 =======
         <class>com.oltpbenchmark.benchmarks.featurebench.customworkload.YBMicroBenchmarkImplementation2</class>
+<<<<<<< HEAD
 >>>>>>> 987b4761 (MicroBenchMark-1 changes)
+=======
+        <properties>
+        </properties>
+>>>>>>> 0f18e824 (changes for microbenchmark-1)
     </microbenchmark>
 
 
