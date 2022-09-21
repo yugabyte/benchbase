@@ -1,9 +1,10 @@
 package com.oltpbenchmark.benchmarks.featurebench.BindingFunctions;
 
 public class PrimaryStringGen {
-    private int currentValue;
-    private int desiredLength;
-    private String key;
+    protected int currentValue;
+    protected int desiredLength;
+
+    protected String key;
 
     public PrimaryStringGen(int startNumber, int desiredLength) {
         this.currentValue = startNumber - 1;

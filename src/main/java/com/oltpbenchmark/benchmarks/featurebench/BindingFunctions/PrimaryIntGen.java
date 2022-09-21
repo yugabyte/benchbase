@@ -2,9 +2,9 @@ package com.oltpbenchmark.benchmarks.featurebench.BindingFunctions;
 
 
 public class PrimaryIntGen {
-    private int currentValue;
-    private  int upperRange;
-    private  int lowerRange;
+    protected int currentValue;
+    protected int upperRange;
+    protected int lowerRange;
 
     public PrimaryIntGen(int lowerRange, int upperRange) {
         this.currentValue = lowerRange - 1;
