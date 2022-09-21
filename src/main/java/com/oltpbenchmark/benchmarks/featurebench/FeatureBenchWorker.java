@@ -23,7 +23,8 @@ import com.oltpbenchmark.api.Worker;
 import com.oltpbenchmark.benchmarks.featurebench.util.*;
 import com.oltpbenchmark.types.State;
 import com.oltpbenchmark.types.TransactionStatus;
-import com.oltpbenchmark.util.RowRandomBoundedInt;
+import com.oltpbenchmark.util.RandomGenerator;
+
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.slf4j.Logger;
@@ -32,9 +33,11 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 
@@ -67,10 +70,11 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             for (int j = 0; j < ufs.size(); j++) {
                 if (Objects.equals(ufs.get(j).getName(), "RandomNoWithinRange")) {
                     ArrayList<ParamsForUtilFunc> pfuf = ufs.get(j).getParams();
-                    int lower_range = pfuf.get(0).getParameters().get(0);
-                    int upper_range = pfuf.get(0).getParameters().get(1);
-                    RowRandomBoundedInt rno = new RowRandomBoundedInt(1, lower_range, upper_range);
-                    stmt.setInt(j + 1, rno.nextValue());
+                    int min_range = pfuf.get(0).getParameters().get(0);
+                    int max_range = pfuf.get(0).getParameters().get(1);
+                    UtilGenerators.setLower_range_for_primary_int_keys(min_range);
+                    UtilGenerators.setUpper_range_for_primary_int_keys(max_range);
+
                 }
             }
         }
@@ -78,12 +82,12 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
     }
 
 
-
     @Override
     protected TransactionStatus executeWork(Connection conn, TransactionType txnType) throws
         UserAbortException, SQLException {
 
         try {
+
             ybm = (YBMicroBenchmark) Class.forName(workloadClass)
                 .getDeclaredConstructor(HierarchicalConfiguration.class)
                 .newInstance(config);
@@ -118,6 +122,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                         ArrayList<BindParams> bp = queryDetails.getBindParams();
                         bind_params_based_on_func(bp, stmt);
                     }
+
                 }
             }
 

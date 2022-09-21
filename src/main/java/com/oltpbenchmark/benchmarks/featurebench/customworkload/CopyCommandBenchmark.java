@@ -1,5 +1,6 @@
 package com.oltpbenchmark.benchmarks.featurebench.customworkload;
 
+
 import com.oltpbenchmark.benchmarks.featurebench.YBMicroBenchmark;
 import com.oltpbenchmark.benchmarks.featurebench.util.*;
 import com.yugabyte.copy.CopyManager;
@@ -53,8 +54,10 @@ public class CopyCommandBenchmark extends YBMicroBenchmark {
 
 
     @Override
+
     public ArrayList<LoadRule> loadRules() {
 //        return new ArrayList<>();
+
         return null;
     }
 

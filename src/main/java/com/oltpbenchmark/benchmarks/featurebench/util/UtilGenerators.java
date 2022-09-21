@@ -7,6 +7,9 @@ public abstract class UtilGenerators {
     private static int lower_range_for_primary_int_keys;
     private static int desired_length_string_pkeys;
 
+    private static int min_len_string;
+    private static int max_len_string;
+
 
     public static int getUpper_range_for_primary_int_keys() {
         return upper_range_for_primary_int_keys;
@@ -51,4 +54,19 @@ public abstract class UtilGenerators {
         return baseNumberStr.toString();
     }
 
+    public static int getMin_len_string() {
+        return min_len_string;
+    }
+
+    public static void setMin_len_string(int min_len_string) {
+        UtilGenerators.min_len_string = min_len_string;
+    }
+
+    public static int getMax_len_string() {
+        return max_len_string;
+    }
+
+    public static void setMax_len_string(int max_len_string) {
+        UtilGenerators.max_len_string = max_len_string;
+    }
 }
