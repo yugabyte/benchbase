@@ -1,7 +1,5 @@
 package com.oltpbenchmark.benchmarks.featurebench.BindingFunctions;
 
-import com.oltpbenchmark.util.RandomGenerator;
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 
