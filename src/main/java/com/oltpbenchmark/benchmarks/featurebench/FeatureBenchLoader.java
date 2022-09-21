@@ -133,11 +133,7 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
             this.loadRule = loadRule;
         }
 
-        /*void bindParamBasedOnType(UtilityFunc utilf, PreparedStatement ps, int index) {
-            if (utilf.getName().equalsIgnoreCase("randomString")) {
-                stmtChecking.setInt(index, this.randomString(utilf.param1, utilf.param2));
-            }
-        }*/
+
 
 //        @Override
 //        public void beforeLoad() {
@@ -160,6 +156,7 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
         @Override
         public void load(Connection conn) throws SQLException {
             try {
+
                 int batchSize = 0;
                 TableInfo t = loadRule.getTableInfo();
                 long no_of_rows = t.getNo_of_rows();
@@ -179,12 +176,14 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
                 stmt = conn.prepareStatement(insertStmt);
 
 
+
                 for (int i = 0; i < no_of_rows; i++) {
                     for (ColumnsDetails columnsDetails : cd) {
                         UtilityFunc uf = columnsDetails.getUtilFunc();
                         bindParamBasedOnType(uf);
                     }
                 }
+
 
                 for (int i = 0; i < no_of_rows; i++) {
                     for (int j = 0; j < no_of_columns; j++) {
@@ -194,6 +193,7 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
                             stmt.setInt(j + 1, UtilGenerators.get_int_primary_key());
                         } else if (Objects.equals(funcname, "numberToIdString")) {
                             stmt.setString(j + 1, UtilGenerators.numberToIdString());
+
                         }
                     }
                     stmt.addBatch();
