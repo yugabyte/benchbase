@@ -72,7 +72,6 @@ public class YBSmallBankApp extends YBMicroBenchmark implements FeatureBenchCons
 
 
     @Override
-
     public ArrayList<LoadRule> loadRules() {
 
         long startIndex = 0;
@@ -97,14 +96,13 @@ public class YBSmallBankApp extends YBMicroBenchmark implements FeatureBenchCons
     /*public void loadOnce(WorkloadConfiguration wc, Connection conn){
         createCsvFile();
     }
-
     public void executeOnce(WorkloadConfiguration wc, Connection conn){
         createCsvFile();
     }*/
 
 
-    public ArrayList<ExecuteRule> executeRules(){
 
+    public ArrayList<ExecuteRule> executeRules(){
 
         long startIndex = 0;
         long endIndex = 10000;

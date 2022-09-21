@@ -1,20 +1,3 @@
-/*
- * Copyright 2020 by OLTPBenchmark Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- */
-
 package com.oltpbenchmark.benchmarks.featurebench;
 
 import com.oltpbenchmark.api.Procedure.UserAbortException;
@@ -24,7 +7,6 @@ import com.oltpbenchmark.benchmarks.featurebench.util.*;
 import com.oltpbenchmark.types.State;
 import com.oltpbenchmark.types.TransactionStatus;
 import com.oltpbenchmark.util.RandomGenerator;
-
 import com.oltpbenchmark.util.RowRandomBoundedInt;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.tree.ImmutableNode;
@@ -34,13 +16,11 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Objects;
-import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
-
+import com.oltpbenchmark.benchmarks.featurebench.YBMicroBenchmark;
 
 /**
  *
@@ -70,16 +50,14 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             ArrayList<UtilityFunc> ufs = ob.getUtilFunc();
             for (int j = 0; j < ufs.size(); j++) {
 
-                if (Objects.equals(ufs.get(j).getName(), "RandomNoWithinRange")) {
 
+                if (Objects.equals(ufs.get(j).getName(), "RandomNoWithinRange")) {
                     ArrayList<ParamsForUtilFunc> pfuf = ufs.get(j).getParams();
                     int lower_range = pfuf.get(0).getParameters().get(0);
                     int upper_range = pfuf.get(0).getParameters().get(1);
                     RowRandomBoundedInt rno = new RowRandomBoundedInt(1, lower_range, upper_range);
                     stmt.setInt(j + 1, rno.nextValue());
                 }
-
-
             }
         }
         stmt.executeQuery();
@@ -91,7 +69,6 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
         UserAbortException, SQLException {
 
         try {
-
             ybm = (YBMicroBenchmark) Class.forName(workloadClass)
                 .getDeclaredConstructor(HierarchicalConfiguration.class)
                 .newInstance(config);
@@ -126,6 +103,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                         ArrayList<BindParams> bp = queryDetails.getBindParams();
                         bind_params_based_on_func(bp, stmt);
                     }
+
 
                 }
             }

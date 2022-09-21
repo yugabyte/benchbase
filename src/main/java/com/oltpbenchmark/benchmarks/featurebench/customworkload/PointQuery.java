@@ -49,7 +49,9 @@ public class PointQuery extends YBMicroBenchmark {
 
 
     @Override
+
     public void execute(Connection conn) throws SQLException {
+
         Random random = new Random();
         int a = random.ints(1, 100000).findAny().getAsInt();
         PreparedStatement stmt = conn.prepareStatement("select * from t1 where a = ?");
@@ -58,6 +60,7 @@ public class PointQuery extends YBMicroBenchmark {
             if (!result.next()) {
                 throw new UserAbortException("msg");
             }
+
         }
     }
 

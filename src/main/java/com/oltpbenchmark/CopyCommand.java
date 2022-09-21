@@ -80,12 +80,12 @@ public class CopyCommand extends Procedure {
 
     public void runCopyCommand(Connection conn, String tableName, String path, int rowsPerTransaction) throws SQLException, IOException {
         String copyCommand = String.format(
-                                "COPY %s FROM STDIN (FORMAT CSV, HEADER false, ROWS_PER_TRANSACTION %d)",
-                                tableName, rowsPerTransaction
-                            );
+            "COPY %s FROM STDIN (FORMAT CSV, HEADER false, ROWS_PER_TRANSACTION %d)",
+            tableName, rowsPerTransaction
+        );
         long rowsInserted = new CopyManager((BaseConnection) conn)
-                            .copyIn(copyCommand,
-                                new BufferedReader(new FileReader(path)));
+            .copyIn(copyCommand,
+                new BufferedReader(new FileReader(path)));
         System.out.printf("%d row(s) inserted%n", rowsInserted);
     }
 

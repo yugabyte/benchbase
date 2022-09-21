@@ -10,7 +10,6 @@
     <isolation>TRANSACTION_REPEATABLE_READ</isolation>
     <batchsize>128</batchsize>
     <microbenchmark>
-<<<<<<< HEAD
         <class>com.oltpbenchmark.benchmarks.featurebench.customworkload.YBMicroBenchmarkImplementation</class>
         <properties>
             <rows>100</rows>
@@ -18,14 +17,6 @@
             <indexes>2</indexes>
             <rowspertransaction>1000</rowspertransaction>
         </properties>
-=======
-        <class>com.oltpbenchmark.benchmarks.featurebench.customworkload.YBMicroBenchmarkImplementation2</class>
-<<<<<<< HEAD
->>>>>>> 987b4761 (MicroBenchMark-1 changes)
-=======
-        <properties>
-        </properties>
->>>>>>> 0f18e824 (changes for microbenchmark-1)
     </microbenchmark>
 
 

@@ -18,13 +18,11 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class CopyCommandBenchmark extends YBMicroBenchmark {
     private static final Logger LOG = LoggerFactory.getLogger(CopyCommandBenchmark.class);
     /*int numOfColumns = 10;
     int indexCount = 2;
     int numOfRows = 1000;
-
     int rowsPerTransaction = 1000;
     String tableName = "orders";
     String file = "orders.csv";*/
@@ -56,7 +54,6 @@ public class CopyCommandBenchmark extends YBMicroBenchmark {
     @Override
     public ArrayList<LoadRule> loadRules() {
 //        return new ArrayList<>();
-
         return null;
     }
 

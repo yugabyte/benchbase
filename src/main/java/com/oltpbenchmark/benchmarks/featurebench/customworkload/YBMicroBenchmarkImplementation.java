@@ -2,7 +2,9 @@ package com.oltpbenchmark.benchmarks.featurebench.customworkload;
 
 
 
+
 import com.oltpbenchmark.benchmarks.featurebench.YBMicroBenchmark;
+
 
 import com.oltpbenchmark.benchmarks.featurebench.util.*;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
@@ -15,6 +17,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
 
 
 
@@ -33,12 +36,14 @@ public class YBMicroBenchmarkImplementation extends YBMicroBenchmark {
     }
 
 
+
     @Override
     public void create(Connection conn) throws SQLException {
         try {
             Statement stmtOBj = conn.createStatement();
             LOG.info("Recreating tables if already exists");
             stmtOBj.executeUpdate("DROP TABLE IF EXISTS accounts");
+
             stmtOBj.execute("CREATE TABLE accounts ("
                 + "id int NOT NULL,"
                 + "name varchar(64) NOT NULL,"
@@ -78,6 +83,7 @@ public class YBMicroBenchmarkImplementation extends YBMicroBenchmark {
 
         //creating and return load rule
         LoadRule loadRule = new LoadRule(tableInfo);
+
         LoadRule loadRule2 = new LoadRule(tableInfo);
         return new ArrayList<>(List.of(loadRule));
 
@@ -98,6 +104,7 @@ public class YBMicroBenchmarkImplementation extends YBMicroBenchmark {
         LoadRule loadRule1 = new LoadRule(tableInfo1);
         return new ArrayList<>(Arrays.asList(loadRule, loadRule1));
         */
+
     }
 
     public ArrayList<ExecuteRule> executeRules() {
@@ -141,7 +148,6 @@ public class YBMicroBenchmarkImplementation extends YBMicroBenchmark {
     public void loadOnce(Connection conn) {
 
     }
-
     @Override
     public void executeOnce(Connection conn) {
 
@@ -149,12 +155,3 @@ public class YBMicroBenchmarkImplementation extends YBMicroBenchmark {
 
 
 }
-
-
-
-
-
-
-
-
-

@@ -58,6 +58,7 @@ public class FeatureBenchBenchmark extends BenchmarkModule {
 
     @Override
     protected Loader<FeatureBenchBenchmark> makeLoaderImpl() {
+
         HierarchicalConfiguration<ImmutableNode> conf = workConf.getXmlConfig().configurationAt("microbenchmark");
         FeatureBenchLoader loader = new FeatureBenchLoader(this);
         loader.workloadClass = conf.getString("class");
