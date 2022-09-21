@@ -132,7 +132,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
     }
 
 
-    static boolean isCleanUpDone=false;
+    static boolean isCleanUpDone = false;
     @Override
     public void tearDown() {
 
@@ -140,7 +140,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             try {
                 if(this.configuration.getWorkloadState().getGlobalState() == State.EXIT && !isCleanUpDone){
                     ybm.cleanUp(conn);
-                    isCleanUpDone=true;
+                    isCleanUpDone = true;
                 }
                 conn.close();
             } catch (SQLException e) {
