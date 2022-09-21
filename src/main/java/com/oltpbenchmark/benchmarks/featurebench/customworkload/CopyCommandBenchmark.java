@@ -54,7 +54,6 @@ public class CopyCommandBenchmark extends YBMicroBenchmark {
 
 
     @Override
-
     public ArrayList<LoadRule> loadRules() {
 //        return new ArrayList<>();
 
@@ -90,6 +89,7 @@ public class CopyCommandBenchmark extends YBMicroBenchmark {
         String filePath = config.getString("/filePath");
         int rowsPerTransaction = config.getInt("/rowsPerTransaction");
         runCopyCommand(conn, tableName, filePath, rowsPerTransaction);
+
     }
 
     @Override
