@@ -40,7 +40,7 @@ public abstract class YBMicroBenchmark {
 
     public void afterLoad(Connection conn) throws SQLException{};
 
-    public void transaction(Connection conn) throws SQLException{};
+    public void execute(Connection conn) throws SQLException{};
 
     public void beforeLoad(Connection conn) throws SQLException{};
 }
