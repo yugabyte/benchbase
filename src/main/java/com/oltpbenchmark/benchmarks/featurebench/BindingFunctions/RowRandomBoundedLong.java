@@ -1,3 +1,5 @@
+package com.oltpbenchmark.benchmarks.featurebench.BindingFunctions;
+
 /*
  * Copyright 2020 Trino
  *
@@ -13,13 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.oltpbenchmark.benchmarks.featurebench.bindings.from_benchbase;
 
+import com.oltpbenchmark.benchmarks.featurebench.BindingFunctions.RowRandomInt;
+import com.oltpbenchmark.benchmarks.featurebench.BindingFunctions.RowRandomLong;
 
 
 public class RowRandomBoundedLong {
-    private final RowRandomLong randomLong;
-    private final RowRandomInt randomInt;
+    private final com.oltpbenchmark.benchmarks.featurebench.BindingFunctions.RowRandomLong randomLong;
+    private final com.oltpbenchmark.benchmarks.featurebench.BindingFunctions.RowRandomInt randomInt;
 
     private final long lowValue;
     private final long highValue;

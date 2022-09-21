@@ -1,3 +1,5 @@
+package com.oltpbenchmark.benchmarks.featurebench.BindingFunctions;
+
 /*
  * Copyright 2020 by OLTPBenchmark Project
  *
@@ -15,7 +17,7 @@
  *
  */
 
-package com.oltpbenchmark.benchmarks.featurebench.bindings.from_benchbase;
+
 
 import com.oltpbenchmark.api.BenchmarkModule;
 import com.oltpbenchmark.catalog.*;
@@ -33,12 +35,12 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 public abstract class SQLUtil {
-    private static final Logger LOG = LoggerFactory.getLogger(SQLUtil.class);
+    private static final Logger LOG = LoggerFactory.getLogger(com.oltpbenchmark.benchmarks.featurebench.BindingFunctions.SQLUtil.class);
 
     private static final DateFormat[] timestamp_formats = new DateFormat[]{
-            new SimpleDateFormat("yyyy-MM-dd"),
-            new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"),
-            new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS"),
+        new SimpleDateFormat("yyyy-MM-dd"),
+        new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"),
+        new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS"),
     };
 
     /**
@@ -141,7 +143,7 @@ public abstract class SQLUtil {
             return new Timestamp(((Date) obj).getTime());
         }
 
-        Long timestamp = SQLUtil.getLong(obj);
+        Long timestamp = com.oltpbenchmark.benchmarks.featurebench.BindingFunctions.SQLUtil.getLong(obj);
         return (timestamp != null ? new Timestamp(timestamp) : null);
     }
 
@@ -157,7 +159,7 @@ public abstract class SQLUtil {
 
         if (dbType == DatabaseType.POSTGRES) {
             return String.format("pg_get_serial_sequence('%s', '%s')",
-                    catalog_tbl.getName(), catalog_col.getName());
+                catalog_tbl.getName(), catalog_col.getName());
         } else {
             LOG.warn("Unexpected request for sequence name on {} using {}", catalog_col, dbType);
         }
@@ -309,7 +311,7 @@ public abstract class SQLUtil {
      * @return SQL for select count execution
      */
     public static String getCountSQL(DatabaseType dbType, Table catalog_tbl) {
-        return SQLUtil.getCountSQL(dbType, catalog_tbl, "*");
+        return com.oltpbenchmark.benchmarks.featurebench.BindingFunctions.SQLUtil.getCountSQL(dbType, catalog_tbl, "*");
     }
 
     /**
@@ -336,7 +338,7 @@ public abstract class SQLUtil {
      * @return
      */
     public static String getInsertSQL(Table catalog_tbl, DatabaseType db_type, int... exclude_columns) {
-        return SQLUtil.getInsertSQL(catalog_tbl, db_type, 1, exclude_columns);
+        return com.oltpbenchmark.benchmarks.featurebench.BindingFunctions.SQLUtil.getInsertSQL(catalog_tbl, db_type, 1, exclude_columns);
     }
 
     /**
@@ -360,7 +362,7 @@ public abstract class SQLUtil {
             sb.append("INSERT");
         }
         sb.append(" INTO ")
-                .append(escape_names ? catalog_tbl.getEscapedName() : catalog_tbl.getName());
+            .append(escape_names ? catalog_tbl.getEscapedName() : catalog_tbl.getName());
 
         StringBuilder values = new StringBuilder();
         boolean first;
@@ -415,7 +417,7 @@ public abstract class SQLUtil {
     public static String selectColValues(DatabaseType databaseType, Table catalog_tbl, String col) {
         String tableName = (databaseType.shouldEscapeNames() ? catalog_tbl.getEscapedName() : catalog_tbl.getName());
         return String.format("SELECT %s FROM %s",
-                col, tableName);
+            col, tableName);
     }
 
     /**

@@ -1,21 +1,4 @@
-/*
- * Copyright 2020 by OLTPBenchmark Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- */
-
-package com.oltpbenchmark.benchmarks.featurebench.bindings.from_benchbase;
+package com.oltpbenchmark.benchmarks.featurebench.BindingFunctions;
 
 import com.oltpbenchmark.util.Histogram;
 
@@ -146,7 +129,7 @@ public class RandomDistribution {
     /**
      * P(i)=1/(max-min)
      */
-    public static class Flat extends DiscreteRNG {
+    public static class Flat extends com.oltpbenchmark.benchmarks.featurebench.BindingFunctions.RandomDistribution.DiscreteRNG {
         private static final long serialVersionUID = 1L;
 
         /**
@@ -162,7 +145,7 @@ public class RandomDistribution {
         }
 
         /**
-         * @see DiscreteRNG#nextInt()
+         * @see com.oltpbenchmark.benchmarks.featurebench.BindingFunctions.RandomDistribution.DiscreteRNG#nextInt()
          */
         @Override
         protected long nextLongImpl() {
@@ -183,9 +166,9 @@ public class RandomDistribution {
     /**
      * P(i)=1/(max-min)
      */
-    public static class FlatHistogram<T extends Comparable<T>> extends DiscreteRNG {
+    public static class FlatHistogram<T extends Comparable<T>> extends com.oltpbenchmark.benchmarks.featurebench.BindingFunctions.RandomDistribution.DiscreteRNG {
         private static final long serialVersionUID = 1L;
-        private final Flat inner;
+        private final com.oltpbenchmark.benchmarks.featurebench.BindingFunctions.RandomDistribution.Flat inner;
         private final SortedMap<Long, T> value_rle = new TreeMap<>();
         private Histogram<T> history;
 
@@ -194,7 +177,7 @@ public class RandomDistribution {
          */
         public FlatHistogram(Random random, Histogram<T> histogram) {
             super(random, 0, histogram.getSampleCount());
-            this.inner = new Flat(random, 0, histogram.getSampleCount());
+            this.inner = new com.oltpbenchmark.benchmarks.featurebench.BindingFunctions.RandomDistribution.Flat(random, 0, histogram.getSampleCount());
 
             long total = 0;
             for (T k : histogram.values()) {
@@ -230,7 +213,7 @@ public class RandomDistribution {
         }
 
         /**
-         * @see DiscreteRNG#nextLong()
+         * @see com.oltpbenchmark.benchmarks.featurebench.BindingFunctions.RandomDistribution.DiscreteRNG#nextLong()
          */
         @Override
         protected long nextLongImpl() {
@@ -245,7 +228,7 @@ public class RandomDistribution {
     /**
      * Gaussian Distribution
      */
-    public static class Gaussian extends DiscreteRNG {
+    public static class Gaussian extends com.oltpbenchmark.benchmarks.featurebench.BindingFunctions.RandomDistribution.DiscreteRNG {
         private static final long serialVersionUID = 1L;
 
         public Gaussian(Random random, long min, long max) {
@@ -270,7 +253,7 @@ public class RandomDistribution {
      * <p>
      * P(i)/P(j)=((j-min+1)/(i-min+1))^sigma.
      */
-    public static class Zipf extends DiscreteRNG {
+    public static class Zipf extends com.oltpbenchmark.benchmarks.featurebench.BindingFunctions.RandomDistribution.DiscreteRNG {
         private static final long serialVersionUID = 1L;
         private static final double DEFAULT_EPSILON = 0.001;
         private final ArrayList<Long> k;
@@ -330,7 +313,7 @@ public class RandomDistribution {
 
 
         /**
-         * @see DiscreteRNG#nextInt()
+         * @see com.oltpbenchmark.benchmarks.featurebench.BindingFunctions.RandomDistribution.DiscreteRNG#nextInt()
          */
         @Override
         protected long nextLongImpl() {
@@ -354,7 +337,7 @@ public class RandomDistribution {
             long ceiling = k.get(idx);
             long lower = k.get(idx - 1);
 
-            return ceiling - DiscreteRNG.nextLong(random, ceiling - lower);
+            return ceiling - com.oltpbenchmark.benchmarks.featurebench.BindingFunctions.RandomDistribution.DiscreteRNG.nextLong(random, ceiling - lower);
         }
     }
 
