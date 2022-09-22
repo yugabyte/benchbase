@@ -19,5 +19,4 @@ public class RandomStringAlphabets {
         return sb.toString();
     }
 
-
 }

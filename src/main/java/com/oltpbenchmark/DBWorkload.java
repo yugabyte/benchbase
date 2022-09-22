@@ -133,7 +133,6 @@ public class DBWorkload {
             wrkld.setMaxRetries(xmlConfig.getInt("retries", 3));
             wrkld.setNewConnectionPerTxn(xmlConfig.getBoolean("newConnectionPerTxn", false));
 
-
             int terminals = xmlConfig.getInt("terminals[not(@bench)]", 0);
             terminals = xmlConfig.getInt("terminals" + pluginTest, terminals);
             wrkld.setTerminals(terminals);
@@ -625,21 +624,19 @@ public class DBWorkload {
             }
         }
 
-
         if(!name.equalsIgnoreCase("featurebench")){
             String configFileName = baseFileName + ".config.xml";
             try (PrintStream ps = new PrintStream(FileUtil.joinPath(outputDirectory, configFileName))) {
                     LOG.info("Output benchmark config into file: {}", configFileName);
                     rw.writeConfig(ps);
             }
-        }else{
+        } else{
             String configFileName = baseFileName + ".config.yaml";
             try (PrintStream ps = new PrintStream(FileUtil.joinPath(outputDirectory, configFileName))) {
                 LOG.info("Output benchmark config into file: {}", configFileName);
                 rw.writeYamlConfig(ps);
             }
         }
-
 
         String resultsFileName = baseFileName + ".results.csv";
         try (PrintStream ps = new PrintStream(FileUtil.joinPath(outputDirectory, resultsFileName))) {

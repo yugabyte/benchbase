@@ -29,5 +29,4 @@ public interface FeatureBenchConstants2 {
     public static final String DROP_TABLE_1 = "DROP TABLE distributors";
     public static final String DROP_DATABASE = "DROP DATABASE TEST_DB";
 
-
 }

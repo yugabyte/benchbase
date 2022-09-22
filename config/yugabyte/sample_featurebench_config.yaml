@@ -26,6 +26,3 @@ microbenchmark:
         indexes: 2
         filePath: accounts.csv
         rowsPerTransaction: 2000
-
-
-
