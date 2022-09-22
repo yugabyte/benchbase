@@ -28,6 +28,7 @@ import java.sql.ResultSet;
 
 /**
  * The actual FeatureBench implementation
+ *
  */
 public class FeatureBench extends Procedure {
     private static final Logger LOG = LoggerFactory.getLogger(FeatureBench.class);

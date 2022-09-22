@@ -21,12 +21,6 @@ import java.util.List;
 
 public class CopyCommandBenchmark extends YBMicroBenchmark {
     private static final Logger LOG = LoggerFactory.getLogger(CopyCommandBenchmark.class);
-    /*int numOfColumns = 10;
-    int indexCount = 2;
-    int numOfRows = 1000;
-    int rowsPerTransaction = 1000;
-    String tableName = "orders";
-    String file = "orders.csv";*/
 
     public CopyCommandBenchmark(HierarchicalConfiguration<ImmutableNode> config) {
         super(config);
