@@ -50,6 +50,13 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
             ybm = (YBMicroBenchmark) Class.forName(workloadClass)
                 .getDeclaredConstructor(HierarchicalConfiguration.class)
                 .newInstance(config);
+            List<HierarchicalConfiguration<ImmutableNode>> loadRules2=config.configurationsAt("loadRules");
+
+            for(HierarchicalConfiguration loadRule : loadRules2) {
+                System.out.println(loadRule.getString("table"));
+            }
+
+
 
 
             createPhaseAndBeforeLoad();

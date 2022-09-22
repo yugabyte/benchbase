@@ -32,4 +32,17 @@ microbenchmark:
             - CREATE INDEX idx_accounts_name ON accounts (name);
         cleanup:
             - DROP TABLE accounts;
+        loadRules:
+          - table: accounts
+            rows: 1000
+            columns:
+                id: GetIntPrimaryKey(1, 1000) # providing start and end index
+                name: NumberToIdString(16) # providing desiredLength of string
+          - table: accounts
+            rows: 1000
+            columns:
+                id: GetIntPrimaryKey(1, 1000) # providing start and end index
+                name: NumberToIdString(16) # providing desiredLength of string
+
+
 

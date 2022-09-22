@@ -25,8 +25,7 @@ public class YBMicroBenchmarkImplementation extends YBMicroBenchmark {
         this.executeOnceImplemented = false;
         this.loadOnceImplemented = false;
         this.afterLoadImplemented = false;
-
-        this.createDBImplemented = true;
+        this.createDBImplemented=true;
     }
 
 
@@ -73,7 +72,6 @@ public class YBMicroBenchmarkImplementation extends YBMicroBenchmark {
 
         //creating and return load rule
         LoadRule loadRule = new LoadRule(tableInfo);
-        LoadRule loadRule2 = new LoadRule(tableInfo);
         return new ArrayList<>(List.of(loadRule));
 
     }
