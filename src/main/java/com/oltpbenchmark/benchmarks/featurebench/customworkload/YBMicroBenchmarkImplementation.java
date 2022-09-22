@@ -84,23 +84,6 @@ public class YBMicroBenchmarkImplementation extends YBMicroBenchmark {
         LoadRule loadRule = new LoadRule(tableInfo);
         LoadRule loadRule2 = new LoadRule(tableInfo);
         return new ArrayList<>(List.of(loadRule));
-        /*
-        TableInfo tableInfo =
-            new TableInfo(
-                10, "accounts",
-                new ArrayList<>(Arrays.asList(idColumnsDetails, nameColumnsDetails)));
-
-
-        TableInfo tableInfo1 =
-            new TableInfo(
-                10, "orders",
-                new ArrayList<>(Arrays.asList(idColumnsDetails, nameColumnsDetails)));
-
-        //creating and return load rule
-        LoadRule loadRule = new LoadRule(tableInfo);
-        LoadRule loadRule1 = new LoadRule(tableInfo1);
-        return new ArrayList<>(Arrays.asList(loadRule, loadRule1));
-        */
 
     }
 

@@ -32,8 +32,6 @@ import java.util.List;
 import java.util.Objects;
 
 
-
-
 public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
     public String workloadClass = null;
     public HierarchicalConfiguration<ImmutableNode> config = null;

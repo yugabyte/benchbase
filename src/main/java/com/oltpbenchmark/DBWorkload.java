@@ -26,7 +26,6 @@ import com.oltpbenchmark.types.DatabaseType;
 import com.oltpbenchmark.util.*;
 import org.apache.commons.cli.*;
 import org.apache.commons.collections4.map.ListOrderedMap;
-import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.XMLConfiguration;
 import org.apache.commons.configuration2.YAMLConfiguration;
@@ -109,7 +108,7 @@ public class DBWorkload {
         int lastTxnId = 0;
         for (String plugin : targetList) {
             String pluginTest = "[@bench='" + plugin + "']";
-            if(plugin.equalsIgnoreCase("featurebench"))
+            if (plugin.equalsIgnoreCase("featurebench"))
                  xmlConfig = buildConfigurationFromYaml(configFile);
             else
                 xmlConfig = buildConfiguration(configFile);
@@ -506,10 +505,10 @@ public class DBWorkload {
 
         Parameters params = new Parameters();
         FileBasedConfigurationBuilder<XMLConfiguration> builder = new FileBasedConfigurationBuilder<>(XMLConfiguration.class)
-            .configure(params.xml()
-                .setFileName(filename)
-                .setListDelimiterHandler(new DisabledListDelimiterHandler())
-                .setExpressionEngine(new XPathExpressionEngine()));
+                .configure(params.xml()
+                        .setFileName(filename)
+                        .setListDelimiterHandler(new DisabledListDelimiterHandler())
+                        .setExpressionEngine(new XPathExpressionEngine()));
         return builder.getConfiguration();
 
     }
@@ -624,13 +623,13 @@ public class DBWorkload {
             }
         }
 
-        if(!name.equalsIgnoreCase("featurebench")){
+        if (!name.equalsIgnoreCase("featurebench")) {
             String configFileName = baseFileName + ".config.xml";
             try (PrintStream ps = new PrintStream(FileUtil.joinPath(outputDirectory, configFileName))) {
                     LOG.info("Output benchmark config into file: {}", configFileName);
                     rw.writeConfig(ps);
             }
-        } else{
+        } else {
             String configFileName = baseFileName + ".config.yaml";
             try (PrintStream ps = new PrintStream(FileUtil.joinPath(outputDirectory, configFileName))) {
                 LOG.info("Output benchmark config into file: {}", configFileName);

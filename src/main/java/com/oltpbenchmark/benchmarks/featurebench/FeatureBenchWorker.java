@@ -44,7 +44,7 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
     private static final Logger LOG = LoggerFactory.getLogger(FeatureBenchWorker.class);
-
+    static boolean isCleanUpDone = false;
     public String workloadClass = null;
     public HierarchicalConfiguration<ImmutableNode> config = null;
     public YBMicroBenchmark ybm = null;
@@ -72,8 +72,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                     int upper_range = pfuf.get(0).getParameters().get(1);
                     RowRandomBoundedInt rno = new RowRandomBoundedInt(1, lower_range, upper_range);
                     stmt.setInt(j + 1, rno.nextValue());
-                }
-                else if (Objects.equals(ufs.get(j).getName(), "astring")) {
+                } else if (Objects.equals(ufs.get(j).getName(), "astring")) {
                     ArrayList<ParamsForUtilFunc> pfuf = ufs.get(j).getParams();
                     int min_len = pfuf.get(0).getParameters().get(0);
                     int max_len = pfuf.get(0).getParameters().get(1);
@@ -99,11 +98,10 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                 .newInstance(config);
 
             System.out.println(this.configuration.getWorkloadState().getGlobalState());
-            if(ybm.executeOnceImplemented) {
+            if (ybm.executeOnceImplemented) {
                 ybm.executeOnce(conn);
                 conn.close();
-            }
-            else {
+            } else {
                 ArrayList<ExecuteRule> executeRules = ybm.executeRules();
                 // Validating sum of transaction weights =100
                 int sum = 0;
@@ -143,14 +141,12 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
 
     }
 
-
-    static boolean isCleanUpDone = false;
     @Override
     public void tearDown() {
 
         if (!this.configuration.getNewConnectionPerTxn() && this.conn != null && ybm != null) {
             try {
-                if(this.configuration.getWorkloadState().getGlobalState() == State.EXIT && !isCleanUpDone){
+                if (this.configuration.getWorkloadState().getGlobalState() == State.EXIT && !isCleanUpDone) {
                     ybm.cleanUp(conn);
                     isCleanUpDone = true;
                 }

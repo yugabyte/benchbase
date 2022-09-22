@@ -1,4 +1,5 @@
 package com.oltpbenchmark.benchmarks.featurebench.customworkload;
+
 import com.oltpbenchmark.benchmarks.featurebench.FeatureBenchConstants2;
 import com.oltpbenchmark.benchmarks.featurebench.YBMicroBenchmark;
 import com.oltpbenchmark.benchmarks.featurebench.util.*;
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 public class YBMicroBenchmarkImplementation2 extends YBMicroBenchmark implements FeatureBenchConstants2 {
 
     public final static Logger logger = Logger.getLogger(YBMicroBenchmarkImplementation.class);
+
     public YBMicroBenchmarkImplementation2(HierarchicalConfiguration<ImmutableNode> config) {
         super(config);
         this.executeOnceImplemented = false;
@@ -55,7 +57,7 @@ public class YBMicroBenchmarkImplementation2 extends YBMicroBenchmark implements
         ParamsForUtilFunc paramsFunc1 = new ParamsForUtilFunc(range);
         ArrayList<Integer> string_len = new ArrayList<>();
         int min_len = 1;
-        int max_len=20;
+        int max_len = 20;
         string_len.add(min_len);
         string_len.add(max_len);
         ParamsForUtilFunc paramsFunc2 = new ParamsForUtilFunc(string_len);
@@ -81,8 +83,8 @@ public class YBMicroBenchmarkImplementation2 extends YBMicroBenchmark implements
     public ArrayList<ExecuteRule> executeRules() {
         int startIndex = 1;
         int endIndex = 10;
-        int min_len=1;
-        int max_len=20;
+        int min_len = 1;
+        int max_len = 20;
         ArrayList<Integer> range = new ArrayList<>();
         range.add(startIndex);
         range.add(endIndex);
