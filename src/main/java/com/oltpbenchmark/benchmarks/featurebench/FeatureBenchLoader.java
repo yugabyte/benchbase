@@ -78,13 +78,13 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
         try {
             Connection conn = benchmark.makeConnection();
             long createStart = System.currentTimeMillis();
-            if(config.containsKey("create")){
+            if (config.containsKey("create")) {
                 createYaml(conn);
-            }else{
+            } else {
                 ybm.create(conn);
             }
             long createEnd = System.currentTimeMillis();
-            LOG.info("Elapsed time in create phase: {} milliseconds",createEnd-createStart);
+            LOG.info("Elapsed time in create phase: {} milliseconds", createEnd - createStart);
 
             if (ybm.beforeLoadImplemented) {
                 ybm.beforeLoad(conn);
@@ -94,19 +94,21 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
             throw new RuntimeException(e);
         }
     }
-    private void createYaml(Connection conn) throws SQLException{
+
+    private void createYaml(Connection conn) throws SQLException {
         LOG.info("\n=============Create Phase taking from Yaml============\n");
-        List<String> ddls=config.getList(String.class,"create");
+        List<String> ddls = config.getList(String.class, "create");
         try {
             Statement stmtOBj = conn.createStatement();
-            for(String ddl:ddls){
+            for (String ddl : ddls) {
                 stmtOBj.execute(ddl);
             }
             stmtOBj.close();
-        }catch (Exception ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
+
     private void afterLoadPhase() {
         try {
             if (ybm.afterLoadImplemented) {

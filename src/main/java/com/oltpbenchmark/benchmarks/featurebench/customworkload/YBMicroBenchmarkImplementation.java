@@ -1,13 +1,7 @@
 package com.oltpbenchmark.benchmarks.featurebench.customworkload;
 
 
-
-
-
 import com.oltpbenchmark.benchmarks.featurebench.YBMicroBenchmark;
-
-
-
 import com.oltpbenchmark.benchmarks.featurebench.util.*;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.tree.ImmutableNode;
@@ -21,9 +15,6 @@ import java.util.Arrays;
 import java.util.List;
 
 
-
-
-
 public class YBMicroBenchmarkImplementation extends YBMicroBenchmark {
 
 
@@ -35,7 +26,7 @@ public class YBMicroBenchmarkImplementation extends YBMicroBenchmark {
         this.loadOnceImplemented = false;
         this.afterLoadImplemented = false;
 
-        this.createDBImplemented=true;
+        this.createDBImplemented = true;
     }
 
 
@@ -55,6 +46,7 @@ public class YBMicroBenchmarkImplementation extends YBMicroBenchmark {
             ex.printStackTrace();
         }
     }
+
     public ArrayList<LoadRule> loadRules() {
         int startIndex = 0;
         int endIndex = 10000;
@@ -85,8 +77,6 @@ public class YBMicroBenchmarkImplementation extends YBMicroBenchmark {
         return new ArrayList<>(List.of(loadRule));
 
     }
-
-
 
 
     public ArrayList<ExecuteRule> executeRules() {
