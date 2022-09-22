@@ -39,7 +39,6 @@ public class YBMicroBenchmarkImplementation extends YBMicroBenchmark {
     }
 
 
-    @Override
     public void create(Connection conn) throws SQLException {
         try {
             Statement stmtOBj = conn.createStatement();
