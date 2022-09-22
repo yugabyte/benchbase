@@ -1,20 +1,3 @@
-/*
- * Copyright 2020 by OLTPBenchmark Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- */
-
 package com.oltpbenchmark.benchmarks.featurebench;
 
 import com.oltpbenchmark.api.Procedure.UserAbortException;
@@ -23,6 +6,7 @@ import com.oltpbenchmark.api.Worker;
 import com.oltpbenchmark.benchmarks.featurebench.util.*;
 import com.oltpbenchmark.types.State;
 import com.oltpbenchmark.types.TransactionStatus;
+import com.oltpbenchmark.util.RandomGenerator;
 import com.oltpbenchmark.util.RowRandomBoundedInt;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.tree.ImmutableNode;
@@ -72,12 +56,21 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                     RowRandomBoundedInt rno = new RowRandomBoundedInt(1, lower_range, upper_range);
                     stmt.setInt(j + 1, rno.nextValue());
                 }
+                else if (Objects.equals(ufs.get(j).getName(), "astring")) {
+                    ArrayList<ParamsForUtilFunc> pfuf = ufs.get(j).getParams();
+                    int min_len = pfuf.get(0).getParameters().get(0);
+                    int max_len = pfuf.get(0).getParameters().get(1);
+                    int randomNum = ThreadLocalRandom.current().nextInt(1, 100 + 1);
+                    if (randomNum % 2 == 0) {
+                        RandomGenerator rno = new RandomGenerator(1);
+                        String dname = rno.astring(min_len, max_len);
+                        stmt.setString(j + 1, dname);
+                    }
+                }
             }
         }
         stmt.executeQuery();
     }
-
-
 
     @Override
     protected TransactionStatus executeWork(Connection conn, TransactionType txnType) throws
@@ -87,6 +80,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             ybm = (YBMicroBenchmark) Class.forName(workloadClass)
                 .getDeclaredConstructor(HierarchicalConfiguration.class)
                 .newInstance(config);
+
             System.out.println(this.configuration.getWorkloadState().getGlobalState());
             if(ybm.executeOnceImplemented) {
                 ybm.executeOnce(conn);
@@ -118,6 +112,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                         ArrayList<BindParams> bp = queryDetails.getBindParams();
                         bind_params_based_on_func(bp, stmt);
                     }
+
                 }
             }
 

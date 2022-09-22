@@ -95,7 +95,6 @@ public class YBSmallBankApp extends YBMicroBenchmark implements FeatureBenchCons
     /*public void loadOnce(WorkloadConfiguration wc, Connection conn){
         createCsvFile();
     }
-
     public void executeOnce(WorkloadConfiguration wc, Connection conn){
         createCsvFile();
     }*/

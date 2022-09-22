@@ -1,25 +1,9 @@
-/*
- * Copyright 2020 by OLTPBenchmark Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- */
-
 package com.oltpbenchmark.benchmarks.featurebench;
 
 import com.oltpbenchmark.api.Loader;
 import com.oltpbenchmark.api.LoaderThread;
 import com.oltpbenchmark.benchmarks.featurebench.util.*;
+import com.oltpbenchmark.util.RandomGenerator;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.tree.ImmutableNode;
 
@@ -30,6 +14,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Random;
+
 
 
 /**
@@ -48,12 +34,11 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
 
     @Override
     public List<LoaderThread> createLoaderThreads() {
-
-
         try {
             ybm = (YBMicroBenchmark) Class.forName(workloadClass)
                 .getDeclaredConstructor(HierarchicalConfiguration.class)
                 .newInstance(config);
+
 
             createPhaseAndBeforeLoad();
 
@@ -141,6 +126,7 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
         }
     }
 
+
     private class Generator extends LoaderThread {
         static int numberOfGeneratorFinished = 0;
         final LoadRule loadRule;
@@ -150,11 +136,6 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
             this.loadRule = loadRule;
         }
 
-        /*void bindParamBasedOnType(UtilityFunc utilf, PreparedStatement ps, int index) {
-            if (utilf.getName().equalsIgnoreCase("randomString")) {
-                stmtChecking.setInt(index, this.randomString(utilf.param1, utilf.param2));
-            }
-        }*/
 
 //        @Override
 //        public void beforeLoad() {
@@ -173,6 +154,7 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
 //                throw new RuntimeException(e);
 //            }
 //        }
+
 
         @Override
         public void load(Connection conn) throws SQLException {
@@ -193,9 +175,8 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
                 columnString.setLength(columnString.length() - 1);
                 valueString.setLength(valueString.length() - 1);
                 String insertStmt = "INSERT INTO " + table_name + " (" + columnString + ") VALUES " + "(" + valueString + ")";
+                System.out.println(insertStmt);
                 stmt = conn.prepareStatement(insertStmt);
-
-
                 for (int i = 0; i < no_of_rows; i++) {
                     for (ColumnsDetails columnsDetails : cd) {
                         UtilityFunc uf = columnsDetails.getUtilFunc();
@@ -268,6 +249,8 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
             afterLoadPhase();
         }
     }
-
-
 }
+
+
+
+

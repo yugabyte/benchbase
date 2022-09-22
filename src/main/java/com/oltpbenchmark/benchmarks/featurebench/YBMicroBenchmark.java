@@ -20,6 +20,8 @@ public abstract class YBMicroBenchmark {
 
     public boolean beforeLoadImplemented = false;
 
+
+
     public HierarchicalConfiguration<ImmutableNode> config;
 
     public YBMicroBenchmark(HierarchicalConfiguration<ImmutableNode> config) {
@@ -44,3 +46,5 @@ public abstract class YBMicroBenchmark {
 
     public void beforeLoad(Connection conn) throws SQLException{};
 }
+
+

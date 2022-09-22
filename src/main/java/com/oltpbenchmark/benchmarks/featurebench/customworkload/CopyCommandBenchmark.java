@@ -1,5 +1,6 @@
 package com.oltpbenchmark.benchmarks.featurebench.customworkload;
 
+
 import com.oltpbenchmark.benchmarks.featurebench.YBMicroBenchmark;
 import com.oltpbenchmark.benchmarks.featurebench.util.*;
 import com.yugabyte.copy.CopyManager;
@@ -23,7 +24,6 @@ public class CopyCommandBenchmark extends YBMicroBenchmark {
     /*int numOfColumns = 10;
     int indexCount = 2;
     int numOfRows = 1000;
-
     int rowsPerTransaction = 1000;
     String tableName = "orders";
     String file = "orders.csv";*/
@@ -87,6 +87,7 @@ public class CopyCommandBenchmark extends YBMicroBenchmark {
         String filePath = config.getString("/filePath");
         int rowsPerTransaction = config.getInt("/rowsPerTransaction");
         runCopyCommand(conn, tableName, filePath, rowsPerTransaction);
+
     }
 
     @Override
