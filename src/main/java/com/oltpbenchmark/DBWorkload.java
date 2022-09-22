@@ -625,14 +625,21 @@ public class DBWorkload {
             }
         }
 
-        String configFileName = baseFileName + ".config.xml";
-        try (PrintStream ps = new PrintStream(FileUtil.joinPath(outputDirectory, configFileName))) {
-            if( DatabaseType.get(xmlConfig.getString("type")) != DatabaseType.YUGABYTE ){
-                LOG.info("Output benchmark config into file: {}", configFileName);
-                rw.writeConfig(ps);
-            }
 
+        if(!name.equalsIgnoreCase("featurebench")){
+            String configFileName = baseFileName + ".config.xml";
+            try (PrintStream ps = new PrintStream(FileUtil.joinPath(outputDirectory, configFileName))) {
+                    LOG.info("Output benchmark config into file: {}", configFileName);
+                    rw.writeConfig(ps);
+            }
+        }else{
+            String configFileName = baseFileName + ".config.yaml";
+            try (PrintStream ps = new PrintStream(FileUtil.joinPath(outputDirectory, configFileName))) {
+                LOG.info("Output benchmark config into file: {}", configFileName);
+                rw.writeYamlConfig(ps);
+            }
         }
+
 
         String resultsFileName = baseFileName + ".results.csv";
         try (PrintStream ps = new PrintStream(FileUtil.joinPath(outputDirectory, resultsFileName))) {

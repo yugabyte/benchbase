@@ -27,6 +27,7 @@ import com.oltpbenchmark.api.collectors.DBParameterCollectorGen;
 import com.oltpbenchmark.types.DatabaseType;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.configuration2.XMLConfiguration;
+import org.apache.commons.configuration2.YAMLConfiguration;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.configuration2.io.FileHandler;
 
@@ -39,17 +40,17 @@ public class ResultWriter {
 
 
     private static final String[] IGNORE_CONF = {
-            "type",
-            "driver",
-            "url",
-            "username",
-            "password"
+        "type",
+        "driver",
+        "url",
+        "username",
+        "password"
     };
 
     private static final String[] BENCHMARK_KEY_FIELD = {
-            "isolation",
-            "scalefactor",
-            "terminals"
+        "isolation",
+        "scalefactor",
+        "terminals"
     };
 
     private final XMLConfiguration expConf;
@@ -98,6 +99,14 @@ public class ResultWriter {
         handler.save(os);
     }
 
+    public void writeYamlConfig(PrintStream os) throws ConfigurationException {
+
+        XMLConfiguration outputConf = (XMLConfiguration) expConf.clone();
+        YAMLConfiguration outputYaml = new YAMLConfiguration(outputConf);
+        FileHandler handler = new FileHandler(outputYaml);
+        handler.save(os);
+    }
+
     public void writeSummary(PrintStream os) {
         Map<String, Object> summaryMap = new TreeMap<>();
         TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
@@ -121,35 +130,35 @@ public class ResultWriter {
 
     public void writeResults(int windowSizeSeconds, PrintStream out, TransactionType txType) {
         String[] header = {
-                "Time (seconds)",
-                "Throughput (requests/second)",
-                "Average Latency (millisecond)",
-                "Minimum Latency (millisecond)",
-                "25th Percentile Latency (millisecond)",
-                "Median Latency (millisecond)",
-                "75th Percentile Latency (millisecond)",
-                "90th Percentile Latency (millisecond)",
-                "95th Percentile Latency (millisecond)",
-                "99th Percentile Latency (millisecond)",
-                "Maximum Latency (millisecond)",
-                "tp (req/s) scaled"
+            "Time (seconds)",
+            "Throughput (requests/second)",
+            "Average Latency (millisecond)",
+            "Minimum Latency (millisecond)",
+            "25th Percentile Latency (millisecond)",
+            "Median Latency (millisecond)",
+            "75th Percentile Latency (millisecond)",
+            "90th Percentile Latency (millisecond)",
+            "95th Percentile Latency (millisecond)",
+            "99th Percentile Latency (millisecond)",
+            "Maximum Latency (millisecond)",
+            "tp (req/s) scaled"
         };
         out.println(StringUtil.join(",", header));
         int i = 0;
         for (DistributionStatistics s : new ThreadBench.TimeBucketIterable(results.getLatencySamples(), windowSizeSeconds, txType)) {
             out.printf("%d,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f\n",
-                    i * windowSizeSeconds,
-                    (double) s.getCount() / windowSizeSeconds,
-                    s.getAverage() / MILLISECONDS_FACTOR,
-                    s.getMinimum() / MILLISECONDS_FACTOR,
-                    s.get25thPercentile() / MILLISECONDS_FACTOR,
-                    s.getMedian() / MILLISECONDS_FACTOR,
-                    s.get75thPercentile() / MILLISECONDS_FACTOR,
-                    s.get90thPercentile() / MILLISECONDS_FACTOR,
-                    s.get95thPercentile() / MILLISECONDS_FACTOR,
-                    s.get99thPercentile() / MILLISECONDS_FACTOR,
-                    s.getMaximum() / MILLISECONDS_FACTOR,
-                    MILLISECONDS_FACTOR / s.getAverage());
+                i * windowSizeSeconds,
+                (double) s.getCount() / windowSizeSeconds,
+                s.getAverage() / MILLISECONDS_FACTOR,
+                s.getMinimum() / MILLISECONDS_FACTOR,
+                s.get25thPercentile() / MILLISECONDS_FACTOR,
+                s.getMedian() / MILLISECONDS_FACTOR,
+                s.get75thPercentile() / MILLISECONDS_FACTOR,
+                s.get90thPercentile() / MILLISECONDS_FACTOR,
+                s.get95thPercentile() / MILLISECONDS_FACTOR,
+                s.get99thPercentile() / MILLISECONDS_FACTOR,
+                s.getMaximum() / MILLISECONDS_FACTOR,
+                MILLISECONDS_FACTOR / s.getAverage());
             i += 1;
         }
     }
@@ -160,35 +169,35 @@ public class ResultWriter {
 
     public void writeSamples(int windowSizeSeconds, PrintStream out, TransactionType txType) {
         String[] header = {
-                "Time (seconds)",
-                "Requests",
-                "Throughput (requests/second)",
-                "Minimum Latency (microseconds)",
-                "25th Percentile Latency (microseconds)",
-                "Median Latency (microseconds)",
-                "Average Latency (microseconds)",
-                "75th Percentile Latency (microseconds)",
-                "90th Percentile Latency (microseconds)",
-                "95th Percentile Latency (microseconds)",
-                "99th Percentile Latency (microseconds)",
-                "Maximum Latency (microseconds)"
+            "Time (seconds)",
+            "Requests",
+            "Throughput (requests/second)",
+            "Minimum Latency (microseconds)",
+            "25th Percentile Latency (microseconds)",
+            "Median Latency (microseconds)",
+            "Average Latency (microseconds)",
+            "75th Percentile Latency (microseconds)",
+            "90th Percentile Latency (microseconds)",
+            "95th Percentile Latency (microseconds)",
+            "99th Percentile Latency (microseconds)",
+            "Maximum Latency (microseconds)"
         };
         out.println(StringUtil.join(",", header));
         int i = 0;
         for (DistributionStatistics s : new ThreadBench.TimeBucketIterable(results.getLatencySamples(), windowSizeSeconds, txType)) {
             out.printf("%d,%d,%.3f,%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
-                    i * windowSizeSeconds,
-                    s.getCount(),
-                    (double) s.getCount() / windowSizeSeconds,
-                    (int) s.getMinimum(),
-                    (int) s.get25thPercentile(),
-                    (int) s.getMedian(),
-                    (int) s.getAverage(),
-                    (int) s.get75thPercentile(),
-                    (int) s.get90thPercentile(),
-                    (int) s.get95thPercentile(),
-                    (int) s.get99thPercentile(),
-                    (int) s.getMaximum());
+                i * windowSizeSeconds,
+                s.getCount(),
+                (double) s.getCount() / windowSizeSeconds,
+                (int) s.getMinimum(),
+                (int) s.get25thPercentile(),
+                (int) s.getMedian(),
+                (int) s.getAverage(),
+                (int) s.get75thPercentile(),
+                (int) s.get90thPercentile(),
+                (int) s.get95thPercentile(),
+                (int) s.get99thPercentile(),
+                (int) s.getMaximum());
             i += 1;
         }
     }
@@ -203,25 +212,25 @@ public class ResultWriter {
 
         // long startNs = latencySamples.get(0).startNs;
         String[] header = {
-                "Transaction Type Index",
-                "Transaction Name",
-                "Start Time (microseconds)",
-                "Latency (microseconds)",
-                "Worker Id (start number)",
-                "Phase Id (index in config file)"
+            "Transaction Type Index",
+            "Transaction Name",
+            "Start Time (microseconds)",
+            "Latency (microseconds)",
+            "Worker Id (start number)",
+            "Phase Id (index in config file)"
         };
         out.println(StringUtil.join(",", header));
         for (LatencyRecord.Sample s : results.getLatencySamples()) {
             double startUs = ((double) s.getStartNanosecond() / (double) 1000000000);
             String[] row = {
-                    Integer.toString(s.getTransactionType()),
-                    // Important!
-                    // The TxnType offsets start at 1!
-                    activeTXTypes.get(s.getTransactionType() - 1).getName(),
-                    String.format("%10.6f", startUs - offset),
-                    Integer.toString(s.getLatencyMicrosecond()),
-                    Integer.toString(s.getWorkerId()),
-                    Integer.toString(s.getPhaseId()),
+                Integer.toString(s.getTransactionType()),
+                // Important!
+                // The TxnType offsets start at 1!
+                activeTXTypes.get(s.getTransactionType() - 1).getName(),
+                String.format("%10.6f", startUs - offset),
+                Integer.toString(s.getLatencyMicrosecond()),
+                Integer.toString(s.getWorkerId()),
+                Integer.toString(s.getPhaseId()),
             };
             out.println(StringUtil.join(",", row));
         }
