@@ -21,7 +21,6 @@ public abstract class YBMicroBenchmark {
     public boolean beforeLoadImplemented = false;
 
 
-
     public HierarchicalConfiguration<ImmutableNode> config;
 
     public YBMicroBenchmark(HierarchicalConfiguration<ImmutableNode> config) {
@@ -36,15 +35,21 @@ public abstract class YBMicroBenchmark {
 
     public void cleanUp(Connection conn) throws SQLException {};
 
-    public void loadOnce(Connection conn) throws SQLException{};
+    public void loadOnce(Connection conn) throws SQLException {
+    }
 
-    public void executeOnce(Connection conn) throws SQLException{};
+    public void executeOnce(Connection conn) throws SQLException {
+    }
 
-    public void afterLoad(Connection conn) throws SQLException{};
+    public void afterLoad(Connection conn) throws SQLException {
+    }
 
-    public void execute(Connection conn) throws SQLException{};
+    public void execute(Connection conn) throws SQLException {
+    }
 
-    public void beforeLoad(Connection conn) throws SQLException{};
+    public void beforeLoad(Connection conn) throws SQLException {
+    }
+
 }
 
 

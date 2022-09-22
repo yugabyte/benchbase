@@ -596,5 +596,3 @@ public abstract class JSONUtil {
     }
 
 }
-
-

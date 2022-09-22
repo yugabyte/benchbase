@@ -64,5 +64,3 @@ public class CreateAndDeleteTables extends YBMicroBenchmark {
     }
 
 }
-
-

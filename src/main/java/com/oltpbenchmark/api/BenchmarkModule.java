@@ -31,7 +31,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -163,7 +162,6 @@ public abstract class BenchmarkModule {
             DatabaseType ddl_db_type = db_type;
             // HACK: Use MySQL if we're given MariaDB
             if (ddl_db_type == DatabaseType.MARIADB) ddl_db_type = DatabaseType.MYSQL;
-
             names.add("ddl-" + ddl_db_type.name().toLowerCase() + ".sql");
         }
         names.add("ddl-generic.sql");

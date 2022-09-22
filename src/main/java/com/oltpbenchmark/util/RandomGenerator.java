@@ -43,6 +43,7 @@ public class RandomGenerator extends Random {
         int range_size = maximum - minimum + 1;
         int value = this.nextInt(range_size);
         value += minimum;
+
         return value;
     }
 

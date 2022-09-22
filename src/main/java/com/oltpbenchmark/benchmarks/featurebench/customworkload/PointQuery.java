@@ -65,4 +65,3 @@ public class PointQuery extends YBMicroBenchmark {
     }
 
 }
-
