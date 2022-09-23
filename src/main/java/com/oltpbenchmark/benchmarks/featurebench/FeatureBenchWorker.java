@@ -34,7 +34,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -147,7 +149,22 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
         if (!this.configuration.getNewConnectionPerTxn() && this.conn != null && ybm != null) {
             try {
                 if (this.configuration.getWorkloadState().getGlobalState() == State.EXIT && !isCleanUpDone) {
-                    ybm.cleanUp(conn);
+                    if (config.containsKey("cleanup")) {
+                        LOG.info("\n=================Cleanup Phase taking from Yaml=========\n");
+                        List<String> ddls = config.getList(String.class, "cleanup");
+                        try {
+                            Statement stmtOBj = conn.createStatement();
+                            for (String ddl : ddls) {
+                                stmtOBj.execute(ddl);
+                            }
+                            stmtOBj.close();
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                        }
+
+                    } else {
+                        ybm.cleanUp(conn);
+                    }
                     isCleanUpDone = true;
                 }
                 conn.close();

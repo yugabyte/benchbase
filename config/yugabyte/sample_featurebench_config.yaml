@@ -9,7 +9,7 @@ loaderthreads: 1
 terminals: 1
 works:
     work:
-        time: 10
+#        time: 10
         serial: true
         active_terminals: 1
         rate: 1000
@@ -26,3 +26,10 @@ microbenchmark:
         indexes: 2
         filePath: accounts.csv
         rowsPerTransaction: 2000
+        create:
+            - DROP TABLE IF EXISTS accounts;
+            - CREATE TABLE accounts (id int NOT NULL, name varchar(64) NOT NULL, CONSTRAINT pk_accounts PRIMARY KEY (id));
+            - CREATE INDEX idx_accounts_name ON accounts (name);
+        cleanup:
+            - DROP TABLE accounts;
+

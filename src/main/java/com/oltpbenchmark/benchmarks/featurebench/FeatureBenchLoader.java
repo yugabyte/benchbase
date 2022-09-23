@@ -27,6 +27,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -76,15 +77,35 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
     private void createPhaseAndBeforeLoad() {
         try {
             Connection conn = benchmark.makeConnection();
-            if (ybm.createDBImplemented) {
+            long createStart = System.currentTimeMillis();
+            if (config.containsKey("create")) {
+                createYaml(conn);
+            } else {
                 ybm.create(conn);
             }
+            long createEnd = System.currentTimeMillis();
+            LOG.info("Elapsed time in create phase: {} milliseconds", createEnd - createStart);
+
             if (ybm.beforeLoadImplemented) {
                 ybm.beforeLoad(conn);
             }
             conn.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private void createYaml(Connection conn) throws SQLException {
+        LOG.info("\n=============Create Phase taking from Yaml============\n");
+        List<String> ddls = config.getList(String.class, "create");
+        try {
+            Statement stmtOBj = conn.createStatement();
+            for (String ddl : ddls) {
+                stmtOBj.execute(ddl);
+            }
+            stmtOBj.close();
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
     }
 

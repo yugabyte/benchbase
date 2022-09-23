@@ -27,13 +27,15 @@ public abstract class YBMicroBenchmark {
         this.config = config;
     }
 
-    public abstract void create(Connection conn) throws SQLException;
+    public void create(Connection conn) throws SQLException {
+    }
 
     public abstract ArrayList<LoadRule> loadRules();
 
     public abstract ArrayList<ExecuteRule> executeRules();
 
-    public abstract void cleanUp(Connection conn) throws SQLException;
+    public void cleanUp(Connection conn) throws SQLException {
+    }
 
     public void loadOnce(Connection conn) throws SQLException {
     }
