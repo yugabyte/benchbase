@@ -102,12 +102,10 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
         }
     }
 
-    private void loadRulesYaml(ArrayList<LoaderThread> loaderThreads) {
+    private void loadRulesYaml(ArrayList<LoaderThread> loaderThreads) throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         LOG.info("\n=============Load Rules taking from Yaml============\n");
         List<HierarchicalConfiguration<ImmutableNode>> loadRulesConfig = config.configurationsAt("loadRules");
         for (HierarchicalConfiguration loadRuleConfig : loadRulesConfig) {
-            System.out.println(loadRuleConfig.getString("table"));
-            System.out.println(loadRuleConfig.getInt("rows"));
             List<HierarchicalConfiguration<ImmutableNode>> columnsConfigs = loadRuleConfig.configurationsAt("columns");
             List<Map<String, Object>> columns = new ArrayList<>();
             for (HierarchicalConfiguration columnsConfig : columnsConfigs) {
@@ -122,10 +120,6 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
                         params = columnsConfig.get(Object.class, element);
                     }
                     column.put(element, params);
-                }
-                for (Map.Entry entry : column.entrySet()) {
-                    System.out.println("Key = " + entry.getKey() +
-                        ", Value = " + entry.getValue());
                 }
                 columns.add(column);
             }
@@ -149,26 +143,57 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
     private class GeneratorYaml extends LoaderThread {
 
         static int numberOfGeneratorFinished = 0;
+        private final List<UtilToMethod> baseutils = new ArrayList<>();
         private String tableName;
         private long numberOfRows;
         private List<Map<String, Object>> columns;
 
-        public GeneratorYaml(String tableName, long numberOfRows, List<Map<String, Object>> columns) {
+        public GeneratorYaml(String tableName, long numberOfRows, List<Map<String, Object>> columns) throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
             super(benchmark);
             this.tableName = tableName;
             this.numberOfRows = numberOfRows;
             this.columns = columns;
+            for (Map<String, Object> col : columns) {
+                UtilToMethod obj = new UtilToMethod(col.get("util"), col.get("params"));
+                this.baseutils.add(obj);
+            }
         }
 
         @Override
         public void load(Connection conn) throws SQLException {
 
             try {
-                UtilToMethod obj= new UtilToMethod(columns.get(0).get("util"));
-                System.out.println(obj.get());
-            } catch (InstantiationException | IllegalAccessException |
-                     InvocationTargetException | NoSuchMethodException |
-                     ClassNotFoundException e) {
+
+                int batchSize = workConf.getBatchSize();
+                StringBuilder columnString = new StringBuilder();
+                StringBuilder valueString = new StringBuilder();
+
+                for (Map<String, Object> columnsDetails : this.columns) {
+                    columnString.append(columnsDetails.get("name")).append(",");
+                    valueString.append("?,");
+                }
+                columnString.setLength(columnString.length() - 1);
+                valueString.setLength(valueString.length() - 1);
+                String insertStmt = "INSERT INTO " + this.tableName + " (" + columnString + ") VALUES " + "(" + valueString + ")";
+                stmt = conn.prepareStatement(insertStmt);
+                int currentBatchSize = 0;
+                for (int i = 0; i < this.numberOfRows; i++) {
+                    for (int j = 0; j < baseutils.size(); j++) {
+                        stmt.setObject(j + 1, this.baseutils.get(j).get());
+                    }
+                    currentBatchSize += 1;
+                    stmt.addBatch();
+                    if (currentBatchSize == batchSize) {
+                        stmt.executeBatch();
+                        currentBatchSize = 0;
+                    }
+                }
+                if (currentBatchSize != 0) {
+                    stmt.executeBatch();
+                }
+
+            } catch (IllegalAccessException |
+                     InvocationTargetException e) {
                 e.printStackTrace();
             }
 
