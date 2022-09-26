@@ -164,17 +164,13 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
         public void load(Connection conn) throws SQLException {
 
             try {
-                String className = "com.oltpbenchmark.benchmarks.featurebench.BindingFunctions." + (String) columns.get(0).get("util");
-                System.out.println(className);
-                Class cls = Class.forName(className);
-                Object clsInstance = (Object) cls.getDeclaredConstructor(Object.class).newInstance(2);
-                System.out.println(clsInstance);
+                UtilToMethod obj= new UtilToMethod(columns.get(0).get("util"));
+                System.out.println(obj.get());
             } catch (InstantiationException | IllegalAccessException |
                      InvocationTargetException | NoSuchMethodException |
                      ClassNotFoundException e) {
                 e.printStackTrace();
             }
-
 
             numberOfGeneratorFinished += 1;
         }
