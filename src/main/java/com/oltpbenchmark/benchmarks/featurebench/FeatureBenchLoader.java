@@ -28,9 +28,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 
 public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
@@ -50,14 +48,6 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
             ybm = (YBMicroBenchmark) Class.forName(workloadClass)
                 .getDeclaredConstructor(HierarchicalConfiguration.class)
                 .newInstance(config);
-            List<HierarchicalConfiguration<ImmutableNode>> loadRules2=config.configurationsAt("loadRules");
-
-            for(HierarchicalConfiguration loadRule : loadRules2) {
-                System.out.println(loadRule.getString("table"));
-            }
-
-
-
 
             createPhaseAndBeforeLoad();
 
@@ -66,13 +56,9 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
             if (ybm.loadOnceImplemented) {
                 loaderThreads.add(new GeneratorOnce(ybm));
             } else {
-                ArrayList<LoadRule> loadRules = ybm.loadRules();
-                sizeOfLoadRule = loadRules.size();
-                // TODO: list of loaderthreads will call beforeLoad and afterLoad everytime
-                for (LoadRule loadRule : loadRules) {
-                    loaderThreads.add(new Generator(loadRule));
-                }
+                loadRulesYaml(loaderThreads);
             }
+            sizeOfLoadRule = loaderThreads.size();
             return loaderThreads;
         } catch (InstantiationException | IllegalAccessException |
                  InvocationTargetException | NoSuchMethodException |
@@ -116,6 +102,37 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
         }
     }
 
+    private void loadRulesYaml(ArrayList<LoaderThread> loaderThreads) {
+        LOG.info("\n=============Load Rules taking from Yaml============\n");
+        List<HierarchicalConfiguration<ImmutableNode>> loadRulesConfig = config.configurationsAt("loadRules");
+        for (HierarchicalConfiguration loadRuleConfig : loadRulesConfig) {
+            System.out.println(loadRuleConfig.getString("table"));
+            System.out.println(loadRuleConfig.getInt("rows"));
+            List<HierarchicalConfiguration<ImmutableNode>> columnsConfigs = loadRuleConfig.configurationsAt("columns");
+            List<Map<String, Object>> columns = new ArrayList<>();
+            for (HierarchicalConfiguration columnsConfig : columnsConfigs) {
+                Iterator columnKeys = columnsConfig.getKeys();
+                Map<String, Object> column = new HashMap<>();
+                while (columnKeys.hasNext()) {
+                    String element = (String) columnKeys.next();
+                    Object params;
+                    if (element.equals("params")) {
+                        params = columnsConfig.getList(Object.class, element);
+                    } else {
+                        params = columnsConfig.get(Object.class, element);
+                    }
+                    column.put(element, params);
+                }
+                for (Map.Entry entry : column.entrySet()) {
+                    System.out.println("Key = " + entry.getKey() +
+                        ", Value = " + entry.getValue());
+                }
+                columns.add(column);
+            }
+            loaderThreads.add(new GeneratorYaml(loadRuleConfig.getString("table"), loadRuleConfig.getLong("rows"), columns));
+        }
+    }
+
     private void afterLoadPhase() {
         try {
             if (ybm.afterLoadImplemented) {
@@ -126,6 +143,46 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private class GeneratorYaml extends LoaderThread {
+
+        static int numberOfGeneratorFinished = 0;
+        private String tableName;
+        private long numberOfRows;
+        private List<Map<String, Object>> columns;
+
+        public GeneratorYaml(String tableName, long numberOfRows, List<Map<String, Object>> columns) {
+            super(benchmark);
+            this.tableName = tableName;
+            this.numberOfRows = numberOfRows;
+            this.columns = columns;
+        }
+
+        @Override
+        public void load(Connection conn) throws SQLException {
+
+            try {
+                String className = "com.oltpbenchmark.benchmarks.featurebench.BindingFunctions." + (String) columns.get(0).get("util");
+                System.out.println(className);
+                Class cls = Class.forName(className);
+                Object clsInstance = (Object) cls.getDeclaredConstructor(Object.class).newInstance(2);
+                System.out.println(clsInstance);
+            } catch (InstantiationException | IllegalAccessException |
+                     InvocationTargetException | NoSuchMethodException |
+                     ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+
+
+            numberOfGeneratorFinished += 1;
+        }
+
+        @Override
+        public void afterLoad() {
+            if (numberOfGeneratorFinished != sizeOfLoadRule) return;
+            afterLoadPhase();
         }
     }
 
@@ -147,7 +204,6 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
             afterLoadPhase();
         }
     }
-
 
     private class Generator extends LoaderThread {
         static int numberOfGeneratorFinished = 0;
@@ -252,4 +308,5 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
             afterLoadPhase();
         }
     }
+
 }
