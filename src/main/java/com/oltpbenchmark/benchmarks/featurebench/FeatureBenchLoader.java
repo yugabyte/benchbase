@@ -23,6 +23,7 @@ import com.oltpbenchmark.benchmarks.featurebench.util.*;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.tree.ImmutableNode;
 
+
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -48,6 +49,7 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
             ybm = (YBMicroBenchmark) Class.forName(workloadClass)
                 .getDeclaredConstructor(HierarchicalConfiguration.class)
                 .newInstance(config);
+
 
             createPhaseAndBeforeLoad();
 
@@ -163,7 +165,6 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
         public void load(Connection conn) throws SQLException {
 
             try {
-
                 int batchSize = workConf.getBatchSize();
                 StringBuilder columnString = new StringBuilder();
                 StringBuilder valueString = new StringBuilder();
@@ -329,5 +330,7 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
             afterLoadPhase();
         }
     }
-
 }
+
+
+
