@@ -1,14 +1,17 @@
 package com.oltpbenchmark.benchmarks.featurebench.BindingFunctions;
 
-public class RandomStringNumeric {
+import java.util.List;
+
+public class RandomStringNumeric implements BaseUtil {
     protected int desiredLength;
 
-    public RandomStringNumeric(int desiredLength) {
-        this.desiredLength = desiredLength;
+    public RandomStringNumeric(List<Object> values) {
+        this.desiredLength = (int) values.get(0);
     }
 
 
-    public String getNumericString() {
+    @Override
+    public Object run() {
         String NumericString = "0123456789";
 
         StringBuilder sb = new StringBuilder(desiredLength);

@@ -1,14 +1,17 @@
 package com.oltpbenchmark.benchmarks.featurebench.BindingFunctions;
 
-public class RandomStringAlphabets {
+import java.util.List;
+
+public class RandomStringAlphabets implements BaseUtil {
 
     protected int desiredLength;
 
-    public RandomStringAlphabets(int desiredLength) {
-        this.desiredLength = desiredLength;
+    public RandomStringAlphabets(List<Object> values) {
+        this.desiredLength = (int) values.get(0);
     }
 
-    public String getAlphaString() {
+    @Override
+    public Object run() {
         String AlphaString = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" + "abcdefghijklmnopqrstuvxyz";
 
         StringBuilder sb = new StringBuilder(desiredLength);
@@ -18,5 +21,4 @@ public class RandomStringAlphabets {
         }
         return sb.toString();
     }
-
 }

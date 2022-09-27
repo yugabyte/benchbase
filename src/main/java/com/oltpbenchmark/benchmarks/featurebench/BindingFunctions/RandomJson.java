@@ -1,36 +1,40 @@
 package com.oltpbenchmark.benchmarks.featurebench.BindingFunctions;
 
+import com.oltpbenchmark.benchmarks.featurebench.util.UtilToMethod;
 import org.json.JSONObject;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 
-public class RandomJson {
+
+public class RandomJson implements BaseUtil {
 
     protected int fields;
-    protected int nestedness ;
+    protected int nestedness;
     protected Object valueType;
     protected int valueLength;
 
 
-    public RandomJson(int fields, int nestedness, Object valueType, int valueLength) {
-        this.fields = fields;
-        this.nestedness = nestedness;
-        this.valueType = valueType;
-        this.valueLength = valueLength;
+    public RandomJson(List<Object> values) {
+        this.fields = (int) values.get(0);
+        this.nestedness = (int) values.get(1);
+        this.valueType = values.get(2);
+        this.valueLength = (int) values.get(3);
     }
 
-    public String getJsonAsString() {
+    @Override
+    public Object run() throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         JSONObject outer = new JSONObject();
         for (int i = 0; i < fields; i++) {
-           // JSONObject inner = new JSONObject();
+            // JSONObject inner = new JSONObject();
             if (valueType.getClass().equals(String.class)) {
-                outer.put(Integer.toString(i), new RandomStringAlphabets(valueLength).getAlphaString());
+                outer.put(Integer.toString(i), new UtilToMethod("RandomStringAlphabets").get());
             } else if (valueType.getClass().equals(Integer.class)) {
-                outer.put(Integer.toString(i), new RandomStringNumeric(valueLength).getNumericString());
+                outer.put(Integer.toString(i), new UtilToMethod("RandomStringNumeric").get());
             } else if (valueType.getClass().equals(Boolean.class)) {
-                outer.put(Integer.toString(i), new RandomBoolean().getRandomBoolean());
+                outer.put(Integer.toString(i), new UtilToMethod("RandomBoolean").get());
             }
         }
-
         return outer.toString();
     }
 /*

@@ -3,8 +3,9 @@ package com.oltpbenchmark.benchmarks.featurebench.BindingFunctions;
 import java.util.UUID;
 
 
-public class RandomUUID {
-    public String getRandomUUID() {
+public class RandomUUID implements BaseUtil {
+    @Override
+    public Object run() {
         UUID uuid = UUID.randomUUID();
         String uuidAsString = uuid.toString();
         return uuidAsString;
