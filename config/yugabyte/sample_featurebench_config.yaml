@@ -28,18 +28,31 @@ microbenchmark:
         rowsPerTransaction: 2000
         create:
             - DROP TABLE IF EXISTS accounts;
-            - CREATE TABLE accounts (id int NOT NULL);
+            - CREATE TABLE accounts (id int NOT NULL ,name varchar(26),number varchar(10), PRIMARY KEY (id));
         cleanup:
             - DROP TABLE accounts;
         loadRules:
           - table: accounts
-            rows: 2
+            rows: 10
             columns:
-              -   name: id
-                  util: RandomNumber
-                  params:
-                      - 1
-                      - 1000
+              - name: id
+                util: PrimaryIntGen
+                params:
+                    - 5
+                    - 20
+              - name: name
+                util: RandomAstring
+                params:
+                    - 3
+                    - 7
+              - name: number
+                util: RandomNstring
+                params:
+                    - 10
+                    - 10
+
+
+
 #              -   name: name
 #                  util: NumberToIdString
 #                  params:
