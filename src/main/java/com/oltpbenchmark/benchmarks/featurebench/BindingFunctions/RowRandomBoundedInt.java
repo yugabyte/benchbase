@@ -21,6 +21,9 @@ import com.oltpbenchmark.benchmarks.featurebench.BindingFunctions.RowRandomInt;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.List;
+
 
 public class RowRandomBoundedInt
     extends RowRandomInt implements BaseUtil {

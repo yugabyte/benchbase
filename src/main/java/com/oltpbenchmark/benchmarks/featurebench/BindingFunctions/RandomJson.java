@@ -6,7 +6,6 @@ import org.json.JSONObject;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
-
 public class RandomJson implements BaseUtil {
 
     protected int fields;

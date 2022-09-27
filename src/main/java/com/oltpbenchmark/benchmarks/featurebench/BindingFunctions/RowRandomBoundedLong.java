@@ -22,6 +22,7 @@ import com.oltpbenchmark.benchmarks.featurebench.BindingFunctions.RowRandomLong;
 import java.util.List;
 
 
+
 public class RowRandomBoundedLong implements BaseUtil {
     private final com.oltpbenchmark.benchmarks.featurebench.BindingFunctions.RowRandomLong randomLong;
     private final com.oltpbenchmark.benchmarks.featurebench.BindingFunctions.RowRandomInt randomInt;

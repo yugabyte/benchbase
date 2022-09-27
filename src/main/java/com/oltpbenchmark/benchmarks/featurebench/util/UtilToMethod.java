@@ -17,7 +17,6 @@ public class UtilToMethod {
         Class cls = Class.forName(className);
         this.clsInstance = (BaseUtil) cls.getDeclaredConstructor(List.class).newInstance((List) params);
     }
-
     public Object get() throws InvocationTargetException, IllegalAccessException, ClassNotFoundException, NoSuchMethodException, InstantiationException {
         return this.clsInstance.run();
     }

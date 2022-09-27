@@ -1,6 +1,8 @@
 package com.oltpbenchmark.benchmarks.featurebench.BindingFunctions;
 
+
 import java.util.List;
+
 
 /**
  * Easily step from one value to the next according to a modified
@@ -13,10 +15,12 @@ import java.util.List;
  * you get 50, 100, 500, 1000, 5000, and so on when you ask for
  * the next higher bound.
  */
+
 public class Bounds implements BaseUtil {
 
     private final int levelsPerMagnitude;
     private long currentValue;
+
 
     public Bounds(List<Object> values) {
         this.currentValue = (long) values.get(0);

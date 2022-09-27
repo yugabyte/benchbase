@@ -17,7 +17,6 @@ public class RandomNoWithDecimalPoints implements BaseUtil {
             throw new IllegalArgumentException("error");
         }
     }
-
     @Override
     public Object run() {
         Random rnd = new Random();
