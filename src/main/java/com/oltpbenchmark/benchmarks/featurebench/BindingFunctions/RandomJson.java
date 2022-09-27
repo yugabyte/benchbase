@@ -1,9 +1,11 @@
 package com.oltpbenchmark.benchmarks.featurebench.BindingFunctions;
 
+
 import com.oltpbenchmark.benchmarks.featurebench.util.UtilToMethod;
 import org.json.JSONObject;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collections;
 import java.util.List;
 
 public class RandomJson implements BaseUtil {
@@ -27,11 +29,11 @@ public class RandomJson implements BaseUtil {
         for (int i = 0; i < fields; i++) {
             // JSONObject inner = new JSONObject();
             if (valueType.getClass().equals(String.class)) {
-                outer.put(Integer.toString(i), new UtilToMethod("RandomStringAlphabets",10).get());
+                outer.put(Integer.toString(i), new RandomStringAlphabets(Collections.singletonList(valueLength)).run());
             } else if (valueType.getClass().equals(Integer.class)) {
-                outer.put(Integer.toString(i), new UtilToMethod("RandomStringNumeric",15).get());
+                outer.put(Integer.toString(i), new RandomStringNumeric(Collections.singletonList(valueLength)).run());
             } else if (valueType.getClass().equals(Boolean.class)) {
-                outer.put(Integer.toString(i), new UtilToMethod("RandomBoolean",null).get());
+                outer.put(Integer.toString(i), new RandomBoolean().run());
             }
         }
         return outer.toString();
