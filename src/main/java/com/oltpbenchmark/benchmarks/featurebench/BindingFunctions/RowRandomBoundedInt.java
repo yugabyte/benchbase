@@ -18,6 +18,7 @@ package com.oltpbenchmark.benchmarks.featurebench.BindingFunctions;
 
 import com.oltpbenchmark.benchmarks.featurebench.BindingFunctions.RowRandomInt;
 
+
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
@@ -40,4 +41,8 @@ public class RowRandomBoundedInt
         return nextInt(lowValue, highValue);
     }
 }
+
+
+
+
 

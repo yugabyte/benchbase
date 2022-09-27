@@ -1,5 +1,6 @@
 package com.oltpbenchmark.benchmarks.featurebench.BindingFunctions;
 
+
 import java.util.List;
 
 public class PrimaryStringGen implements BaseUtil {
@@ -30,6 +31,7 @@ public class PrimaryStringGen implements BaseUtil {
         key = numberToIdString(currentValue);
         return key;
     }
+
 }
 
 

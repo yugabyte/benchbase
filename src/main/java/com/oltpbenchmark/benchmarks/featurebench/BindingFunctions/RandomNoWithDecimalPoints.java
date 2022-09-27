@@ -1,5 +1,6 @@
 package com.oltpbenchmark.benchmarks.featurebench.BindingFunctions;
 
+
 import java.util.List;
 import java.util.Random;
 
@@ -17,6 +18,7 @@ public class RandomNoWithDecimalPoints implements BaseUtil {
             throw new IllegalArgumentException("error");
         }
     }
+
 
     @Override
     public Object run() {

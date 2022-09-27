@@ -18,6 +18,7 @@ package com.oltpbenchmark.benchmarks.featurebench.BindingFunctions;
  */
 
 
+
 import java.util.Arrays;
 import java.util.Random;
 

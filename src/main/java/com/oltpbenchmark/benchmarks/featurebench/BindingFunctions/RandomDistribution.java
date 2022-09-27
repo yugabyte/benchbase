@@ -14,7 +14,6 @@ import java.util.*;
  */
 public class RandomDistribution {
 
-
     /**
      * Interface for discrete (integer) random distributions.
      */
@@ -80,6 +79,7 @@ public class RandomDistribution {
                 total += this.nextLong();
             } // FOR
             return (total / (double) num_samples);
+
         }
 
         /**

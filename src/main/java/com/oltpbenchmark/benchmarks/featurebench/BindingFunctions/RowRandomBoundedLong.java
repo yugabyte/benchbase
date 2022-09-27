@@ -19,6 +19,7 @@ package com.oltpbenchmark.benchmarks.featurebench.BindingFunctions;
 import com.oltpbenchmark.benchmarks.featurebench.BindingFunctions.RowRandomInt;
 import com.oltpbenchmark.benchmarks.featurebench.BindingFunctions.RowRandomLong;
 
+
 import java.util.List;
 
 
@@ -64,4 +65,5 @@ public class RowRandomBoundedLong implements BaseUtil {
         }
         return randomInt.nextInt((int) lowValue, (int) highValue);
     }
+
 }

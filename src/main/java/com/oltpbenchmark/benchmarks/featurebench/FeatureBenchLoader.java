@@ -203,6 +203,8 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
         }
     }
 
+
+
     private class Generator extends LoaderThread {
         static int numberOfGeneratorFinished = 0;
         final LoadRule loadRule;

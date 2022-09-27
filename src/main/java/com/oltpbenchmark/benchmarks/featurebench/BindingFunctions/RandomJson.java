@@ -1,5 +1,6 @@
 package com.oltpbenchmark.benchmarks.featurebench.BindingFunctions;
 
+
 import com.oltpbenchmark.benchmarks.featurebench.util.UtilToMethod;
 import org.json.JSONObject;
 
@@ -11,9 +12,9 @@ public class RandomJson implements BaseUtil {
 
     protected int fields;
     protected int nestedness;
+
     protected Object valueType;
     protected int valueLength;
-
 
     public RandomJson(List<Object> values) {
         this.fields = (int) values.get(0);

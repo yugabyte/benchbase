@@ -1,5 +1,6 @@
 package com.oltpbenchmark.benchmarks.featurebench.BindingFunctions;
 
+
 import java.util.List;
 
 public class RandomStringAlphabets implements BaseUtil {
