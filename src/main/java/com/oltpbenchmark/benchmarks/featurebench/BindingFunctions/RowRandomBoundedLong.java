@@ -19,36 +19,26 @@ package com.oltpbenchmark.benchmarks.featurebench.BindingFunctions;
 import com.oltpbenchmark.benchmarks.featurebench.BindingFunctions.RowRandomInt;
 import com.oltpbenchmark.benchmarks.featurebench.BindingFunctions.RowRandomLong;
 
+import java.util.List;
 
-public class RowRandomBoundedLong {
+
+public class RowRandomBoundedLong implements BaseUtil {
     private final com.oltpbenchmark.benchmarks.featurebench.BindingFunctions.RowRandomLong randomLong;
     private final com.oltpbenchmark.benchmarks.featurebench.BindingFunctions.RowRandomInt randomInt;
 
     private final long lowValue;
     private final long highValue;
 
-    public RowRandomBoundedLong(long seed, boolean use64Bits, long lowValue, long highValue) {
-        this(seed, use64Bits, lowValue, highValue, 1);
-    }
-
-    public RowRandomBoundedLong(long seed, boolean use64Bits, long lowValue, long highValue, int seedsPerRow) {
-        if (use64Bits) {
-            this.randomLong = new RowRandomLong(seed, seedsPerRow);
+    public RowRandomBoundedLong(List<Object> values) {
+        if ((boolean) values.get(1)) {
+            this.randomLong = new RowRandomLong((long) values.get(0), 1);
             this.randomInt = null;
         } else {
             this.randomLong = null;
-            this.randomInt = new RowRandomInt(seed, seedsPerRow);
+            this.randomInt = new RowRandomInt((long) values.get(0), 1);
         }
-
-        this.lowValue = lowValue;
-        this.highValue = highValue;
-    }
-
-    public long nextValue() {
-        if (randomLong != null) {
-            return randomLong.nextLong(lowValue, highValue);
-        }
-        return randomInt.nextInt((int) lowValue, (int) highValue);
+        this.lowValue = (int) values.get(2);
+        this.highValue = (int) values.get(3);
     }
 
     public void rowFinished() {
@@ -65,5 +55,13 @@ public class RowRandomBoundedLong {
         } else {
             randomInt.advanceRows(rowCount);
         }
+    }
+
+    @Override
+    public Object run() {
+        if (randomLong != null) {
+            return randomLong.nextLong(lowValue, highValue);
+        }
+        return randomInt.nextInt((int) lowValue, (int) highValue);
     }
 }

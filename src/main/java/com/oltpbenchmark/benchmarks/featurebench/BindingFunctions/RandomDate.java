@@ -1,21 +1,23 @@
 package com.oltpbenchmark.benchmarks.featurebench.BindingFunctions;
 
+import java.util.List;
 import java.util.Random;
 
 
-public class RandomDate {
+public class RandomDate implements BaseUtil {
     protected Random rd;
     protected int yearlowerBound;
     protected int yearupperBound;
 
-    public RandomDate(int yearlowerBound, int yearupperBound) {
+    public RandomDate(List<Object> values) {
         Random rnd = new Random();
-        this.yearlowerBound = yearlowerBound;
-        this.yearupperBound = yearupperBound;
+        this.yearlowerBound = (int) values.get(0);
+        this.yearupperBound = (int) values.get(1);
 
     }
 
-    public String getRandomDate() {
+    @Override
+    public Object run() {
         if (this.rd == null) {
             this.rd = new Random();
         }

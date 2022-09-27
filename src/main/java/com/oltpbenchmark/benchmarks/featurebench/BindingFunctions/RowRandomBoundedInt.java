@@ -18,24 +18,26 @@ package com.oltpbenchmark.benchmarks.featurebench.BindingFunctions;
 
 import com.oltpbenchmark.benchmarks.featurebench.BindingFunctions.RowRandomInt;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 
 
 public class RowRandomBoundedInt
-    extends RowRandomInt {
+    extends RowRandomInt implements BaseUtil {
     private final int lowValue;
     private final int highValue;
 
-    public RowRandomBoundedInt(long seed, int lowValue, int highValue) {
-        this(seed, lowValue, highValue, 1);
+    public RowRandomBoundedInt(List<Object> values) {
+        //super(seed,seedsPerRow);
+        super((long) values.get(0), (int) values.get(3));
+        this.lowValue = (int) values.get(1);
+        this.highValue = (int) values.get(2);
+
     }
 
-    public RowRandomBoundedInt(long seed, int lowValue, int highValue, int seedsPerRow) {
-        super(seed, seedsPerRow);
-        this.lowValue = lowValue;
-        this.highValue = highValue;
-    }
-
-    public int nextValue() {
+    @Override
+    public Object run() throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         return nextInt(lowValue, highValue);
     }
 }
+

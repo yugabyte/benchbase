@@ -196,6 +196,8 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
             } catch (IllegalAccessException |
                      InvocationTargetException e) {
                 e.printStackTrace();
+            } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException e) {
+                throw new RuntimeException(e);
             }
 
             numberOfGeneratorFinished += 1;

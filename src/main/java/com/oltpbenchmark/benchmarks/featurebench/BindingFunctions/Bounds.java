@@ -1,5 +1,7 @@
 package com.oltpbenchmark.benchmarks.featurebench.BindingFunctions;
 
+import java.util.List;
+
 /**
  * Easily step from one value to the next according to a modified
  * logarithmic sequence that makes it easy to pick useful testing
@@ -11,26 +13,18 @@ package com.oltpbenchmark.benchmarks.featurebench.BindingFunctions;
  * you get 50, 100, 500, 1000, 5000, and so on when you ask for
  * the next higher bound.
  */
-public class Bounds {
+public class Bounds implements BaseUtil {
 
     private final int levelsPerMagnitude;
     private long currentValue;
 
-    public Bounds(long startingValue, int levelsPerMagnitude) {
-        this.currentValue = startingValue;
-        this.levelsPerMagnitude = levelsPerMagnitude;
+    public Bounds(List<Object> values) {
+        this.currentValue = (long) values.get(0);
+        this.levelsPerMagnitude = (int) values.get(1);
     }
 
-    public Bounds setValue(long value) {
-        this.currentValue = value;
-        return this;
-    }
-
-    public long getValue() {
-        return currentValue;
-    }
-
-    public long getNextValue() {
+    @Override
+    public Object run() {
         long nextValue = findNextHigherValue();
         currentValue = nextValue;
         return currentValue;
@@ -46,10 +40,5 @@ public class Bounds {
 
         long newValue = (long) (currentValue + increment);
         return newValue;
-    }
-
-    @Override
-    public String toString() {
-        return this.currentValue + "(incr by 1/" + this.levelsPerMagnitude + ")";
     }
 }

@@ -18,7 +18,6 @@ package com.oltpbenchmark.benchmarks.featurebench.BindingFunctions;
  */
 
 
-
 import com.oltpbenchmark.api.BenchmarkModule;
 import com.oltpbenchmark.catalog.*;
 import com.oltpbenchmark.types.DatabaseType;
@@ -356,7 +355,7 @@ public abstract class SQLUtil {
         boolean escape_names = db_type.shouldEscapeNames();
 
         StringBuilder sb = new StringBuilder();
-        if(db_type.equals(DatabaseType.PHOENIX)) {
+        if (db_type.equals(DatabaseType.PHOENIX)) {
             sb.append("UPSERT");
         } else {
             sb.append("INSERT");

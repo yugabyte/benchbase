@@ -1,24 +1,19 @@
 package com.oltpbenchmark.benchmarks.featurebench.BindingFunctions;
 
-public class PrimaryStringGen {
+import java.util.List;
+
+public class PrimaryStringGen implements BaseUtil {
     protected int currentValue;
     protected int desiredLength;
 
+    protected int startNumber;
+
     protected String key;
 
-    public PrimaryStringGen(int startNumber, int desiredLength) {
+    public PrimaryStringGen(List<Object> values) {
+        this.startNumber = (int) values.get(0);
         this.currentValue = startNumber - 1;
-        this.desiredLength = desiredLength;
-    }
-
-    public String getValue() {
-        return key;
-    }
-
-    public String getNextValue() {
-        currentValue++;
-        key = numberToIdString(currentValue);
-        return key;
+        this.desiredLength = (int) values.get(1);
     }
 
     public String numberToIdString(int number) {
@@ -29,6 +24,12 @@ public class PrimaryStringGen {
         return baseNumberStr.toString();
     }
 
+    @Override
+    public Object run() {
+        currentValue++;
+        key = numberToIdString(currentValue);
+        return key;
+    }
 }
 
 

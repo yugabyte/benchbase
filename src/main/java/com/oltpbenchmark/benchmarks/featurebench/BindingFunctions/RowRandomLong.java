@@ -92,4 +92,5 @@ public class RowRandomLong {
             multiplier = (multiplier * multiplier) % MODULUS_32;
         }
     }
+
 }
