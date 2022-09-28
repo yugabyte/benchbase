@@ -27,11 +27,6 @@ microbenchmark:
             -   table: distributors
                 rows: 10
                 columns:
-                    - name : did
-                      util : PrimaryIntGen
-                      params :
-                          - 1
-                          - 10
                     - name : dname
                       util : RandomAstring
                       params:

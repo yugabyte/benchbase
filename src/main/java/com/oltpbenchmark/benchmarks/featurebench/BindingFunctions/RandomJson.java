@@ -1,7 +1,6 @@
 package com.oltpbenchmark.benchmarks.featurebench.BindingFunctions;
 
 
-import com.oltpbenchmark.benchmarks.featurebench.util.UtilToMethod;
 import org.json.JSONObject;
 
 import java.lang.reflect.InvocationTargetException;

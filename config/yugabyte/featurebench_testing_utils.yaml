@@ -20,20 +20,28 @@ microbenchmark:
     properties:
         create:
             - DROP TABLE IF EXISTS distributors;
-            - CREATE TABLE distributors(did DECIMAL(3), dname varchar(40),primary key(dname));
+            - DROP SEQUENCE IF EXISTS serial_no;
+            - CREATE SEQUENCE serial_no;
+            - CREATE TABLE distributors(did DECIMAL(3) DEFAULT NEXTVAL('serial_no'), dname varchar(40) DEFAULT 'Lusofilms');
         loadRules:
             -   table: distributors
-                rows: 10
+                rows: 5
                 columns:
-                    - name : did
-                      util : PrimaryIntGen
-                      params :
-                          - 1
-                          - 10
                     - name : dname
-                      util : PrimaryStringGen
+                      util : RandomAstring
                       params:
                           - 1
-                          - 10
+                          - 20
+            -   table: distributors
+                rows: 5
+                columns:
+                    -   name: dname
+                        util: OneStringFromArray
+                        params:
+                            - happy
+                            - feet
+                            - slow
+                            - hands
+
         cleanup:
             - DROP TABLE distributors;

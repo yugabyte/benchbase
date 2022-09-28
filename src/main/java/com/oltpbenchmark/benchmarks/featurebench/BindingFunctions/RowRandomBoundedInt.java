@@ -16,11 +16,6 @@ package com.oltpbenchmark.benchmarks.featurebench.BindingFunctions;
  * limitations under the License.
  */
 
-import com.oltpbenchmark.benchmarks.featurebench.BindingFunctions.RowRandomInt;
-
-import java.lang.reflect.InvocationTargetException;
-import java.util.List;
-
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 

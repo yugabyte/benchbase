@@ -1,7 +1,6 @@
 package com.oltpbenchmark.benchmarks.featurebench.BindingFunctions;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
