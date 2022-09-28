@@ -1,0 +1,39 @@
+type: YUGABYTE
+driver: com.yugabyte.Driver
+url: jdbc:yugabytedb://localhost:5433/test_db?sslmode=disable&ApplicationName=featurebench&reWriteBatchedInserts=true
+username: yugabyte
+password:
+batchsize: 128
+isolation: TRANSACTION_REPEATABLE_READ
+loaderThreads: 6
+terminals: 6
+works:
+    work:
+        time: 10
+        rate: 1000
+        weights: 100
+transactiontypes:
+    transactiontype:
+        name: FeatureBench
+microbenchmark:
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBMicroBenchmarkImplementation
+    properties:
+        create:
+            - DROP TABLE IF EXISTS distributors;
+            - CREATE TABLE distributors(did DECIMAL(3), dname varchar(40),primary key(dname));
+        loadRules:
+            -   table: distributors
+                rows: 10
+                columns:
+                    - name : did
+                      util : PrimaryIntGen
+                      params :
+                          - 1
+                          - 10
+                    - name : dname
+                      util : PrimaryStringGen
+                      params:
+                          - 1
+                          - 10
+        cleanup:
+            - DROP TABLE distributors;

@@ -14,6 +14,10 @@ public class PrimaryStringGen implements BaseUtil {
         this.startNumber = (int) values.get(0);
         this.currentValue = startNumber - 1;
         this.desiredLength = (int) values.get(1);
+        if(desiredLength<=0)
+        {
+            throw new RuntimeException("Please use positive desired length for string primary keys");
+        }
     }
 
     public String numberToIdString(int number) {
