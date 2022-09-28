@@ -21,7 +21,7 @@ public class PrimaryIntGen implements BaseUtil {
 
     @Override
     public Object run() {
-        if (currentValue == upperRange) {
+        if (currentValue >= upperRange) {
             throw new RuntimeException("Out of bounds primary key access");
         }
         currentValue = findNextHigherValue();
