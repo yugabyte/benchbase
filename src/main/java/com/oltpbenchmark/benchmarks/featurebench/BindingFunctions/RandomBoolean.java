@@ -1,11 +1,12 @@
 package com.oltpbenchmark.benchmarks.featurebench.BindingFunctions;
 
+import java.util.List;
 import java.util.Random;
 
 public class RandomBoolean implements BaseUtil {
     protected Random rd;
 
-    public RandomBoolean() {
+    public RandomBoolean(List<Object> values) {
         Random rd = new Random();
     }
 

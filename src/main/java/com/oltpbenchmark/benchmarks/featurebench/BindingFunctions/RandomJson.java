@@ -33,7 +33,7 @@ public class RandomJson implements BaseUtil {
             } else if (valueType.getClass().equals(Integer.class)) {
                 outer.put(Integer.toString(i), new RandomStringNumeric(Collections.singletonList(valueLength)).run());
             } else if (valueType.getClass().equals(Boolean.class)) {
-                outer.put(Integer.toString(i), new RandomBoolean().run());
+                outer.put(Integer.toString(i), new RandomBoolean(List.of()).run());
             }
         }
         return outer.toString();
