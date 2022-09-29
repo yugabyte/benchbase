@@ -11,10 +11,16 @@ public class UtilToMethod {
     public Method run;
     public BaseUtil clsInstance;
 
-    public UtilToMethod(Object util, Object params) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+    public UtilToMethod(Object util, Object params)  {
         String className = "com.oltpbenchmark.benchmarks.featurebench.utils." + util;
-        Class cls = Class.forName(className);
-        this.clsInstance = (BaseUtil) cls.getDeclaredConstructor(List.class).newInstance((List) params);
+        try {
+            Class<?> cls = Class.forName(className);
+            this.clsInstance = (BaseUtil) cls.getDeclaredConstructor(List.class).newInstance((List) params);
+        }catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | InstantiationException |
+                IllegalAccessException e) {
+            throw new RuntimeException(String.format("Oops! Are you sure that you provided the right utility function name: %s ? ",util));
+        }
+
     }
     public Object get() throws InvocationTargetException, IllegalAccessException, ClassNotFoundException, NoSuchMethodException, InstantiationException {
         return this.clsInstance.run();
