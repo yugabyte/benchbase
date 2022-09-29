@@ -105,8 +105,12 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
     }
 
     private void loadRulesYaml(ArrayList<LoaderThread> loaderThreads) throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
-        LOG.info("\n=============Load Rules taking from Yaml============\n");
+
         List<HierarchicalConfiguration<ImmutableNode>> loadRulesConfig = config.configurationsAt("loadRules");
+        if(loadRulesConfig.isEmpty()) {
+            throw new RuntimeException("Empty Load Rules");
+        }
+        LOG.info("\n=============Load Rules taking from Yaml============\n");
         for (HierarchicalConfiguration loadRuleConfig : loadRulesConfig) {
             List<HierarchicalConfiguration<ImmutableNode>> columnsConfigs = loadRuleConfig.configurationsAt("columns");
             List<Map<String, Object>> columns = new ArrayList<>();

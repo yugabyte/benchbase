@@ -6,17 +6,17 @@ import java.util.Random;
 
 public class RandomAstring extends Random implements BaseUtil {
 
-    private int minimum_length;
-    private int maximum_length;
+    private int minimumLength;
+    private int maximumLength;
 
     public RandomAstring(List<Object> values) {
         super((int) System.currentTimeMillis());
         if (values.size() != 2) {
             throw new RuntimeException("Incorrect number of parameters for util function");
         }
-        this.minimum_length = (int) values.get(0);
-        this.maximum_length = (int) values.get(1);
-        if(minimum_length > maximum_length || minimum_length == 0 && maximum_length == 0 || minimum_length < 0)
+        this.minimumLength = (int) values.get(0);
+        this.maximumLength = (int) values.get(1);
+        if(minimumLength > maximumLength || minimumLength == 0 && maximumLength == 0 || minimumLength < 0)
             throw new RuntimeException("Please enter correct bounds for max and min length");
     }
 
@@ -27,11 +27,11 @@ public class RandomAstring extends Random implements BaseUtil {
     @Override
     public Object run() throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException,
         InstantiationException, IllegalAccessException {
-        return randomString(minimum_length, maximum_length, 'a', 26);
+        return randomString(minimumLength, maximumLength, 'a', 26);
     }
 
-    private String randomString(int minimum_length, int maximum_length, char base, int numCharacters) {
-        int length = number(minimum_length, maximum_length);
+    private String randomString(int minimumLength, int maximumLength, char base, int numCharacters) {
+        int length = number(minimumLength, maximumLength);
         byte baseByte = (byte) base;
         byte[] bytes = new byte[length];
         for (int i = 0; i < length; ++i) {
