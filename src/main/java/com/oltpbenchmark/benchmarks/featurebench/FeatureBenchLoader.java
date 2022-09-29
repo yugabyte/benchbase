@@ -19,7 +19,7 @@ package com.oltpbenchmark.benchmarks.featurebench;
 
 import com.oltpbenchmark.api.Loader;
 import com.oltpbenchmark.api.LoaderThread;
-import com.oltpbenchmark.benchmarks.featurebench.util.*;
+import com.oltpbenchmark.benchmarks.featurebench.helpers.*;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.tree.ImmutableNode;
 

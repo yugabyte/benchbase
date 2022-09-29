@@ -2,7 +2,7 @@ package com.oltpbenchmark.benchmarks.featurebench.customworkload;
 
 
 import com.oltpbenchmark.benchmarks.featurebench.YBMicroBenchmark;
-import com.oltpbenchmark.benchmarks.featurebench.util.*;
+import com.oltpbenchmark.benchmarks.featurebench.helpers.*;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.log4j.Logger;
