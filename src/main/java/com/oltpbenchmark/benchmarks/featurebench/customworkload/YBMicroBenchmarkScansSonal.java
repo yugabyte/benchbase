@@ -4,6 +4,7 @@ import com.oltpbenchmark.benchmarks.featurebench.YBMicroBenchmark;
 import com.oltpbenchmark.benchmarks.featurebench.helpers.ExecuteRule;
 import com.oltpbenchmark.benchmarks.featurebench.helpers.LoadRule;
 
+import com.oltpbenchmark.types.State;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.log4j.Logger;
@@ -16,7 +17,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 
 
-public class YBMicroBenchmarkScansSonal extends YBMicroBenchmark{
+public class YBMicroBenchmarkScansSonal extends YBMicroBenchmark {
     public final static Logger LOG = Logger.getLogger(com.oltpbenchmark.benchmarks.featurebench.customworkload.YBMicroBenchmarkImplSonal.class);
 
     public YBMicroBenchmarkScansSonal(HierarchicalConfiguration<ImmutableNode> config) {
@@ -36,7 +37,7 @@ public class YBMicroBenchmarkScansSonal extends YBMicroBenchmark{
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-}
+    }
 
     @Override
     public ArrayList<LoadRule> loadRules() {
@@ -50,10 +51,12 @@ public class YBMicroBenchmarkScansSonal extends YBMicroBenchmark{
 
     public void loadOnce(Connection conn) throws SQLException, ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
 
-        String insertStmt = "INSERT INTO demoScans SELECT random() * 1000,  generate_series(1, 100);";
-        PreparedStatement stmt = conn.prepareStatement(insertStmt);
-        stmt.execute();
-        stmt.close();
+        String insertStmt = "INSERT INTO demoScans SELECT random() * 1000,  generate_series(1, 1000);";
+//        PreparedStatement stmt = conn.prepareStatement(insertStmt);
+//        stmt.execute();
+//        stmt.close();
+        Statement stmtOBj = conn.createStatement();
+        stmtOBj.execute(insertStmt);
 
     }
 }
