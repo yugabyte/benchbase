@@ -5,6 +5,7 @@ import com.oltpbenchmark.benchmarks.featurebench.helpers.LoadRule;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.tree.ImmutableNode;
 
+import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -37,7 +38,7 @@ public abstract class YBMicroBenchmark {
     public void cleanUp(Connection conn) throws SQLException {
     }
 
-    public void loadOnce(Connection conn) throws SQLException {
+    public void loadOnce(Connection conn) throws SQLException, ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
     }
 
     public void executeOnce(Connection conn) throws SQLException {

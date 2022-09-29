@@ -23,7 +23,7 @@ microbenchmark:
             - CREATE TABLE accounts (id int NOT NULL, name varchar(64) NOT NULL, CONSTRAINT pk_accounts PRIMARY KEY (id));
             - CREATE INDEX idx_accounts_name ON accounts (name);
         loadRules:
-            -   table_name: accounts
+            -   table: accounts
                 rows: 10
                 columns:
                     - name : id
@@ -35,15 +35,15 @@ microbenchmark:
                       util : RandomStringNumeric
                       params:
                           - 10
-        executeRules:
-            -   transaction_name: Account_query
-                weight: 100
-                queries:
-                    - query: SELECT * FROM accounts WHERE id > ?
-                      utils :
-                          - name:   RowRandomBoundedInt
-                            params:
-                                - 5
-                                - 10
-        cleanup:
-            - DROP TABLE accounts;
+#        executeRules:
+#            -   transaction_name: Account_query
+#                weight: 100
+#                queries:
+#                    - query: SELECT * FROM accounts WHERE id > ?
+#                      utils :
+#                          - name:   RowRandomBoundedInt
+#                            params:
+#                                - 5
+#                                - 10
+#        cleanup:
+#            - DROP TABLE accounts;

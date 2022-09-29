@@ -223,7 +223,7 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
         }
 
         @Override
-        public void load(Connection conn) throws SQLException {
+        public void load(Connection conn) throws SQLException, ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
             ybm.loadOnce(conn);
         }
 

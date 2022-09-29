@@ -8,6 +8,7 @@ import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.log4j.Logger;
 
+import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -19,14 +20,11 @@ import java.util.Random;
 
 public class YBMicroBenchmarkImplSonal extends YBMicroBenchmark {
 
-    public final static Logger LOG = Logger.getLogger(YBMicroBenchmarkImplementation.class);
+    public final static Logger LOG = Logger.getLogger(YBMicroBenchmarkImplSonal.class);
 
     public YBMicroBenchmarkImplSonal(HierarchicalConfiguration<ImmutableNode> config) {
         super(config);
-//        this.executeOnceImplemented = false;
         this.loadOnceImplemented = true;
-//        this.afterLoadImplemented = false;
-//        this.createDBImplemented=true;
     }
 
     @Override
@@ -57,13 +55,9 @@ public class YBMicroBenchmarkImplSonal extends YBMicroBenchmark {
         return null;
     }
 
-    public void loadOnce(Connection conn) throws SQLException {
+    public void loadOnce(Connection conn) throws SQLException, ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
 
-//        RandomAstring randomAstring =
-
-
-
-
+        RandomAstring randomAstring = new RandomAstring(Arrays.asList(1,20));
         List<String> vals = new ArrayList<>(Arrays.asList("luso films", "Associated Computing, Inc", "XYZ Widgets", "Gizmo Transglobal", "Redline GmbH", "Acme Corporation"));
         int batchSize = 100;
         Random random = new Random();
@@ -72,6 +66,15 @@ public class YBMicroBenchmarkImplSonal extends YBMicroBenchmark {
         int currentBatchSize = 0;
         for (int i = 0; i < 500; i++) {
             stmt.setObject(1, vals.get(random.nextInt(vals.size())));
+            currentBatchSize += 1;
+            stmt.addBatch();
+            if (currentBatchSize == batchSize) {
+                stmt.executeBatch();
+                currentBatchSize = 0;
+            }
+        }
+        for (int i = 0; i < 500; i++) {
+            stmt.setObject(1, randomAstring.run());
             currentBatchSize += 1;
             stmt.addBatch();
             if (currentBatchSize == batchSize) {
