@@ -17,8 +17,8 @@ public class RandomFixedPoint extends Random implements BaseUtil {
             throw new RuntimeException("Incorrect number of parameters for util function");
         }
         this.decimal_places = (int) values.get(0);
-        this.minimum = (double) values.get(1);
-        this.maximum = (double) values.get(2);
+        this.minimum = ((Number) values.get(1)).doubleValue();
+        this.maximum = ((Number) values.get(2)).doubleValue();
         if(maximum<minimum)
             throw new RuntimeException("Please enter a correct range for min and max values");
     }

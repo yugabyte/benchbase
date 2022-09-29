@@ -14,8 +14,8 @@ public class RandomInt extends Random implements BaseUtil {
         if (values.size() != 2) {
             throw new RuntimeException("Incorrect number of parameters for util function");
         }
-        this.minimum = (int) values.get(0);
-        this.maximum = (int) values.get(1);
+        this.minimum = ((Number) values.get(0)).intValue();
+        this.maximum = ((Number) values.get(1)).intValue();
         if(maximum<minimum)
             throw new RuntimeException("Please enter correct values for min and max");
     }

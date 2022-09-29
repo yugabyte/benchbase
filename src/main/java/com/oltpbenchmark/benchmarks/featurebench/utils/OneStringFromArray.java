@@ -14,14 +14,12 @@ public class OneStringFromArray implements BaseUtil {
         str = new ArrayList<>();
         for (Object value : values) {
             str.add((String) value);
-            System.out.println(value);
         }
     }
 
     public Object run() throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         try {
             String s = str.get(new Random().nextInt(str.size()));
-            System.out.println(s);
             return s;
         } catch (Exception ex) {
             ex.printStackTrace();

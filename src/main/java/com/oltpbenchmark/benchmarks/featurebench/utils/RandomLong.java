@@ -14,8 +14,8 @@ public class RandomLong extends Random implements BaseUtil {
         if (values.size() != 2) {
             throw new RuntimeException("Incorrect number of parameters for util function");
         }
-        this.minimum = (long) values.get(0);
-        this.maximum = (long) values.get(1);
+        this.minimum = ((Number) values.get(0)).longValue();
+        this.maximum = ((Number) values.get(1)).longValue();
         if(maximum<minimum)
             throw new RuntimeException("Please enter correct values for min and max");
     }
