@@ -55,7 +55,7 @@ public class YBMicroBenchmarkImplSonal extends YBMicroBenchmark {
         return null;
     }
 
-    public void loadOnce(Connection conn) throws SQLException, ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+    public void loadOnce(Connection conn) throws SQLException{
 
         RandomAstring randomAstring = new RandomAstring(Arrays.asList(1,20));
         List<String> vals = new ArrayList<>(Arrays.asList("luso films", "Associated Computing, Inc", "XYZ Widgets", "Gizmo Transglobal", "Redline GmbH", "Acme Corporation"));
@@ -74,7 +74,13 @@ public class YBMicroBenchmarkImplSonal extends YBMicroBenchmark {
             }
         }
         for (int i = 0; i < 500; i++) {
-            stmt.setObject(1, randomAstring.run());
+            try {
+                stmt.setObject(1, randomAstring.run());
+            }
+            catch(Exception ex)
+            {
+                ex.printStackTrace();
+            }
             currentBatchSize += 1;
             stmt.addBatch();
             if (currentBatchSize == batchSize) {

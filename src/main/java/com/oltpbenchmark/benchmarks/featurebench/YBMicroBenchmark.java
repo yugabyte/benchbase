@@ -38,7 +38,7 @@ public abstract class YBMicroBenchmark {
     public void cleanUp(Connection conn) throws SQLException {
     }
 
-    public void loadOnce(Connection conn) throws SQLException, ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+    public void loadOnce(Connection conn) throws SQLException{
     }
 
     public void executeOnce(Connection conn) throws SQLException {
