@@ -45,5 +45,5 @@ microbenchmark:
 #                            params:
 #                                - 5
 #                                - 10
-        cleanup:
-            - DROP TABLE accounts;
+#        cleanup:
+#            - DROP TABLE accounts;
