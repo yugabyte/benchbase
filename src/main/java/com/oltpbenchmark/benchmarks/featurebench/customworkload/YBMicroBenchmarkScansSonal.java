@@ -49,7 +49,7 @@ public class YBMicroBenchmarkScansSonal extends YBMicroBenchmark {
         return null;
     }
 
-    public void loadOnce(Connection conn) throws SQLException, ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+    public void loadOnce(Connection conn) throws SQLException{
 
         String insertStmt = "INSERT INTO demoScans SELECT random() * 1000,  generate_series(1, 1000);";
 //        PreparedStatement stmt = conn.prepareStatement(insertStmt);
