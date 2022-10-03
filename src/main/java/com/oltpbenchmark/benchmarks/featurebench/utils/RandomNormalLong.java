@@ -8,12 +8,12 @@ public class RandomNormalLong extends Random implements BaseUtil {
     private final long deviation;
 
     public RandomNormalLong(List<Object> values) {
-        super((int) System.currentTimeMillis());
+        super((int) System.nanoTime());
         if (values.size() != 2) {
             throw new RuntimeException("Incorrect number of parameters for util function");
         }
         this.center = ((Number) values.get(0)).longValue();
-        this.deviation=((Number) values.get(1)).longValue();
+        this.deviation = ((Number) values.get(1)).longValue();
     }
 
     /**
@@ -24,7 +24,7 @@ public class RandomNormalLong extends Random implements BaseUtil {
      */
     @Override
     public Object run() {
-        double r = this.nextGaussian()*deviation + center;
+        double r = this.nextGaussian() * deviation + center;
         return (long) Math.round(r);
     }
 }

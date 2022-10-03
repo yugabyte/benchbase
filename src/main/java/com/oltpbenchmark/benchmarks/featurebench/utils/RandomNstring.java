@@ -5,27 +5,27 @@ import java.util.List;
 import java.util.Random;
 
 public class RandomNstring extends Random implements BaseUtil {
-    private int minimum_length;
-    private int maximum_length;
+    private final int minimum_length;
+    private final int maximum_length;
 
     public RandomNstring(List<Object> values) {
-        super((int) System.currentTimeMillis());
+        super((int) System.nanoTime());
         if (values.size() != 2) {
             throw new RuntimeException("Incorrect number of parameters for util function");
         }
         this.minimum_length = (int) values.get(0);
         this.maximum_length = (int) values.get(1);
-        if(minimum_length > maximum_length || minimum_length == 0 && maximum_length == 0 || minimum_length < 0)
+        if (minimum_length > maximum_length || minimum_length == 0 && maximum_length == 0 || minimum_length < 0)
             throw new RuntimeException("Please enter correct bounds for max and min length");
     }
 
     /**
      * @returns a random numeric string with length in range [minimum_length,
-     *          maximum_length].
+     * maximum_length].
      */
     @Override
     public Object run() throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException,
-            InstantiationException, IllegalAccessException {
+        InstantiationException, IllegalAccessException {
         return randomString(minimum_length, maximum_length, '0', 10);
     }
 

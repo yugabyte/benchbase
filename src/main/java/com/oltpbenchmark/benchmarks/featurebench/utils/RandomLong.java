@@ -10,13 +10,13 @@ public class RandomLong extends Random implements BaseUtil {
     private long maximum;
 
     public RandomLong(List<Object> values) {
-        super((int) System.currentTimeMillis());
+        super((int) System.nanoTime());
         if (values.size() != 2) {
             throw new RuntimeException("Incorrect number of parameters for util function");
         }
         this.minimum = ((Number) values.get(0)).longValue();
         this.maximum = ((Number) values.get(1)).longValue();
-        if(maximum<minimum)
+        if (maximum < minimum)
             throw new RuntimeException("Please enter correct values for min and max");
     }
 
@@ -29,7 +29,7 @@ public class RandomLong extends Random implements BaseUtil {
      */
     @Override
     public Object run() throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException,
-            InstantiationException, IllegalAccessException {
+        InstantiationException, IllegalAccessException {
         long range_size = (maximum - minimum) + 1;
 
         // error checking and 2^x checking removed for simplicity.

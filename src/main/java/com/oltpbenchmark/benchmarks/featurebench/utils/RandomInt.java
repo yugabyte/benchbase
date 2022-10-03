@@ -6,17 +6,17 @@ import java.util.Random;
 
 public class RandomInt extends Random implements BaseUtil {
 
-    private int minimum;
-    private int maximum;
+    private final int minimum;
+    private final int maximum;
 
     public RandomInt(List<Object> values) {
-        super((int) System.currentTimeMillis());
+        super((int) System.nanoTime());
         if (values.size() != 2) {
             throw new RuntimeException("Incorrect number of parameters for util function");
         }
         this.minimum = ((Number) values.get(0)).intValue();
         this.maximum = ((Number) values.get(1)).intValue();
-        if(maximum<minimum)
+        if (maximum < minimum)
             throw new RuntimeException("Please enter correct values for min and max");
     }
 

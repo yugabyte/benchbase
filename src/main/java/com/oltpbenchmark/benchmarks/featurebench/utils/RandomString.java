@@ -12,7 +12,7 @@ public class RandomString extends Random implements BaseUtil {
     private int numCharacters;
 
     public RandomString(List<Object> values) {
-        super((int) System.currentTimeMillis());
+        super((int) System.nanoTime());
         if (values.size() != 4) {
             throw new RuntimeException("Incorrect number of parameters for util function");
         }
@@ -20,7 +20,7 @@ public class RandomString extends Random implements BaseUtil {
         this.maximum_length = (int) values.get(1);
         this.base = (char) values.get(2);
         this.numCharacters = (int) values.get(3);
-        if(maximum_length<minimum_length || numCharacters<=0)
+        if (maximum_length < minimum_length || numCharacters <= 0)
             throw new RuntimeException("Please enter correct min, max and no. of characters for random string");
     }
 
@@ -42,7 +42,7 @@ public class RandomString extends Random implements BaseUtil {
      */
     @Override
     public Object run() throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException,
-            InstantiationException, IllegalAccessException {
+        InstantiationException, IllegalAccessException {
         int length = number(minimum_length, maximum_length);
         byte baseByte = (byte) base;
         byte[] bytes = new byte[length];

@@ -23,7 +23,6 @@ import com.oltpbenchmark.benchmarks.featurebench.helpers.*;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.tree.ImmutableNode;
 
-
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -101,13 +100,14 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
             stmtOBj.close();
         } catch (Exception ex) {
             ex.printStackTrace();
+            throw new RuntimeException("Error Occurred in Create Phase");
         }
     }
 
     private void loadRulesYaml(ArrayList<LoaderThread> loaderThreads) throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
 
         List<HierarchicalConfiguration<ImmutableNode>> loadRulesConfig = config.configurationsAt("loadRules");
-        if(loadRulesConfig.isEmpty()) {
+        if (loadRulesConfig.isEmpty()) {
             throw new RuntimeException("Empty Load Rules");
         }
         LOG.info("\n=============Load Rules taking from Yaml============\n");
@@ -129,7 +129,14 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
                 }
                 columns.add(column);
             }
-            loaderThreads.add(new GeneratorYaml(loadRuleConfig.getString("table"), loadRuleConfig.getLong("rows"), columns));
+            if (loadRuleConfig.containsKey("count")) {
+                for (int i = 0; i < loadRuleConfig.getInt("count"); i++) {
+                    loaderThreads.add(new GeneratorYaml((loadRuleConfig.getString("table") + String.valueOf(i + 1)), loadRuleConfig.getLong("rows"), columns));
+                }
+            } else {
+                loaderThreads.add(new GeneratorYaml(loadRuleConfig.getString("table"), loadRuleConfig.getLong("rows"), columns));
+            }
+
         }
     }
 
@@ -150,9 +157,9 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
 
         static int numberOfGeneratorFinished = 0;
         private final List<UtilToMethod> baseutils = new ArrayList<>();
-        private String tableName;
-        private long numberOfRows;
-        private List<Map<String, Object>> columns;
+        private final String tableName;
+        private final long numberOfRows;
+        private final List<Map<String, Object>> columns;
 
         public GeneratorYaml(String tableName, long numberOfRows, List<Map<String, Object>> columns) throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
             super(benchmark);
@@ -160,8 +167,15 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
             this.numberOfRows = numberOfRows;
             this.columns = columns;
             for (Map<String, Object> col : columns) {
-                UtilToMethod obj = new UtilToMethod(col.get("util"), col.get("params"));
-                this.baseutils.add(obj);
+                if (col.containsKey("count")) {
+                    for (int i = 0; i < (int) col.get("count"); i++) {
+                        UtilToMethod obj = new UtilToMethod(col.get("util"), col.get("params"));
+                        this.baseutils.add(obj);
+                    }
+                } else {
+                    UtilToMethod obj = new UtilToMethod(col.get("util"), col.get("params"));
+                    this.baseutils.add(obj);
+                }
             }
         }
 
@@ -174,13 +188,21 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
                 StringBuilder valueString = new StringBuilder();
 
                 for (Map<String, Object> columnsDetails : this.columns) {
-                    columnString.append(columnsDetails.get("name")).append(",");
-                    valueString.append("?,");
+                    if (columnsDetails.containsKey("count")) {
+                        for (int i = 0; i < (int) columnsDetails.get("count"); i++) {
+                            columnString.append(columnsDetails.get("name") + String.valueOf(i + 1)).append(",");
+                            valueString.append("?,");
+                        }
+                    } else {
+                        columnString.append(columnsDetails.get("name")).append(",");
+                        valueString.append("?,");
+                    }
+
                 }
                 columnString.setLength(columnString.length() - 1);
                 valueString.setLength(valueString.length() - 1);
                 String insertStmt = "INSERT INTO " + this.tableName + " (" + columnString + ") VALUES " + "(" + valueString + ")";
-                stmt = conn.prepareStatement(insertStmt);
+                PreparedStatement stmt = conn.prepareStatement(insertStmt);
                 int currentBatchSize = 0;
                 for (int i = 0; i < this.numberOfRows; i++) {
                     for (int j = 0; j < baseutils.size(); j++) {
@@ -196,6 +218,7 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
                 if (currentBatchSize != 0) {
                     stmt.executeBatch();
                 }
+                stmt.close();
 
             } catch (IllegalAccessException |
                      InvocationTargetException e) {
@@ -232,7 +255,6 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
             afterLoadPhase();
         }
     }
-
 
 
     private class Generator extends LoaderThread {

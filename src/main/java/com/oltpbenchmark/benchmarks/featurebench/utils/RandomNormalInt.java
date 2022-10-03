@@ -9,12 +9,12 @@ public class RandomNormalInt extends Random implements BaseUtil {
     private final int deviation;
 
     public RandomNormalInt(List<Object> values) {
-        super((int) System.currentTimeMillis());
+        super((int) System.nanoTime());
         if (values.size() != 2) {
             throw new RuntimeException("Incorrect number of parameters for util function");
         }
         this.center = ((Number) values.get(0)).intValue();
-        this.deviation=((Number) values.get(1)).intValue();
+        this.deviation = ((Number) values.get(1)).intValue();
     }
 
     /**
@@ -25,7 +25,7 @@ public class RandomNormalInt extends Random implements BaseUtil {
      */
     @Override
     public Object run() {
-        double r = this.nextGaussian()*deviation + center;
+        double r = this.nextGaussian() * deviation + center;
         return (int) Math.round(r);
     }
 }
