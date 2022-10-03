@@ -9,7 +9,8 @@ public class RandomNormalInt extends Random implements BaseUtil {
     private final int deviation;
 
     public RandomNormalInt(List<Object> values) {
-        super((int) System.currentTimeMillis());
+        super((int) System.nanoTime());
+
         if (values.size() != 2) {
             throw new RuntimeException("Incorrect number of parameters for util function");
         }

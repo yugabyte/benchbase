@@ -12,7 +12,7 @@ public class RandomFixedPoint extends Random implements BaseUtil {
 
     public RandomFixedPoint(List<Object> values) {
 
-        super((int) System.currentTimeMillis());
+        super((int) System.nanoTime());
         if (values.size() != 3) {
             throw new RuntimeException("Incorrect number of parameters for util function");
         }

@@ -8,7 +8,8 @@ public class RandomExpoInt extends Random implements BaseUtil {
     private final int deviation;
 
     public RandomExpoInt(List<Object> values) {
-        super((int) System.currentTimeMillis());
+        super((int) System.nanoTime());
+
         if (values.size() != 2) {
             throw new RuntimeException("Incorrect number of parameters for util function");
         }

@@ -6,17 +6,17 @@ import java.util.Random;
 
 public class RandomAstring extends Random implements BaseUtil {
 
-    private int minimumLength;
-    private int maximumLength;
+    private final int minimumLength;
+    private final int maximumLength;
 
     public RandomAstring(List<Object> values) {
-        super((int) System.currentTimeMillis());
+        super((int) System.nanoTime());
         if (values.size() != 2) {
             throw new RuntimeException("Incorrect number of parameters for util function");
         }
         this.minimumLength = (int) values.get(0);
         this.maximumLength = (int) values.get(1);
-        if(minimumLength > maximumLength || minimumLength == 0 && maximumLength == 0 || minimumLength < 0)
+        if (minimumLength > maximumLength || minimumLength == 0 && maximumLength == 0 || minimumLength < 0)
             throw new RuntimeException("Please enter correct bounds for max and min length");
     }
 
