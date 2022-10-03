@@ -19,7 +19,7 @@ public class RandomFixedPoint extends Random implements BaseUtil {
         this.decimal_places = (int) values.get(0);
         this.minimum = ((Number) values.get(1)).doubleValue();
         this.maximum = ((Number) values.get(2)).doubleValue();
-        if(maximum<minimum)
+        if (maximum < minimum)
             throw new RuntimeException("Please enter a correct range for min and max values");
     }
 
@@ -40,7 +40,7 @@ public class RandomFixedPoint extends Random implements BaseUtil {
      */
     @Override
     public Object run() throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException,
-            InstantiationException, IllegalAccessException {
+        InstantiationException, IllegalAccessException {
         int multiplier = 1;
         for (int i = 0; i < decimal_places; ++i) {
             multiplier *= 10;

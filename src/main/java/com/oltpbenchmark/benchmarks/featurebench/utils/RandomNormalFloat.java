@@ -14,7 +14,7 @@ public class RandomNormalFloat extends Random implements BaseUtil {
             throw new RuntimeException("Incorrect number of parameters for util function");
         }
         this.center = ((Number) values.get(0)).doubleValue();
-        this.deviation=((Number) values.get(1)).doubleValue();
+        this.deviation = ((Number) values.get(1)).doubleValue();
     }
 
     /**
@@ -25,7 +25,7 @@ public class RandomNormalFloat extends Random implements BaseUtil {
      */
     @Override
     public Object run() {
-        double r = this.nextGaussian()*deviation + center;
+        double r = this.nextGaussian() * deviation + center;
         return r;
     }
 }

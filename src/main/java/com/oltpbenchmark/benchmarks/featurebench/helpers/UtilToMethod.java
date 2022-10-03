@@ -12,7 +12,7 @@ public class UtilToMethod {
     public Method run;
     public BaseUtil clsInstance;
 
-    public UtilToMethod(Object util, Object params)  {
+    public UtilToMethod(Object util, Object params) {
         String className = "com.oltpbenchmark.benchmarks.featurebench.utils." + util;
         try {
             Class<?> cls = Class.forName(className);
@@ -22,8 +22,7 @@ public class UtilToMethod {
             this.clsInstance = (BaseUtil) cls.getDeclaredConstructor(List.class).newInstance((List) params);
         } catch (ClassNotFoundException | NoSuchMethodException e) {
             throw new RuntimeException(String.format("Oops! Are you sure that you provided the right utility function name: %s ? ", util));
-        }
-        catch (InvocationTargetException | InstantiationException |
+        } catch (InvocationTargetException | InstantiationException |
                  IllegalAccessException e) {
             e.printStackTrace();
             throw new RuntimeException();
