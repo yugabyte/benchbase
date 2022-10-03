@@ -22,6 +22,10 @@ public class UtilToMethod {
             this.clsInstance = (BaseUtil) cls.getDeclaredConstructor(List.class).newInstance((List) params);
         } catch (ClassNotFoundException | NoSuchMethodException e) {
             throw new RuntimeException(String.format("Oops! Are you sure that you provided the right utility function name: %s ? ", util));
+        } catch (InvocationTargetException | InstantiationException |
+                 IllegalAccessException e) {
+            e.printStackTrace();
+            throw new RuntimeException();
         }
         catch (InvocationTargetException | InstantiationException |
                  IllegalAccessException e) {

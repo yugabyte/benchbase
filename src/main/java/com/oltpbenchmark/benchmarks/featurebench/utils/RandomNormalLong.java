@@ -9,6 +9,7 @@ public class RandomNormalLong extends Random implements BaseUtil {
 
     public RandomNormalLong(List<Object> values) {
         super((int) System.nanoTime());
+
         if (values.size() != 2) {
             throw new RuntimeException("Incorrect number of parameters for util function");
         }
