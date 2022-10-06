@@ -31,8 +31,8 @@ public class RowRandomBoundedInt
         if (values.size() != 4) {
             throw new RuntimeException("Incorrect number of parameters for util function");
         }
-        this.lowValue = (int) values.get(1);
-        this.highValue = (int) values.get(2);
+        this.lowValue = ((Number) (int) values.get(1)).intValue();
+        this.highValue = ((Number) (int) values.get(2)).intValue();
         if (lowValue > highValue)
             throw new RuntimeException("Please enter correct value for max and min value");
 

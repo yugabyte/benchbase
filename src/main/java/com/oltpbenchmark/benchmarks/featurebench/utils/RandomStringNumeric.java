@@ -9,7 +9,7 @@ public class RandomStringNumeric implements BaseUtil {
         if (values.size() != 1) {
             throw new RuntimeException("Incorrect number of parameters for util function");
         }
-        this.desiredLength = (int) values.get(0);
+        this.desiredLength = ((Number)(int) values.get(0)).intValue();
         if (desiredLength <= 0)
             throw new RuntimeException("Please enter positive string length");
     }

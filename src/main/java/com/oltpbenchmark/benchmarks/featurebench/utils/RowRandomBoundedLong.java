@@ -37,8 +37,8 @@ public class RowRandomBoundedLong implements BaseUtil {
             this.randomLong = null;
             this.randomInt = new RowRandomInt((long) values.get(0), 1);
         }
-        this.lowValue = (int) values.get(2);
-        this.highValue = (int) values.get(3);
+        this.lowValue = ((Number) (int) values.get(2)).longValue();
+        this.highValue = ((Number) (int) values.get(3)).longValue();
         if (lowValue > highValue)
             throw new RuntimeException("Please enter correct value for max and min value");
     }

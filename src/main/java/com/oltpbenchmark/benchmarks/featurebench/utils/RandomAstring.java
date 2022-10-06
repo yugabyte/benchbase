@@ -22,8 +22,8 @@ public class RandomAstring extends Random implements BaseUtil {
         if (values.size() != 2) {
             throw new RuntimeException("Incorrect number of parameters for util function");
         }
-        this.minimumLength = (int) values.get(0);
-        this.maximumLength = (int) values.get(1);
+        this.minimumLength = ((Number) (int) values.get(0)).intValue();
+        this.maximumLength = ((Number) (int) values.get(1)).intValue();
         if (minimumLength > maximumLength || minimumLength == 0 && maximumLength == 0 || minimumLength < 0)
             throw new RuntimeException("Please enter correct bounds for max and min length");
     }

@@ -27,6 +27,7 @@ public class RandomLong extends Random implements BaseUtil {
         if (maximum < minimum)
             throw new RuntimeException("Please enter correct values for min and max");
     }
+
     @Override
     public Object run() throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException,
         InstantiationException, IllegalAccessException {

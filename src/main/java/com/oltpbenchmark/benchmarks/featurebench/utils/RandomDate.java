@@ -25,8 +25,8 @@ public class RandomDate implements BaseUtil {
             throw new RuntimeException("Incorrect number of parameters for util function");
         }
         Random rnd = new Random();
-        this.yearlowerBound = (int) values.get(0);
-        this.yearupperBound = (int) values.get(1);
+        this.yearlowerBound = ((Number) (int) values.get(0)).intValue();
+        this.yearupperBound = ((Number) (int) values.get(1)).intValue();
         if (yearlowerBound > yearupperBound || yearlowerBound == 0 && yearupperBound == 0 || yearlowerBound < 0)
             throw new RuntimeException("Please enter correct bounds for max and min year");
 

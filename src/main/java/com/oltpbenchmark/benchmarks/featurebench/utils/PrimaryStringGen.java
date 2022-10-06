@@ -24,9 +24,9 @@ public class PrimaryStringGen implements BaseUtil {
         if (values.size() != 2) {
             throw new RuntimeException("Incorrect number of parameters for util function");
         }
-        this.startNumber = ((Number)(int) values.get(0)).intValue();
+        this.startNumber = ((Number) (int) values.get(0)).intValue();
         this.currentValue = startNumber - 1;
-        this.desiredLength = (int) values.get(1);
+        this.desiredLength = ((Number) (int) values.get(1)).intValue();
         if (desiredLength <= 0) {
             throw new RuntimeException("Please use positive desired length for string primary keys");
         }

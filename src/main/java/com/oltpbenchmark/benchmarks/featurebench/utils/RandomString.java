@@ -16,10 +16,10 @@ public class RandomString extends Random implements BaseUtil {
         if (values.size() != 4) {
             throw new RuntimeException("Incorrect number of parameters for util function");
         }
-        this.minimum_length = (int) values.get(0);
-        this.maximum_length = (int) values.get(1);
+        this.minimum_length = ((Number) (int) values.get(0)).intValue();
+        this.maximum_length = ((Number) (int) values.get(1)).intValue();
         this.base = (char) values.get(2);
-        this.numCharacters = (int) values.get(3);
+        this.numCharacters = ((Number) (int) values.get(3)).intValue();
         if (maximum_length < minimum_length || numCharacters <= 0)
             throw new RuntimeException("Please enter correct min, max and no. of characters for random string");
     }

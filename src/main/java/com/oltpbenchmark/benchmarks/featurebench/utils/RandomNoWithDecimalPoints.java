@@ -5,17 +5,17 @@ import java.util.Random;
 
 public class RandomNoWithDecimalPoints implements BaseUtil {
 
-    protected int lowerBound;
-    protected int upperBound;
-    protected int decimalPoints;
+    private final int lowerBound;
+    private final int upperBound;
+    private final int decimalPoints;
 
     public RandomNoWithDecimalPoints(List<Object> values) {
         if (values.size() != 3) {
             throw new RuntimeException("Incorrect number of parameters for util function");
         }
-        this.lowerBound = (int) values.get(0);
-        this.upperBound = (int) values.get(1);
-        this.decimalPoints = (int) values.get(2);
+        this.lowerBound = ((Number) (int) values.get(0)).intValue();
+        this.upperBound = ((Number) (int) values.get(1)).intValue();
+        this.decimalPoints = ((Number) (int) values.get(2)).intValue();
         if (lowerBound < 0 || upperBound < lowerBound || decimalPoints < 0) {
             throw new RuntimeException("Incorrect parameters for random no with decimal points");
         }
@@ -25,7 +25,6 @@ public class RandomNoWithDecimalPoints implements BaseUtil {
     public Object run() {
         Random rnd = new Random();
         double randomNo = lowerBound + (upperBound - lowerBound) * rnd.nextDouble();
-        double DecimalPointNumber = (double) Math.round(randomNo * (Math.pow(10, decimalPoints))) / (Math.pow(10, decimalPoints));
-        return DecimalPointNumber;
+        return (double) Math.round(randomNo * (Math.pow(10, decimalPoints))) / (Math.pow(10, decimalPoints));
     }
 }

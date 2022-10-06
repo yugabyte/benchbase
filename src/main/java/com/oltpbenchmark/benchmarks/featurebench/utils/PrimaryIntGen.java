@@ -24,9 +24,9 @@ public class PrimaryIntGen implements BaseUtil {
         if (values.size() != 2) {
             throw new RuntimeException("Incorrect number of parameters for util function");
         }
-        this.currentValue = ((Number)(int) values.get(0)).intValue() - 1;
-        this.upperRange = ((Number)(int) values.get(1)).intValue();
-        this.lowerRange = ((Number)(int) values.get(0)).intValue();
+        this.currentValue = ((Number) (int) values.get(0)).intValue() - 1;
+        this.upperRange = ((Number) (int) values.get(1)).intValue();
+        this.lowerRange = ((Number) (int) values.get(0)).intValue();
         if (upperRange < lowerRange) {
             throw new RuntimeException("Upper bound less than lower bound");
         }
