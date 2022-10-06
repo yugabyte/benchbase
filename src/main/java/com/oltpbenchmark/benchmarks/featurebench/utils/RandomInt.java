@@ -4,6 +4,17 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Random;
 
+/*
+     Description :- Returns a random int value between minimum and maximum (inclusive).
+     Params:-
+     1. int: minimum(values[0]) :- lower range for random number.
+     2. int: maximum(values[1]) :- upper range for random number.
+     Eg:-
+     minimum:- 4
+     maximum:- 10
+     Return type:- (int) :- 7
+*/
+
 public class RandomInt extends Random implements BaseUtil {
 
     private final int minimum;
@@ -20,13 +31,6 @@ public class RandomInt extends Random implements BaseUtil {
             throw new RuntimeException("Please enter correct values for min and max");
     }
 
-    /**
-     * Returns a random int value between minimum and maximum (inclusive)
-     *
-     * @param minimum
-     * @param maximum
-     * @returns a int in the range [minimum, maximum]. Note that this is inclusive.
-     */
     @Override
     public Object run() throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         int range_size = maximum - minimum + 1;

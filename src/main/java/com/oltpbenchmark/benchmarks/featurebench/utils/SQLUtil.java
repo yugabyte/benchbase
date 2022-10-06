@@ -1,5 +1,7 @@
+/*
 package com.oltpbenchmark.benchmarks.featurebench.utils;
 
+*/
 /*
  * Copyright 2020 by OLTPBenchmark Project
  *
@@ -15,7 +17,8 @@ package com.oltpbenchmark.benchmarks.featurebench.utils;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- */
+ *//*
+
 
 
 import com.oltpbenchmark.api.BenchmarkModule;
@@ -42,13 +45,15 @@ public abstract class SQLUtil {
         new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS"),
     };
 
-    /**
+    */
+/**
      * Return a long from the given object
      * Handles the different cases from the various DBMSs
      *
      * @param obj
      * @return
-     */
+     *//*
+
     public static Long getLong(Object obj) {
         if (obj == null) {
             return (null);
@@ -85,13 +90,15 @@ public abstract class SQLUtil {
         return (null);
     }
 
-    /**
+    */
+/**
      * Return a double from the given object
      * Handles the different cases from the various DBMSs
      *
      * @param obj
      * @return
-     */
+     *//*
+
     public static Double getDouble(Object obj) {
         if (obj == null) {
             return (null);
@@ -124,13 +131,15 @@ public abstract class SQLUtil {
         return (null);
     }
 
-    /**
+    */
+/**
      * Return a double from the given object
      * Handles the different cases from the various DBMSs
      *
      * @param obj
      * @return
-     */
+     *//*
+
     public static Timestamp getTimestamp(Object obj) {
         if (obj == null) {
             return (null);
@@ -146,13 +155,15 @@ public abstract class SQLUtil {
         return (timestamp != null ? new Timestamp(timestamp) : null);
     }
 
-    /**
+    */
+/**
      * Return the internal sequence name for the given Column
      *
      * @param dbType
      * @param catalog_col
      * @return
-     */
+     *//*
+
     public static String getSequenceName(DatabaseType dbType, Column catalog_col) {
         Table catalog_tbl = catalog_col.getTable();
 
@@ -192,7 +203,8 @@ public abstract class SQLUtil {
         return results;
     }
 
-    /**
+    */
+/**
      * For the given string representation of a value, convert it to the proper
      * object based on its sqlType
      *
@@ -200,7 +212,8 @@ public abstract class SQLUtil {
      * @param value
      * @return
      * @see Types
-     */
+     *//*
+
     public static Object castValue(int sqlType, String value) {
         Object ret = null;
         switch (sqlType) {
@@ -262,13 +275,15 @@ public abstract class SQLUtil {
         return (ret);
     }
 
-    /**
+    */
+/**
      * Returns true if the given sqlType identifier is a String data type
      *
      * @param sqlType
      * @return
      * @see Types
-     */
+     *//*
+
     public static boolean isStringType(int sqlType) {
         switch (sqlType) {
             case Types.CHAR:
@@ -282,13 +297,15 @@ public abstract class SQLUtil {
         }
     }
 
-    /**
+    */
+/**
      * Returns true if the given sqlType identifier is an Integer data type
      *
      * @param sqlType
      * @return
      * @see Types
-     */
+     *//*
+
     public static boolean isIntegerType(int sqlType) {
         switch (sqlType) {
             case Types.TINYINT:
@@ -302,18 +319,21 @@ public abstract class SQLUtil {
         }
     }
 
-    /**
+    */
+/**
      * Return the COUNT(*) SQL to calculate the number of records
      *
      * @param dbType
      * @param catalog_tbl
      * @return SQL for select count execution
-     */
+     *//*
+
     public static String getCountSQL(DatabaseType dbType, Table catalog_tbl) {
         return com.oltpbenchmark.benchmarks.featurebench.utils.SQLUtil.getCountSQL(dbType, catalog_tbl, "*");
     }
 
-    /**
+    */
+/**
      * Return the COUNT() SQL to calculate the number of records.
      * Will use the col parameter as the column that is counted
      *
@@ -321,13 +341,15 @@ public abstract class SQLUtil {
      * @param catalog_tbl
      * @param col
      * @return SQL for select count execution
-     */
+     *//*
+
     public static String getCountSQL(DatabaseType dbType, Table catalog_tbl, String col) {
         String tableName = (dbType.shouldEscapeNames() ? catalog_tbl.getEscapedName() : catalog_tbl.getName());
         return String.format("SELECT COUNT(%s) FROM %s", col, tableName.trim());
     }
 
-    /**
+    */
+/**
      * Automatically generate the 'INSERT' SQL string for this table
      * with a batch size of 1
      *
@@ -335,12 +357,14 @@ public abstract class SQLUtil {
      * @param db_type
      * @param exclude_columns
      * @return
-     */
+     *//*
+
     public static String getInsertSQL(Table catalog_tbl, DatabaseType db_type, int... exclude_columns) {
         return com.oltpbenchmark.benchmarks.featurebench.utils.SQLUtil.getInsertSQL(catalog_tbl, db_type, 1, exclude_columns);
     }
 
-    /**
+    */
+/**
      * Automatically generate the 'INSERT' SQL string for this table
      *
      * @param catalog_tbl
@@ -349,7 +373,8 @@ public abstract class SQLUtil {
      *                        that should be included in the insert
      * @param exclude_columns
      * @return
-     */
+     *//*
+
     public static String getInsertSQL(Table catalog_tbl, DatabaseType db_type, int batchSize, int... exclude_columns) {
         boolean show_cols = db_type.shouldIncludeColumnNames();
         boolean escape_names = db_type.shouldEscapeNames();
@@ -419,9 +444,11 @@ public abstract class SQLUtil {
             col, tableName);
     }
 
-    /**
+    */
+/**
      * Extract the catalog from the database.
-     */
+     *//*
+
     public static AbstractCatalog getCatalog(BenchmarkModule benchmarkModule, DatabaseType databaseType, Connection connection) throws SQLException {
         switch (databaseType) {
             case NOISEPAGE: // fall-through
@@ -433,20 +460,24 @@ public abstract class SQLUtil {
         }
     }
 
-    /**
+    */
+/**
      * Create an in-memory instance of HSQLDB to extract all of the catalog information.
      * <p>
      * This supports databases that may not support all of the SQL standard just yet.
      *
      * @return
-     */
+     *//*
+
     private static AbstractCatalog getCatalogHSQLDB(BenchmarkModule benchmarkModule) {
         return new HSQLDBCatalog(benchmarkModule);
     }
 
-    /**
+    */
+/**
      * Extract catalog information from the database directly.
-     */
+     *//*
+
     private static AbstractCatalog getCatalogDirect(DatabaseType databaseType, Connection connection) throws SQLException {
         DatabaseMetaData md = connection.getMetaData();
 
@@ -560,4 +591,4 @@ public abstract class SQLUtil {
         }
         return (false);
     }
-}
+}*/

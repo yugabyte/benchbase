@@ -4,6 +4,14 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Random;
 
+/**
+ * Returns a random long value between minimum and maximum (inclusive)
+ *
+ * @param minimum
+ * @param maximum
+ * @return
+ */
+
 public class RandomLong extends Random implements BaseUtil {
 
     private long minimum;
@@ -19,14 +27,6 @@ public class RandomLong extends Random implements BaseUtil {
         if (maximum < minimum)
             throw new RuntimeException("Please enter correct values for min and max");
     }
-
-    /**
-     * Returns a random long value between minimum and maximum (inclusive)
-     *
-     * @param minimum
-     * @param maximum
-     * @return
-     */
     @Override
     public Object run() throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException,
         InstantiationException, IllegalAccessException {

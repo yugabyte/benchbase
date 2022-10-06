@@ -20,6 +20,7 @@ public class RandomNoWithDecimalPoints implements BaseUtil {
             throw new RuntimeException("Incorrect parameters for random no with decimal points");
         }
     }
+
     @Override
     public Object run() {
         Random rnd = new Random();

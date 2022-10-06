@@ -5,11 +5,23 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class GenerateRandomString implements BaseUtil {
-    protected int desiredLength;
-    protected int sizeOfStringArray;
+/*
+Description :- Returns a random string from an array of random strings generated at runtime(length of random string and array passed as parameters).
+Params :
+1.int : Desired Length of random string stored in array.(values[0])
+2.int : Length of the string array storing random strings.(values[1])
 
-    protected ArrayList<String> RandomStringGen;
+Eg:-
+desiredLength: 3, sizeOfStringArray : 5
+Array generated :- RandomStringGen :-  ["abc","hty","iki","pou","qwe"]
+Return type (String) :- "abc" OR "hty" OR "iki" OR "pou" OR "qwe" (randomly chosen).
+*/
+
+public class GenerateRandomString implements BaseUtil {
+    private final int desiredLength;
+    private final int sizeOfStringArray;
+
+    private ArrayList<String> RandomStringGen;
 
     GenerateRandomString(List<Object> values) {
         if (values.size() != 2) {

@@ -3,8 +3,13 @@ package com.oltpbenchmark.benchmarks.featurebench.utils;
 import java.util.List;
 import java.util.Random;
 
+/*
+ * Description :- Returns a random boolean value.
+ * Params:- Empty list
+ * Return type:- (boolean) True OR false
+ * */
 public class RandomBoolean implements BaseUtil {
-    protected Random rd;
+    private Random rd;
 
     public RandomBoolean(List<Object> values) {
         if (values.size() != 0) {

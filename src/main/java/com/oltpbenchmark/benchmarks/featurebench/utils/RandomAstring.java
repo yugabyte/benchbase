@@ -4,6 +4,14 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Random;
 
+/*
+     Description :- returns a random alphabetic string with length in range [minimumlength,maximumlength].
+     Params:-
+     1. int: minimumLength(values[0]) :- minimum length of random alphabetic string.
+     2. int: maximumLength(values[1]):- maximum length of random alphabetic string.
+     Return type:- String (Alphabetic)
+*/
+
 public class RandomAstring extends Random implements BaseUtil {
 
     private final int minimumLength;

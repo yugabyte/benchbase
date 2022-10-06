@@ -33,7 +33,7 @@ public class RowRandomBoundedInt
         }
         this.lowValue = (int) values.get(1);
         this.highValue = (int) values.get(2);
-        if(lowValue>highValue)
+        if (lowValue > highValue)
             throw new RuntimeException("Please enter correct value for max and min value");
 
     }

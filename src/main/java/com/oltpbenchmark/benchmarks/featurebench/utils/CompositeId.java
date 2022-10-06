@@ -1,14 +1,17 @@
+/*
 package com.oltpbenchmark.benchmarks.featurebench.utils;
 
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.stream.IntStream;
 
+*/
 /**
  * Pack multiple values into a single long using bit-shifting
  *
  * @author pavlo
- */
+ *//*
+
 public abstract class CompositeId {
 
     private static final String PAD_STRING = "0";
@@ -52,3 +55,4 @@ public abstract class CompositeId {
 
 }
 
+*/

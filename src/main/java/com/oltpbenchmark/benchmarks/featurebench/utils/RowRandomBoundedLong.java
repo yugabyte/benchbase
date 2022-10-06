@@ -19,7 +19,6 @@ package com.oltpbenchmark.benchmarks.featurebench.utils;
 import java.util.List;
 
 
-
 public class RowRandomBoundedLong implements BaseUtil {
     private final com.oltpbenchmark.benchmarks.featurebench.utils.RowRandomLong randomLong;
     private final com.oltpbenchmark.benchmarks.featurebench.utils.RowRandomInt randomInt;
@@ -40,7 +39,7 @@ public class RowRandomBoundedLong implements BaseUtil {
         }
         this.lowValue = (int) values.get(2);
         this.highValue = (int) values.get(3);
-        if(lowValue>highValue)
+        if (lowValue > highValue)
             throw new RuntimeException("Please enter correct value for max and min value");
     }
 

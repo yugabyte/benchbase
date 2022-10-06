@@ -3,11 +3,21 @@ package com.oltpbenchmark.benchmarks.featurebench.utils;
 import java.util.List;
 import java.util.Random;
 
+/*
+Description :- Returns a random date in range[yearlowerBound,yearupperBound]
+Params :
+1.int: yearlowerBound (values[0]) :- lower bound for random year generation.
+2.int: yearupperBound (values[1]) :- upper bound for random year generation.
 
+Eg:-
+yearlowerBound:- 2009
+yearupperBound:- 2020
+Return type : (String):- 24-4-2014
+*/
 public class RandomDate implements BaseUtil {
-    protected Random rd;
-    protected int yearlowerBound;
-    protected int yearupperBound;
+    private Random rd;
+    private final int yearlowerBound;
+    private final int yearupperBound;
 
 
     public RandomDate(List<Object> values) {
@@ -17,7 +27,7 @@ public class RandomDate implements BaseUtil {
         Random rnd = new Random();
         this.yearlowerBound = (int) values.get(0);
         this.yearupperBound = (int) values.get(1);
-        if(yearlowerBound > yearupperBound || yearlowerBound == 0 && yearupperBound == 0 || yearlowerBound < 0)
+        if (yearlowerBound > yearupperBound || yearlowerBound == 0 && yearupperBound == 0 || yearlowerBound < 0)
             throw new RuntimeException("Please enter correct bounds for max and min year");
 
     }

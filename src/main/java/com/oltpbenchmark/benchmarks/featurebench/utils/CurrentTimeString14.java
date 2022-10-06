@@ -4,6 +4,12 @@ package com.oltpbenchmark.benchmarks.featurebench.utils;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
+/*
+  Returns the CurrentTime in yyyyMMddHHmmss format
+  Params:- Empty list
+  Return type:- String :- Eg:- 20221006080333
+ */
+
 public class CurrentTimeString14 implements BaseUtil {
 
     protected static SimpleDateFormat DATE_FORMAT_14;

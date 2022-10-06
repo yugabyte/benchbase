@@ -1,5 +1,7 @@
+/*
 package com.oltpbenchmark.benchmarks.featurebench.utils;
 
+*/
 /*
  * Copyright 2020 by OLTPBenchmark Project
  *
@@ -15,17 +17,20 @@ package com.oltpbenchmark.benchmarks.featurebench.utils;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- */
+ *//*
+
 
 
 import java.util.Arrays;
 import java.util.Random;
 
+*/
 /**
  * Fast Random Text Generator
  *
  * @author pavlo
- */
+ *//*
+
 public abstract class TextGenerator {
 
     private static final int CHAR_START = 32; // [space]
@@ -52,13 +57,15 @@ public abstract class TextGenerator {
     };
 
 
-    /**
+    */
+/**
      * Generate a random block of text as a char array
      *
      * @param rng
      * @param strLen
      * @return
-     */
+     *//*
+
     public static char[] randomChars(Random rng, int strLen) {
         char[] chars = new char[strLen];
         return randomFastChars(rng, chars);
@@ -71,13 +78,15 @@ public abstract class TextGenerator {
         return (chars);
     }
 
-    /**
+    */
+/**
      * Faster (pseudo) random number generator
      *
      * @param rng
      * @param chars
      * @return
-     */
+     *//*
+
     public static char[] randomFastChars(Random rng, char[] chars) {
         // Ok so now the goal of this is to reduce the number of times that we have to
         // invoke a random number. We'll do this by grabbing a single random int
@@ -99,18 +108,21 @@ public abstract class TextGenerator {
         return (chars);
     }
 
-    /**
+    */
+/**
      * Returns a new string filled with random text
      *
      * @param rng
      * @param strLen
      * @return
-     */
+     *//*
+
     public static String randomStr(Random rng, int strLen) {
         return new String(randomChars(rng, strLen));
     }
 
-    /**
+    */
+/**
      * Resize the given block of text by the delta and add random characters
      * to the new space in the array. Returns a new character array
      *
@@ -118,7 +130,8 @@ public abstract class TextGenerator {
      * @param orig
      * @param delta
      * @return
-     */
+     *//*
+
     public static char[] resizeText(Random rng, char[] orig, int delta) {
         char[] chars = Arrays.copyOf(orig, orig.length + delta);
         for (int i = orig.length; i < chars.length; i++) {
@@ -127,14 +140,16 @@ public abstract class TextGenerator {
         return (chars);
     }
 
-    /**
+    */
+/**
      * Permute a random portion of the origin text
      * Returns the same character array that was given as input
      *
      * @param rng
      * @param chars
      * @return
-     */
+     *//*
+
     public static char[] permuteText(Random rng, char[] chars) {
         // We will try to be fast about this and permute the text by blocks
         int idx = 0;
@@ -166,3 +181,4 @@ public abstract class TextGenerator {
 
 }
 
+*/

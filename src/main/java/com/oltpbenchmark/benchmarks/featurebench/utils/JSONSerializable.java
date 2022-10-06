@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- */
+ *//*
+
 
 package com.oltpbenchmark.benchmarks.featurebench.utils;
 
@@ -33,3 +34,4 @@ public interface JSONSerializable extends JSONString {
 
     void fromJSON(JSONObject json_object) throws JSONException;
 }
+*/
