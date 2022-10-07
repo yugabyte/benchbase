@@ -52,9 +52,6 @@ public class YBMicroBenchmarkScansSonal extends YBMicroBenchmark {
     public void loadOnce(Connection conn) throws SQLException{
 
         String insertStmt = "INSERT INTO demoScans SELECT random() * 1000,  generate_series(1, 1000);";
-//        PreparedStatement stmt = conn.prepareStatement(insertStmt);
-//        stmt.execute();
-//        stmt.close();
         Statement stmtOBj = conn.createStatement();
         stmtOBj.execute(insertStmt);
 
