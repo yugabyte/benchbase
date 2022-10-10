@@ -32,6 +32,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
 
+import static java.lang.Thread.currentThread;
 
 public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
     private static final Logger LOG = LoggerFactory.getLogger(FeatureBenchLoader.class);
@@ -39,6 +40,11 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
     public HierarchicalConfiguration<ImmutableNode> config = null;
     public YBMicroBenchmark ybm = null;
     public int sizeOfLoadRule = 0;
+    public int retryForCreatePhaseAndBeforeLoad = 0;
+    public int retryForCreateYaml = 0;
+    public int retryForAfterLoad = 0;
+    public int maxRetries = 10;
+
     PreparedStatement stmt;
     static int numberOfGeneratorFinished = 0;
 
@@ -46,14 +52,48 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
         super(benchmark);
     }
 
+    private void exponentialBackOfWait(int retry) {
+        // waits random milliseconds between 0 and 10 plus exponential (10ms for first retry, then 20,40,80,160,320,640,1280,2560,5120...)
+        try {
+            int ms = (int) (10 * Math.random() + 10 * Math.pow(2, retry));
+            Thread.sleep(ms);
+            System.err.printf("wait in thread %9s %6d ms after %3d retries%n", currentThread().getName(), ms, retry);
+        } catch (InterruptedException e) {
+            System.err.println(e);
+        }
+    }
+
+    private void DBRuntimeErrorHandler(SQLException e, int noOfRetries, String msg) {
+        if (noOfRetries == maxRetries) {
+            System.out.println("Reached max no of retries in:- " + msg);
+            System.exit(5);
+        } else if (e.getSQLState().startsWith("42")) {
+            System.out.println(msg);
+            System.out.println("Syntax error in SQL");
+            exponentialBackOfWait(++noOfRetries);
+        } else if (e.getSQLState().startsWith("40001") || e.getSQLState().startsWith("40P01")
+            || e.getSQLState().startsWith("08006") || e.getSQLState().startsWith("XX000")) {
+            exponentialBackOfWait(++noOfRetries);
+        } else if (e.getSQLState().startsWith("5")) {
+            System.exit(5);
+        } else {
+            System.exit(255);
+        }
+    }
+
+
     @Override
     public List<LoaderThread> createLoaderThreads() {
         try {
             ybm = (YBMicroBenchmark) Class.forName(workloadClass)
                 .getDeclaredConstructor(HierarchicalConfiguration.class)
                 .newInstance(config);
-
-            createPhaseAndBeforeLoad();
+            try {
+                createPhaseAndBeforeLoad();
+            } catch (SQLException e) {
+                DBRuntimeErrorHandler(e, ++retryForCreatePhaseAndBeforeLoad, "in create phase before load");
+                createPhaseAndBeforeLoad();
+            }
 
             ArrayList<LoaderThread> loaderThreads = new ArrayList<>();
             if (ybm.loadOnceImplemented) {
@@ -65,33 +105,30 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
             return loaderThreads;
         } catch (InstantiationException | IllegalAccessException |
                  InvocationTargetException | NoSuchMethodException |
-                 ClassNotFoundException e) {
+                 ClassNotFoundException | SQLException e) {
+            //ask
             throw new RuntimeException(e);
         }
     }
 
-    private void createPhaseAndBeforeLoad() {
-        try {
-            Connection conn = benchmark.makeConnection();
-            long createStart = System.currentTimeMillis();
-            if (config.containsKey("create")) {
-                createFromYaml(conn);
-            } else {
-                ybm.create(conn);
-            }
-            long createEnd = System.currentTimeMillis();
-            LOG.info("Elapsed time in create phase: {} milliseconds", createEnd - createStart);
-
-            if (ybm.beforeLoadImplemented) {
-                ybm.beforeLoad(conn);
-            }
-            conn.close();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+    private void createPhaseAndBeforeLoad() throws SQLException {
+        Connection conn = benchmark.makeConnection();
+        long createStart = System.currentTimeMillis();
+        if (config.containsKey("create")) {
+            createYaml(conn);
+        } else {
+            ybm.create(conn);
         }
+        long createEnd = System.currentTimeMillis();
+        LOG.info("Elapsed time in create phase: {} milliseconds", createEnd - createStart);
+
+        if (ybm.beforeLoadImplemented) {
+            ybm.beforeLoad(conn);
+        }
+        conn.close();
     }
 
-    private void createFromYaml(Connection conn) throws SQLException {
+    private void createYaml(Connection conn) {
         LOG.info("Using YAML for create phase");
         List<String> ddls = config.getList(String.class, "create");
         try {
@@ -100,8 +137,11 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
                 stmtOBj.execute(ddl);
             }
             stmtOBj.close();
-        } catch (Exception ex) {
-            ex.printStackTrace();
+        } catch (SQLException e) {
+            DBRuntimeErrorHandler(e, ++retryForCreateYaml, "create phase from YAML");
+            createYaml(conn);
+        } catch (Exception e) {
+            e.printStackTrace();
             throw new RuntimeException("Error Occurred in Create Phase");
         }
     }
@@ -155,7 +195,8 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
                 conn.close();
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            DBRuntimeErrorHandler(e, ++retryForAfterLoad, " after Load Phase");
+            afterLoadPhase();
         }
     }
 
@@ -164,6 +205,7 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
         private final String tableName;
         private final long numberOfRows;
         private final List<Map<String, Object>> columns;
+        private int retryForGeneratorYamlLoad = 0;
 
         public GeneratorYaml(String tableName, long numberOfRows,
                              List<Map<String, Object>> columns) {
@@ -185,7 +227,7 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
         }
 
         @Override
-        public void load(Connection conn) throws SQLException {
+        public void load(Connection conn) {
 
             try {
                 int batchSize = workConf.getBatchSize();
@@ -226,6 +268,9 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
                 }
                 stmt.close();
 
+            } catch (SQLException e) {
+                DBRuntimeErrorHandler(e, ++retryForGeneratorYamlLoad, "load Phase from YAML");
+                load(conn);
             } catch (IllegalAccessException |
                      InvocationTargetException e) {
                 e.printStackTrace();
@@ -245,6 +290,7 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
 
     private class GeneratorOnce extends LoaderThread {
         final YBMicroBenchmark ybm;
+        private int retryForLoadFromUser = 0;
 
         public GeneratorOnce(YBMicroBenchmark ybm) {
             super(benchmark);
@@ -252,10 +298,14 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
         }
 
         @Override
-        public void load(Connection conn) throws SQLException, ClassNotFoundException,
-            InvocationTargetException, NoSuchMethodException,
-            InstantiationException, IllegalAccessException {
-            ybm.loadOnce(conn);
+        public void load(Connection conn) throws ClassNotFoundException, InvocationTargetException,
+            NoSuchMethodException, InstantiationException, IllegalAccessException {
+            try {
+                ybm.loadOnce(conn);
+            } catch (SQLException e) {
+                DBRuntimeErrorHandler(e, ++retryForLoadFromUser, "Load from user");
+                load(conn);
+            }
         }
 
         @Override
