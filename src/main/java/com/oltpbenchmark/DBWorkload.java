@@ -229,6 +229,7 @@ public class DBWorkload {
                 lastTxnId = i;
             }
 
+
             // Wrap the list of transactions and save them
             TransactionTypes tt = new TransactionTypes(ttypes);
             wrkld.setTransTypes(tt);
@@ -361,6 +362,7 @@ public class DBWorkload {
                     totalWeight += weight;
                     weights.add(weight);
                 }
+                System.out.println(weight_strings);
 
                 long roundedWeight = Math.round(totalWeight);
 
@@ -644,7 +646,7 @@ public class DBWorkload {
         }
 
         for (TransactionType t : activeTXTypes) {
-            String fileName = baseFileName + ".results." + t.getName() + ".csv";
+            String fileName = baseFileName + ".results." + t.getName() + t.getId() + ".csv";
             try (PrintStream ps = new PrintStream(FileUtil.joinPath(outputDirectory, fileName))) {
                 rw.writeResults(windowSize, ps, t);
             }

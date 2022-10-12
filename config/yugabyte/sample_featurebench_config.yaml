@@ -9,55 +9,67 @@ loaderthreads: 1
 terminals: 1
 works:
     work:
-#        time: 10
-        serial: true
+        time: 2
+#        serial: true
         active_terminals: 1
         rate: 1000
-        weights: 100
+        weights: 50,50
+        warmup: 0
 transactiontypes:
     transactiontype:
-        name: FeatureBench
+        - name: FeatureBench
+        - name: FeatureBench
 microbenchmark:
     class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBMicroBenchmarkImplementation
     properties:
-        tableName: accounts
-        columns: 10
-        rows: 1000
-        indexes: 2
-        filePath: accounts.csv
-        rowsPerTransaction: 2000
         create:
             - DROP TABLE IF EXISTS accounts;
-            - CREATE TABLE accounts (id text NOT NULL ,name float,number text, PRIMARY KEY (id));
-        cleanup:
-            - DROP TABLE accounts;
+            - CREATE TABLE accounts (id int NOT NULL, name varchar(64) NOT NULL, CONSTRAINT pk_accounts PRIMARY KEY (id));
         loadRules:
-          - table: accounts
-            rows: 10
-            columns:
-              - name: id
-                util: PrimaryStringGen
-                params:
-                    - 1
-                    - 2
-              - name: name
-                util: RandomFixedPoint
-                params:
-                    - 3
-                    - 5.0
-                    - 5.1
-              - name: number
-                util: RandomNstring
-                params:
-                    - 10
-                    - 10
+            -   table: accounts
+                rows: 10
+                columns:
+                    -   name: id
+                        util: PrimaryIntGen
+                        params:
+                            - 1
+                            - 10
+                    -   name: name
+                        util: RandomStringNumeric
+                        params:
+                            - 10
+        executeRules:
+            -   transaction_name: Account_query1
+                weight: 50
+                query:
+                    queries:
+                        - SELECT * FROM accounts WHERE id > ?
+                        - SELECT * FROM accounts WHERE id <= ?
+                    bindings:
+                        -   name: RowRandomBoundedInt
+                            params:
+                                - 5
+                                - 10
+                        -   name: RowRandomBoundedInt
+                            params:
+                                - 5
+                                - 10
+            -   transaction_name: Account_query2
+                weight: 50
+                query:
+                    queries:
+                        - SELECT * FROM accounts WHERE id < ?
+                        - SELECT * FROM accounts WHERE id >= ?
+                    bindings:
+                        -   name: RowRandomBoundedInt
+                            params:
+                                - 5
+                                - 10
+                        -   name: RowRandomBoundedInt
+                            params:
+                                - 5
+                                - 10
 
-
-
-#              -   name: name
-#                  util: NumberToIdString
-#                  params:
-#                      - 16
 
 
 

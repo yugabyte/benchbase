@@ -39,6 +39,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 
 /**
@@ -46,7 +47,7 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
     private static final Logger LOG = LoggerFactory.getLogger(FeatureBenchWorker.class);
-    static boolean isCleanUpDone = false;
+    static AtomicBoolean isCleanUpDone = new AtomicBoolean(false);
     public String workloadClass = null;
     public HierarchicalConfiguration<ImmutableNode> config = null;
     public YBMicroBenchmark ybm = null;
@@ -87,7 +88,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                 }
             }
         }
-        stmt.executeQuery();
+//        stmt.executeQuery();
     }
 
     @Override
@@ -95,50 +96,58 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
         UserAbortException, SQLException {
 
         try {
-            ybm = (YBMicroBenchmark) Class.forName(workloadClass)
-                .getDeclaredConstructor(HierarchicalConfiguration.class)
-                .newInstance(config);
+            System.out.println("Got txn type: \n" + txnType);
+            Thread.sleep(200);
 
-            System.out.println(this.configuration.getWorkloadState().getGlobalState());
-            if (ybm.executeOnceImplemented) {
-                ybm.executeOnce(conn);
-                conn.close();
-            } else {
-                ArrayList<ExecuteRule> executeRules = ybm.executeRules();
-                // Validating sum of transaction weights =100
-                int sum = 0;
-                int weight;
-                ArrayList<Integer> callAccToWeight = new ArrayList<>();
-                for (ExecuteRule executeRule : executeRules) {
-                    TransactionDetails transaction_det = executeRule.getTransactionDetails();
-                    weight = transaction_det.getWeightTransactionType();
-                    sum += weight;
-                    callAccToWeight.add(sum);
-                }
-                if (sum > 100 || sum <= 0) {
-                    throw new RuntimeException("Transaction weights incorrect");
-                }
-                for (int i = 0; i < 100; i++) {
-                    int randomNum = ThreadLocalRandom.current().nextInt(1, 100 + 1);
-                    int getId = getTransactionId(randomNum, callAccToWeight);
-                    TransactionDetails transaction_det = executeRules.get(getId).getTransactionDetails();
-                    ArrayList<QueryDetails> qd = transaction_det.getQuery();
-                    for (QueryDetails queryDetails : qd) {
-                        String query = queryDetails.getQuery();
-                        PreparedStatement stmt = conn.prepareStatement(query);
-                        ArrayList<BindParams> bp = queryDetails.getBindParams();
-                        bindParamsBasedOnFunc(bp, stmt);
-                    }
-
-                }
-            }
-            return TransactionStatus.SUCCESS;
-
-        } catch (ClassNotFoundException | InvocationTargetException |
-                 InstantiationException |
-                 IllegalAccessException | NoSuchMethodException e) {
-            throw new RuntimeException(e);
+        }catch ( InterruptedException e){
+            e.printStackTrace();
         }
+        return TransactionStatus.SUCCESS;
+//        try {
+//            ybm = (YBMicroBenchmark) Class.forName(workloadClass)
+//                .getDeclaredConstructor(HierarchicalConfiguration.class)
+//                .newInstance(config);
+//
+//            System.out.println(this.configuration.getWorkloadState().getGlobalState());
+//            if (ybm.executeOnceImplemented) {
+//                ybm.executeOnce(conn);
+//                conn.close();
+//            } else {
+//                ArrayList<ExecuteRule> executeRules = ybm.executeRules();
+//                // Validating sum of transaction weights =100
+//                int sum = 0;
+//                int weight;
+//                ArrayList<Integer> callAccToWeight = new ArrayList<>();
+//                for (ExecuteRule executeRule : executeRules) {
+//                    TransactionDetails transaction_det = executeRule.getTransactionDetails();
+//                    weight = transaction_det.getWeightTransactionType();
+//                    sum += weight;
+//                    callAccToWeight.add(sum);
+//                }
+//                if (sum > 100 || sum <= 0) {
+//                    throw new RuntimeException("Transaction weights incorrect");
+//                }
+//                for (int i = 0; i < 100; i++) {
+//                    int randomNum = ThreadLocalRandom.current().nextInt(1, 100 + 1);
+//                    int getId = getTransactionId(randomNum, callAccToWeight);
+//                    TransactionDetails transaction_det = executeRules.get(getId).getTransactionDetails();
+//                    ArrayList<QueryDetails> qd = transaction_det.getQuery();
+//                    for (QueryDetails queryDetails : qd) {
+//                        String query = queryDetails.getQuery();
+//                        PreparedStatement stmt = conn.prepareStatement(query);
+//                        ArrayList<BindParams> bp = queryDetails.getBindParams();
+//                        bindParamsBasedOnFunc(bp, stmt);
+//                    }
+//
+//                }
+//            }
+//            return TransactionStatus.SUCCESS;
+//
+//        } catch (ClassNotFoundException | InvocationTargetException |
+//                 InstantiationException |
+//                 IllegalAccessException | NoSuchMethodException e) {
+//            throw new RuntimeException(e);
+//        }
 
     }
 
@@ -147,26 +156,26 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
 
         if (!this.configuration.getNewConnectionPerTxn() && this.conn != null && ybm != null) {
             try {
-                if (this.configuration.getWorkloadState().getGlobalState() == State.EXIT && !isCleanUpDone) {
-                    if (config.containsKey("cleanup")) {
-                        LOG.info("\n=================Cleanup Phase taking from Yaml=========\n");
-                        List<String> ddls = config.getList(String.class, "cleanup");
-                        try {
-                            Statement stmtOBj = conn.createStatement();
-                            for (String ddl : ddls) {
-                                stmtOBj.execute(ddl);
+                    if (this.configuration.getWorkloadState().getGlobalState() == State.EXIT && !isCleanUpDone.get()) {
+                        if (config.containsKey("cleanup")) {
+                            LOG.info("\n=================Cleanup Phase taking from Yaml=========\n");
+                            List<String> ddls = config.getList(String.class, "cleanup");
+                            try {
+                                Statement stmtOBj = conn.createStatement();
+                                for (String ddl : ddls) {
+                                    stmtOBj.execute(ddl);
+                                }
+                                stmtOBj.close();
+                            } catch (Exception ex) {
+                                ex.printStackTrace();
                             }
-                            stmtOBj.close();
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                        }
 
-                    } else {
-                        ybm.cleanUp(conn);
+                        } else {
+                            ybm.cleanUp(conn);
+                        }
+                        conn.close();
+                        isCleanUpDone.set(true) ;
                     }
-                    isCleanUpDone = true;
-                }
-                conn.close();
             } catch (SQLException e) {
                 LOG.error("Connection couldn't be closed.", e);
             }
