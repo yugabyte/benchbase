@@ -22,24 +22,29 @@ import java.util.Objects;
 
 public class TransactionType implements Comparable<TransactionType> {
 
-    public static class Invalid extends Procedure {
-    }
-
     public static final int INVALID_ID = 0;
     public static final TransactionType INVALID = new TransactionType(Invalid.class, INVALID_ID, false, 0, 0);
-
     private final Class<? extends Procedure> procedureClass;
     private final int id;
     private final boolean supplemental;
     private final long preExecutionWait;
     private final long postExecutionWait;
-
+    private  String transactionName="";
     protected TransactionType(Class<? extends Procedure> procedureClass, int id, boolean supplemental, long preExecutionWait, long postExecutionWait) {
         this.procedureClass = procedureClass;
         this.id = id;
         this.supplemental = supplemental;
         this.preExecutionWait = preExecutionWait;
         this.postExecutionWait = postExecutionWait;
+    }
+
+    protected TransactionType(Class<? extends Procedure> procedureClass, int id, boolean supplemental, long preExecutionWait, long postExecutionWait, String transactionName) {
+        this.procedureClass = procedureClass;
+        this.id = id;
+        this.supplemental = supplemental;
+        this.preExecutionWait = preExecutionWait;
+        this.postExecutionWait = postExecutionWait;
+        this.transactionName = transactionName;
     }
 
     public Class<? extends Procedure> getProcedureClass() {
@@ -91,6 +96,13 @@ public class TransactionType implements Comparable<TransactionType> {
     @Override
     public String toString() {
         return String.format("%s/%02d", this.procedureClass.getName(), this.id);
+    }
+
+    public static class Invalid extends Procedure {
+    }
+
+    public String getTransactionName(){
+        return this.transactionName;
     }
 
 }

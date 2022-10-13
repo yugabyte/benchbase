@@ -195,13 +195,22 @@ public class DBWorkload {
                 numTxnTypes = xmlConfig.configurationsAt("transactiontypes" + pluginTest + "/transactiontype").size();
             }
 
+            List<HierarchicalConfiguration<ImmutableNode>> executeRules = xmlConfig.configurationsAt("microbenchmark/properties/executeRules");
+            if (plugin.equalsIgnoreCase("featurebench") && executeRules != null) {
+                numTxnTypes = executeRules.size();
+            }
+
 
             List<TransactionType> ttypes = new ArrayList<>();
             ttypes.add(TransactionType.INVALID);
+
             int txnIdOffset = lastTxnId;
             for (int i = 1; i <= numTxnTypes; i++) {
                 String key = "transactiontypes" + pluginTest + "/transactiontype[" + i + "]";
                 String txnName = xmlConfig.getString(key + "/name");
+                if (plugin.equalsIgnoreCase("featurebench")) {
+                    txnName = "FeatureBench";
+                }
 
                 // Get ID if specified; else increment from last one.
                 int txnId = i;
@@ -218,8 +227,12 @@ public class DBWorkload {
                 if (xmlConfig.containsKey(key + "/postExecutionWait")) {
                     postExecutionWait = xmlConfig.getLong(key + "/postExecutionWait");
                 }
-
-                TransactionType tmpType = bench.initTransactionType(txnName, txnId + txnIdOffset, preExecutionWait, postExecutionWait);
+                TransactionType tmpType;
+                if (plugin.equalsIgnoreCase("featurebench")) {
+                    tmpType = bench.initTransactionType(txnName, txnId + txnIdOffset, preExecutionWait, postExecutionWait,executeRules.get(i-1).getString("name"));
+                } else {
+                    tmpType = bench.initTransactionType(txnName, txnId + txnIdOffset, preExecutionWait, postExecutionWait);
+                }
 
                 // Keep a reference for filtering
                 activeTXTypes.add(tmpType);
@@ -279,6 +292,8 @@ public class DBWorkload {
                 // attributed workload
                 if (targetList.length > 1 || work.containsKey("weights[@bench]")) {
                     weight_strings = Arrays.asList(work.getString("weights" + pluginTest).split("\\s*,\\s*"));
+                } else if (plugin.equalsIgnoreCase("featurebench")) {
+                    weight_strings = Arrays.asList();
                 } else {
                     weight_strings = Arrays.asList(work.getString("weights[not(@bench)]").split("\\s*,\\s*"));
                 }
@@ -356,8 +371,8 @@ public class DBWorkload {
                 ArrayList<Double> weights = new ArrayList<>();
 
                 double totalWeight = 0;
-                if (plugin.equalsIgnoreCase("featurebench")) {
-                    List<HierarchicalConfiguration<ImmutableNode>> executeRules = xmlConfig.configurationsAt("microbenchmark/properties/executeRules");
+                if (plugin.equalsIgnoreCase("featurebench") && executeRules != null) {
+
                     for (HierarchicalConfiguration<ImmutableNode> rule : executeRules) {
                         double weight = rule.getDouble("weight");
                         totalWeight += weight;
@@ -653,11 +668,19 @@ public class DBWorkload {
             LOG.info("Output results into file: {} with window size {}", resultsFileName, windowSize);
             rw.writeResults(windowSize, ps);
         }
-
-        for (TransactionType t : activeTXTypes) {
-            String fileName = baseFileName + ".results." + t.getName() + t.getId() + ".csv";
-            try (PrintStream ps = new PrintStream(FileUtil.joinPath(outputDirectory, fileName))) {
-                rw.writeResults(windowSize, ps, t);
+        if (name.equalsIgnoreCase("featurebench")) {
+            for (TransactionType t : activeTXTypes) {
+                String fileName = baseFileName + ".results." + t.getTransactionName() + ".csv";
+                try (PrintStream ps = new PrintStream(FileUtil.joinPath(outputDirectory, fileName))) {
+                    rw.writeResults(windowSize, ps, t);
+                }
+            }
+        }else {
+            for (TransactionType t : activeTXTypes) {
+                String fileName = baseFileName + ".results." + t.getName() + ".csv";
+                try (PrintStream ps = new PrintStream(FileUtil.joinPath(outputDirectory, fileName))) {
+                    rw.writeResults(windowSize, ps, t);
+                }
             }
         }
 
