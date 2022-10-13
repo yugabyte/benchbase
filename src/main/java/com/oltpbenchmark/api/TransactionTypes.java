@@ -32,7 +32,10 @@ public class TransactionTypes implements Collection<TransactionType> {
         for (TransactionType tt : transactiontypes) {
 
             String key = tt.getName().toUpperCase();
-            this.types.put(key+tt.getId(), tt);
+            if(key.equalsIgnoreCase("featurebench"))
+                this.types.put(key + tt.getId(), tt);
+            else
+                this.types.put(key, tt);
         }
     }
 

@@ -203,14 +203,10 @@ public class DBWorkload {
 
             List<TransactionType> ttypes = new ArrayList<>();
             ttypes.add(TransactionType.INVALID);
-
             int txnIdOffset = lastTxnId;
             for (int i = 1; i <= numTxnTypes; i++) {
                 String key = "transactiontypes" + pluginTest + "/transactiontype[" + i + "]";
                 String txnName = xmlConfig.getString(key + "/name");
-                if (plugin.equalsIgnoreCase("featurebench")) {
-                    txnName = "FeatureBench";
-                }
 
                 // Get ID if specified; else increment from last one.
                 int txnId = i;
@@ -229,7 +225,8 @@ public class DBWorkload {
                 }
                 TransactionType tmpType;
                 if (plugin.equalsIgnoreCase("featurebench")) {
-                    tmpType = bench.initTransactionType(txnName, txnId + txnIdOffset, preExecutionWait, postExecutionWait,executeRules.get(i-1).getString("name"));
+                    tmpType = bench.initTransactionType("FeatureBench", txnId + txnIdOffset, preExecutionWait,
+                        postExecutionWait, executeRules.get(i-1).getString("name"));
                 } else {
                     tmpType = bench.initTransactionType(txnName, txnId + txnIdOffset, preExecutionWait, postExecutionWait);
                 }
@@ -241,7 +238,6 @@ public class DBWorkload {
                 ttypes.add(tmpType);
                 lastTxnId = i;
             }
-
 
             // Wrap the list of transactions and save them
             TransactionTypes tt = new TransactionTypes(ttypes);
@@ -293,7 +289,7 @@ public class DBWorkload {
                 if (targetList.length > 1 || work.containsKey("weights[@bench]")) {
                     weight_strings = Arrays.asList(work.getString("weights" + pluginTest).split("\\s*,\\s*"));
                 } else if (plugin.equalsIgnoreCase("featurebench")) {
-                    weight_strings = Arrays.asList();
+                    weight_strings = List.of();
                 } else {
                     weight_strings = Arrays.asList(work.getString("weights[not(@bench)]").split("\\s*,\\s*"));
                 }
@@ -385,8 +381,6 @@ public class DBWorkload {
                         weights.add(weight);
                     }
                 }
-
-                System.out.println(weights);
 
                 long roundedWeight = Math.round(totalWeight);
 
@@ -531,10 +525,10 @@ public class DBWorkload {
 
         Parameters params = new Parameters();
         FileBasedConfigurationBuilder<XMLConfiguration> builder = new FileBasedConfigurationBuilder<>(XMLConfiguration.class)
-            .configure(params.xml()
-                .setFileName(filename)
-                .setListDelimiterHandler(new DisabledListDelimiterHandler())
-                .setExpressionEngine(new XPathExpressionEngine()));
+                .configure(params.xml()
+                        .setFileName(filename)
+                        .setListDelimiterHandler(new DisabledListDelimiterHandler())
+                        .setExpressionEngine(new XPathExpressionEngine()));
         return builder.getConfiguration();
 
     }
@@ -652,8 +646,8 @@ public class DBWorkload {
         if (!name.equalsIgnoreCase("featurebench")) {
             String configFileName = baseFileName + ".config.xml";
             try (PrintStream ps = new PrintStream(FileUtil.joinPath(outputDirectory, configFileName))) {
-                LOG.info("Output benchmark config into file: {}", configFileName);
-                rw.writeConfig(ps);
+                    LOG.info("Output benchmark config into file: {}", configFileName);
+                    rw.writeConfig(ps);
             }
         } else {
             String configFileName = baseFileName + ".config.yaml";

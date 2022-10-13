@@ -345,7 +345,8 @@ public abstract class BenchmarkModule {
      * @return
      */
     @SuppressWarnings("unchecked")
-    public final TransactionType initTransactionType(String procName, int id, long preExecutionWait, long postExecutionWait,String transactionName) {
+    public final TransactionType initTransactionType(String procName, int id, long preExecutionWait,
+                                                     long postExecutionWait, String transactionName) {
         if (id == TransactionType.INVALID_ID) {
             throw new RuntimeException(String.format("Procedure %s.%s cannot use the reserved id '%d' for %s", getBenchmarkName(), procName, id, TransactionType.INVALID.getClass().getSimpleName()));
         }
@@ -355,7 +356,7 @@ public abstract class BenchmarkModule {
         String fullName = pkg.getName() + "." + procName;
         Class<? extends Procedure> procClass = (Class<? extends Procedure>) ClassUtil.getClass(fullName);
 
-        return new TransactionType(procClass, id, false, preExecutionWait, postExecutionWait,transactionName);
+        return new TransactionType(procClass, id, false, preExecutionWait, postExecutionWait, transactionName);
     }
 
     public final WorkloadConfiguration getWorkloadConfiguration() {
