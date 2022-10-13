@@ -109,7 +109,7 @@ public class DBWorkload {
         for (String plugin : targetList) {
             String pluginTest = "[@bench='" + plugin + "']";
             if (plugin.equalsIgnoreCase("featurebench"))
-                 xmlConfig = buildConfigurationFromYaml(configFile);
+                xmlConfig = buildConfigurationFromYaml(configFile);
             else
                 xmlConfig = buildConfiguration(configFile);
 
@@ -356,13 +356,22 @@ public class DBWorkload {
                 ArrayList<Double> weights = new ArrayList<>();
 
                 double totalWeight = 0;
-
-                for (String weightString : weight_strings) {
-                    double weight = Double.parseDouble(weightString);
-                    totalWeight += weight;
-                    weights.add(weight);
+                if (plugin.equalsIgnoreCase("featurebench")) {
+                    List<HierarchicalConfiguration<ImmutableNode>> executeRules = xmlConfig.configurationsAt("microbenchmark/properties/executeRules");
+                    for (HierarchicalConfiguration<ImmutableNode> rule : executeRules) {
+                        double weight = rule.getDouble("weight");
+                        totalWeight += weight;
+                        weights.add(weight);
+                    }
+                } else {
+                    for (String weightString : weight_strings) {
+                        double weight = Double.parseDouble(weightString);
+                        totalWeight += weight;
+                        weights.add(weight);
+                    }
                 }
-                System.out.println(weight_strings);
+
+                System.out.println(weights);
 
                 long roundedWeight = Math.round(totalWeight);
 
@@ -507,10 +516,10 @@ public class DBWorkload {
 
         Parameters params = new Parameters();
         FileBasedConfigurationBuilder<XMLConfiguration> builder = new FileBasedConfigurationBuilder<>(XMLConfiguration.class)
-                .configure(params.xml()
-                        .setFileName(filename)
-                        .setListDelimiterHandler(new DisabledListDelimiterHandler())
-                        .setExpressionEngine(new XPathExpressionEngine()));
+            .configure(params.xml()
+                .setFileName(filename)
+                .setListDelimiterHandler(new DisabledListDelimiterHandler())
+                .setExpressionEngine(new XPathExpressionEngine()));
         return builder.getConfiguration();
 
     }
@@ -628,8 +637,8 @@ public class DBWorkload {
         if (!name.equalsIgnoreCase("featurebench")) {
             String configFileName = baseFileName + ".config.xml";
             try (PrintStream ps = new PrintStream(FileUtil.joinPath(outputDirectory, configFileName))) {
-                    LOG.info("Output benchmark config into file: {}", configFileName);
-                    rw.writeConfig(ps);
+                LOG.info("Output benchmark config into file: {}", configFileName);
+                rw.writeConfig(ps);
             }
         } else {
             String configFileName = baseFileName + ".config.yaml";
