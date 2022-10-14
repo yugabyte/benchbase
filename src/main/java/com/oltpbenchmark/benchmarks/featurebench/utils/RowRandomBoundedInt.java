@@ -18,17 +18,15 @@ package com.oltpbenchmark.benchmarks.featurebench.utils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 
-public class RowRandomBoundedInt
-    extends RowRandomInt implements BaseUtil {
+public class RowRandomBoundedInt implements BaseUtil {
     private final int lowValue;
     private final int highValue;
 
     public RowRandomBoundedInt(List<Object> values) {
-        //super(seed,seedsPerRow);
-        super((long) values.get(0), (int) values.get(3));
-        if (values.size() != 4) {
+        if (values.size() != 2) {
             throw new RuntimeException("Incorrect number of parameters for util function");
         }
         this.lowValue = ((Number) (int) values.get(1)).intValue();
@@ -41,7 +39,7 @@ public class RowRandomBoundedInt
     @Override
     public Object run() throws ClassNotFoundException, InvocationTargetException,
         NoSuchMethodException, InstantiationException, IllegalAccessException {
-        return nextInt(lowValue, highValue);
+        return ThreadLocalRandom.current().nextInt(lowValue, highValue + 1);
     }
 }
 

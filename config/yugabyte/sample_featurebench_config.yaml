@@ -15,7 +15,6 @@ works:
         warmup: 0
 #transactiontypes:
 #    transactiontype:
-
 microbenchmark:
     class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBMicroBenchmarkImplementation
     properties:
@@ -39,35 +38,37 @@ microbenchmark:
             -   name: Account_query1
                 weight: 50
                 queries:
-                    -   query: SELECT * FROM accounts WHERE id > ?
+                    -   query: SELECT * FROM accounts WHERE id<? AND id>=?
+                        bindings:
+                            -   name: RandomNumber
+                                params:
+                                    - 8
+                                    - 10
+                            -   name: RandomNumber
+                                params:
+                                    - 1
+                                    - 4
+                    -   query: SELECT * FROM accounts WHERE id<=?
                         bindings:
                             -   name: RandomNumber
                                 params:
                                     - 5
-                                    - 8
-                    -   query: SELECT * FROM accounts WHERE id <= ?
-                        bindings:
-                            -   name: RandomNumber
-                                params:
-                                    - 5
-                                    - 8
+                                    - 10
             -   name: Account_query2
                 weight: 50
                 queries:
-                    -   query: SELECT * FROM accounts WHERE id > ?
+                    -   query: SELECT * FROM accounts WHERE id>?
                         bindings:
                             -   name: RandomNumber
                                 params:
-                                    - 5
-                                    - 8
-                    -   query: SELECT * FROM accounts WHERE id <= ?
+                                    - 9
+                                    - 10
+                    -   query: SELECT * FROM accounts WHERE id<=?
                         bindings:
                             -   name: RandomNumber
                                 params:
-                                    - 5
-                                    - 8
-
-
+                                    - 7
+                                    - 9
 
 
 

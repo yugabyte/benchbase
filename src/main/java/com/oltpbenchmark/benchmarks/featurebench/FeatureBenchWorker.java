@@ -20,25 +20,17 @@ package com.oltpbenchmark.benchmarks.featurebench;
 import com.oltpbenchmark.api.Procedure.UserAbortException;
 import com.oltpbenchmark.api.TransactionType;
 import com.oltpbenchmark.api.Worker;
-import com.oltpbenchmark.benchmarks.featurebench.helpers.*;
+import com.oltpbenchmark.benchmarks.featurebench.helpers.UtilToMethod;
 import com.oltpbenchmark.types.State;
 import com.oltpbenchmark.types.TransactionStatus;
-import com.oltpbenchmark.util.RandomGenerator;
-import com.oltpbenchmark.util.RowRandomBoundedInt;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.ThreadLocalRandom;
+import java.sql.*;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 
@@ -56,99 +48,75 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
         super(benchmarkModule, id);
     }
 
-    int getTransactionId(int no, ArrayList<Integer> weights) {
-        int len = weights.size();
-        for (int i = 0; i < len; i++) {
-            if (no <= weights.get(i))
-                return i;
-        }
-        return 0;
-    }
-
-    public void bindParamsBasedOnFunc(ArrayList<BindParams> bp, PreparedStatement stmt) throws SQLException {
-        for (BindParams ob : bp) {
-            ArrayList<UtilityFunc> ufs = ob.getUtilFunc();
-            for (int j = 0; j < ufs.size(); j++) {
-                if (Objects.equals(ufs.get(j).getName(), "RandomNoWithinRange")) {
-                    ArrayList<ParamsForUtilFunc> pfuf = ufs.get(j).getParams();
-                    int lower_range = pfuf.get(0).getParameters().get(0);
-                    int upper_range = pfuf.get(0).getParameters().get(1);
-                    RowRandomBoundedInt rno = new RowRandomBoundedInt(1, lower_range, upper_range);
-                    stmt.setInt(j + 1, rno.nextValue());
-                } else if (Objects.equals(ufs.get(j).getName(), "astring")) {
-                    ArrayList<ParamsForUtilFunc> pfuf = ufs.get(j).getParams();
-                    int min_len = pfuf.get(0).getParameters().get(0);
-                    int max_len = pfuf.get(0).getParameters().get(1);
-                    int randomNum = ThreadLocalRandom.current().nextInt(1, 100 + 1);
-                    if (randomNum % 2 == 0) {
-                        RandomGenerator rno = new RandomGenerator(1);
-                        String dname = rno.astring(min_len, max_len);
-                        stmt.setString(j + 1, dname);
-                    }
-                }
-            }
-        }
-//        stmt.executeQuery();
-    }
-
     @Override
     protected TransactionStatus executeWork(Connection conn, TransactionType txnType) throws
         UserAbortException, SQLException {
-
         try {
-            System.out.println("Got txn type: \n" + txnType);
-            Thread.sleep(200);
+            ybm = (YBMicroBenchmark) Class.forName(workloadClass)
+                .getDeclaredConstructor(HierarchicalConfiguration.class)
+                .newInstance(config);
 
-        }catch ( InterruptedException e){
-            e.printStackTrace();
+            int executeRuleIndex = txnType.getId() - 1;
+            HierarchicalConfiguration<ImmutableNode> executeRule =
+                config.configurationsAt("executeRules").get(executeRuleIndex);
+            List<HierarchicalConfiguration<ImmutableNode>> queriesTransaction = executeRule.configurationsAt("queries");
+            System.out.println("Transaction id: " + (executeRuleIndex + 1) + "\n");
+            for (HierarchicalConfiguration query : queriesTransaction) {
+                List<String> utilNames = new ArrayList<>();
+                List<List<Object>> params = new ArrayList<>();
+                Iterator queryKeys = query.getKeys();
+                String element = (String) queryKeys.next();
+                String stmtQuery = query.get(String.class, element);
+
+                List<HierarchicalConfiguration<ImmutableNode>> bl = query.configurationsAt("bindings");
+                for (HierarchicalConfiguration bindingsList : bl) {
+                    Iterator bindingKeys = bindingsList.getKeys();
+                    while (bindingKeys.hasNext()) {
+                        String name = (String) bindingKeys.next();
+                        //System.out.println(name);
+                        utilNames.add(bindingsList.get(String.class, name));
+                        String p = (String) bindingKeys.next();
+                        //System.out.println(p);
+                        params.add(bindingsList.getList(Object.class, p));
+                    }
+                }
+/*              System.out.println(utilNames);
+                System.out.println(params);*/
+                executeQueryFromYaml(stmtQuery, utilNames, params, txnType.getId());
+            }
+
+
+        } catch (ClassNotFoundException | InvocationTargetException
+                 | InstantiationException | IllegalAccessException |
+                 NoSuchMethodException e) {
+            throw new RuntimeException(e);
         }
         return TransactionStatus.SUCCESS;
-//        try {
-//            ybm = (YBMicroBenchmark) Class.forName(workloadClass)
-//                .getDeclaredConstructor(HierarchicalConfiguration.class)
-//                .newInstance(config);
-//
-//            System.out.println(this.configuration.getWorkloadState().getGlobalState());
-//            if (ybm.executeOnceImplemented) {
-//                ybm.executeOnce(conn);
-//                conn.close();
-//            } else {
-//                ArrayList<ExecuteRule> executeRules = ybm.executeRules();
-//                // Validating sum of transaction weights =100
-//                int sum = 0;
-//                int weight;
-//                ArrayList<Integer> callAccToWeight = new ArrayList<>();
-//                for (ExecuteRule executeRule : executeRules) {
-//                    TransactionDetails transaction_det = executeRule.getTransactionDetails();
-//                    weight = transaction_det.getWeightTransactionType();
-//                    sum += weight;
-//                    callAccToWeight.add(sum);
-//                }
-//                if (sum > 100 || sum <= 0) {
-//                    throw new RuntimeException("Transaction weights incorrect");
-//                }
-//                for (int i = 0; i < 100; i++) {
-//                    int randomNum = ThreadLocalRandom.current().nextInt(1, 100 + 1);
-//                    int getId = getTransactionId(randomNum, callAccToWeight);
-//                    TransactionDetails transaction_det = executeRules.get(getId).getTransactionDetails();
-//                    ArrayList<QueryDetails> qd = transaction_det.getQuery();
-//                    for (QueryDetails queryDetails : qd) {
-//                        String query = queryDetails.getQuery();
-//                        PreparedStatement stmt = conn.prepareStatement(query);
-//                        ArrayList<BindParams> bp = queryDetails.getBindParams();
-//                        bindParamsBasedOnFunc(bp, stmt);
-//                    }
-//
-//                }
-//            }
-//            return TransactionStatus.SUCCESS;
-//
-//        } catch (ClassNotFoundException | InvocationTargetException |
-//                 InstantiationException |
-//                 IllegalAccessException | NoSuchMethodException e) {
-//            throw new RuntimeException(e);
-//        }
+    }
 
+    private void executeQueryFromYaml(String stmt, List<String> utilNames, List<List<Object>> params, int id)
+        throws ClassNotFoundException, InvocationTargetException,
+        NoSuchMethodException, InstantiationException,
+        IllegalAccessException, SQLException {
+        LOG.info("Using YAML for execute phase " + "transaction no: " + id);
+        //System.out.println(stmt);
+        PreparedStatement query = conn.prepareStatement(stmt);
+        for (int i = 0; i < utilNames.size(); i++) {
+            UtilToMethod obj = new UtilToMethod(utilNames.get(i), params.get(i));
+            query.setObject(i + 1, obj.get());
+        }
+        ResultSet res = query.executeQuery();
+        ResultSetMetaData rsmd = res.getMetaData();
+        int columnsNumber = rsmd.getColumnCount();
+        while (res.next()) {
+            for (int i = 1; i <= columnsNumber; i++) {
+                if (i > 1) System.out.print("  ");
+                String columnValue = res.getString(i);
+                System.out.print(rsmd.getColumnName(i) + "->" + columnValue);
+            }
+            System.out.println("");
+        }
+        System.out.println("\n");
     }
 
     @Override
@@ -156,26 +124,26 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
 
         if (!this.configuration.getNewConnectionPerTxn() && this.conn != null && ybm != null) {
             try {
-                    if (this.configuration.getWorkloadState().getGlobalState() == State.EXIT && !isCleanUpDone.get()) {
-                        if (config.containsKey("cleanup")) {
-                            LOG.info("\n=================Cleanup Phase taking from Yaml=========\n");
-                            List<String> ddls = config.getList(String.class, "cleanup");
-                            try {
-                                Statement stmtOBj = conn.createStatement();
-                                for (String ddl : ddls) {
-                                    stmtOBj.execute(ddl);
-                                }
-                                stmtOBj.close();
-                            } catch (Exception ex) {
-                                ex.printStackTrace();
+                if (this.configuration.getWorkloadState().getGlobalState() == State.EXIT && !isCleanUpDone.get()) {
+                    if (config.containsKey("cleanup")) {
+                        LOG.info("\n=================Cleanup Phase taking from Yaml=========\n");
+                        List<String> ddls = config.getList(String.class, "cleanup");
+                        try {
+                            Statement stmtOBj = conn.createStatement();
+                            for (String ddl : ddls) {
+                                stmtOBj.execute(ddl);
                             }
-
-                        } else {
-                            ybm.cleanUp(conn);
+                            stmtOBj.close();
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
                         }
-                        conn.close();
-                        isCleanUpDone.set(true) ;
+
+                    } else {
+                        ybm.cleanUp(conn);
                     }
+                    conn.close();
+                    isCleanUpDone.set(true);
+                }
             } catch (SQLException e) {
                 LOG.error("Connection couldn't be closed.", e);
             }
