@@ -30,7 +30,9 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
 import java.sql.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 
@@ -48,13 +50,22 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
         super(benchmarkModule, id);
     }
 
+
     @Override
     protected TransactionStatus executeWork(Connection conn, TransactionType txnType) throws
         UserAbortException, SQLException {
+
+
         try {
             ybm = (YBMicroBenchmark) Class.forName(workloadClass)
                 .getDeclaredConstructor(HierarchicalConfiguration.class)
                 .newInstance(config);
+
+            if (config.configurationsAt("executeRules") == null || config.configurationsAt("executeRules").size() == 0) {
+                ybm.executeOnce(conn);
+                return TransactionStatus.SUCCESS;
+            }
+
 
             int executeRuleIndex = txnType.getId() - 1;
             HierarchicalConfiguration<ImmutableNode> executeRule =

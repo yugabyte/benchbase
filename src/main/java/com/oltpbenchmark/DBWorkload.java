@@ -196,8 +196,18 @@ public class DBWorkload {
             }
 
             List<HierarchicalConfiguration<ImmutableNode>> executeRules = xmlConfig.configurationsAt("microbenchmark/properties/executeRules");
-            if (plugin.equalsIgnoreCase("featurebench") && executeRules != null) {
-                numTxnTypes = executeRules.size();
+            if (plugin.equalsIgnoreCase("featurebench")) {
+                if (executeRules == null) {
+                    numTxnTypes = 1;
+
+                } else {
+                    numTxnTypes = executeRules.size();
+                    if (numTxnTypes == 0) {
+                        executeRules = null;
+                        numTxnTypes = 1;
+                    }
+                }
+
             }
 
 
@@ -225,8 +235,13 @@ public class DBWorkload {
                 }
                 TransactionType tmpType;
                 if (plugin.equalsIgnoreCase("featurebench")) {
-                    tmpType = bench.initTransactionType("FeatureBench", txnId + txnIdOffset, preExecutionWait,
-                        postExecutionWait, executeRules.get(i-1).getString("name"));
+                    if (executeRules != null) {
+                        tmpType = bench.initTransactionType("FeatureBench", txnId + txnIdOffset, preExecutionWait,
+                            postExecutionWait, executeRules.get(i - 1).getString("name"));
+                    } else {
+                        tmpType = bench.initTransactionType("FeatureBench", txnId + txnIdOffset, preExecutionWait,
+                            postExecutionWait, "executeOnce");
+                    }
                 } else {
                     tmpType = bench.initTransactionType(txnName, txnId + txnIdOffset, preExecutionWait, postExecutionWait);
                 }
@@ -331,6 +346,9 @@ public class DBWorkload {
                 // We now have the option to run all queries exactly once in
                 // a serial (rather than random) order.
                 boolean serial = Boolean.parseBoolean(work.getString("serial", Boolean.FALSE.toString()));
+                if (plugin.equalsIgnoreCase("featurebench") && executeRules == null) {
+                    serial = true;
+                }
 
 
                 int activeTerminals;
@@ -367,12 +385,16 @@ public class DBWorkload {
                 ArrayList<Double> weights = new ArrayList<>();
 
                 double totalWeight = 0;
-                if (plugin.equalsIgnoreCase("featurebench") && executeRules != null) {
-
-                    for (HierarchicalConfiguration<ImmutableNode> rule : executeRules) {
-                        double weight = rule.getDouble("weight");
-                        totalWeight += weight;
-                        weights.add(weight);
+                if (plugin.equalsIgnoreCase("featurebench")) {
+                    if (executeRules == null) {
+                        totalWeight = 100;
+                        weights.add(100.0);
+                    } else {
+                        for (HierarchicalConfiguration<ImmutableNode> rule : executeRules) {
+                            double weight = rule.getDouble("weight");
+                            totalWeight += weight;
+                            weights.add(weight);
+                        }
                     }
                 } else {
                     for (String weightString : weight_strings) {
@@ -525,10 +547,10 @@ public class DBWorkload {
 
         Parameters params = new Parameters();
         FileBasedConfigurationBuilder<XMLConfiguration> builder = new FileBasedConfigurationBuilder<>(XMLConfiguration.class)
-                .configure(params.xml()
-                        .setFileName(filename)
-                        .setListDelimiterHandler(new DisabledListDelimiterHandler())
-                        .setExpressionEngine(new XPathExpressionEngine()));
+            .configure(params.xml()
+                .setFileName(filename)
+                .setListDelimiterHandler(new DisabledListDelimiterHandler())
+                .setExpressionEngine(new XPathExpressionEngine()));
         return builder.getConfiguration();
 
     }
@@ -646,8 +668,8 @@ public class DBWorkload {
         if (!name.equalsIgnoreCase("featurebench")) {
             String configFileName = baseFileName + ".config.xml";
             try (PrintStream ps = new PrintStream(FileUtil.joinPath(outputDirectory, configFileName))) {
-                    LOG.info("Output benchmark config into file: {}", configFileName);
-                    rw.writeConfig(ps);
+                LOG.info("Output benchmark config into file: {}", configFileName);
+                rw.writeConfig(ps);
             }
         } else {
             String configFileName = baseFileName + ".config.yaml";
@@ -669,7 +691,7 @@ public class DBWorkload {
                     rw.writeResults(windowSize, ps, t);
                 }
             }
-        }else {
+        } else {
             for (TransactionType t : activeTXTypes) {
                 String fileName = baseFileName + ".results." + t.getName() + ".csv";
                 try (PrintStream ps = new PrintStream(FileUtil.joinPath(outputDirectory, fileName))) {
