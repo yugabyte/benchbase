@@ -346,9 +346,6 @@ public class DBWorkload {
                 // We now have the option to run all queries exactly once in
                 // a serial (rather than random) order.
                 boolean serial = Boolean.parseBoolean(work.getString("serial", Boolean.FALSE.toString()));
-                if (plugin.equalsIgnoreCase("featurebench") && executeRules == null) {
-                    serial = true;
-                }
 
 
                 int activeTerminals;
@@ -366,6 +363,11 @@ public class DBWorkload {
 
                 int time = work.getInt("/time", 0);
                 int warmup = work.getInt("/warmup", 0);
+
+                if (plugin.equalsIgnoreCase("featurebench") && executeRules == null) {
+                    serial = true;
+                    time = 0;
+                }
                 timed = (time > 0);
                 if (!timed) {
                     if (serial) {

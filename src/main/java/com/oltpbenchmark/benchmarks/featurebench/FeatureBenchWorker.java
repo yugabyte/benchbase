@@ -62,7 +62,9 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                 .newInstance(config);
 
             if (config.configurationsAt("executeRules") == null || config.configurationsAt("executeRules").size() == 0) {
-                ybm.executeOnce(conn);
+                if(this.configuration.getWorkloadState().getGlobalState() == State.MEASURE) {
+                    ybm.executeOnce(conn);
+                }
                 return TransactionStatus.SUCCESS;
             }
 
