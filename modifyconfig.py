@@ -18,6 +18,10 @@ for key,value in data.items():
             newarmp.text = value
         else :
             element.text = value
+    elif key == "time":
+        element=root.find("works/work/time")
+        if element != None:
+            element.text=value
     elif element != None :
         if key == "url":
             element.text=element.text.replace("localhost",value)
