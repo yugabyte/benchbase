@@ -196,6 +196,13 @@ public class DBWorkload {
             }
 
             List<HierarchicalConfiguration<ImmutableNode>> executeRules = xmlConfig.configurationsAt("microbenchmark/properties/executeRules");
+
+            boolean isExecutePresent = xmlConfig.containsKey("microbenchmark/properties/execute");
+            boolean isExecuteTrue = false;
+            if (isExecutePresent) {
+                isExecuteTrue = xmlConfig.getBoolean("microbenchmark/properties/execute");
+            }
+
             if (plugin.equalsIgnoreCase("featurebench")) {
                 if (executeRules == null) {
                     numTxnTypes = 1;
@@ -235,7 +242,10 @@ public class DBWorkload {
                 }
                 TransactionType tmpType;
                 if (plugin.equalsIgnoreCase("featurebench")) {
-                    if (executeRules != null) {
+                    if (isExecuteTrue) {
+                        tmpType = bench.initTransactionType("FeatureBench", txnId + txnIdOffset, preExecutionWait,
+                            postExecutionWait, "execute");
+                    } else if (executeRules != null) {
                         tmpType = bench.initTransactionType("FeatureBench", txnId + txnIdOffset, preExecutionWait,
                             postExecutionWait, executeRules.get(i - 1).getString("name"));
                     } else {
@@ -363,8 +373,8 @@ public class DBWorkload {
 
                 int time = work.getInt("/time", 0);
                 int warmup = work.getInt("/warmup", 0);
-
-                if (plugin.equalsIgnoreCase("featurebench") && executeRules == null) {
+                //----------->
+                if (plugin.equalsIgnoreCase("featurebench") && executeRules == null && !isExecuteTrue) {
                     serial = true;
                     time = 0;
                 }

@@ -61,13 +61,18 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                 .getDeclaredConstructor(HierarchicalConfiguration.class)
                 .newInstance(config);
 
-            if (config.configurationsAt("executeRules") == null || config.configurationsAt("executeRules").size() == 0) {
+            if(config.containsKey("execute") && config.getBoolean("execute"))
+            {
+                ybm.execute(conn);
+                //LOG.info("in execute work");
+                return TransactionStatus.SUCCESS;
+            }
+            else if (config.configurationsAt("executeRules") == null || config.configurationsAt("executeRules").size() == 0) {
                 if(this.configuration.getWorkloadState().getGlobalState() == State.MEASURE) {
                     ybm.executeOnce(conn);
                 }
                 return TransactionStatus.SUCCESS;
             }
-
 
             int executeRuleIndex = txnType.getId() - 1;
             HierarchicalConfiguration<ImmutableNode> executeRule =
