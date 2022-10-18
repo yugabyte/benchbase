@@ -10,7 +10,12 @@ def main():
     with open(sys.argv[2]) as f:
         doc = yaml.load(f, Loader=yaml.FullLoader)
         for key, value in data.items():
-            doc[key] = value
+            if key=="warmup":
+                doc["works"]["work"]["warmup"] = value
+            elif key == "url":
+                doc[key] = doc[key].replace("localhost",value)
+            else:
+                doc[key] = value
             print(key, value)
 
         with open(sys.argv[2], 'w') as fnew:
