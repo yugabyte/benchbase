@@ -15,7 +15,7 @@ def main():
             elif key == "url":
                 doc[key] = doc[key].replace("localhost",value)
                 if "sslmode" in data:
-                 doc[key] = doc[key].replace("disable","require") if data["sslmode"].lower() == "true" else doc[key].replace("require","disable")
+                 doc[key] = doc[key].replace("disable","require") if data["sslmode"] else doc[key].replace("require","disable")
             else:
                 doc[key] = value
             print(key, value)

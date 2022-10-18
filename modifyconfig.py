@@ -26,7 +26,7 @@ for key,value in data.items():
         if key == "url":
             element.text=element.text.replace("localhost",value)
             if "sslmode" in data:
-              element.text = element.text.replace("disable","require") if data["sslmode"].lower() == "true" else element.text.replace("require","disable")
+              element.text = element.text.replace("disable","require") if data["sslmode"] else element.text.replace("require","disable")
         else:
             element.text=value
         
