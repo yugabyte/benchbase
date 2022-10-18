@@ -9,7 +9,6 @@ loaderThreads: 1
 terminals: 1
 works:
     work:
-        serial: true
         time: 1
         active_terminals: 1
         rate: 1000
