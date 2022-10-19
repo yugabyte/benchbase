@@ -21,6 +21,8 @@ import com.oltpbenchmark.api.Procedure.UserAbortException;
 import com.oltpbenchmark.api.TransactionType;
 import com.oltpbenchmark.api.Worker;
 import com.oltpbenchmark.benchmarks.featurebench.helpers.UtilToMethod;
+import com.oltpbenchmark.benchmarks.featurebench.workerhelpers.ExecuteRule;
+import com.oltpbenchmark.benchmarks.featurebench.workerhelpers.Query;
 import com.oltpbenchmark.types.State;
 import com.oltpbenchmark.types.TransactionStatus;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
@@ -30,10 +32,7 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 
@@ -46,35 +45,10 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
     public String workloadClass = null;
     public HierarchicalConfiguration<ImmutableNode> config = null;
     public YBMicroBenchmark ybm = null;
-    public List<List<Map<String, Object>>> rules = new ArrayList<>();
+    public List<ExecuteRule> executeRules = null;
 
-    public FeatureBenchWorker(FeatureBenchBenchmark benchmarkModule, int id, HierarchicalConfiguration<ImmutableNode> testconfif) {
+    public FeatureBenchWorker(FeatureBenchBenchmark benchmarkModule, int id) {
         super(benchmarkModule, id);
-        List<HierarchicalConfiguration<ImmutableNode>> executeRules =
-            testconfif.configurationsAt("executeRules");
-        for (HierarchicalConfiguration<ImmutableNode> executeRule : executeRules) {
-            List<HierarchicalConfiguration<ImmutableNode>> queriesTransaction = executeRule.configurationsAt("queries");
-            List<Map<String, Object>> que = new ArrayList<>();
-            for (HierarchicalConfiguration<ImmutableNode> query : queriesTransaction) {
-                Map<String, Object> singlequery = new HashMap<>();
-                try {
-                    PreparedStatement querystmt = conn.prepareStatement(query.getString("query"));
-                    singlequery.put("query", querystmt);
-                    List<HierarchicalConfiguration<ImmutableNode>> bl = query.configurationsAt("bindings");
-                    List<UtilToMethod> baseutils = new ArrayList<>();
-                    for (HierarchicalConfiguration<ImmutableNode> bindingsList : bl) {
-                        UtilToMethod obj = new UtilToMethod(bindingsList.getString("util"), bindingsList.getList("params"));
-                        baseutils.add(obj);
-                    }
-                    singlequery.put("utils", baseutils);
-
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
-                }
-                que.add(singlequery);
-            }
-            rules.add(que);
-        }
     }
 
 
@@ -90,9 +64,8 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
 
             if (config.containsKey("execute") && config.getBoolean("execute")) {
                 ybm.execute(conn);
-                //LOG.info("in execute work");
                 return TransactionStatus.SUCCESS;
-            } else if (config.configurationsAt("executeRules") == null || config.configurationsAt("executeRules").size() == 0) {
+            } else if (executeRules == null || executeRules.size() == 0) {
                 if (this.configuration.getWorkloadState().getGlobalState() == State.MEASURE) {
                     ybm.executeOnce(conn);
                 }
@@ -100,16 +73,15 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             }
 
             int executeRuleIndex = txnType.getId() - 1;
-            List<Map<String, Object>> queries = rules.get(executeRuleIndex);
-            for (Map<String, Object> query : queries) {
-                PreparedStatement stmt = (PreparedStatement) query.get("query");
-                List<UtilToMethod> baseutils = (List<UtilToMethod>) query.get("utils");
+            ExecuteRule executeRule = executeRules.get(executeRuleIndex);
+            for (Query query : executeRule.getQueries()) {
+                PreparedStatement stmt = conn.prepareStatement(query.getQuery());
+                List<UtilToMethod> baseutils = query.getBaseUtils();
                 for (int j = 0; j < baseutils.size(); j++) {
                     stmt.setObject(j + 1, baseutils.get(j).get());
                 }
                 stmt.executeQuery();
             }
-
 
         } catch (ClassNotFoundException | InvocationTargetException
                  | InstantiationException | IllegalAccessException |
@@ -119,30 +91,6 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
         return TransactionStatus.SUCCESS;
     }
 
-    private void executeQueryFromYaml(String stmt, List<String> utilNames, List<List<Object>> params, int id)
-        throws ClassNotFoundException, InvocationTargetException,
-        NoSuchMethodException, InstantiationException,
-        IllegalAccessException, SQLException {
-        LOG.info("Using YAML for execute phase " + "transaction no: " + id);
-        //System.out.println(stmt);
-        PreparedStatement query = conn.prepareStatement(stmt);
-        for (int i = 0; i < utilNames.size(); i++) {
-            UtilToMethod obj = new UtilToMethod(utilNames.get(i), params.get(i));
-            query.setObject(i + 1, obj.get());
-        }
-        ResultSet res = query.executeQuery();
-        ResultSetMetaData rsmd = res.getMetaData();
-        int columnsNumber = rsmd.getColumnCount();
-        while (res.next()) {
-            for (int i = 1; i <= columnsNumber; i++) {
-                if (i > 1) System.out.print("  ");
-                String columnValue = res.getString(i);
-                System.out.print(rsmd.getColumnName(i) + "->" + columnValue);
-            }
-            System.out.println("");
-        }
-        System.out.println("\n");
-    }
 
     @Override
     public void tearDown() {

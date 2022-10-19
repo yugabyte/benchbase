@@ -43,7 +43,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class DBWorkload {
     private static final Logger LOG = LoggerFactory.getLogger(DBWorkload.class);
@@ -211,10 +214,11 @@ public class DBWorkload {
                     if (!executeRules.get(0).containsKey("weight")) {
                         executeRules = null;
                         numTxnTypes = 1;
+                    } else {
+                        numTxnTypes = executeRules.size();
                     }
                 }
             }
-
 
             List<TransactionType> ttypes = new ArrayList<>();
             ttypes.add(TransactionType.INVALID);
@@ -461,6 +465,11 @@ public class DBWorkload {
             try {
                 for (BenchmarkModule benchmark : benchList) {
                     LOG.info("Creating new {} database...", benchmark.getBenchmarkName().toUpperCase());
+                    if (benchmark.getBenchmarkName().equalsIgnoreCase("featurebench") && benchmark.getWorkloadConfiguration().getXmlConfig().containsKey("createdb")) {
+                        String newUrl = runCreatorDB(benchmark, benchmark.getWorkloadConfiguration().getXmlConfig().getString("createdb"));
+                        benchmark.getWorkloadConfiguration().setUrl(newUrl);
+                        benchmark.getWorkloadConfiguration().getXmlConfig().setProperty("url", newUrl);
+                    }
                     runCreator(benchmark);
                     LOG.info("Finished creating new {} database...", benchmark.getBenchmarkName().toUpperCase());
                 }
@@ -715,6 +724,27 @@ public class DBWorkload {
     private static void runCreator(BenchmarkModule bench) throws SQLException, IOException {
         LOG.debug(String.format("Creating %s Database", bench));
         bench.createDatabase();
+    }
+
+    private static String runCreatorDB(BenchmarkModule benchmark, String createDbDDL) throws SQLException {
+        Statement stmtOBj = benchmark.makeConnection().createStatement();
+        stmtOBj.execute(createDbDDL);
+        String[] splitUrl = createDbDDL.split(" ");
+        String dbName = splitUrl[2];
+        String url = benchmark.getWorkloadConfiguration().getUrl();
+        String[] pieces = url.split("\\?", 10);
+        Pattern pattern = Pattern.compile("[a-zA-Z_]+$", Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(pieces[0]);
+        boolean matchFound = matcher.find();
+        if (matchFound) {
+            LOG.info(matcher.group(0));
+        } else {
+            LOG.info("No match!");
+        }
+        int index = url.indexOf(matcher.group(0), url.indexOf(matcher.group(0)) + 1);
+        String newUrl = url.substring(0, index) + dbName +
+            url.substring(index + matcher.group(0).length());
+        return newUrl;
     }
 
     private static void runLoader(BenchmarkModule bench) throws SQLException, InterruptedException {
