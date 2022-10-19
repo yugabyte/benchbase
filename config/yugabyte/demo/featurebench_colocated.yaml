@@ -39,11 +39,11 @@ microbenchmark:
                 queries:
                     -   query: SELECT * FROM accounts WHERE id<? AND id>=?
                         bindings:
-                            -   name: RandomNumber
+                            -   util: RandomNumber
                                 params:
                                     - 8
                                     - 10
-                            -   name: RandomNumber
+                            -   util: RandomNumber
                                 params:
                                     - 1
                                     - 4
@@ -58,13 +58,13 @@ microbenchmark:
                 queries:
                     -   query: SELECT * FROM accounts WHERE id>?
                         bindings:
-                            -   name: RandomNumber
+                            -   util: RandomNumber
                                 params:
                                     - 9
                                     - 10
                     -   query: SELECT * FROM accounts WHERE id<=?
                         bindings:
-                            -   name: RandomNumber
+                            -   util: RandomNumber
                                 params:
                                     - 7
                                     - 9
