@@ -79,9 +79,9 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             ExecuteRule executeRule = executeRules.get(executeRuleIndex);
             for (Query query : executeRule.getQueries()) {
                 PreparedStatement stmt = conn.prepareStatement(query.getQuery());
-                List<UtilToMethod> baseutils = query.getBaseUtils();
-                for (int j = 0; j < baseutils.size(); j++) {
-                    stmt.setObject(j + 1, baseutils.get(j).get());
+                List<UtilToMethod> baseUtils = query.getBaseUtils();
+                for (int j = 0; j < baseUtils.size(); j++) {
+                    stmt.setObject(j + 1, baseUtils.get(j).get());
                 }
                 stmt.executeQuery();
             }
