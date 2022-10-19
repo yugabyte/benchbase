@@ -56,4 +56,10 @@ public class YBMicroBenchmarkScansSonal extends YBMicroBenchmark {
         stmtOBj.execute(insertStmt);
 
     }
+    public void executeOnce(Connection conn)throws SQLException{
+        String insertStmt ="SELECT * from demoScans;";
+        Statement stmtOBj = conn.createStatement();
+        stmtOBj.execute(insertStmt);
+
+    }
 }
