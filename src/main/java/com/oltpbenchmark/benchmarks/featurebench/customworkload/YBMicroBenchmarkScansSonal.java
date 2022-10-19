@@ -39,16 +39,6 @@ public class YBMicroBenchmarkScansSonal extends YBMicroBenchmark {
         }
     }
 
-    @Override
-    public ArrayList<LoadRule> loadRules() {
-        return null;
-    }
-
-    @Override
-    public ArrayList<ExecuteRule> executeRules() {
-        return null;
-    }
-
     public void loadOnce(Connection conn) throws SQLException{
 
         String insertStmt = "INSERT INTO demoScans SELECT random() * 1000,  generate_series(1, 1000);";
@@ -57,9 +47,9 @@ public class YBMicroBenchmarkScansSonal extends YBMicroBenchmark {
 
     }
     public void executeOnce(Connection conn)throws SQLException{
-        String insertStmt ="SELECT * from demoScans;";
+        String selectStmt = "SELECT * from demoScans;";
         Statement stmtOBj = conn.createStatement();
-        stmtOBj.execute(insertStmt);
+        stmtOBj.execute(selectStmt);
 
     }
 }

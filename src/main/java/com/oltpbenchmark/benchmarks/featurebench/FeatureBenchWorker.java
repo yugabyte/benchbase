@@ -83,7 +83,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                 for (int j = 0; j < baseUtils.size(); j++) {
                     stmt.setObject(j + 1, baseUtils.get(j).get());
                 }
-                stmt.executeQuery();
+                stmt.execute();
             }
 
         } catch (ClassNotFoundException | InvocationTargetException

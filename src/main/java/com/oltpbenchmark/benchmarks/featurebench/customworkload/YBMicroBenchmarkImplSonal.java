@@ -43,16 +43,6 @@ public class YBMicroBenchmarkImplSonal extends YBMicroBenchmark {
     }
 
 
-    @Override
-    public ArrayList<LoadRule> loadRules() {
-        return null;
-    }
-
-    @Override
-    public ArrayList<ExecuteRule> executeRules() {
-        return null;
-    }
-
     public void loadOnce(Connection conn) throws SQLException {
 
         RandomAstring randomAstring = new RandomAstring(Arrays.asList(1, 20));

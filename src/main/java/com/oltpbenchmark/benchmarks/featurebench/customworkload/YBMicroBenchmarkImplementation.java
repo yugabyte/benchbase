@@ -46,7 +46,7 @@ public class YBMicroBenchmarkImplementation extends YBMicroBenchmark {
         }
     }
 
-    public ArrayList<LoadRule> loadRules() {
+    /*public ArrayList<LoadRule> loadRules() {
         int startIndex = 0;
         int endIndex = 10000;
         int desiredLen = 10;
@@ -74,7 +74,7 @@ public class YBMicroBenchmarkImplementation extends YBMicroBenchmark {
         LoadRule loadRule = new LoadRule(tableInfo);
         return new ArrayList<>(List.of(loadRule));
 
-    }
+    }*/
 
 
     public ArrayList<ExecuteRule> executeRules() {
