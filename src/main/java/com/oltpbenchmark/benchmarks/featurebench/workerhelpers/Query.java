@@ -9,9 +9,6 @@ public class Query {
     @JsonProperty("query")
     public String query;
 
-    @JsonProperty("bindings")
-    public Bindings bindings;
-
     public List<UtilToMethod> baseUtils;
 
 
@@ -31,11 +28,4 @@ public class Query {
         this.query = query;
     }
 
-    public Bindings getBindings() {
-        return bindings;
-    }
-
-    public void setBindings(Bindings bindings) {
-        this.bindings = bindings;
-    }
 }

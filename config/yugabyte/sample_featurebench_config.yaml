@@ -6,10 +6,11 @@ password:
 batchsize: 128
 isolation: TRANSACTION_REPEATABLE_READ
 loaderthreads: 1
-terminals: 1
+terminals: 2
 works:
     work:
-        time: 3
+#        serial: true
+        time: 2
         active_terminals: 1
         rate: 1000
         warmup: 0
@@ -35,40 +36,40 @@ microbenchmark:
                         params:
                             - 10
         executeRules:
-            -   name: Account_query1
-                weight: 50
-                queries:
-                    -   query: SELECT * FROM accounts WHERE id<? AND id>=?
-                        bindings:
-                            -   name: RandomNumber
-                                params:
-                                    - 8
-                                    - 10
-                            -   name: RandomNumber
-                                params:
-                                    - 1
-                                    - 4
-                    -   query: SELECT * FROM accounts WHERE id<=?
-                        bindings:
-                            -   name: RandomNumber
-                                params:
-                                    - 5
-                                    - 10
-            -   name: Account_query2
-                weight: 50
-                queries:
-                    -   query: SELECT * FROM accounts WHERE id>?
-                        bindings:
-                            -   name: RandomNumber
-                                params:
-                                    - 9
-                                    - 10
-                    -   query: SELECT * FROM accounts WHERE id<=?
-                        bindings:
-                            -   name: RandomNumber
-                                params:
-                                    - 7
-                                    - 9
+#            -   name: Account_query1
+#                weight: 50
+#                queries:
+#                    -   query: SELECT * FROM accounts WHERE id<? AND id>=?
+#                        bindings:
+#                            -   util: RandomNumber
+#                                params:
+#                                    - 8
+#                                    - 10
+#                            -   util: RandomNumber
+#                                params:
+#                                    - 1
+#                                    - 4
+#                    -   query: SELECT * FROM accounts WHERE id<=?
+#                        bindings:
+#                            -   util: RandomNumber
+#                                params:
+#                                    - 5
+#                                    - 10
+#            -   name: Account_query2
+#                weight: 50
+#                queries:
+#                    -   query: SELECT * FROM accounts WHERE id>?
+#                        bindings:
+#                            -   util: RandomNumber
+#                                params:
+#                                    - 9
+#                                    - 10
+#                    -   query: SELECT * FROM accounts WHERE id<=?
+#                        bindings:
+#                            -   util: RandomNumber
+#                                params:
+#                                    - 7
+#                                    - 9
 
 
 
