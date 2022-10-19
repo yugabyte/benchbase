@@ -100,18 +100,18 @@ public class YBMicroBenchmarkImplementation extends YBMicroBenchmark {
         return new ArrayList<>(List.of(executeRule));
     }
 
-    @Override
-    public void cleanUp(Connection conn) throws SQLException {
-        try {
-            Statement stmtOBj = conn.createStatement();
-            LOG.info("\n=======DROP ALL THE TABLES=======");
-            stmtOBj.executeUpdate("DROP TABLE accounts");
-            LOG.info("\n=======TABLES ARE SUCCESSFULLY DROPPED FROM THE DATABASE=======\n");
-            stmtOBj.close();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-    }
+//    @Override
+//    public void cleanUp(Connection conn) throws SQLException {
+//        try {
+//            Statement stmtOBj = conn.createStatement();
+//            LOG.info("\n=======DROP ALL THE TABLES=======");
+//            stmtOBj.executeUpdate("DROP TABLE accounts");
+//            LOG.info("\n=======TABLES ARE SUCCESSFULLY DROPPED FROM THE DATABASE=======\n");
+//            stmtOBj.close();
+//        } catch (Exception ex) {
+//            ex.printStackTrace();
+//        }
+//    }
 
     @Override
     public void loadOnce(Connection conn) {
