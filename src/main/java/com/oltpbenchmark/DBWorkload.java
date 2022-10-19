@@ -207,9 +207,13 @@ public class DBWorkload {
             }
 
             if (plugin.equalsIgnoreCase("featurebench")) {
+                System.out.println(executeRules);
                 if (executeRules == null) {
                     numTxnTypes = 1;
 
+                } else if (executeRules.size() == 0) {
+                    executeRules = null;
+                    numTxnTypes = 1;
                 } else {
                     if (!executeRules.get(0).containsKey("weight")) {
                         executeRules = null;
