@@ -21,6 +21,7 @@ import com.oltpbenchmark.api.Procedure.UserAbortException;
 import com.oltpbenchmark.api.TransactionType;
 import com.oltpbenchmark.api.Worker;
 import com.oltpbenchmark.benchmarks.featurebench.helpers.UtilToMethod;
+import com.oltpbenchmark.benchmarks.featurebench.workerhelpers.ExecuteRule;
 import com.oltpbenchmark.types.State;
 import com.oltpbenchmark.types.TransactionStatus;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
@@ -45,6 +46,8 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
     public String workloadClass = null;
     public HierarchicalConfiguration<ImmutableNode> config = null;
     public YBMicroBenchmark ybm = null;
+    public List<ExecuteRule> executeRules;
+
 
     public FeatureBenchWorker(FeatureBenchBenchmark benchmarkModule, int id) {
         super(benchmarkModule, id);

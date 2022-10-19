@@ -17,12 +17,15 @@
 
 package com.oltpbenchmark.benchmarks.featurebench;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.oltpbenchmark.DBWorkload;
 import com.oltpbenchmark.WorkloadConfiguration;
 import com.oltpbenchmark.api.BenchmarkModule;
 import com.oltpbenchmark.api.Loader;
 import com.oltpbenchmark.api.Worker;
 import com.oltpbenchmark.benchmarks.featurebench.procedures.FeatureBench;
+import com.oltpbenchmark.benchmarks.featurebench.workerhelpers.ExecuteRule;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.slf4j.Logger;
@@ -46,10 +49,25 @@ public class FeatureBenchBenchmark extends BenchmarkModule {
     protected List<Worker<? extends BenchmarkModule>> makeWorkersImpl() {
         List<Worker<? extends BenchmarkModule>> workers = new ArrayList<>();
         HierarchicalConfiguration<ImmutableNode> conf = workConf.getXmlConfig().configurationAt("microbenchmark");
+
+        List<ExecuteRule> executeRules = new ArrayList<>();
+        List<HierarchicalConfiguration<ImmutableNode>> imm = conf.configurationsAt("properties/executeRules");
+        imm.forEach(i -> {
+            ExecuteRule rule = new ExecuteRule();
+            rule.setName(i.getString("name"));
+            rule.setWeight(i.getInt("weight"));
+
+            List<HierarchicalConfiguration<ImmutableNode>> queriesFromConfig = conf.configurationsAt("queries");
+            queriesFromConfig.forEach(q -> {
+            });
+            executeRules.add(rule);
+        });
+
         for (int i = 0; i < workConf.getTerminals(); ++i) {
             FeatureBenchWorker worker = new FeatureBenchWorker(this, i);
             worker.workloadClass = conf.getString("class");
-            worker.config = conf.configurationAt("properties");
+            worker.executeRules = null;
+
             workers.add(worker);
         }
         return workers;
