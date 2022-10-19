@@ -115,12 +115,12 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
             throw new RuntimeException("Empty Load Rules");
         }
         LOG.info("Using YAML for load phase");
-        for (HierarchicalConfiguration loadRuleConfig : loadRulesConfig) {
+        for (HierarchicalConfiguration<ImmutableNode> loadRuleConfig : loadRulesConfig) {
             List<HierarchicalConfiguration<ImmutableNode>>
                 columnsConfigs = loadRuleConfig.configurationsAt("columns");
             List<Map<String, Object>> columns = new ArrayList<>();
-            for (HierarchicalConfiguration columnsConfig : columnsConfigs) {
-                Iterator columnKeys = columnsConfig.getKeys();
+            for (HierarchicalConfiguration<ImmutableNode> columnsConfig : columnsConfigs) {
+                Iterator<String> columnKeys = columnsConfig.getKeys();
                 Map<String, Object> column = new HashMap<>();
                 while (columnKeys.hasNext()) {
                     String element = (String) columnKeys.next();

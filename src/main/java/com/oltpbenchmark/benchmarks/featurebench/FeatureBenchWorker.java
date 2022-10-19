@@ -31,8 +31,9 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 
@@ -45,9 +46,35 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
     public String workloadClass = null;
     public HierarchicalConfiguration<ImmutableNode> config = null;
     public YBMicroBenchmark ybm = null;
+    public List<List<Map<String, Object>>> rules = new ArrayList<>();
 
-    public FeatureBenchWorker(FeatureBenchBenchmark benchmarkModule, int id) {
+    public FeatureBenchWorker(FeatureBenchBenchmark benchmarkModule, int id, HierarchicalConfiguration<ImmutableNode> testconfif) {
         super(benchmarkModule, id);
+        List<HierarchicalConfiguration<ImmutableNode>> executeRules =
+            testconfif.configurationsAt("executeRules");
+        for (HierarchicalConfiguration<ImmutableNode> executeRule : executeRules) {
+            List<HierarchicalConfiguration<ImmutableNode>> queriesTransaction = executeRule.configurationsAt("queries");
+            List<Map<String, Object>> que = new ArrayList<>();
+            for (HierarchicalConfiguration<ImmutableNode> query : queriesTransaction) {
+                Map<String, Object> singlequery = new HashMap<>();
+                try {
+                    PreparedStatement querystmt = conn.prepareStatement(query.getString("query"));
+                    singlequery.put("query", querystmt);
+                    List<HierarchicalConfiguration<ImmutableNode>> bl = query.configurationsAt("bindings");
+                    List<UtilToMethod> baseutils = new ArrayList<>();
+                    for (HierarchicalConfiguration<ImmutableNode> bindingsList : bl) {
+                        UtilToMethod obj = new UtilToMethod(bindingsList.getString("util"), bindingsList.getList("params"));
+                        baseutils.add(obj);
+                    }
+                    singlequery.put("utils", baseutils);
+
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+                que.add(singlequery);
+            }
+            rules.add(que);
+        }
     }
 
 
@@ -61,46 +88,26 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                 .getDeclaredConstructor(HierarchicalConfiguration.class)
                 .newInstance(config);
 
-            if(config.containsKey("execute") && config.getBoolean("execute"))
-            {
+            if (config.containsKey("execute") && config.getBoolean("execute")) {
                 ybm.execute(conn);
                 //LOG.info("in execute work");
                 return TransactionStatus.SUCCESS;
-            }
-            else if (config.configurationsAt("executeRules") == null || config.configurationsAt("executeRules").size() == 0) {
-                if(this.configuration.getWorkloadState().getGlobalState() == State.MEASURE) {
+            } else if (config.configurationsAt("executeRules") == null || config.configurationsAt("executeRules").size() == 0) {
+                if (this.configuration.getWorkloadState().getGlobalState() == State.MEASURE) {
                     ybm.executeOnce(conn);
                 }
                 return TransactionStatus.SUCCESS;
             }
 
             int executeRuleIndex = txnType.getId() - 1;
-            HierarchicalConfiguration<ImmutableNode> executeRule =
-                config.configurationsAt("executeRules").get(executeRuleIndex);
-            List<HierarchicalConfiguration<ImmutableNode>> queriesTransaction = executeRule.configurationsAt("queries");
-            System.out.println("Transaction id: " + (executeRuleIndex + 1) + "\n");
-            for (HierarchicalConfiguration query : queriesTransaction) {
-                List<String> utilNames = new ArrayList<>();
-                List<List<Object>> params = new ArrayList<>();
-                Iterator queryKeys = query.getKeys();
-                String element = (String) queryKeys.next();
-                String stmtQuery = query.get(String.class, element);
-
-                List<HierarchicalConfiguration<ImmutableNode>> bl = query.configurationsAt("bindings");
-                for (HierarchicalConfiguration bindingsList : bl) {
-                    Iterator bindingKeys = bindingsList.getKeys();
-                    while (bindingKeys.hasNext()) {
-                        String name = (String) bindingKeys.next();
-                        //System.out.println(name);
-                        utilNames.add(bindingsList.get(String.class, name));
-                        String p = (String) bindingKeys.next();
-                        //System.out.println(p);
-                        params.add(bindingsList.getList(Object.class, p));
-                    }
+            List<Map<String, Object>> queries = rules.get(executeRuleIndex);
+            for (Map<String, Object> query : queries) {
+                PreparedStatement stmt = (PreparedStatement) query.get("query");
+                List<UtilToMethod> baseutils = (List<UtilToMethod>) query.get("utils");
+                for (int j = 0; j < baseutils.size(); j++) {
+                    stmt.setObject(j + 1, baseutils.get(j).get());
                 }
-/*              System.out.println(utilNames);
-                System.out.println(params);*/
-                executeQueryFromYaml(stmtQuery, utilNames, params, txnType.getId());
+                stmt.executeQuery();
             }
 
 

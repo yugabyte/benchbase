@@ -208,13 +208,11 @@ public class DBWorkload {
                     numTxnTypes = 1;
 
                 } else {
-                    numTxnTypes = executeRules.size();
-                    if (numTxnTypes == 0) {
+                    if (!executeRules.get(0).containsKey("weight")) {
                         executeRules = null;
                         numTxnTypes = 1;
                     }
                 }
-
             }
 
 

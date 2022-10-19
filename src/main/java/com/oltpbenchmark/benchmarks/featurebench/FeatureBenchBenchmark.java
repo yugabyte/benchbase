@@ -47,7 +47,7 @@ public class FeatureBenchBenchmark extends BenchmarkModule {
         List<Worker<? extends BenchmarkModule>> workers = new ArrayList<>();
         HierarchicalConfiguration<ImmutableNode> conf = workConf.getXmlConfig().configurationAt("microbenchmark");
         for (int i = 0; i < workConf.getTerminals(); ++i) {
-            FeatureBenchWorker worker = new FeatureBenchWorker(this, i);
+            FeatureBenchWorker worker = new FeatureBenchWorker(this, i,conf.configurationAt("properties"));
             worker.workloadClass = conf.getString("class");
             worker.config = conf.configurationAt("properties");
             workers.add(worker);
