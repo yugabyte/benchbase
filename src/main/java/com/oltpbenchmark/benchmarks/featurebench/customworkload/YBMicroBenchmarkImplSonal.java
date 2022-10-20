@@ -1,15 +1,12 @@
 package com.oltpbenchmark.benchmarks.featurebench.customworkload;
 
 import com.oltpbenchmark.benchmarks.featurebench.YBMicroBenchmark;
-import com.oltpbenchmark.benchmarks.featurebench.helpers.ExecuteRule;
-import com.oltpbenchmark.benchmarks.featurebench.helpers.LoadRule;
 import com.oltpbenchmark.benchmarks.featurebench.utils.OneStringFromArray;
-import com.oltpbenchmark.benchmarks.featurebench.utils.RandomAstring;
+import com.oltpbenchmark.benchmarks.featurebench.utils.RandomAString;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.log4j.Logger;
 
-import java.lang.reflect.InvocationTargetException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -45,7 +42,7 @@ public class YBMicroBenchmarkImplSonal extends YBMicroBenchmark {
 
     public void loadOnce(Connection conn) throws SQLException {
 
-        RandomAstring randomAstring = new RandomAstring(Arrays.asList(1, 20));
+        RandomAString randomAstring = new RandomAString(Arrays.asList(1, 20));
         List<String> vals = new ArrayList<>(Arrays.asList("luso films", "Associated Computing, Inc", "XYZ Widgets", "Gizmo Transglobal", "Redline GmbH", "Acme Corporation"));
         int batchSize = 100;
         Random random = new Random();
@@ -84,7 +81,7 @@ public class YBMicroBenchmarkImplSonal extends YBMicroBenchmark {
         String insertStmt = "INSERT INTO distributors (dname) VALUES (?);";
         PreparedStatement stmt = conn.prepareStatement(insertStmt);
         // Random String insertion
-        RandomAstring randomAstring = new RandomAstring(Arrays.asList(1, 20));
+        RandomAString randomAstring = new RandomAString(Arrays.asList(1, 20));
         for (int i = 1; i <= 20; i++) {
             try {
                 stmt.setObject(1, randomAstring.run());

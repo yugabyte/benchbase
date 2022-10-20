@@ -49,7 +49,7 @@ microbenchmark:
                                     - 4
                     -   query: SELECT * FROM accounts WHERE id<=?
                         bindings:
-                            -   name: RandomNumber
+                            -   util: RandomNumber
                                 params:
                                     - 5
                                     - 10

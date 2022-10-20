@@ -12,12 +12,12 @@ import java.util.Random;
      Return type:- String (Alphabetic)
 */
 
-public class RandomAstring extends Random implements BaseUtil {
+public class RandomAString extends Random implements BaseUtil {
 
     private final int minimumLength;
     private final int maximumLength;
 
-    public RandomAstring(List<Object> values) {
+    public RandomAString(List<Object> values) {
         super((int) System.nanoTime());
         if (values.size() != 2) {
             throw new RuntimeException("Incorrect number of parameters for util function");
