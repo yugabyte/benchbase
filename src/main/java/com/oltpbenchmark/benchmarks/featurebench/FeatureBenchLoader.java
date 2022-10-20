@@ -29,7 +29,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.*;
 
 
@@ -74,9 +73,7 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
         try {
             Connection conn = benchmark.makeConnection();
             long createStart = System.currentTimeMillis();
-            if (config.containsKey("create")) {
-                createFromYaml(conn);
-            } else {
+            if (!config.containsKey("create")) {
                 ybm.create(conn);
             }
             long createEnd = System.currentTimeMillis();
@@ -88,21 +85,6 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
             conn.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
-        }
-    }
-
-    private void createFromYaml(Connection conn) throws SQLException {
-        LOG.info("Using YAML for create phase");
-        List<String> ddls = config.getList(String.class, "create");
-        try {
-            Statement stmtOBj = conn.createStatement();
-            for (String ddl : ddls) {
-                stmtOBj.execute(ddl);
-            }
-            stmtOBj.close();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new RuntimeException("Error Occurred in Create Phase");
         }
     }
 

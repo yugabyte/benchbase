@@ -34,6 +34,7 @@ import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.*;
 
 /**
@@ -214,6 +215,30 @@ public abstract class BenchmarkModule {
     }
 
     /**
+    * Create the benchmark database for "featurebench" using YAML DDls
+    * if provided in the create Phase of YAML.
+    * */
+
+    public final void createFromYaml(WorkloadConfiguration workConf,Connection conn)
+    {
+        long createStart = System.currentTimeMillis();
+        LOG.info("Using YAML for create phase");
+        List<String> createDDLs = workConf.getXmlConfig().getList(String.class, "microbenchmark/properties/create");
+        try {
+            Statement stmtOBj = conn.createStatement();
+            for (String ddl : createDDLs) {
+                stmtOBj.execute(ddl);
+            }
+            stmtOBj.close();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new RuntimeException("Error Occurred in Create Phase");
+        }
+        long createEnd = System.currentTimeMillis();
+        LOG.info("Elapsed time in create phase: {} milliseconds", createEnd - createStart);
+    }
+
+    /**
      * Create the Benchmark Database
      * This is the main method used to create all the database
      * objects (e.g., table, indexes, etc) needed for this benchmark
@@ -222,16 +247,21 @@ public abstract class BenchmarkModule {
 
             ScriptRunner runner = new ScriptRunner(conn, true, true);
 
-            if (workConf.getDDLPath() != null) {
-                String ddlPath = workConf.getDDLPath();
-                LOG.warn("Overriding default DDL script path");
-                LOG.debug("Executing script [{}] for database type [{}]", ddlPath, dbType);
-                runner.runExternalScript(ddlPath);
-            } else {
-                String ddlPath = this.getDatabaseDDLPath(dbType);
-                LOG.debug("Executing script [{}] for database type [{}]", ddlPath, dbType);
-                runner.runScript(ddlPath);
-            }
+        if (workConf.getDDLPath() != null) {
+            String ddlPath = workConf.getDDLPath();
+            LOG.warn("Overriding default DDL script path");
+            LOG.debug("Executing script [{}] for database type [{}]", ddlPath, dbType);
+            runner.runExternalScript(ddlPath);
+        } else if (workConf.getBenchmarkName().equalsIgnoreCase("featurebench")
+                      && workConf.getXmlConfig().containsKey("microbenchmark/properties/create")) {
+
+            createFromYaml(workConf,conn);
+
+        } else {
+            String ddlPath = this.getDatabaseDDLPath(dbType);
+            LOG.debug("Executing script [{}] for database type [{}]", ddlPath, dbType);
+            runner.runScript(ddlPath);
+        }
     }
 
 
