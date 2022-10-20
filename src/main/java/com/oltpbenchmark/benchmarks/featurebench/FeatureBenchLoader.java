@@ -19,7 +19,7 @@ package com.oltpbenchmark.benchmarks.featurebench;
 
 import com.oltpbenchmark.api.Loader;
 import com.oltpbenchmark.api.LoaderThread;
-import com.oltpbenchmark.benchmarks.featurebench.helpers.*;
+import com.oltpbenchmark.benchmarks.featurebench.helpers.UtilToMethod;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.slf4j.Logger;
@@ -34,12 +34,12 @@ import java.util.*;
 
 public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
     private static final Logger LOG = LoggerFactory.getLogger(FeatureBenchLoader.class);
+    static int numberOfGeneratorFinished = 0;
     public String workloadClass = null;
     public HierarchicalConfiguration<ImmutableNode> config = null;
     public YBMicroBenchmark ybm = null;
     public int sizeOfLoadRule = 0;
     PreparedStatement stmt;
-    static int numberOfGeneratorFinished = 0;
 
     public FeatureBenchLoader(FeatureBenchBenchmark benchmark) {
         super(benchmark);
@@ -72,13 +72,12 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
     private void createPhaseAndBeforeLoad() {
         try {
             Connection conn = benchmark.makeConnection();
-            long createStart = System.currentTimeMillis();
             if (!config.containsKey("create")) {
+                long createStart = System.currentTimeMillis();
                 ybm.create(conn);
+                long createEnd = System.currentTimeMillis();
+                LOG.info("Elapsed time in create phase: {} milliseconds", createEnd - createStart);
             }
-            long createEnd = System.currentTimeMillis();
-            LOG.info("Elapsed time in create phase: {} milliseconds", createEnd - createStart);
-
             if (ybm.beforeLoadImplemented) {
                 ybm.beforeLoad(conn);
             }
