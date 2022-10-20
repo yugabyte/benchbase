@@ -10,10 +10,11 @@ public class RowRandomBoundedLong implements BaseUtil {
 
     public RowRandomBoundedLong(List<Object> values) {
         if (values.size() != 2) {
-            throw new RuntimeException("Incorrect number of parameters for util function");
+            throw new RuntimeException("Incorrect number of parameters for util function "
+                + this.getClass());
         }
-        this.lowValue = ((Number) (int) values.get(2)).longValue();
-        this.highValue = ((Number) (int) values.get(3)).longValue();
+        this.lowValue = ((Number) values.get(0)).longValue();
+        this.highValue = ((Number) values.get(1)).longValue();
         if (lowValue > highValue)
             throw new RuntimeException("Please enter correct value for max and min value");
     }

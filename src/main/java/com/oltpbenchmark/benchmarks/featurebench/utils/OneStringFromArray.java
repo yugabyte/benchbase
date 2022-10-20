@@ -18,7 +18,8 @@ public class OneStringFromArray implements BaseUtil {
 
     public OneStringFromArray(List<Object> values) {
         if (values.size() == 0) {
-            throw new RuntimeException("Incorrect number of parameters for util function");
+            throw new RuntimeException("Incorrect number of parameters for util function "
+                + this.getClass());
         }
         str = new ArrayList<>();
         for (Object value : values) {

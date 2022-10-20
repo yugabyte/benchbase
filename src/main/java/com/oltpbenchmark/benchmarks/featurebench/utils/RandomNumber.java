@@ -10,10 +10,11 @@ public class RandomNumber implements BaseUtil {
 
     public RandomNumber(List<Object> values) {
         if (values.size() != 2) {
-            throw new RuntimeException("Incorrect number of parameters for util function");
+            throw new RuntimeException("Incorrect number of parameters for util function "
+                + this.getClass());
         }
-        this.minimum = (int) values.get(0);
-        this.maximum = (int) values.get(1);
+        this.minimum = ((Number) values.get(0)).intValue();
+        this.maximum = ((Number) values.get(1)).intValue();
     }
 
     @Override

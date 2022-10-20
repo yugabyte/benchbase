@@ -11,7 +11,8 @@ public class RandomNormalLong extends Random implements BaseUtil {
         super((int) System.nanoTime());
 
         if (values.size() != 2) {
-            throw new RuntimeException("Incorrect number of parameters for util function");
+            throw new RuntimeException("Incorrect number of parameters for util function "
+                + this.getClass());
         }
         this.center = ((Number) values.get(0)).longValue();
         this.deviation = ((Number) values.get(1)).longValue();
@@ -19,7 +20,6 @@ public class RandomNormalLong extends Random implements BaseUtil {
 
     /**
      * Returns a random normal distribution int value with average equal to center
-     *
      */
     @Override
     public Object run() {
