@@ -9,7 +9,7 @@ loaderthreads: 1
 terminals: 1
 works:
     work:
-        time: 3
+        time: 20
         active_terminals: 1
         rate: 1000
         warmup: 0
@@ -35,7 +35,8 @@ microbenchmark:
                             - 128
 
         executeRules:
-            - run:
+            - workload: RangeScan
+              run:
                   -   name: ReadQuery1
                       weight: 50
                       queries:
@@ -54,14 +55,17 @@ microbenchmark:
                                       params:
                                           - 1
                                           - 1000
-            - run:
+
+
+
+            -  run:
                   -   name: ReadQuery2
-                      weight: 100
+                      weight: 50
                       queries:
                           -   query: SELECT * FROM demo100col WHERE id < 10
 
                   -   name: WriteQuery2
-                      weight: 0
+                      weight: 50
                       queries:
                           -   query: UPDATE demo100col set col3 = ? where id = ?
                               bindings:

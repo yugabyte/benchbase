@@ -262,13 +262,13 @@ public class DBWorkload {
                     if (plugin.equalsIgnoreCase("featurebench")) {
                         if (isExecuteTrue) {
                             tmpType = bench.initTransactionType("FeatureBench", txnId + txnIdOffset, preExecutionWait,
-                                    postExecutionWait, "execute");
+                                postExecutionWait, "execute");
                         } else if (executeRules != null) {
                             tmpType = bench.initTransactionType("FeatureBench", txnId + txnIdOffset, preExecutionWait,
-                                    postExecutionWait, executeRules.get(i - 1).getString("name"));
+                                postExecutionWait, executeRules.get(i - 1).getString("name"));
                         } else {
                             tmpType = bench.initTransactionType("FeatureBench", txnId + txnIdOffset, preExecutionWait,
-                                    postExecutionWait, "executeOnce");
+                                postExecutionWait, "executeOnce");
                         }
                     } else {
                         tmpType = bench.initTransactionType(txnName, txnId + txnIdOffset, preExecutionWait, postExecutionWait);
@@ -540,7 +540,7 @@ public class DBWorkload {
                     // Bombs away!
                     try {
                         Results r = runWorkload(benchList, intervalMonitor);
-                        writeOutputs(r, activeTXTypes, argsLine, xmlConfig, workcount);
+                        writeOutputs(r, activeTXTypes, argsLine, xmlConfig, executeRules == null ? null : workloads.get(workcount - 1).getString("workload"));
                         writeHistograms(r);
 
                         if (argsLine.hasOption("json-histograms")) {
@@ -644,7 +644,7 @@ public class DBWorkload {
      * @param xmlConfig
      * @throws Exception
      */
-    private static void writeOutputs(Results r, List<TransactionType> activeTXTypes, CommandLine argsLine, XMLConfiguration xmlConfig, int workcount) throws Exception {
+    private static void writeOutputs(Results r, List<TransactionType> activeTXTypes, CommandLine argsLine, XMLConfiguration xmlConfig, String workload_name) throws Exception {
 
         // If an output directory is used, store the information
         String outputDirectory = "results";
@@ -653,7 +653,7 @@ public class DBWorkload {
             outputDirectory = argsLine.getOptionValue("d");
         }
         if (activeTXTypes.get(0).getName().equalsIgnoreCase("featurebench")) {
-            outputDirectory = outputDirectory + "/" + workcount;
+            outputDirectory = outputDirectory + "/" + (workload_name == null ? TimeUtil.getCurrentTimeString() : workload_name);
         }
 
         FileUtil.makeDirIfNotExists(outputDirectory);
