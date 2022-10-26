@@ -31,6 +31,7 @@ import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,15 +47,17 @@ public class FeatureBenchBenchmark extends BenchmarkModule {
     }
 
     @Override
-    protected List<Worker<? extends BenchmarkModule>> makeWorkersImpl() {
+    protected List<Worker<? extends BenchmarkModule>> makeWorkersImpl(int workcount) {
+
         List<Worker<? extends BenchmarkModule>> workers = new ArrayList<>();
         HierarchicalConfiguration<ImmutableNode> conf = workConf.getXmlConfig().configurationAt("microbenchmark");
 
         List<ExecuteRule> executeRules = new ArrayList<>();
-        List<HierarchicalConfiguration<ImmutableNode>> confExecuteRules = conf.configurationsAt("properties/executeRules");
+        List<HierarchicalConfiguration<ImmutableNode>> confExecuteRules = conf.configurationsAt("properties/executeRules["+workcount+"]/run");
 
         for (HierarchicalConfiguration<ImmutableNode> confExecuteRule : confExecuteRules) {
-            if (!confExecuteRule.containsKey("name")) {
+
+            if(!confExecuteRule.containsKey("name")){
                 break;
             }
 
@@ -86,6 +89,11 @@ public class FeatureBenchBenchmark extends BenchmarkModule {
             workers.add(worker);
         }
         return workers;
+    }
+
+    @Override
+    protected List<Worker<? extends BenchmarkModule>> makeWorkersImpl() throws IOException {
+        return null;
     }
 
     @Override

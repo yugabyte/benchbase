@@ -99,6 +99,10 @@ public abstract class BenchmarkModule {
      * @return
      * @throws IOException
      */
+    protected List<Worker<? extends BenchmarkModule>> makeWorkersImpl(int workcount) throws IOException {
+        return null;
+    }
+
     protected abstract List<Worker<? extends BenchmarkModule>> makeWorkersImpl() throws IOException;
 
     /**
@@ -185,6 +189,10 @@ public abstract class BenchmarkModule {
         return null;
     }
 
+
+    public final List<Worker<? extends BenchmarkModule>> makeWorkers(int workcount) throws IOException {
+        return (this.makeWorkersImpl(workcount));
+    }
 
     public final List<Worker<? extends BenchmarkModule>> makeWorkers() throws IOException {
         return (this.makeWorkersImpl());

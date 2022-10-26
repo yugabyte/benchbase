@@ -206,8 +206,13 @@ public class DBWorkload {
             boolean loadDone = false;
 
             for (int workcount = 1; workcount <= totalworkcount; workcount++) {
-                System.out.println("Starting Workload " + workcount);
+
                 List<HierarchicalConfiguration<ImmutableNode>> executeRules = (workloads == null || workloads.size() == 0) ? null : workloads.get(workcount - 1).configurationsAt("run");
+                if (executeRules == null) {
+                    System.out.println("Starting Workload " + workcount);
+                } else {
+                    System.out.println("Starting Workload " + (workloads.get(workcount - 1).containsKey("workload") ? workloads.get(workcount - 1).getString("workload") : workcount));
+                }
 
                 boolean isExecutePresent = xmlConfig.containsKey("microbenchmark/properties/execute");
                 boolean isExecuteTrue = false;
@@ -539,7 +544,7 @@ public class DBWorkload {
                 if (isBooleanOptionSet(argsLine, "execute")) {
                     // Bombs away!
                     try {
-                        Results r = runWorkload(benchList, intervalMonitor);
+                        Results r = runWorkload(benchList, intervalMonitor, workcount);
                         writeOutputs(r, activeTXTypes, argsLine, xmlConfig, executeRules == null ? null : workloads.get(workcount - 1).getString("workload"));
                         writeHistograms(r);
 
@@ -764,12 +769,17 @@ public class DBWorkload {
         bench.loadDatabase();
     }
 
-    private static Results runWorkload(List<BenchmarkModule> benchList, int intervalMonitor) throws IOException {
+    private static Results runWorkload(List<BenchmarkModule> benchList, int intervalMonitor, int workcount) throws IOException {
         List<Worker<?>> workers = new ArrayList<>();
         List<WorkloadConfiguration> workConfs = new ArrayList<>();
         for (BenchmarkModule bench : benchList) {
             LOG.info("Creating {} virtual terminals...", bench.getWorkloadConfiguration().getTerminals());
-            workers.addAll(bench.makeWorkers());
+            if (bench.getBenchmarkName().equalsIgnoreCase("featurebench")) {
+                workers.addAll(bench.makeWorkers(workcount));
+            } else {
+                workers.addAll(bench.makeWorkers());
+            }
+
 
             int num_phases = bench.getWorkloadConfiguration().getNumberOfPhases();
             LOG.info(String.format("Launching the %s Benchmark with %s Phase%s...", bench.getBenchmarkName().toUpperCase(), num_phases, (num_phases > 1 ? "s" : "")));
