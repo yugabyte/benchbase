@@ -25,17 +25,22 @@ import com.oltpbenchmark.benchmarks.featurebench.workerhelpers.ExecuteRule;
 import com.oltpbenchmark.benchmarks.featurebench.workerhelpers.Query;
 import com.oltpbenchmark.types.State;
 import com.oltpbenchmark.types.TransactionStatus;
+import com.oltpbenchmark.util.FileUtil;
+import com.oltpbenchmark.util.JSONUtil;
+import com.oltpbenchmark.util.TimeUtil;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.XMLConfiguration;
 import org.apache.commons.configuration2.tree.ImmutableNode;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 
@@ -52,6 +57,58 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
 
     public FeatureBenchWorker(FeatureBenchBenchmark benchmarkModule, int id) {
         super(benchmarkModule, id);
+    }
+
+    protected void initialize() {
+
+        if (this.getBenchmark().getWorkloadConfiguration().getXmlConfig().containsKey("microbenchmark/properties/explain")) {
+
+            try {
+                long createStart = System.currentTimeMillis();
+                LOG.info("Using YAML for EXPLAIN DDL's before execute phase");
+
+                XMLConfiguration config = this.getBenchmark().getWorkloadConfiguration().getXmlConfig();
+                List<String> explainDDLs = config.getList(String.class, "microbenchmark/properties/explain");
+
+                String outputDirectory = "results";
+                FileUtil.makeDirIfNotExists(outputDirectory);
+                String explainDir = "ResultsForExplain";
+                FileUtil.makeDirIfNotExists(outputDirectory + "/" + explainDir);
+                String fileForExplain = "/resultsForExplain/" + TimeUtil.getCurrentTimeString() + ".json";
+                PrintStream ps = new PrintStream(FileUtil.joinPath(outputDirectory, fileForExplain));
+
+                writeExplain(ps, explainDDLs);
+
+                long createEnd = System.currentTimeMillis();
+                LOG.info("Elapsed time in EXPLAIN ddls: {} milliseconds", createEnd - createStart);
+
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                throw new RuntimeException("Error Occurred in explain DDL's");
+            }
+        }
+    }
+
+    public void writeExplain(PrintStream os, List<String> explainDDLs) throws SQLException {
+        Map<String, JSONObject> summaryMap = new TreeMap<>();
+        Statement stmtOBj = conn.createStatement();
+        int count = 0;
+        for (String ddl : explainDDLs) {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("ddl", ddl);
+            count++;
+            ResultSet rs = stmtOBj.executeQuery(ddl);
+            StringBuilder data = new StringBuilder();
+            while (rs.next()) {
+                data.append(rs.getString(1));
+                data.append(" ");
+            }
+            jsonObject.put("ResultSet", data.toString());
+            summaryMap.put("ExplainDDL" + count, jsonObject);
+        }
+        os.println(JSONUtil.format(JSONUtil.toJSONString(summaryMap)));
     }
 
 
