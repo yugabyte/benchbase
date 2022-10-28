@@ -19,7 +19,7 @@ public class RandomExpoInt extends Random implements BaseUtil {
     }
 
     /**
-     * Returns a random normal distribution int value with average equal to center
+     * Returns a random exponential distribution int value with average equal to center
      */
     @Override
     public Object run() {

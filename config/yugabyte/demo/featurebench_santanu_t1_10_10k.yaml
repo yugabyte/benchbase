@@ -63,12 +63,12 @@ microbenchmark:
                     -   name: c6
                         util: RandomBoolean
                     -   name: c7
-                        util: RandomAstring
+                        util: RandomAString
                         params:
                             - 1
                             - 5
                     -   name: c8
-                        util: RandomAstring
+                        util: RandomAString
                         params:
                             - 1
                             - 10
