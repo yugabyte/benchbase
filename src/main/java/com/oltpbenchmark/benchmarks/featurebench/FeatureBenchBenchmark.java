@@ -53,11 +53,11 @@ public class FeatureBenchBenchmark extends BenchmarkModule {
         HierarchicalConfiguration<ImmutableNode> conf = workConf.getXmlConfig().configurationAt("microbenchmark");
 
         List<ExecuteRule> executeRules = new ArrayList<>();
-        List<HierarchicalConfiguration<ImmutableNode>> confExecuteRules = conf.configurationsAt("properties/executeRules["+workcount+"]/run");
+        List<HierarchicalConfiguration<ImmutableNode>> confExecuteRules = conf.configurationsAt("properties/executeRules[" + workcount + "]/run");
 
         for (HierarchicalConfiguration<ImmutableNode> confExecuteRule : confExecuteRules) {
 
-            if(!confExecuteRule.containsKey("name")){
+            if (!confExecuteRule.containsKey("name")) {
                 break;
             }
 
@@ -70,8 +70,16 @@ public class FeatureBenchBenchmark extends BenchmarkModule {
                 query.setQuery(confquery.getString("query"));
                 List<UtilToMethod> baseutils = new ArrayList<>();
                 for (HierarchicalConfiguration<ImmutableNode> bindingsList : confquery.configurationsAt("bindings")) {
-                    UtilToMethod obj = new UtilToMethod(bindingsList.getString("util"), bindingsList.getList("params"));
-                    baseutils.add(obj);
+                    if (bindingsList.containsKey("count")) {
+                        int count = bindingsList.getInt("count");
+                        for (int i = 0; i < count; i++) {
+                            UtilToMethod obj = new UtilToMethod(bindingsList.getString("util"), bindingsList.getList("params"));
+                            baseutils.add(obj);
+                        }
+                    } else {
+                        UtilToMethod obj = new UtilToMethod(bindingsList.getString("util"), bindingsList.getList("params"));
+                        baseutils.add(obj);
+                    }
                 }
                 query.setBaseUtils(baseutils);
                 queries.add(query);
