@@ -52,4 +52,14 @@ public class YBMicroBenchmarkScansSonal extends YBMicroBenchmark {
         stmtOBj.execute(selectStmt);
 
     }
+
+    @Override
+    public ArrayList<LoadRule> loadRules() {
+        return null;
+    }
+
+    @Override
+    public ArrayList<ExecuteRule> executeRules() {
+        return null;
+    }
 }

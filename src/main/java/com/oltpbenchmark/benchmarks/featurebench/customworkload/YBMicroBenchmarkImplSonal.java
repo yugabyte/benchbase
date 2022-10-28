@@ -1,6 +1,8 @@
 package com.oltpbenchmark.benchmarks.featurebench.customworkload;
 
 import com.oltpbenchmark.benchmarks.featurebench.YBMicroBenchmark;
+import com.oltpbenchmark.benchmarks.featurebench.helpers.ExecuteRule;
+import com.oltpbenchmark.benchmarks.featurebench.helpers.LoadRule;
 import com.oltpbenchmark.benchmarks.featurebench.utils.OneStringFromArray;
 import com.oltpbenchmark.benchmarks.featurebench.utils.RandomAString;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
@@ -102,6 +104,16 @@ public class YBMicroBenchmarkImplSonal extends YBMicroBenchmark {
             }
         }
         stmt.executeBatch();
+    }
+
+    @Override
+    public ArrayList<LoadRule> loadRules() {
+        return null;
+    }
+
+    @Override
+    public ArrayList<ExecuteRule> executeRules() {
+        return null;
     }
 
 

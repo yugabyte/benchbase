@@ -123,5 +123,10 @@ public class YBMicroBenchmarkImplementation extends YBMicroBenchmark {
 
     }
 
+    @Override
+    public ArrayList<LoadRule> loadRules() {
+        return null;
+    }
+
 
 }
