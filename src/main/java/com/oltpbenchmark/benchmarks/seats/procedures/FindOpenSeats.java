@@ -62,7 +62,7 @@ public class FindOpenSeats extends Procedure {
     );
 
     public final SQLStmt GetSeats = new SQLStmt(
-            "SELECT R_ID, R_F_ID, R_SEAT " +
+            "/*+ IndexScan(reservation reservation_r_f_id_r_seat_key) */ SELECT R_ID, R_F_ID, R_SEAT " +
                     "  FROM " + SEATSConstants.TABLENAME_RESERVATION +
                     " WHERE R_F_ID = ?"
     );

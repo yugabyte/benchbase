@@ -10,7 +10,7 @@ DROP TABLE IF EXISTS airport CASCADE;
 DROP TABLE IF EXISTS airline CASCADE;
 DROP TABLE IF EXISTS country CASCADE;
 
--- 
+--
 -- CONFIG_PROFILE
 --
 CREATE TABLE config_profile (
@@ -36,7 +36,7 @@ CREATE TABLE config_histograms (
     PRIMARY KEY (cfh_name)
 );
 
--- 
+--
 -- COUNTRY
 --
 CREATE TABLE country (
@@ -257,7 +257,7 @@ CREATE TABLE flight (
     FOREIGN KEY (f_depart_ap_id) REFERENCES airport (ap_id),
     FOREIGN KEY (f_arrive_ap_id) REFERENCES airport (ap_id)
 );
-CREATE INDEX f_depart_time_idx ON flight (f_depart_time);
+CREATE INDEX f_depart_time_idx ON flight (f_depart_time asc);
 
 --
 -- RESERVATION

@@ -19,7 +19,7 @@
         </procedure>
         <procedure name="FindOpenSeats">
             <statement name="GetFlight">SELECT F_STATUS, F_BASE_PRICE, F_SEATS_TOTAL, F_SEATS_LEFT, (F_BASE_PRICE + (F_BASE_PRICE * (1 - (F_SEATS_LEFT / F_SEATS_TOTAL)))) AS F_PRICE FROM flight WHERE F_ID = ?</statement>
-            <statement name="GetSeats">SELECT R_ID, R_F_ID, R_SEAT FROM reservation WHERE R_F_ID = ?</statement>
+            <statement name="GetSeats">/*+ IndexScan(reservation reservation_r_f_id_r_seat_key) */ SELECT R_ID, R_F_ID, R_SEAT FROM reservation WHERE R_F_ID = ?</statement>
         </procedure>
         <procedure name="LoadConfig">
             <statement name="getConfigProfile">SELECT * FROM config_profile</statement>
@@ -32,7 +32,7 @@
         <procedure name="NewReservation">
             <statement name="InsertReservation">INSERT INTO reservation (R_ID, R_C_ID, R_F_ID, R_SEAT, R_PRICE, R_IATTR00, R_IATTR01, R_IATTR02, R_IATTR03, R_IATTR04, R_IATTR05, R_IATTR06, R_IATTR07, R_IATTR08) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)</statement>
             <statement name="UpdateCustomer">UPDATE customer SET C_IATTR10 = C_IATTR10 + 1, C_IATTR11 = C_IATTR11 + 1, C_IATTR12 = ?, C_IATTR13 = ?, C_IATTR14 = ?, C_IATTR15 = ? WHERE C_ID = ?</statement>
-            <statement name="CheckCustomer">SELECT R_ID FROM reservation WHERE R_F_ID = ? AND R_C_ID = ?</statement>
+            <statement name="CheckCustomer">/*+ IndexScan(reservation reservation_r_f_id_r_seat_key) */SELECT R_ID FROM reservation WHERE R_F_ID = ? AND R_C_ID = ?</statement>
             <statement name="GetFlight">SELECT F_AL_ID, F_SEATS_LEFT, airline.* FROM flight, airline WHERE F_ID = ? AND F_AL_ID = AL_ID</statement>
             <statement name="GetCustomer">SELECT C_BASE_AP_ID, C_BALANCE, C_SATTR00 FROM customer WHERE C_ID = ?</statement>
             <statement name="UpdateFrequentFlyer">UPDATE frequent_flyer SET FF_IATTR10 = FF_IATTR10 + 1, FF_IATTR11 = ?, FF_IATTR12 = ?, FF_IATTR13 = ?, FF_IATTR14 = ? WHERE FF_C_ID = ? AND FF_AL_ID = ?</statement>
@@ -51,7 +51,7 @@
             <statement name="ReserveSeat2">UPDATE reservation SET R_SEAT = ?, R_IATTR02 = ? WHERE R_ID = ? AND R_C_ID = ? AND R_F_ID = ?</statement>
             <statement name="ReserveSeat1">UPDATE reservation SET R_SEAT = ?, R_IATTR01 = ? WHERE R_ID = ? AND R_C_ID = ? AND R_F_ID = ?</statement>
             <statement name="ReserveSeat3">UPDATE reservation SET R_SEAT = ?, R_IATTR03 = ? WHERE R_ID = ? AND R_C_ID = ? AND R_F_ID = ?</statement>
-            <statement name="CheckCustomer">SELECT R_ID FROM reservation WHERE R_F_ID = ? AND R_C_ID = ?</statement>
+            <statement name="CheckCustomer">/*+ IndexScan(reservation reservation_r_f_id_r_seat_key) */SELECT R_ID FROM reservation WHERE R_F_ID = ? AND R_C_ID = ?</statement>
             <statement name="CheckSeat">SELECT R_ID FROM reservation WHERE R_F_ID = ? and R_SEAT = ?</statement>
             <statement name="ReserveSeat0">UPDATE reservation SET R_SEAT = ?, R_IATTR00 = ? WHERE R_ID = ? AND R_C_ID = ? AND R_F_ID = ?</statement>
         </procedure>

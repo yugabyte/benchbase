@@ -52,7 +52,7 @@ public class NewReservation extends Procedure {
             " WHERE R_F_ID = ? and R_SEAT = ?");
 
     public final SQLStmt CheckCustomer = new SQLStmt(
-            "SELECT R_ID " +
+            "/*+ IndexScan(reservation reservation_r_f_id_r_seat_key) */ SELECT R_ID " +
             "  FROM " + SEATSConstants.TABLENAME_RESERVATION +
             " WHERE R_F_ID = ? AND R_C_ID = ?");
 
@@ -198,7 +198,7 @@ public class NewReservation extends Procedure {
             throw new UserAbortException(String.format("Error Type [%s]: Failed to add reservation for flight #%s - Updated %d records for UpdateCustomer", ErrorType.VALIDITY_ERROR, f_id, updated));
         }
 
-        // We don't care if we updated FrequentFlyer 
+        // We don't care if we updated FrequentFlyer
         try (PreparedStatement preparedStatement = this.getPreparedStatement(conn, UpdateFrequentFlyer, attrs[4], attrs[5], attrs[6], attrs[7], c_id, airline_id)) {
             updated = preparedStatement.executeUpdate();
         }

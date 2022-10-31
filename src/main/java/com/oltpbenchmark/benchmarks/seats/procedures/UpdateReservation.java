@@ -61,7 +61,7 @@ public class UpdateReservation extends Procedure {
             " WHERE R_F_ID = ? and R_SEAT = ?");
 
     public final SQLStmt CheckCustomer = new SQLStmt(
-            "SELECT R_ID " +
+            "/*+ IndexScan(reservation reservation_r_f_id_r_seat_key) */SELECT R_ID " +
             "  FROM " + SEATSConstants.TABLENAME_RESERVATION +
             " WHERE R_F_ID = ? AND R_C_ID = ?");
 
