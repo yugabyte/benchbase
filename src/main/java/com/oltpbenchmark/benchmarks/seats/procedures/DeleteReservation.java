@@ -45,7 +45,7 @@ public class DeleteReservation extends Procedure {
                     " WHERE FF_C_ID_STR = ? AND FF_C_ID = C_ID");
 
     public final SQLStmt GetCustomerReservation = new SQLStmt(
-            "SELECT C_SATTR00, C_SATTR02, C_SATTR04, " +
+            "/*+ IndexScan(reservation reservation_r_f_id_r_seat_key) */SELECT C_SATTR00, C_SATTR02, C_SATTR04, " +
                     "       C_IATTR00, C_IATTR02, C_IATTR04, C_IATTR06, " +
                     "       F_SEATS_LEFT, " +
                     "       R_ID, R_SEAT, R_PRICE, R_IATTR00 " +

@@ -4,7 +4,7 @@
         <procedure name="DeleteReservation">
             <statement name="UpdateCustomer">UPDATE customer SET C_BALANCE = C_BALANCE + ?, C_IATTR00 = ?, C_IATTR10 = C_IATTR10 - 1, C_IATTR11 = C_IATTR10 - 1 WHERE C_ID = ?</statement>
             <statement name="GetCustomerByIdStr">SELECT C_ID FROM customer WHERE C_ID_STR = ?</statement>
-            <statement name="GetCustomerReservation">SELECT C_SATTR00, C_SATTR02, C_SATTR04, C_IATTR00, C_IATTR02, C_IATTR04, C_IATTR06, F_SEATS_LEFT, R_ID, R_SEAT, R_PRICE, R_IATTR00 FROM customer, flight, reservation WHERE C_ID = ? AND C_ID = R_C_ID AND F_ID = ? AND F_ID = R_F_ID</statement>
+            <statement name="GetCustomerReservation">/*+ IndexScan(reservation reservation_r_f_id_r_seat_key) */SELECT C_SATTR00, C_SATTR02, C_SATTR04, C_IATTR00, C_IATTR02, C_IATTR04, C_IATTR06, F_SEATS_LEFT, R_ID, R_SEAT, R_PRICE, R_IATTR00 FROM customer, flight, reservation WHERE C_ID = ? AND C_ID = R_C_ID AND F_ID = ? AND F_ID = R_F_ID</statement>
             <statement name="UpdateFrequentFlyer">UPDATE frequent_flyer SET FF_IATTR10 = FF_IATTR10 - 1 WHERE FF_C_ID = ? AND FF_AL_ID = ?</statement>
             <statement name="DeleteReservation">DELETE FROM reservation WHERE R_ID = ? AND R_C_ID = ? AND R_F_ID = ?</statement>
             <statement name="UpdateFlight">UPDATE flight SET F_SEATS_LEFT = F_SEATS_LEFT + 1  WHERE F_ID = ?</statement>
