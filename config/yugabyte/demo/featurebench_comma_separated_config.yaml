@@ -23,8 +23,7 @@ microbenchmark:
             - DROP Table if exists demo2_1;
             - create table demo2_1(id int,name text, PRIMARY key (id))
         loadRules:
-            -   table: demo1_,demo2_
-                count: 1
+            -   table: demo1_1 , demo2_1
                 rows: 10
                 columns:
                     -   name: id
