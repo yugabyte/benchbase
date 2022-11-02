@@ -39,6 +39,7 @@ import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -62,45 +63,66 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
 
     protected void initialize() {
 
-        if (this.getBenchmark().getWorkloadConfiguration().getXmlConfig().containsKey("microbenchmark/properties/explain")) {
+        if (this.getBenchmark().getWorkloadConfiguration().getXmlConfig().containsKey("microbenchmark/properties/explain") &&
+            this.getBenchmark().getWorkloadConfiguration().getXmlConfig().getBoolean("microbenchmark/properties/explain")) {
+
+            String outputDirectory = "results";
+            FileUtil.makeDirIfNotExists(outputDirectory);
+            String explainDir = "ResultsForExplain";
+            FileUtil.makeDirIfNotExists(outputDirectory + "/" + explainDir);
+            String fileForExplain = "/resultsForExplain/" + TimeUtil.getCurrentTimeString() + ".json";
+            PrintStream ps;
+            String explain = "explain (analyze,verbose,costs,buffers) ";
 
             try {
-                long createStart = System.currentTimeMillis();
-                LOG.info("Using YAML for EXPLAIN DDL's before execute phase");
+                ps = new PrintStream(FileUtil.joinPath(outputDirectory, fileForExplain));
+            } catch (FileNotFoundException exc) {
+                throw new RuntimeException(exc);
+            }
 
-                XMLConfiguration config = this.getBenchmark().getWorkloadConfiguration().getXmlConfig();
-                List<String> explainDDLs = config.getList(String.class, "microbenchmark/properties/explain");
+            List<PreparedStatement> explainDDLs = new ArrayList<>();
 
-                String outputDirectory = "results";
-                FileUtil.makeDirIfNotExists(outputDirectory);
-                String explainDir = "ResultsForExplain";
-                FileUtil.makeDirIfNotExists(outputDirectory + "/" + explainDir);
-                String fileForExplain = "/resultsForExplain/" + TimeUtil.getCurrentTimeString() + ".json";
-                PrintStream ps = new PrintStream(FileUtil.joinPath(outputDirectory, fileForExplain));
-
+            for (ExecuteRule er : executeRules) {
+                for (Query query : er.getQueries()) {
+                    String querystmt = query.getQuery();
+                    if (query.isSelectQuery()) {
+                        PreparedStatement stmt = null;
+                        try {
+                            stmt = conn.prepareStatement(explain + querystmt);
+                        } catch (SQLException e) {
+                            throw new RuntimeException(e);
+                        }
+                        List<UtilToMethod> baseUtils = query.getBaseUtils();
+                        for (int j = 0; j < baseUtils.size(); j++) {
+                            try {
+                                stmt.setObject(j + 1, baseUtils.get(j).get());
+                            } catch (SQLException | InvocationTargetException | IllegalAccessException |
+                                     ClassNotFoundException | NoSuchMethodException | InstantiationException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+                        explainDDLs.add(stmt);
+                    }
+                }
+            }
+            try {
                 writeExplain(ps, explainDDLs);
-
-                long createEnd = System.currentTimeMillis();
-                LOG.info("Elapsed time in EXPLAIN ddls: {} milliseconds", createEnd - createStart);
-
-            } catch (FileNotFoundException e) {
+            } catch (SQLException e) {
                 throw new RuntimeException(e);
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                throw new RuntimeException("Error Occurred in explain DDL's");
             }
         }
     }
 
-    public void writeExplain(PrintStream os, List<String> explainDDLs) throws SQLException {
+
+    public void writeExplain(PrintStream os, List<PreparedStatement> explainDDLs) throws SQLException {
+        LOG.info("Running explain for select query before execute phase");
         Map<String, JSONObject> summaryMap = new TreeMap<>();
-        Statement stmtOBj = conn.createStatement();
         int count = 0;
-        for (String ddl : explainDDLs) {
+        for (PreparedStatement ddl : explainDDLs) {
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("ddl", ddl);
             count++;
-            ResultSet rs = stmtOBj.executeQuery(ddl);
+            ResultSet rs = ddl.executeQuery();
             StringBuilder data = new StringBuilder();
             while (rs.next()) {
                 data.append(rs.getString(1));
