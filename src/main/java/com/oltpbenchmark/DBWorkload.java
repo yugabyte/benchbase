@@ -228,7 +228,7 @@ public class DBWorkload {
                         executeRules = null;
                         numTxnTypes = 1;
                     } else {
-                        if (!executeRules.get(0).containsKey("weight")) {
+                        if (!executeRules.get(0).containsKey("name")) {
                             executeRules = null;
                             numTxnTypes = 1;
                         } else {
@@ -425,8 +425,22 @@ public class DBWorkload {
                             totalWeight = 100;
                             weights.add(100.0);
                         } else {
+                            double defaultweight = 100.0 / executeRules.size();
+                            boolean containWeight = executeRules.get(0).containsKey("weight");
                             for (HierarchicalConfiguration<ImmutableNode> rule : executeRules) {
-                                double weight = rule.getDouble("weight");
+                                double weight;
+                                if(containWeight){
+                                    if(!rule.containsKey("weight")){
+                                        throw new RuntimeException("Please Provide weight or not to all queries");
+                                    }
+                                    weight = rule.getDouble("weight");
+                                }else{
+                                    if(rule.containsKey("weight")){
+                                        throw new RuntimeException("Please Provide weight or not to all queries");
+                                    }
+                                    weight = defaultweight;
+                                }
+
                                 totalWeight += weight;
                                 weights.add(weight);
                             }
