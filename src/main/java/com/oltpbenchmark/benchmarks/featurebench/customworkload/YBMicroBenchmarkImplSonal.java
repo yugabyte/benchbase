@@ -106,17 +106,6 @@ public class YBMicroBenchmarkImplSonal extends YBMicroBenchmark {
         stmt.executeBatch();
     }
 
-    @Override
-    public ArrayList<LoadRule> loadRules() {
-        return null;
-    }
-
-    @Override
-    public ArrayList<ExecuteRule> executeRules() {
-        return null;
-    }
-
-
 //    public void cleanUp(Connection conn) throws SQLException {
 //        try {
 //            Statement stmtOBj = conn.createStatement();

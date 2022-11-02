@@ -118,15 +118,4 @@ public class YBMicroBenchmarkImplementation extends YBMicroBenchmark {
 
     }
 
-    @Override
-    public void executeOnce(Connection conn) {
-
-    }
-
-    @Override
-    public ArrayList<LoadRule> loadRules() {
-        return null;
-    }
-
-
 }

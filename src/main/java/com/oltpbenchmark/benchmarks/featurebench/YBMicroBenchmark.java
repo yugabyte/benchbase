@@ -48,9 +48,6 @@ public abstract class YBMicroBenchmark {
     public void beforeLoad(Connection conn) throws SQLException {
     }
 
-    public abstract ArrayList<LoadRule> loadRules();
-
-    public abstract ArrayList<ExecuteRule> executeRules();
 }
 
 

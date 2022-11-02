@@ -13,13 +13,4 @@ public class YBDefaultMicroBenchmark extends YBMicroBenchmark {
         super(config);
     }
 
-    @Override
-    public ArrayList<LoadRule> loadRules() {
-        return null;
-    }
-
-    @Override
-    public ArrayList<ExecuteRule> executeRules() {
-        return null;
-    }
 }

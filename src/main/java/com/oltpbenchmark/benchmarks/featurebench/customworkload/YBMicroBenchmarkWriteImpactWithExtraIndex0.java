@@ -40,13 +40,4 @@ public class YBMicroBenchmarkWriteImpactWithExtraIndex0 extends YBMicroBenchmark
         stmtOBj.close();
     }
 
-    @Override
-    public ArrayList<LoadRule> loadRules() {
-        return null;
-    }
-
-    @Override
-    public ArrayList<ExecuteRule> executeRules() {
-        return null;
-    }
 }

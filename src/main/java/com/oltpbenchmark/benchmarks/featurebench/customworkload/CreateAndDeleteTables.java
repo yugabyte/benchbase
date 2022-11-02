@@ -52,14 +52,4 @@ public class CreateAndDeleteTables extends YBMicroBenchmark {
         }
     }
 
-    @Override
-    public ArrayList<LoadRule> loadRules() {
-        return null;
-    }
-
-    @Override
-    public ArrayList<ExecuteRule> executeRules() {
-        return null;
-    }
-
 }
