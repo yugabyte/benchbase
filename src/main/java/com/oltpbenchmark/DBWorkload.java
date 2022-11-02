@@ -209,9 +209,9 @@ public class DBWorkload {
 
                 List<HierarchicalConfiguration<ImmutableNode>> executeRules = (workloads == null || workloads.size() == 0) ? null : workloads.get(workcount - 1).configurationsAt("run");
                 if (executeRules == null) {
-                    System.out.println("Starting Workload " + workcount);
+                    LOG.info("Starting Workload " + workcount);
                 } else {
-                    System.out.println("Starting Workload " + (workloads.get(workcount - 1).containsKey("workload") ? workloads.get(workcount - 1).getString("workload") : workcount));
+                   LOG.info("Starting Workload " + (workloads.get(workcount - 1).containsKey("workload") ? workloads.get(workcount - 1).getString("workload") : workcount));
                 }
 
                 boolean isExecutePresent = xmlConfig.containsKey("microbenchmark/properties/execute");
