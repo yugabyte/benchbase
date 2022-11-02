@@ -1,18 +1,12 @@
 package com.oltpbenchmark.benchmarks.featurebench;
 
-import com.oltpbenchmark.benchmarks.featurebench.helpers.ExecuteRule;
-import com.oltpbenchmark.benchmarks.featurebench.helpers.LoadRule;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.tree.ImmutableNode;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
 
 public abstract class YBMicroBenchmark {
-
-    public boolean createDBImplemented = true;
-    public boolean cleanUpImplemented = true;
     public boolean loadOnceImplemented = false;
     public boolean executeOnceImplemented = false;
 

@@ -2,13 +2,10 @@ package com.oltpbenchmark.benchmarks.featurebench.customworkload;
 
 import com.oltpbenchmark.api.Procedure.UserAbortException;
 import com.oltpbenchmark.benchmarks.featurebench.YBMicroBenchmark;
-import com.oltpbenchmark.benchmarks.featurebench.helpers.ExecuteRule;
-import com.oltpbenchmark.benchmarks.featurebench.helpers.LoadRule;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.tree.ImmutableNode;
 
 import java.sql.*;
-import java.util.ArrayList;
 import java.util.Random;
 
 public class PointQuery extends YBMicroBenchmark {

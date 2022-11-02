@@ -25,7 +25,6 @@ public class YBMicroBenchmarkImplementation extends YBMicroBenchmark {
         this.executeOnceImplemented = false;
         this.loadOnceImplemented = false;
         this.afterLoadImplemented = false;
-        this.createDBImplemented=true;
     }
 
 
@@ -45,37 +44,6 @@ public class YBMicroBenchmarkImplementation extends YBMicroBenchmark {
             ex.printStackTrace();
         }
     }
-
-    /*public ArrayList<LoadRule> loadRules() {
-        int startIndex = 0;
-        int endIndex = 10000;
-        int desiredLen = 10;
-        // utility parameters for int primary key generation with range
-        ParamsForUtilFunc idParams = new ParamsForUtilFunc(new ArrayList<>(Arrays.asList(startIndex, endIndex)));
-
-        // util parameter for string name generation of desired length
-        ParamsForUtilFunc nameParams = new ParamsForUtilFunc(new ArrayList<>(List.of(desiredLen)));
-
-        // util function name and params initialization
-        UtilityFunc idUtilityFunc = new UtilityFunc("get_int_primary_key", new ArrayList<>(List.of(idParams)));
-        UtilityFunc nameUtilityFunc = new UtilityFunc("numberToIdString", new ArrayList<>(List.of(nameParams)));
-
-        // binding the column details(id, name) with the utility functions
-        ColumnsDetails idColumnsDetails = new ColumnsDetails("id", idUtilityFunc);
-        ColumnsDetails nameColumnsDetails = new ColumnsDetails("name", nameUtilityFunc);
-
-        //add table information to the tableInfo object:- no_of_rows, table_name and column details
-        TableInfo tableInfo =
-            new TableInfo(
-                10, "accounts",
-                new ArrayList<>(Arrays.asList(idColumnsDetails, nameColumnsDetails)));
-
-        //creating and return load rule
-        LoadRule loadRule = new LoadRule(tableInfo);
-        return new ArrayList<>(List.of(loadRule));
-
-    }*/
-
 
     public ArrayList<ExecuteRule> executeRules() {
         int startIndex = 1;
@@ -99,19 +67,6 @@ public class YBMicroBenchmarkImplementation extends YBMicroBenchmark {
         ExecuteRule executeRule = new ExecuteRule(transactionDetails);
         return new ArrayList<>(List.of(executeRule));
     }
-
-//    @Override
-//    public void cleanUp(Connection conn) throws SQLException {
-//        try {
-//            Statement stmtOBj = conn.createStatement();
-//            LOG.info("\n=======DROP ALL THE TABLES=======");
-//            stmtOBj.executeUpdate("DROP TABLE accounts");
-//            LOG.info("\n=======TABLES ARE SUCCESSFULLY DROPPED FROM THE DATABASE=======\n");
-//            stmtOBj.close();
-//        } catch (Exception ex) {
-//            ex.printStackTrace();
-//        }
-//    }
 
     @Override
     public void loadOnce(Connection conn) {
