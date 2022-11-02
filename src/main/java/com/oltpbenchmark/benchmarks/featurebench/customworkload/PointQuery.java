@@ -47,7 +47,6 @@ public class PointQuery extends YBMicroBenchmark {
                 throw new UserAbortException("msg");
             }
 
-
         }
     }
 
