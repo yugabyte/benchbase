@@ -27,9 +27,7 @@ import com.oltpbenchmark.types.State;
 import com.oltpbenchmark.types.TransactionStatus;
 import com.oltpbenchmark.util.FileUtil;
 import com.oltpbenchmark.util.JSONUtil;
-import com.oltpbenchmark.util.TimeUtil;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
-import org.apache.commons.configuration2.XMLConfiguration;
 import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -56,6 +54,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
     public HierarchicalConfiguration<ImmutableNode> config = null;
     public YBMicroBenchmark ybm = null;
     public List<ExecuteRule> executeRules = null;
+    public String workloadName = "";
 
     public FeatureBenchWorker(FeatureBenchBenchmark benchmarkModule, int id) {
         super(benchmarkModule, id);
@@ -70,7 +69,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             FileUtil.makeDirIfNotExists(outputDirectory);
             String explainDir = "ResultsForExplain";
             FileUtil.makeDirIfNotExists(outputDirectory + "/" + explainDir);
-            String fileForExplain = "/resultsForExplain/" + TimeUtil.getCurrentTimeString() + ".json";
+            String fileForExplain = explainDir + "/" + workloadName + ".json";
             PrintStream ps;
             String explain = "explain (analyze,verbose,costs,buffers) ";
 
@@ -89,19 +88,19 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                         PreparedStatement stmt = null;
                         try {
                             stmt = conn.prepareStatement(explain + querystmt);
+                            List<UtilToMethod> baseUtils = query.getBaseUtils();
+                            for (int j = 0; j < baseUtils.size(); j++) {
+                                try {
+                                    stmt.setObject(j + 1, baseUtils.get(j).get());
+                                } catch (SQLException | InvocationTargetException | IllegalAccessException |
+                                         ClassNotFoundException | NoSuchMethodException | InstantiationException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            }
+                            explainDDLs.add(stmt);
                         } catch (SQLException e) {
                             throw new RuntimeException(e);
                         }
-                        List<UtilToMethod> baseUtils = query.getBaseUtils();
-                        for (int j = 0; j < baseUtils.size(); j++) {
-                            try {
-                                stmt.setObject(j + 1, baseUtils.get(j).get());
-                            } catch (SQLException | InvocationTargetException | IllegalAccessException |
-                                     ClassNotFoundException | NoSuchMethodException | InstantiationException e) {
-                                throw new RuntimeException(e);
-                            }
-                        }
-                        explainDDLs.add(stmt);
                     }
                 }
             }
