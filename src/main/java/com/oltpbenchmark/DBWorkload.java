@@ -680,7 +680,7 @@ public class DBWorkload {
 
         String name = StringUtils.join(StringUtils.split(argsLine.getOptionValue("b"), ','), '-');
 
-        String baseFileName = name + "_" + TimeUtil.getCurrentTimeString();
+        String baseFileName = name;
 
         int windowSize = Integer.parseInt(argsLine.getOptionValue("s", "5"));
 

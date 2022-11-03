@@ -27,6 +27,7 @@ import com.oltpbenchmark.types.State;
 import com.oltpbenchmark.types.TransactionStatus;
 import com.oltpbenchmark.util.FileUtil;
 import com.oltpbenchmark.util.JSONUtil;
+import com.oltpbenchmark.util.TimeUtil;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.json.JSONObject;
@@ -67,7 +68,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
         FileUtil.makeDirIfNotExists(outputDirectory);
         String explainDir = "ResultsForExplain";
         FileUtil.makeDirIfNotExists(outputDirectory + "/" + explainDir);
-        String fileForExplain = explainDir + "/" + workloadName + ".json";
+        String fileForExplain = explainDir + "/" + workloadName+"_"+ TimeUtil.getCurrentTimeString() + ".json";
         PrintStream ps;
         String explain = "explain (analyze,verbose,costs,buffers) ";
 
@@ -110,20 +111,28 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
 
 
     public void writeExplain(PrintStream os, List<PreparedStatement> explainDDLs) throws SQLException {
-        LOG.info("Running explain for select query before execute phase");
+        LOG.info("Running explain for select/update queries before execute phase");
         Map<String, JSONObject> summaryMap = new TreeMap<>();
         int count = 0;
         for (PreparedStatement ddl : explainDDLs) {
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("ddl", ddl);
             count++;
+            int countResultSetGen = 0;
+            while (countResultSetGen < 3) {
+                ddl.executeQuery();
+                countResultSetGen++;
+            }
+            long explainStart = System.currentTimeMillis();
             ResultSet rs = ddl.executeQuery();
             StringBuilder data = new StringBuilder();
             while (rs.next()) {
                 data.append(rs.getString(1));
                 data.append(" ");
             }
+            long explainEnd = System.currentTimeMillis();
             jsonObject.put("ResultSet", data.toString());
+            jsonObject.put("Time(ms) ",explainEnd-explainStart);
             summaryMap.put("ExplainDDL" + count, jsonObject);
         }
         os.println(JSONUtil.format(JSONUtil.toJSONString(summaryMap)));
@@ -167,7 +176,6 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                         while (rs.next()) {
                             countSet++;
                         }
-                        ;
                         if (countSet == 0) {
                             return TransactionStatus.RETRY;
                         }
