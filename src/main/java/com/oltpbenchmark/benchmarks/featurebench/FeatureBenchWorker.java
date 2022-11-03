@@ -63,52 +63,51 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
     protected void initialize() {
 
 
-            String outputDirectory = "results";
-            FileUtil.makeDirIfNotExists(outputDirectory);
-            String explainDir = "ResultsForExplain";
-            FileUtil.makeDirIfNotExists(outputDirectory + "/" + explainDir);
-            String fileForExplain = explainDir + "/" + workloadName + ".json";
-            PrintStream ps;
-            String explain = "explain (analyze,verbose,costs,buffers) ";
+        String outputDirectory = "results";
+        FileUtil.makeDirIfNotExists(outputDirectory);
+        String explainDir = "ResultsForExplain";
+        FileUtil.makeDirIfNotExists(outputDirectory + "/" + explainDir);
+        String fileForExplain = explainDir + "/" + workloadName + ".json";
+        PrintStream ps;
+        String explain = "explain (analyze,verbose,costs,buffers) ";
 
-            try {
-                ps = new PrintStream(FileUtil.joinPath(outputDirectory, fileForExplain));
-            } catch (FileNotFoundException exc) {
-                throw new RuntimeException(exc);
-            }
+        try {
+            ps = new PrintStream(FileUtil.joinPath(outputDirectory, fileForExplain));
+        } catch (FileNotFoundException exc) {
+            throw new RuntimeException(exc);
+        }
 
-            List<PreparedStatement> explainDDLs = new ArrayList<>();
+        List<PreparedStatement> explainDDLs = new ArrayList<>();
 
-            for (ExecuteRule er : executeRules) {
-                for (Query query : er.getQueries()) {
-                    String querystmt = query.getQuery();
-                    if (query.isSelectQuery()) {
-                        PreparedStatement stmt = null;
-                        try {
-                            stmt = conn.prepareStatement(explain + querystmt);
-                            List<UtilToMethod> baseUtils = query.getBaseUtils();
-                            for (int j = 0; j < baseUtils.size(); j++) {
-                                try {
-                                    stmt.setObject(j + 1, baseUtils.get(j).get());
-                                } catch (SQLException | InvocationTargetException | IllegalAccessException |
-                                         ClassNotFoundException | NoSuchMethodException | InstantiationException e) {
-                                    throw new RuntimeException(e);
-                                }
+        for (ExecuteRule er : executeRules) {
+            for (Query query : er.getQueries()) {
+                String querystmt = query.getQuery();
+                if (query.isSelectQuery()) {
+                    PreparedStatement stmt = null;
+                    try {
+                        stmt = conn.prepareStatement(explain + querystmt);
+                        List<UtilToMethod> baseUtils = query.getBaseUtils();
+                        for (int j = 0; j < baseUtils.size(); j++) {
+                            try {
+                                stmt.setObject(j + 1, baseUtils.get(j).get());
+                            } catch (SQLException | InvocationTargetException | IllegalAccessException |
+                                     ClassNotFoundException | NoSuchMethodException | InstantiationException e) {
+                                throw new RuntimeException(e);
                             }
-                            explainDDLs.add(stmt);
-                        } catch (SQLException e) {
-                            throw new RuntimeException(e);
                         }
+                        explainDDLs.add(stmt);
+                    } catch (SQLException e) {
+                        throw new RuntimeException(e);
                     }
                 }
             }
-            try {
-                writeExplain(ps, explainDDLs);
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
         }
-
+        try {
+            writeExplain(ps, explainDDLs);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
 
     public void writeExplain(PrintStream os, List<PreparedStatement> explainDDLs) throws SQLException {
@@ -165,9 +164,16 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                     }
                     if (query.isSelectQuery()) {
                         ResultSet rs = stmt.executeQuery();
-                        while (rs.next()) ;
+                        int countSet = 0;
+                        while (rs.next()) {
+                            countSet++;
+                        };
+                        if (countSet == 0)
+                            return TransactionStatus.RETRY_DIFFERENT;
                     } else {
-                        stmt.executeUpdate();
+                        int updatedRows = stmt.executeUpdate();
+                        if (updatedRows == 0)
+                            return TransactionStatus.RETRY_DIFFERENT;
                     }
                 }
             }
