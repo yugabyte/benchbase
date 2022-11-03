@@ -82,24 +82,23 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
         for (ExecuteRule er : executeRules) {
             for (Query query : er.getQueries()) {
                 String querystmt = query.getQuery();
-                if (query.isSelectQuery()) {
-                    PreparedStatement stmt = null;
-                    try {
-                        stmt = conn.prepareStatement(explain + querystmt);
-                        List<UtilToMethod> baseUtils = query.getBaseUtils();
-                        for (int j = 0; j < baseUtils.size(); j++) {
-                            try {
-                                stmt.setObject(j + 1, baseUtils.get(j).get());
-                            } catch (SQLException | InvocationTargetException | IllegalAccessException |
-                                     ClassNotFoundException | NoSuchMethodException | InstantiationException e) {
-                                throw new RuntimeException(e);
-                            }
+                PreparedStatement stmt = null;
+                try {
+                    stmt = conn.prepareStatement(explain + querystmt);
+                    List<UtilToMethod> baseUtils = query.getBaseUtils();
+                    for (int j = 0; j < baseUtils.size(); j++) {
+                        try {
+                            stmt.setObject(j + 1, baseUtils.get(j).get());
+                        } catch (SQLException | InvocationTargetException | IllegalAccessException |
+                                 ClassNotFoundException | NoSuchMethodException | InstantiationException e) {
+                            throw new RuntimeException(e);
                         }
-                        explainDDLs.add(stmt);
-                    } catch (SQLException e) {
-                        throw new RuntimeException(e);
                     }
+                    explainDDLs.add(stmt);
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
                 }
+
             }
         }
         try {
@@ -167,13 +166,16 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                         int countSet = 0;
                         while (rs.next()) {
                             countSet++;
-                        };
-                        if (countSet == 0)
-                            return TransactionStatus.RETRY_DIFFERENT;
+                        }
+                        ;
+                        if (countSet == 0) {
+                            return TransactionStatus.RETRY;
+                        }
                     } else {
                         int updatedRows = stmt.executeUpdate();
-                        if (updatedRows == 0)
-                            return TransactionStatus.RETRY_DIFFERENT;
+                        if (updatedRows == 0) {
+                            return TransactionStatus.RETRY;
+                        }
                     }
                 }
             }
