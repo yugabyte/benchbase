@@ -672,7 +672,7 @@ public class DBWorkload {
             outputDirectory = argsLine.getOptionValue("d");
         }
         if (activeTXTypes.get(0).getName().equalsIgnoreCase("featurebench")) {
-            outputDirectory = outputDirectory + "/" + (workload_name == null ? TimeUtil.getCurrentTimeString() : workload_name);
+            outputDirectory = outputDirectory + "/" + (workload_name == null ? TimeUtil.getCurrentTimeString() : (workload_name + "/" + TimeUtil.getCurrentTimeString()));
         }
 
         FileUtil.makeDirIfNotExists(outputDirectory);
