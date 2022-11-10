@@ -43,7 +43,6 @@ public class PrimaryIntGen implements BaseUtil {
         int upperRangeTemp = (((Number) values.get(0)).intValue() + (divide) * (workerId + 1) + (workerId == 0 ? 0 : 1));
         this.upperRange = Math.min(upperRangeTemp, ((Number) values.get(1)).intValue());
         this.lowerRange = ((Number) values.get(0)).intValue() + divide * (workerId) + (workerId == 0 ? 0 : 1);
-        System.out.println(this.lowerRange + " " + this.upperRange);
         if (upperRange < lowerRange) {
             throw new RuntimeException("Upper bound less than lower bound");
         }
