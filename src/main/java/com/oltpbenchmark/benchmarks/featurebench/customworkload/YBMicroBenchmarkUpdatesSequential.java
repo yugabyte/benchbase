@@ -30,7 +30,7 @@ public class YBMicroBenchmarkUpdatesSequential extends YBMicroBenchmark {
 
   public void executeOnce(Connection conn) throws SQLException {
     Statement stmtObj = conn.createStatement();
-    for (int id = 1; id <= NUM_ROWS / 2; id++) {
+    for (int id = 1; id <= NUM_ROWS; id++) {
       // Update all the columns which have an index in the 10-index benchmark so
       // that we can accurately determine the impact of maintaining indexes.
       stmtObj.execute(String.format(

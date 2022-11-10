@@ -30,7 +30,7 @@ public class YBMicroBenchmarkDeletesSequential extends YBMicroBenchmark {
 
   public void executeOnce(Connection conn) throws SQLException {
     Statement stmtObj = conn.createStatement();
-    for (int id = 1; id <= NUM_ROWS / 2; id++) {
+    for (int id = 1; id <= NUM_ROWS; id++) {
       stmtObj.execute(String.format("delete from demo where id = %d;", id));
     }
     stmtObj.close();
