@@ -15,7 +15,7 @@ works:
         rate: 1000
         warmup: 0
 microbenchmark:
-    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBMicroBenchmarkWriteImpactWithExtraIndex5
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBMicroBenchmarkInsertsBatched
     properties:
         setAutoCommit : true
         create :
@@ -35,3 +35,8 @@ microbenchmark:
             - create index demo_idx3 on demo(col6);
             - create index demo_idx4 on demo(col8);
             - create index demo_idx5 on demo(col13);
+            - create index demo_idx6 on demo(col9);
+            - create index demo_idx7 on demo(col10);
+            - create index demo_idx8 on demo(col11);
+            - create index demo_idx9 on demo(col12);
+            - create index demo_idx10 on demo(col2);

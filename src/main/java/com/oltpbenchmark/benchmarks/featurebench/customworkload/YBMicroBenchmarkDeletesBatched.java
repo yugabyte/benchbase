@@ -30,7 +30,7 @@ public class YBMicroBenchmarkDeletesBatched extends YBMicroBenchmark {
 
   public void executeOnce(Connection conn) throws SQLException {
     String batchedDeleteStatement =
-        String.format("delete demo where id >= %d;", NUM_ROWS / 2);
+        String.format("delete from demo where id >= %d;", NUM_ROWS / 2);
     Statement stmtObj = conn.createStatement();
     stmtObj.execute(batchedDeleteStatement);
     stmtObj.close();

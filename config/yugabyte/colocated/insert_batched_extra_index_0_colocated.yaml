@@ -15,7 +15,7 @@ works:
         rate: 1000
         warmup: 0
 microbenchmark:
-    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBMicroBenchmarkWriteImpactWithExtraIndex0
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBMicroBenchmarkInsertsBatched
     properties:
         setAutoCommit : true
         create :

@@ -15,7 +15,7 @@ works:
         rate: 1000
         warmup: 0
 microbenchmark:
-    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBMicroBenchmarkWriteImpactWithExtraIndex1
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBMicroBenchmarkInsertsBatched
     properties:
         setAutoCommit : true
         create :
@@ -31,3 +31,5 @@ microbenchmark:
             - drop table if exists demo;
             - create table demo (id bigint primary key, col1 int, col2 int, col3 int, col4 int, col5 varchar(20), col6 date, col7 int, col8 bigint, col9 varchar(10), col10 int, col11 bigint, col12 varchar(10), col13 boolean, col14 int, col15 int);
             - create index demo_idx1 on demo(col1);
+            - create index demo_idx2 on demo(col5);
+            - create index demo_idx3 on demo(col6);

@@ -9,33 +9,33 @@ import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.log4j.Logger;
 
-public class YBMicroBenchmarkUpdatesBatched extends YBMicroBenchmark {
+public class YBMicroBenchmarkInsertsSequential extends YBMicroBenchmark {
   public final static Logger LOG =
       Logger.getLogger(com.oltpbenchmark.benchmarks.featurebench.customworkload
                            .YBMicroBenchmarkImplSonal.class);
-  private static final int NUM_ROWS = 10000;
 
-  public YBMicroBenchmarkUpdatesBatched(
+  public YBMicroBenchmarkInsertsSequential(
       HierarchicalConfiguration<ImmutableNode> config) {
     super(config);
     this.loadOnceImplemented = true;
   }
 
   public void loadOnce(Connection conn) throws SQLException {
-    String insertStmt = String.format("call insert_demo(%d);", NUM_ROWS);
+    String insertStmt = "call insert_demo(10000);";
     PreparedStatement stmt = conn.prepareStatement(insertStmt);
     stmt.execute();
     stmt.close();
   }
 
   public void executeOnce(Connection conn) throws SQLException {
-    // Update all the columns which have an index in the 10-index benchmark so
-    // that we can accurately determine the impact of maintaining indexes.
-    String batchedUpdateStatement = String.format(
-        "update demo set col1 = col1 + 1000, col5 = 'UPDATED', col6 = '2015-07-17 22:00:00+00', col8 = 123456789012345, col13 = true, col9 = 'UPDATED', col10 = 100, col11 = 123456789012345, col12 = 'UPDATED', col2 = 123 where id >= %d;",
-        NUM_ROWS / 2);
     Statement stmtObj = conn.createStatement();
-    stmtObj.execute(batchedUpdateStatement);
+    String partialInsertQuery =
+        "insert into demo (id, col1, col2, col3, col4, col5, col6, col7, col8, col9, col10, col11, col12, col13, col14, col15) select n, n, n+100, (n%100)+1, (n%1000)+1, 'aaa'||(n%1000)+1, '2022-12-10', n%50, n*10, 'bbb'||n, n%10, n*2, 'ccc'||(n%100), RANDOM()::INT::BOOLEAN, n, n";
+    for (int id = 10001; id <= 20000; id++) {
+      String suffixInsertQuery =
+          String.format(" from generate_series(%d, %d) n;", id, id);
+      stmtObj.execute(partialInsertQuery + suffixInsertQuery);
+    }
     stmtObj.close();
   }
 }
