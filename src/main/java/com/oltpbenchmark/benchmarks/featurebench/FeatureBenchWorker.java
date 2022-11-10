@@ -107,7 +107,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
         try {
             writeExplain(ps, explainDDLs);
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
     }
 
