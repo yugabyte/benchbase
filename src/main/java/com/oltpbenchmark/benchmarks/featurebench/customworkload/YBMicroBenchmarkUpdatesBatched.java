@@ -12,7 +12,7 @@ import org.apache.log4j.Logger;
 public class YBMicroBenchmarkUpdatesBatched extends YBMicroBenchmark {
   public final static Logger LOG =
       Logger.getLogger(com.oltpbenchmark.benchmarks.featurebench.customworkload
-                           .YBMicroBenchmarkImplSonal.class);
+                           .YBMicroBenchmarkUpdatesBatched.class);
   private static final int NUM_ROWS = 10000;
 
   public YBMicroBenchmarkUpdatesBatched(
@@ -29,11 +29,20 @@ public class YBMicroBenchmarkUpdatesBatched extends YBMicroBenchmark {
   }
 
   public void executeOnce(Connection conn) throws SQLException {
+    String inClause = "(";
+    for (int i = 1; i <= NUM_ROWS; i++) {
+      inClause += String.format("%d", i);
+      if (i < NUM_ROWS) {
+        inClause += ",";
+      }
+    }
+    inClause += ")";
+
     // Update all the columns which have an index in the 10-index benchmark so
     // that we can accurately determine the impact of maintaining indexes.
     String batchedUpdateStatement = String.format(
-        "update demo set col1 = col1 + 1000, col5 = 'UPDATED', col6 = '2015-07-17 22:00:00+00', col8 = 123456789012345, col13 = true, col9 = 'UPDATED', col10 = 100, col11 = 123456789012345, col12 = 'UPDATED', col2 = 123 where id <= %d;",
-        NUM_ROWS);
+        "update demo set col1 = col1 + 1000, col2 = 101, col3 = col3 - 100, col4 = 1111, col5 = 2222, col6 = 7777, col7 = 1234, col8 = col7 + col6, col9 = col1 + col3, col10 = col2 - col6 where id in %s;",
+        inClause);
     Statement stmtObj = conn.createStatement();
     stmtObj.execute(batchedUpdateStatement);
     stmtObj.close();

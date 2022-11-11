@@ -12,7 +12,7 @@ import org.apache.log4j.Logger;
 public class YBMicroBenchmarkDeletesSequential extends YBMicroBenchmark {
   public final static Logger LOG =
       Logger.getLogger(com.oltpbenchmark.benchmarks.featurebench.customworkload
-                           .YBMicroBenchmarkImplSonal.class);
+                           .YBMicroBenchmarkDeletesSequential.class);
   private static final int NUM_ROWS = 10000;
 
   public YBMicroBenchmarkDeletesSequential(

@@ -12,7 +12,7 @@ import org.apache.log4j.Logger;
 public class YBMicroBenchmarkDeletesBatched extends YBMicroBenchmark {
   public final static Logger LOG =
       Logger.getLogger(com.oltpbenchmark.benchmarks.featurebench.customworkload
-                           .YBMicroBenchmarkImplSonal.class);
+                           .YBMicroBenchmarkDeletesBatched.class);
   private static final int NUM_ROWS = 10000;
 
   public YBMicroBenchmarkDeletesBatched(
@@ -29,8 +29,7 @@ public class YBMicroBenchmarkDeletesBatched extends YBMicroBenchmark {
   }
 
   public void executeOnce(Connection conn) throws SQLException {
-    String batchedDeleteStatement =
-        String.format("delete from demo where id <= %d;", NUM_ROWS);
+    String batchedDeleteStatement = String.format("delete from demo");
     Statement stmtObj = conn.createStatement();
     stmtObj.execute(batchedDeleteStatement);
     stmtObj.close();
