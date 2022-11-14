@@ -27,7 +27,7 @@ microbenchmark:
             - DROP TABLE accounts1;
             - DROP TABLE accounts2;
         loadRules:
-            - table_prefix: accounts
+            - table_prefix: accounts 
               count: 2
               rows: 10
               columns:
