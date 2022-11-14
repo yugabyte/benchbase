@@ -6,60 +6,169 @@ password:
 batchsize: 128
 isolation: TRANSACTION_REPEATABLE_READ
 loaderthreads: 1
-terminals: 2
+terminals: 4
 works:
     work:
-        time_secs: 33
-        rate: 1000
+        time_secs: 20
+        rate: unlimited
         warmup: 0
 microbenchmark:
     class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
     properties:
-        setAutoCommit: false
+        setAutoCommit: true
         create:
-            - DROP TABLE IF EXISTS inserttest;
-            - CREATE TABLE inserttest(id int,name text, primary key (id))
+            - drop table if exists index_test_1;
+            - drop table if exists index_test_2;
+            - drop table if exists index_test_3;
+            - drop table if exists index_test_4;
+            - create table index_test_1 (id bigint, col_int_1 int, col_int_2 int, col_int_3 int, col_int_4 int, col_int_5 int, col_int_6 int, col_int_7 int, col_int_8 int, col_int_9 int, col_int_10 int, col_varchar_1 varchar(20), col_varchar_2 varchar(20), col_varchar_3 varchar(20), col_date text, col_boolean boolean, primary key (id asc))
+            - create table index_test_2 (id bigint, col_int_1 int, col_int_2 int, col_int_3 int, col_int_4 int, col_int_5 int, col_int_6 int, col_int_7 int, col_int_8 int, col_int_9 int, col_int_10 int, col_varchar_1 varchar(20), col_varchar_2 varchar(20), col_varchar_3 varchar(20), col_date text, col_boolean boolean, primary key (id asc))
+            - create table index_test_3 (id bigint, col_int_1 int, col_int_2 int, col_int_3 int, col_int_4 int, col_int_5 int, col_int_6 int, col_int_7 int, col_int_8 int, col_int_9 int, col_int_10 int, col_varchar_1 varchar(20), col_varchar_2 varchar(20), col_varchar_3 varchar(20), col_date text, col_boolean boolean, primary key (id asc))
+            - create table index_test_4 (id bigint, col_int_1 int, col_int_2 int, col_int_3 int, col_int_4 int, col_int_5 int, col_int_6 int, col_int_7 int, col_int_8 int, col_int_9 int, col_int_10 int, col_varchar_1 varchar(20), col_varchar_2 varchar(20), col_varchar_3 varchar(20), col_date text, col_boolean boolean, primary key (id asc))
+            - create index index_test_2_idx1 on index_test_2(col_int_1);
+            - create index index_test_3_idx1 on index_test_3(col_int_1);
+            - create index index_test_3_idx2 on index_test_3(col_int_2);
+            - create index index_test_3_idx3 on index_test_3(col_int_3);
+            - create index index_test_3_idx4 on index_test_3(col_int_4);
+            - create index index_test_3_idx5 on index_test_3(col_int_5);
+            - create index index_test_4_idx1 on index_test_4(col_int_1);
+            - create index index_test_4_idx2 on index_test_4(col_int_2);
+            - create index index_test_4_idx3 on index_test_4(col_int_3);
+            - create index index_test_4_idx4 on index_test_4(col_int_4);
+            - create index index_test_4_idx5 on index_test_4(col_int_5);
+            - create index index_test_4_idx6 on index_test_4(col_int_6);
+            - create index index_test_4_idx7 on index_test_4(col_int_7);
+            - create index index_test_4_idx8 on index_test_4(col_int_8);
+            - create index index_test_4_idx9 on index_test_4(col_int_9);
+            - create index index_test_4_idx10 on index_test_4(col_int_10);
         loadRules:
-            - table: inserttest
-              rows: 10
+            - table_prefix: index_test_
+              count: 4
+              rows: 1000
               columns:
                   - name: id
                     util: PrimaryIntGen
                     params:
                         - 1
-                        - 10
-                  - name: name
+                        - 1000000
+                  - name: col_int_
+                    count: 10
+                    util: RandomNumber
+                    params:
+                        - 1
+                        - 1000000
+                  - name: col_varchar_
+                    count: 3
                     util: RandomAString
                     params:
-                        - 5
-                        - 5
+                        - 20
+                        - 20
+                  - name: col_date
+                    util: RandomAString
+                    params:
+                        - 20
+                        - 20
+                  - name: col_boolean
+                    util: RandomBoolean
         executeRules:
-            -   workload: scanG4_yb_pkey_INclause_rangescan_increasing_rows_1row
-                run:
-                  -   name: pkey_INclause_rangescan_increasing_rows_1row_test
-                      weight: 100
-                      queries:
-                          -   query: select * from inserttest where id IN (?)
-                              bindings:
-                               -  count: 1
-                                  util: PrimaryIntGen
-                                  params: [ 1, 1000000 ]
-
-
-#        executeRules:
-#            - workload: InsertScan
+            - workload: no_index
+              run:
+                  - name: Insert_without_index_test
+                    weight: 100
+                    queries:
+                        - query: INSERT INTO index_test_1 (id, col_int_1, col_int_2, col_int_3, col_int_4, col_int_5, col_int_6, col_int_7, col_int_8, col_int_9, col_int_10, col_varchar_1, col_varchar_2, col_varchar_3, col_date, col_boolean) values (?, ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                          bindings:
+                              - util: PrimaryIntGen
+                                params:
+                                    - 10001
+                                    - 10000000
+                              - util: RandomNumber
+                                count: 10
+                                params:
+                                    - 1
+                                    - 1000000
+                              - util: RandomAString
+                                count: 3
+                                params:
+                                    - 20
+                                    - 20
+                              - util: RandomAString
+                                params:
+                                    - 20
+                                    - 20
+                              - util: RandomBoolean
+#            - workload: 1_index_test
 #              run:
-#                  - name: Inserts
+#                  - name: Insert_with_1_index_test
 #                    weight: 100
 #                    queries:
-#                        - query: INSERT INTO inserttest(id,name) values(? , ?);
+#                        - query: INSERT INTO index_test_2 (id, col_int_1, col_int_2, col_int_3, col_int_4, col_int_5, col_int_6, col_int_7, col_int_8, col_int_9, col_int_10, col_varchar_1, col_varchar_2, col_varchar_3, col_date, col_boolean) values (?, ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
 #                          bindings:
 #                              - util: PrimaryIntGen
 #                                params:
+#                                    - 1000001
+#                                    - 1100000
+#                              - util: RandomNumber
+#                                count: 10
+#                                params:
+#                                    - 1
+#                                    - 1000000
+#                              - util: RandomAString
+#                                count: 3
+#                                params:
 #                                    - 20
-#                                    - 100000
+#                                    - 20
 #                              - util: RandomAString
 #                                params:
-#                                    - 4
-#                                    - 4
-
+#                                    - 20
+#                                    - 20
+#                              - util: RandomBoolean
+#            - workload: 5_index_test
+#              run:
+#                  - name: Insert_with_5_index_test
+#                    weight: 100
+#                    queries:
+#                        - query: INSERT INTO index_test_3 (id, col_int_1, col_int_2, col_int_3, col_int_4, col_int_5, col_int_6, col_int_7, col_int_8, col_int_9, col_int_10, col_varchar_1, col_varchar_2, col_varchar_3, col_date, col_boolean) values (?, ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+#                          bindings:
+#                              - util: PrimaryIntGen
+#                                params:
+#                                    - 1000001
+#                                    - 1100000
+#                              - util: RandomNumber
+#                                count: 10
+#                                params:
+#                                    - 1
+#                                    - 1000000
+#                              - util: RandomAString
+#                                count: 3
+#                                params:
+#                                    - 20
+#                                    - 20
+#                              - util: RandomAString
+#                                params:
+#                                    - 20
+#                                    - 20
+#                              - util: RandomBoolean
+#            - workload: 10_index_test
+#              run:
+#                  - name: Insert_with_10_index_test
+#                    weight: 100
+#                    queries:
+#                        - query: INSERT INTO index_test_4 (id, col_int_1, col_int_2, col_int_3, col_int_4, col_int_5, col_int_6, col_int_7, col_int_8, col_int_9, col_int_10, col_varchar_1, col_varchar_2, col_varchar_3, col_date, col_boolean) values (?, ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+#                          bindings:
+#                              - util: PrimaryIntGen
+#                                params:
+#                                    - 1000001
+#                                    - 1100000
+#                              - util: RandomNumber
+#                                count: 10
+#                                params:
+#                                    - 1
+#                                    - 1000000
+#                              - util: RandomAString
+#                                count: 3
+#                                params:
+#                                    - 20
+#                                    - 20
+#                              - util: CurrentTime
+#                              - util: RandomBoolean
