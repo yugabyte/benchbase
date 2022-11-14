@@ -21,15 +21,29 @@ public class YBMicroBenchmarkInsertsBatched extends YBMicroBenchmark {
   }
 
   public void loadOnce(Connection conn) throws SQLException {
-    String insertStmt = "call insert_demo(10000);";
+    String insertStmt = "call insert_demo(100);";
     PreparedStatement stmt = conn.prepareStatement(insertStmt);
     stmt.execute();
     stmt.close();
   }
 
   public void executeOnce(Connection conn) throws SQLException {
-    String insertStmt1 =
-        "insert into demo (id, col1, col2, col3, col4, col5, col6, col7, col8, col9, col10) select n, n, n+100, n*10+1, n-45, n, n, n*50, n*10, n+1111, n from generate_series(10001,20000) n;";
+    String values = "";
+    for (int i = 101; i <= 1000; i++) {
+      values += "(";
+      for (int col = 1; col <= 11; col++) {
+        values += String.format("%d", i);
+        if (col < 11) {
+          values += ",";
+        }
+      }
+      values += ")";
+      if (i < 1000) {
+        values += ",";
+      }
+    }
+
+    String insertStmt1 = String.format("insert into demo values %s;", values);
     Statement stmtObj = conn.createStatement();
     stmtObj.execute(insertStmt1);
     stmtObj.close();

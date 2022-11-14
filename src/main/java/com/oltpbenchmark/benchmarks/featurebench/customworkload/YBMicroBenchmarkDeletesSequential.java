@@ -13,7 +13,7 @@ public class YBMicroBenchmarkDeletesSequential extends YBMicroBenchmark {
   public final static Logger LOG =
       Logger.getLogger(com.oltpbenchmark.benchmarks.featurebench.customworkload
                            .YBMicroBenchmarkDeletesSequential.class);
-  private static final int NUM_ROWS = 10000;
+  private static final int NUM_ROWS = 1000;
 
   public YBMicroBenchmarkDeletesSequential(
       HierarchicalConfiguration<ImmutableNode> config) {
@@ -30,7 +30,8 @@ public class YBMicroBenchmarkDeletesSequential extends YBMicroBenchmark {
 
   public void executeOnce(Connection conn) throws SQLException {
     Statement stmtObj = conn.createStatement();
-    for (int id = 1; id <= NUM_ROWS; id++) {
+    // Delete last 900 rows sequentially.
+    for (int id = 101; id <= NUM_ROWS; id++) {
       stmtObj.execute(String.format("delete from demo where id = %d;", id));
     }
     stmtObj.close();

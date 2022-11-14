@@ -13,7 +13,7 @@ public class YBMicroBenchmarkUpdatesBatched extends YBMicroBenchmark {
   public final static Logger LOG =
       Logger.getLogger(com.oltpbenchmark.benchmarks.featurebench.customworkload
                            .YBMicroBenchmarkUpdatesBatched.class);
-  private static final int NUM_ROWS = 10000;
+  private static final int NUM_ROWS = 1000;
 
   public YBMicroBenchmarkUpdatesBatched(
       HierarchicalConfiguration<ImmutableNode> config) {
@@ -30,7 +30,7 @@ public class YBMicroBenchmarkUpdatesBatched extends YBMicroBenchmark {
 
   public void executeOnce(Connection conn) throws SQLException {
     String inClause = "(";
-    for (int i = 1; i <= NUM_ROWS; i++) {
+    for (int i = 101; i <= NUM_ROWS; i++) {
       inClause += String.format("%d", i);
       if (i < NUM_ROWS) {
         inClause += ",";
@@ -38,10 +38,9 @@ public class YBMicroBenchmarkUpdatesBatched extends YBMicroBenchmark {
     }
     inClause += ")";
 
-    // Update all the columns which have an index in the 10-index benchmark so
-    // that we can accurately determine the impact of maintaining indexes.
+    // Update last 900 rows.
     String batchedUpdateStatement = String.format(
-        "update demo set col1 = col1 + 1000, col2 = 101, col3 = col3 - 100, col4 = 1111, col5 = 2222, col6 = 7777, col7 = 1234, col8 = col7 + col6, col9 = col1 + col3, col10 = col2 - col6 where id in %s;",
+        "update demo set col1 = col1 + 10000, col2 = col2 + 10000, col3 = col3 + 10000, col4 = col4 + 10000, col5 = col5 + 10000, col6 = col6 + 10000, col7 = col7 + 10000, col8 = col8 + 10000, col9 = col9 + 10000, col10 = col10 + 10000 where id in %s;",
         inClause);
     Statement stmtObj = conn.createStatement();
     stmtObj.execute(batchedUpdateStatement);
