@@ -63,9 +63,9 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
 
     protected void initialize() {
 
-        if (this.getWorkloadConfiguration().getXmlConfig().containsKey("pgStatReset") &&
-            this.getWorkloadConfiguration().getXmlConfig().getBoolean("pgStatReset")) {
-            LOG.info("Reset for pg_stats");
+        if (this.getWorkloadConfiguration().getXmlConfig().containsKey("collect_pg_stat_statements") &&
+            this.getWorkloadConfiguration().getXmlConfig().getBoolean("collect_pg_stat_statements")) {
+            LOG.info("Resetting pg_stat_statements");
             try {
                 Statement stmt = conn.createStatement();
                 stmt.executeQuery("SELECT pg_stat_statements_reset();");

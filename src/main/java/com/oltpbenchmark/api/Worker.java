@@ -342,10 +342,14 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
             workloadState.finishedWork();
         }
 
-        try {
-            excutePgStatStatements(conn);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+        if (this.getWorkloadConfiguration().getXmlConfig().containsKey("collect_pg_stat_statements") &&
+            this.getWorkloadConfiguration().getXmlConfig().getBoolean("collect_pg_stat_statements")) {
+            LOG.info("Collecting pg_stat_statements");
+            try {
+                excutePgStatStatements(conn);
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         LOG.debug("worker calling teardown");
@@ -354,37 +358,35 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
     }
 
     private void excutePgStatStatements(Connection conn) throws SQLException {
-        if (configuration.getXmlConfig().containsKey("microbenchmark/properties/pgStat")) {
-            String pgStatddl = configuration.getXmlConfig().getString("microbenchmark/properties/pgStat");
-            String PgStatsDir = "ResultsForPgStats";
-            FileUtil.makeDirIfNotExists("results" + "/" + PgStatsDir);
-            String fileForPgStats = PgStatsDir + "/" + TimeUtil.getCurrentTimeString() + ".json";
-            PrintStream ps;
-            try {
-                ps = new PrintStream(FileUtil.joinPath("results", fileForPgStats));
-            } catch (FileNotFoundException exc) {
-                throw new RuntimeException(exc);
-            }
-
-            Map<String, JSONObject> summaryMap = new TreeMap<>();
-            Statement stmt = conn.createStatement();
-            JSONObject outer = new JSONObject();
-            int count = 0;
-            ResultSet resultSet = stmt.executeQuery(pgStatddl);
-            ResultSetMetaData rsmd = resultSet.getMetaData();
-            int columnsNumber = rsmd.getColumnCount();
-            while (resultSet.next()) {
-                JSONObject inner = new JSONObject();
-                for (int i = 1; i <= columnsNumber; i++) {
-                    String columnValue = resultSet.getString(i);
-                    inner.put(rsmd.getColumnName(i), columnValue);
-                }
-                outer.put("Record_" + count, inner);
-                count++;
-            }
-            summaryMap.put("PgStats", outer);
-            ps.println(JSONUtil.format(JSONUtil.toJSONString(summaryMap)));
+        String pgStatDDL = "select * from pg_stat_statements;";
+        String PgStatsDir = "ResultsForPgStats";
+        FileUtil.makeDirIfNotExists("results" + "/" + PgStatsDir);
+        String fileForPgStats = PgStatsDir + "/" + TimeUtil.getCurrentTimeString() + ".json";
+        PrintStream ps;
+        try {
+            ps = new PrintStream(FileUtil.joinPath("results", fileForPgStats));
+        } catch (FileNotFoundException exc) {
+            throw new RuntimeException(exc);
         }
+
+        Map<String, JSONObject> summaryMap = new TreeMap<>();
+        Statement stmt = conn.createStatement();
+        JSONObject outer = new JSONObject();
+        int count = 0;
+        ResultSet resultSet = stmt.executeQuery(pgStatDDL);
+        ResultSetMetaData rsmd = resultSet.getMetaData();
+        int columnsNumber = rsmd.getColumnCount();
+        while (resultSet.next()) {
+            JSONObject inner = new JSONObject();
+            for (int i = 1; i <= columnsNumber; i++) {
+                String columnValue = resultSet.getString(i);
+                inner.put(rsmd.getColumnName(i), columnValue);
+            }
+            outer.put("Record_" + count, inner);
+            count++;
+        }
+        summaryMap.put("PgStats", outer);
+        ps.println(JSONUtil.format(JSONUtil.toJSONString(summaryMap)));
     }
 
 

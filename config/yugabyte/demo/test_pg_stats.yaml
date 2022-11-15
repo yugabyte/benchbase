@@ -7,7 +7,7 @@ batchsize: 128
 isolation: TRANSACTION_REPEATABLE_READ
 loaderthreads: 1
 terminals: 1
-pgStatReset : true
+collect_pg_stat_statements: true
 works:
     work:
         time_secs: 3
@@ -81,6 +81,3 @@ microbenchmark:
                                 params:
                                     - 1
                                     - 1000
-
-
-        pgStat: select * from pg_stat_statements;
