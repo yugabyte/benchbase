@@ -115,7 +115,8 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             }
         }
         try {
-            writeExplain(ps, explainDDLs);
+            if (explainDDLs.size() > 0)
+                writeExplain(ps, explainDDLs);
         } catch (SQLException e) {
             e.printStackTrace();
         }
