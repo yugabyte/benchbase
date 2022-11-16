@@ -800,7 +800,6 @@ public class DBWorkload {
         }
         int index = url.indexOf(matcher.group(0), url.indexOf(matcher.group(0)) + 1);
         String newUrl = url.substring(0, index) + dbName + url.substring(index + matcher.group(0).length());
-        System.out.println(newUrl);
         stmtObj.close();
         return newUrl;
     }
