@@ -523,8 +523,6 @@ public class DBWorkload {
                             benchmark.getWorkloadConfiguration().setUrl(newUrl);
                             benchmark.getWorkloadConfiguration().getXmlConfig().setProperty("url", newUrl);
                         }
-                        runCreator(benchmark);
-                        LOG.info("Finished creating new {} database...", benchmark.getBenchmarkName().toUpperCase());
                     }
                     createDone = true;
                 }
