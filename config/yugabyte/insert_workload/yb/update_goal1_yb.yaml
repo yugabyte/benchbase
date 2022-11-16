@@ -20,7 +20,9 @@ microbenchmark:
     properties:
         setAutoCommit: false
         create:
-            - drop table if exists update_test_table;
+            - drop table if exists update_test_table1;
+            - drop table if exists update_test_table2;
+            - drop table if exists update_test_table3;
             - create table update_test_table1 (id bigint, col_int_1 int, col_int_2 int, col_int_3 int, col_int_4 int, col_int_5 int, col_int_6 int, col_int_7 int, col_int_8 int, col_int_9 int, col_int_10 int, col_varchar_1 varchar(20), col_varchar_2 varchar(20), col_varchar_3 varchar(20), col_date text, col_boolean boolean, primary key (id asc))
             - create table update_test_table2 (id bigint, col_int_1 int, col_int_2 int, col_int_3 int, col_int_4 int, col_int_5 int, col_int_6 int, col_int_7 int, col_int_8 int, col_int_9 int, col_int_10 int, col_varchar_1 varchar(20), col_varchar_2 varchar(20), col_varchar_3 varchar(20), col_date text, col_boolean boolean, primary key (id asc))
             - create table update_test_table3 (id bigint, col_int_1 int, col_int_2 int, col_int_3 int, col_int_4 int, col_int_5 int, col_int_6 int, col_int_7 int, col_int_8 int, col_int_9 int, col_int_10 int, col_varchar_1 varchar(20), col_varchar_2 varchar(20), col_varchar_3 varchar(20), col_date text, col_boolean boolean, primary key (id asc))
@@ -51,7 +53,7 @@ microbenchmark:
                   - name: Update_1_row
                     weight: 100
                     queries:
-                        - query: UPDATE update_test_table set col3 = ? where id = ?
+                        - query: UPDATE update_test_table1 set col3 = ? where id = ?
                           bindings:
                               - util: RandomAString
                                 params: [20, 20]
@@ -62,7 +64,7 @@ microbenchmark:
                   - name: update_100_rows
                     weight: 100
                     queries:
-                        - query: UPDATE update_test_table set col3 = ? where id > 100 and id <= 200
+                        - query: UPDATE update_test_table2 set col3 = ? where id > 100 and id <= 200
                           bindings:
                               - util: RandomAString
                                 params: [20, 20]
@@ -72,7 +74,7 @@ microbenchmark:
                   - name: update_1000_rows
                     weight: 100
                     queries:
-                        - query: UPDATE update_test_table set col3 = ? where id > 1000 and id <= 2000
+                        - query: UPDATE update_test_table3 set col3 = ? where id > 1000 and id <= 2000
                           bindings:
                               - util: RandomAString
                                 params: [20, 20]
