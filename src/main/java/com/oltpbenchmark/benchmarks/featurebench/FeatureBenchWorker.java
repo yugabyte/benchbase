@@ -80,13 +80,10 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
         FileUtil.makeDirIfNotExists(outputDirectory + "/" + explainDir);
         String fileForExplain = explainDir + "/" + workloadName + "_" + TimeUtil.getCurrentTimeString() + ".json";
         PrintStream ps;
-        String explain = "";
-        if (this.getWorkloadConfiguration().getXmlConfig().containsKey("explain_use_dist")
-            && this.getWorkloadConfiguration().getXmlConfig().getBoolean("explain_use_dist")) {
+        String explain = "explain (analyze,verbose,costs,buffers) ";
+        if (this.getWorkloadConfiguration().getXmlConfig().containsKey("use_dist_in_explain")
+            && this.getWorkloadConfiguration().getXmlConfig().getBoolean("use_dist_in_explain")) {
             explain = "explain (analyze, dist) ";
-        }
-        else {
-            explain = "explain (analyze,verbose,costs,buffers) ";
         }
 
         try {
