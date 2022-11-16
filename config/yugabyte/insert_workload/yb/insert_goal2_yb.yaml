@@ -8,6 +8,7 @@ batchsize: 128
 isolation: TRANSACTION_REPEATABLE_READ
 loaderthreads: 4
 terminals: 4
+collect_pg_stat_statements: true
 works:
     work:
         time_secs: 300
