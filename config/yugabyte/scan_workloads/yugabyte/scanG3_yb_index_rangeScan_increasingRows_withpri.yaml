@@ -8,7 +8,7 @@
 #    Range scan time to fetch 1M rows
 type: YUGABYTE
 driver: com.yugabyte.Driver
-url: jdbc:yugabytedb://172.151.53.200:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
+url: jdbc:yugabytedb://172.151.54.67:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
 username: yugabyte
 password: Password@123
 batchsize: 128
@@ -28,8 +28,8 @@ microbenchmark:
         setAutoCommit: true
         create:
             - DROP TABLE IF EXISTS indx_rangescan_tbl_1;
-            - CREATE TABLE indx_rangescan_tbl_1(col_bigint_id_1 bigint, col_bigint_1 bigint, col_bigint_2 bigint, col_bigint_3 bigint, col_bigint_4 bigint, col_bigint_5 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_1 varchar(10), col_varchar100_1 varchar(100), col_varchar100_2 varchar(100), col_varchar500_1 varchar(500));
-            - CREATE INDEX ON indx_rangescan_tbl_1(col_bigint_id_1 ASC);
+            - CREATE TABLE indx_rangescan_tbl_1(col_bigint_id_1 bigint, col_bigint_1 bigint, col_bigint_2 bigint, col_bigint_3 bigint, col_bigint_4 bigint, col_bigint_5 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_1 varchar(10), col_varchar100_1 varchar(100), col_varchar100_2 varchar(100), col_varchar500_1 varchar(500), PRIMARY KEY(col_bigint_id_1 ASC));
+            - CREATE INDEX ON indx_rangescan_tbl_1(col_bigint_1 ASC);
         loadRules:
             - table: indx_rangescan_tbl_
               count: 1
@@ -73,22 +73,22 @@ microbenchmark:
                   - name: indx_rangescan_1row_test
                     weight: 100
                     queries:
-                        - query: select * from indx_rangescan_tbl_1 where col_bigint_id_1>999999
+                        - query: select * from indx_rangescan_tbl_1 where col_bigint_1>999999
             - workload: scanG3_yb_indx_rangescan_varying_rows_100Krows
               run:
                   - name: indx_rangescan_100krow_test
                     weight: 100
                     queries:
-                        - query: select * from indx_rangescan_tbl_1 where col_bigint_id_1>900000
+                        - query: select * from indx_rangescan_tbl_1 where col_bigint_1>900000
             - workload: scanG3_yb_indx_rangescan_varying_rows_500Krows
               run:
                   - name: indx_rangescan_500krow_test
                     weight: 100
                     queries:
-                        - query: select * from indx_rangescan_tbl_1 where col_bigint_id_1>500000
+                        - query: select * from indx_rangescan_tbl_1 where col_bigint_1>500000
             - workload: scanG3_yb_indx_rangescan_varying_rows_1Mrows
               run:
                   - name: indx_rangescan_1Mrow_test
                     weight: 100
                     queries:
-                        - query: select * from indx_rangescan_tbl_1 where col_bigint_id_1>1
+                        - query: select * from indx_rangescan_tbl_1 where col_bigint_1>1
