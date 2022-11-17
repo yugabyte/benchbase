@@ -1,0 +1,56 @@
+type: POSTGRES
+driver: org.postgresql.Driver
+url: jdbc:postgresql://localhost:5432/postgres?sslmode=require
+username: postgres
+password: Password321
+
+batchsize: 128
+isolation: TRANSACTION_REPEATABLE_READ
+loaderthreads: 4
+terminals: 4
+works:
+    work:
+        time: 60
+        active_terminals: 1
+        rate: unlimited
+        warmup: 0
+
+microbenchmark:
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.bulkload.Goal1
+    properties:
+        # Goal 1 - 1 :: create table with PK -> load data (no index)
+        tableName: orders
+        columns: 15
+        rows: 3000000
+        indexes: 0
+        filePath: orders.csv
+        rowsPerTransaction: 1000
+        stringLength: 32
+
+#        # Goal 1 - 2 :: create table with PK -> create 1 index -> load data (1 index)
+#        tableName: orders
+#        columns: 15
+#        rows: 3000000
+#        indexes: 1
+#        filePath: orders.csv
+#        rowsPerTransaction: 1000
+#        stringLength: 32
+
+#        # Goal 1 - 3 :: create table with PK -> create 5 index -> load data (5 index)
+#        tableName: orders
+#        columns: 15
+#        rows: 3000000
+#        indexes: 5
+#        filePath: orders.csv
+#        rowsPerTransaction: 1000
+#        stringLength: 32
+
+
+#        # Goal 1 - 4 :: create table with PK -> create 10 index -> load data (10 index)
+#        tableName: orders
+#        columns: 15
+#        rows: 3000000
+#        indexes: 10
+#        filePath: orders.csv
+#        rowsPerTransaction: 1000
+#        stringLength: 32
