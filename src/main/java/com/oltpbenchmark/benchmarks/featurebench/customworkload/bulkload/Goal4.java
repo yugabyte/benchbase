@@ -27,7 +27,6 @@ public class Goal4 extends YBMicroBenchmark {
     int numOfColumns;
     int numOfRows;
     String filePath;
-    int rowsPerTransaction;
     int stringLength;
 
     public Goal4(HierarchicalConfiguration<ImmutableNode> config) {
@@ -38,7 +37,6 @@ public class Goal4 extends YBMicroBenchmark {
         this.numOfColumns = config.getInt("/columns");
         this.numOfRows = config.getInt("/rows");
         this.filePath = config.getString("/filePath");
-        this.rowsPerTransaction = config.getInt("/rowsPerTransaction");
         this.stringLength = config.getInt("/stringLength");
     }
 
@@ -55,13 +53,6 @@ public class Goal4 extends YBMicroBenchmark {
         stmtOBj.close();
     }
 
-    public void cleanUp(Connection conn) throws SQLException {
-        Statement stmtOBj = conn.createStatement();
-        LOG.info("=======DROP TABLES=======");
-        stmtOBj.executeUpdate(String.format("DROP TABLE IF EXISTS %s", this.tableName));
-        stmtOBj.close();
-    }
-
     public void loadOnce(Connection conn) throws SQLException {
     }
 
@@ -70,7 +61,6 @@ public class Goal4 extends YBMicroBenchmark {
     }
 
     public void createTable(Connection conn) {
-        List<String> ddls = new ArrayList<>();
         StringBuilder createStmt = new StringBuilder();
         createStmt.append(String.format("CREATE TABLE %s (id INT primary key, ", tableName));
         for (int i = 1; i <= this.numOfColumns; i++) {
@@ -80,14 +70,11 @@ public class Goal4 extends YBMicroBenchmark {
             else
                 createStmt.append(");");
         }
-        ddls.add(createStmt.toString());
-        ddls.forEach(ddl -> {
-            try (Statement stmt = conn.createStatement()) {
-                stmt.execute(ddl);
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
-        });
+        try (Statement stmt = conn.createStatement()) {
+            stmt.execute(createStmt.toString());
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void createCSV() {
@@ -114,12 +101,12 @@ public class Goal4 extends YBMicroBenchmark {
     public void runCopyCommand(Connection conn) {
         try {
             String copyCommand = String.format(
-                "COPY %s FROM STDIN (FORMAT CSV, HEADER false, ROWS_PER_TRANSACTION %d)",
-                this.tableName, this.rowsPerTransaction
-            );
+                "COPY %s FROM STDIN (FORMAT CSV, HEADER false)",
+                this.tableName);
             long rowsInserted = new CopyManager((BaseConnection) conn)
                 .copyIn(copyCommand,
                     new BufferedReader(new FileReader(this.filePath)));
+            LOG.info("Number of rows Inserted: {}", rowsInserted);
         } catch (SQLException | IOException e) {
             throw new RuntimeException(e);
         }

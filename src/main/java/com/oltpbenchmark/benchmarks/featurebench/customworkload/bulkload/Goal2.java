@@ -28,7 +28,6 @@ public class Goal2 extends YBMicroBenchmark {
     int numOfRows;
     int indexCount;
     String filePath;
-    int rowsPerTransaction;
     int stringLength;
 
     boolean create_index_before_load;
@@ -43,7 +42,6 @@ public class Goal2 extends YBMicroBenchmark {
         this.numOfRows = config.getInt("/rows");
         this.indexCount = config.getInt("/indexes");
         this.filePath = config.getString("/filePath");
-        this.rowsPerTransaction = config.getInt("/rowsPerTransaction");
         this.stringLength = config.getInt("/stringLength");
         this.create_index_before_load = config.getBoolean("/create_index_before_load");
         this.create_index_after_load = config.getBoolean("/create_index_after_load");
@@ -57,18 +55,15 @@ public class Goal2 extends YBMicroBenchmark {
         LOG.info("Creating table");
         createTable(conn);
 
-        if(this.create_index_before_load && (this.indexCount > 0 && this.indexCount <= this.numOfColumns))
+        if(this.create_index_before_load && (this.indexCount > 0 && this.indexCount <= this.numOfColumns)){
+            LOG.info("Creating indexes before load");
             createIndexes(conn);
+            LOG.info("Done creating indexes");
+        }
+
 
         LOG.info("Create CSV file with data");
         createCSV();
-        stmtOBj.close();
-    }
-
-    public void cleanUp(Connection conn) throws SQLException {
-        Statement stmtOBj = conn.createStatement();
-        LOG.info("=======DROP TABLES=======");
-        stmtOBj.executeUpdate(String.format("DROP TABLE IF EXISTS %s", this.tableName));
         stmtOBj.close();
     }
 
@@ -77,12 +72,15 @@ public class Goal2 extends YBMicroBenchmark {
 
     public void executeOnce(Connection conn) throws SQLException {
         runCopyCommand(conn);
-        if(this.create_index_after_load && (this.indexCount > 0 && this.indexCount <= this.numOfColumns))
+        if(this.create_index_after_load && (this.indexCount > 0 && this.indexCount <= this.numOfColumns)) {
+            LOG.info("Creating indexes after load(index back-filling)");
             createIndexes(conn);
+            LOG.info("Done creating indexes(Index back-filling done)");
+        }
+
     }
 
     public void createTable(Connection conn) {
-        List<String> ddls = new ArrayList<>();
         StringBuilder createStmt = new StringBuilder();
         createStmt.append(String.format("CREATE TABLE %s (id INT primary key, ", tableName));
         for (int i = 1; i <= this.numOfColumns; i++) {
@@ -92,14 +90,11 @@ public class Goal2 extends YBMicroBenchmark {
             else
                 createStmt.append(");");
         }
-        ddls.add(createStmt.toString());
-        ddls.forEach(ddl -> {
-            try (Statement stmt = conn.createStatement()) {
-                stmt.execute(ddl);
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
-        });
+        try (Statement stmt = conn.createStatement()) {
+            stmt.execute(createStmt.toString());
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void createCSV() {
@@ -126,19 +121,18 @@ public class Goal2 extends YBMicroBenchmark {
     public void runCopyCommand(Connection conn) {
         try {
             String copyCommand = String.format(
-                "COPY %s FROM STDIN (FORMAT CSV, HEADER false, ROWS_PER_TRANSACTION %d)",
-                this.tableName, this.rowsPerTransaction
-            );
+                "COPY %s FROM STDIN (FORMAT CSV, HEADER false)",
+                this.tableName);
             long rowsInserted = new CopyManager((BaseConnection) conn)
                 .copyIn(copyCommand,
                     new BufferedReader(new FileReader(this.filePath)));
+            LOG.info("Number of rows Inserted: {}", rowsInserted);
         } catch (SQLException | IOException e) {
             throw new RuntimeException(e);
         }
     }
 
     public void createIndexes(Connection conn) {
-        LOG.info("Creating indexes...");
         List<String> ddls = new ArrayList<>();
         for (int i = 0; i < this.indexCount; i++) {
             ddls.add(String.format("CREATE INDEX idx%d on %s(col%d);", i + 1, this.tableName, i + 1));
@@ -150,7 +144,5 @@ public class Goal2 extends YBMicroBenchmark {
                 throw new RuntimeException(e);
             }
         });
-
-        LOG.info("Indexes created!");
     }
 }

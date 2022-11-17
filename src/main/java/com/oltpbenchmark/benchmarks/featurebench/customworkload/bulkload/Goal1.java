@@ -26,7 +26,6 @@ public class Goal1 extends YBMicroBenchmark {
     int numOfRows;
     int indexCount;
     String filePath;
-    int rowsPerTransaction;
     int stringLength;
 
     public Goal1(HierarchicalConfiguration<ImmutableNode> config) {
@@ -38,7 +37,6 @@ public class Goal1 extends YBMicroBenchmark {
         this.numOfRows = config.getInt("/rows");
         this.indexCount = config.getInt("/indexes");
         this.filePath = config.getString("/filePath");
-        this.rowsPerTransaction = config.getInt("/rowsPerTransaction");
         this.stringLength = config.getInt("/stringLength");
     }
 
@@ -49,13 +47,6 @@ public class Goal1 extends YBMicroBenchmark {
         createTableAndIndexes(conn);
         LOG.info("Create CSV file with data");
         createCSV();
-        stmtOBj.close();
-    }
-
-    public void cleanUp(Connection conn) throws SQLException {
-        Statement stmtOBj = conn.createStatement();
-        LOG.info("=======DROP TABLES=======");
-        stmtOBj.executeUpdate(String.format("DROP TABLE IF EXISTS %s", this.tableName));
         stmtOBj.close();
     }
 
@@ -118,12 +109,12 @@ public class Goal1 extends YBMicroBenchmark {
     public void runCopyCommand(Connection conn) {
         try {
             String copyCommand = String.format(
-                "COPY %s FROM STDIN (FORMAT CSV, HEADER false, ROWS_PER_TRANSACTION %d)",
-                this.tableName, this.rowsPerTransaction
-            );
+                "COPY %s FROM STDIN (FORMAT CSV, HEADER false)",
+                this.tableName);
             long rowsInserted = new CopyManager((BaseConnection) conn)
                 .copyIn(copyCommand,
                     new BufferedReader(new FileReader(this.filePath)));
+            LOG.info("Number of rows Inserted: {}", rowsInserted);
         } catch (SQLException | IOException e) {
             throw new RuntimeException(e);
         }
