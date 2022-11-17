@@ -19,7 +19,7 @@ terminals: 1
 collect_pg_stat_statements: true
 works:
     work:
-        time: 300
+        time_secs: 300
         active_terminals: 1
         rate: unlimited
         warmup: 60
