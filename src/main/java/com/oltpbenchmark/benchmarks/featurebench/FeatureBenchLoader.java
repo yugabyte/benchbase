@@ -119,20 +119,22 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
                 }
                 columns.add(column);
             }
-            if (loadRuleConfig.containsKey("count")) {
+            if (loadRuleConfig.containsKey("count") && loadRuleConfig.containsKey("table_prefix")) {
                 for (int i = 0; i < loadRuleConfig.getInt("count"); i++) {
-                    String[] tableNames = loadRuleConfig.getString("table").split(",");
+                    String[] tableNames = loadRuleConfig.getString("table_prefix").split(",");
                     for (String tableName : tableNames) {
                         loaderThreads.add(new GeneratorYaml((tableName.strip()
                             + String.valueOf(i + 1)), loadRuleConfig.getLong("rows"), columns));
                     }
                 }
-            } else {
+            } else if(loadRuleConfig.containsKey("table")){
                 String[] tableNames = loadRuleConfig.getString("table").split(",");
                 for (String tableName : tableNames) {
                     loaderThreads.add(new GeneratorYaml(tableName.strip(),
                         loadRuleConfig.getLong("rows"), columns));
                 }
+            }else{
+                LOG.error("Proper Configuration Not Provided");
             }
         }
     }
