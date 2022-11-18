@@ -11,7 +11,6 @@ collect_pg_stat_statements: true
 works:
     work:
         time_secs: 300
-        active_terminals: 1
         rate: unlimited
         warmup: 60
 microbenchmark:
@@ -28,11 +27,11 @@ microbenchmark:
         loadRules:
             - table: update_test_table
               count: 3
-              rows: 1000000
+              rows: 100000
               columns:
                   - name: id
                     util: PrimaryIntGen
-                    params: [1, 1000000]
+                    params: [1, 100000]
                   - name: col
                     count: 1100
                     util: RandomAString
@@ -49,7 +48,7 @@ microbenchmark:
                                 count: 10
                                 params: [4, 4]
                               - util: RandomNumber
-                                params: [1, 1000000]
+                                params: [1, 100000]
 
             - workload: update_100_cols
               run:
@@ -62,7 +61,7 @@ microbenchmark:
                                 count: 100
                                 params: [4, 4]
                               - util: RandomNumber
-                                params: [1, 1000000]
+                                params: [1, 100000]
 
             - workload: update_1000_cols
               run:
@@ -75,4 +74,4 @@ microbenchmark:
                                 count: 1000
                                 params: [4, 4]
                               - util: RandomNumber
-                                params: [1, 1000000]
+                                params: [1, 100000]
