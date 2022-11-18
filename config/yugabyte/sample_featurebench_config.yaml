@@ -6,10 +6,11 @@ password:
 batchsize: 128
 isolation: TRANSACTION_REPEATABLE_READ
 loaderthreads: 1
+collect_pg_stat_statements: true
 terminals: 1
 works:
     work:
-        time_secs: 60
+        time_secs: 3
         active_terminals: 1
         rate: 1000
         warmup: 0
@@ -77,4 +78,4 @@ microbenchmark:
                                       params:
                                           - 1
                                           - 1000
-   
+
