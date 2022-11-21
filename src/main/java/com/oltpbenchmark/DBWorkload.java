@@ -205,13 +205,19 @@ public class DBWorkload {
             boolean createDone = false;
             boolean loadDone = false;
 
+            if ((isBooleanOptionSet(argsLine, "list_workloads"))) {
+                LOG.info("List of Workload names: ");
+                for (int workcount = 1; workcount <= totalworkcount; workcount++) {
+                    LOG.info("Workload name: "+(workloads.get(workcount - 1).containsKey("workload") ? workloads.get(workcount - 1).getString("workload") : workcount));
+                }
+            }
+
+
             for (int workcount = 1; workcount <= totalworkcount; workcount++) {
 
                 List<HierarchicalConfiguration<ImmutableNode>> executeRules = (workloads == null || workloads.size() == 0) ? null : workloads.get(workcount - 1).configurationsAt("run");
                 if (executeRules == null) {
                     LOG.info("Starting Workload " + workcount);
-                } else {
-                    LOG.info("Starting Workload " + (workloads.get(workcount - 1).containsKey("workload") ? workloads.get(workcount - 1).getString("workload") : workcount));
                 }
 
                 boolean isExecutePresent = xmlConfig.containsKey("microbenchmark/properties/execute");
@@ -568,8 +574,33 @@ public class DBWorkload {
                     LOG.debug("Skipping loading benchmark database records");
                 }
 
+                if (isBooleanOptionSet(argsLine, "execute") && (argsLine.hasOption("workload"))) {
+                    String val = argsLine.getOptionValue("workload");
+                    if (Objects.equals(val, workloads.get(workcount - 1).getString("workload"))) {
+                        LOG.info("Starting Workload " + (workloads.get(workcount - 1).containsKey("workload") ? workloads.get(workcount - 1).getString("workload") : workcount));
+                        try {
+                            Results r = runWorkload(benchList, intervalMonitor, workcount);
+                            writeOutputs(r, activeTXTypes, argsLine, xmlConfig, executeRules == null ? null : workloads.get(workcount - 1).getString("workload"));
+                            writeHistograms(r);
+
+                            if (argsLine.hasOption("json-histograms")) {
+                                String histogram_json = writeJSONHistograms(r);
+                                String fileName = argsLine.getOptionValue("json-histograms");
+                                FileUtil.writeStringToFile(new File(fileName), histogram_json);
+                                LOG.info("Histograms JSON Data: " + fileName);
+                            }
+                        } catch (Throwable ex) {
+                            LOG.error("Unexpected error when executing benchmarks.", ex);
+                            System.exit(1);
+                        }
+                    }
+                }
+
+
                 // Execute Workload
-                if (isBooleanOptionSet(argsLine, "execute")) {
+                else if (isBooleanOptionSet(argsLine, "execute") && !(argsLine.hasOption("workload"))) {
+
+                    LOG.info("Starting Workload " + (workloads.get(workcount - 1).containsKey("workload") ? workloads.get(workcount - 1).getString("workload") : workcount));
                     // Bombs away!
                     try {
                         Results r = runWorkload(benchList, intervalMonitor, workcount);
@@ -611,6 +642,8 @@ public class DBWorkload {
         options.addOption("d", "directory", true, "Base directory for the result files, default is current directory");
         options.addOption(null, "dialects-export", true, "Export benchmark SQL to a dialects file");
         options.addOption("jh", "json-histograms", true, "Export histograms to JSON file");
+        options.addOption("workload", "workload", true, "Run a specific workload");
+        options.addOption("list_workloads", "list_workloads", true, "list all workloads");
         return options;
     }
 
