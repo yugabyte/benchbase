@@ -208,11 +208,17 @@ public class DBWorkload {
             if ((isBooleanOptionSet(argsLine, "list_workloads"))) {
                 System.out.println("List of Workload names: ");
                 for (int workcount = 1; workcount <= totalworkcount; workcount++) {
-                    System.out.println("Workload name: "+(workloads.get(workcount - 1).containsKey("workload") ? workloads.get(workcount - 1).getString("workload") : workcount));
+                    System.out.println("Workload name: " + (workloads.get(workcount - 1).containsKey("workload") ? workloads.get(workcount - 1).getString("workload") : workcount));
                 }
                 System.exit(0);
             }
 
+            String targetWorkloads = null;
+            String[] ListWorkloads = null;
+            if ((argsLine.hasOption("workloads"))) {
+                targetWorkloads = argsLine.getOptionValue("workloads");
+                ListWorkloads = targetWorkloads.split(",");
+            }
 
             for (int workcount = 1; workcount <= totalworkcount; workcount++) {
 
@@ -575,9 +581,10 @@ public class DBWorkload {
                     LOG.debug("Skipping loading benchmark database records");
                 }
 
-                if (isBooleanOptionSet(argsLine, "execute") && (argsLine.hasOption("workload"))) {
-                    String val = argsLine.getOptionValue("workload");
-                    if (Objects.equals(val, workloads.get(workcount - 1).getString("workload"))) {
+
+                if (isBooleanOptionSet(argsLine, "execute") && (argsLine.hasOption("workloads"))) {
+                    String val = workloads.get(workcount - 1).getString("workload");
+                    if (targetWorkloads.contains(val)) {
                         LOG.info("Starting Workload " + (workloads.get(workcount - 1).containsKey("workload") ? workloads.get(workcount - 1).getString("workload") : workcount));
                         try {
                             Results r = runWorkload(benchList, intervalMonitor, workcount);
@@ -643,7 +650,7 @@ public class DBWorkload {
         options.addOption("d", "directory", true, "Base directory for the result files, default is current directory");
         options.addOption(null, "dialects-export", true, "Export benchmark SQL to a dialects file");
         options.addOption("jh", "json-histograms", true, "Export histograms to JSON file");
-        options.addOption("workload", "workload", true, "Run a specific workload");
+        options.addOption("workloads", "workloads", true, "Run some specific workloads");
         options.addOption("list_workloads", "list_workloads", true, "list all workloads");
         return options;
     }
