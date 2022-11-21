@@ -206,10 +206,11 @@ public class DBWorkload {
             boolean loadDone = false;
 
             if ((isBooleanOptionSet(argsLine, "list_workloads"))) {
-                LOG.info("List of Workload names: ");
+                System.out.println("List of Workload names: ");
                 for (int workcount = 1; workcount <= totalworkcount; workcount++) {
-                    LOG.info("Workload name: "+(workloads.get(workcount - 1).containsKey("workload") ? workloads.get(workcount - 1).getString("workload") : workcount));
+                    System.out.println("Workload name: "+(workloads.get(workcount - 1).containsKey("workload") ? workloads.get(workcount - 1).getString("workload") : workcount));
                 }
+                System.exit(0);
             }
 
 
