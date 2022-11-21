@@ -3,6 +3,7 @@
 docker/**/*.zip
 docker/**/output
 results
+listOfWorkloads
 
 ### SQLite ###
 **/*.db

@@ -40,6 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.sql.SQLException;
@@ -206,8 +207,19 @@ public class DBWorkload {
             boolean loadDone = false;
 
             if ((isBooleanOptionSet(argsLine, "list_workloads"))) {
+                String workloadListDirectory = "listOfWorkloads";
+                FileUtil.makeDirIfNotExists(workloadListDirectory);
+                String fileForWorkloadList = TimeUtil.getCurrentTimeString() + ".txt";
+                PrintStream ps;
+                try {
+                    ps = new PrintStream(FileUtil.joinPath(workloadListDirectory, fileForWorkloadList));
+                } catch (FileNotFoundException exc) {
+                    throw new RuntimeException(exc);
+                }
+                ps.println("List of Workload names: ");
                 System.out.println("List of Workload names: ");
                 for (int workcount = 1; workcount <= totalworkcount; workcount++) {
+                    ps.println("Workload name: " + (workloads.get(workcount - 1).containsKey("workload") ? workloads.get(workcount - 1).getString("workload") : workcount));
                     System.out.println("Workload name: " + (workloads.get(workcount - 1).containsKey("workload") ? workloads.get(workcount - 1).getString("workload") : workcount));
                 }
                 System.exit(0);
