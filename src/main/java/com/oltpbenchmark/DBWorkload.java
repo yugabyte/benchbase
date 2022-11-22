@@ -212,10 +212,11 @@ public class DBWorkload {
             Set<String> uniqueRunWorkloads = new HashSet<>();
             List<String> allWorkloads = new ArrayList<>();
 
-            for (int workcount = 1; workcount <= totalworkcount; workcount++) {
-                allWorkloads.add(workloads.get(workcount - 1).containsKey("workload") ? workloads.get(workcount - 1).getString("workload") : String.valueOf(workcount));
+            if (workloads != null && workloads.size() != 0) {
+                for (int workcount = 1; workcount <= totalworkcount; workcount++) {
+                    allWorkloads.add(workloads.get(workcount - 1).containsKey("workload") ? workloads.get(workcount - 1).getString("workload") : String.valueOf(workcount));
+                }
             }
-
 
             String workloadListDirectory = "workloadList";
             FileUtil.makeDirIfNotExists(workloadListDirectory);
@@ -229,10 +230,13 @@ public class DBWorkload {
             } catch (FileNotFoundException exc) {
                 throw new RuntimeException(exc);
             }
-            System.out.println("All Workloads:");
-            for (int workcount = 1; workcount <= totalworkcount; workcount++) {
-                psForAllWorkloads.println((workloads.get(workcount - 1).containsKey("workload") ? workloads.get(workcount - 1).getString("workload") : workcount));
-                System.out.println((workloads.get(workcount - 1).containsKey("workload") ? workloads.get(workcount - 1).getString("workload") : workcount));
+
+            if (workloads != null && workloads.size() != 0) {
+                System.out.println("All Workloads:");
+                for (int workcount = 1; workcount <= totalworkcount; workcount++) {
+                    psForAllWorkloads.println((workloads.get(workcount - 1).containsKey("workload") ? workloads.get(workcount - 1).getString("workload") : workcount));
+                    System.out.println((workloads.get(workcount - 1).containsKey("workload") ? workloads.get(workcount - 1).getString("workload") : workcount));
+                }
             }
 
 
@@ -646,7 +650,8 @@ public class DBWorkload {
 
 
                 // Execute Workload
-                else if (isBooleanOptionSet(argsLine, "execute") && !(argsLine.hasOption("workload"))) {
+                else if (isBooleanOptionSet(argsLine, "execute") && !(argsLine.hasOption("workload")) &&
+                    ((workloads != null && workloads.size() != 0)) ) {
 
                     LOG.info("Starting Workload " + (workloads.get(workcount - 1).containsKey("workload") ? workloads.get(workcount - 1).getString("workload") : workcount));
                     // Bombs away!
