@@ -139,14 +139,14 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                 ddl.executeQuery();
                 countResultSetGen++;
             }
-            long explainStart = System.currentTimeMillis();
+            double explainStart = System.currentTimeMillis();
             ResultSet rs = ddl.executeQuery();
             StringBuilder data = new StringBuilder();
             while (rs.next()) {
                 data.append(rs.getString(1));
                 data.append(" ");
             }
-            long explainEnd = System.currentTimeMillis();
+            double explainEnd = System.currentTimeMillis();
             jsonObject.put("ResultSet", data.toString());
             jsonObject.put("Time(ms) ", explainEnd - explainStart);
             summaryMap.put("ExplainDDL" + count, jsonObject);
