@@ -221,12 +221,10 @@ public class DBWorkload {
             String workloadListDirectory = "workloadList";
             FileUtil.makeDirIfNotExists(workloadListDirectory);
             String fileForAllWorkloadList = "allWorkloads" + ".txt";
-            String fileForToRunWorkloadList = "toRunWorkloads" + ".txt";
             PrintStream psForAllWorkloads;
-            PrintStream psForToRunWorkloads;
+
             try {
                 psForAllWorkloads = new PrintStream(FileUtil.joinPath(workloadListDirectory, fileForAllWorkloadList));
-                psForToRunWorkloads = new PrintStream(FileUtil.joinPath(workloadListDirectory, fileForToRunWorkloadList));
             } catch (FileNotFoundException exc) {
                 throw new RuntimeException(exc);
             }
@@ -249,7 +247,6 @@ public class DBWorkload {
                 for (String runWorkload : uniqueRunWorkloads) {
                     if (allWorkloads.contains(runWorkload)) {
                         LOG.info("Workload: " + runWorkload + " will be run");
-                        psForToRunWorkloads.println(runWorkload);
                     } else {
                         throw new RuntimeException("Wrong workload name provided in --workload args: " + runWorkload);
                     }
@@ -257,7 +254,6 @@ public class DBWorkload {
             } else {
                 for (String workload : allWorkloads) {
                     LOG.info("Workload: " + workload + " will be run");
-                    psForToRunWorkloads.println(workload);
                 }
             }
 
