@@ -47,7 +47,7 @@ microbenchmark:
         loadRules:
             -   table: index_test_
                 count: 4
-                rows: 100000
+                rows: 1000000
                 columns:
                     -   name: id
                         util: PrimaryIntGen
