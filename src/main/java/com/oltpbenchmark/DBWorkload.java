@@ -206,31 +206,53 @@ public class DBWorkload {
             boolean createDone = false;
             boolean loadDone = false;
 
-            if ((isBooleanOptionSet(argsLine, "list_workloads"))) {
-                String workloadListDirectory = "listOfWorkloads";
-                FileUtil.makeDirIfNotExists(workloadListDirectory);
-                String fileForWorkloadList = TimeUtil.getCurrentTimeString() + ".txt";
-                PrintStream ps;
-                try {
-                    ps = new PrintStream(FileUtil.joinPath(workloadListDirectory, fileForWorkloadList));
-                } catch (FileNotFoundException exc) {
-                    throw new RuntimeException(exc);
-                }
-                ps.println("List of Workload names: ");
-                System.out.println("List of Workload names: ");
-                for (int workcount = 1; workcount <= totalworkcount; workcount++) {
-                    ps.println("Workload name: " + (workloads.get(workcount - 1).containsKey("workload") ? workloads.get(workcount - 1).getString("workload") : workcount));
-                    System.out.println("Workload name: " + (workloads.get(workcount - 1).containsKey("workload") ? workloads.get(workcount - 1).getString("workload") : workcount));
-                }
-                System.exit(0);
-            }
 
             String targetWorkloads = null;
-            String[] ListWorkloads = null;
+            List<String> RunWorkloads = new ArrayList<>();
+            List<String> allWorkloads = new ArrayList<>();
+
+            for (int workcount = 1; workcount <= totalworkcount; workcount++) {
+                allWorkloads.add(workloads.get(workcount - 1).containsKey("workload") ? workloads.get(workcount - 1).getString("workload") : String.valueOf(workcount));
+            }
+
+
+            String workloadListDirectory = "workloadList";
+            FileUtil.makeDirIfNotExists(workloadListDirectory);
+            String fileForWorkloadList = "workloads" + ".txt";
+            PrintStream ps;
+            try {
+                ps = new PrintStream(FileUtil.joinPath(workloadListDirectory, fileForWorkloadList));
+            } catch (FileNotFoundException exc) {
+                throw new RuntimeException(exc);
+            }
+            ps.println("All Workloads:");
+            System.out.println("All Workloads:");
+            for (int workcount = 1; workcount <= totalworkcount; workcount++) {
+                ps.println((workloads.get(workcount - 1).containsKey("workload") ? workloads.get(workcount - 1).getString("workload") : workcount));
+                System.out.println((workloads.get(workcount - 1).containsKey("workload") ? workloads.get(workcount - 1).getString("workload") : workcount));
+            }
+
+
             if ((argsLine.hasOption("workloads"))) {
                 targetWorkloads = argsLine.getOptionValue("workloads");
-                ListWorkloads = targetWorkloads.split(",");
+                RunWorkloads = List.of(targetWorkloads.trim().split(","));
+                ps.println("Executed Workloads:");
+                for (String runWorkload : RunWorkloads) {
+                    if (allWorkloads.contains(runWorkload)) {
+                        LOG.info("Workload: " + runWorkload + " will be run");
+                        ps.println(runWorkload);
+                    } else {
+                        throw new RuntimeException("Wrong workload name provided in --workload args: " + runWorkload);
+                    }
+                }
+            } else {
+                ps.println("Executed Workloads:");
+                for (String workload : allWorkloads) {
+                    LOG.info("Workload: " + workload + " will be run");
+                    ps.println(workload);
+                }
             }
+
 
             for (int workcount = 1; workcount <= totalworkcount; workcount++) {
 
@@ -596,7 +618,7 @@ public class DBWorkload {
 
                 if (isBooleanOptionSet(argsLine, "execute") && (argsLine.hasOption("workloads"))) {
                     String val = workloads.get(workcount - 1).getString("workload");
-                    if (targetWorkloads.contains(val)) {
+                    if (RunWorkloads.contains(val)) {
                         LOG.info("Starting Workload " + (workloads.get(workcount - 1).containsKey("workload") ? workloads.get(workcount - 1).getString("workload") : workcount));
                         try {
                             Results r = runWorkload(benchList, intervalMonitor, workcount);
@@ -663,7 +685,6 @@ public class DBWorkload {
         options.addOption(null, "dialects-export", true, "Export benchmark SQL to a dialects file");
         options.addOption("jh", "json-histograms", true, "Export histograms to JSON file");
         options.addOption("workloads", "workloads", true, "Run some specific workloads");
-        options.addOption("list_workloads", "list_workloads", true, "list all workloads");
         return options;
     }
 
