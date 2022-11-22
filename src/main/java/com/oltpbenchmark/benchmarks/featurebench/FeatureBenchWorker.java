@@ -90,6 +90,15 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             String explainSelect = "explain (analyze,verbose,costs,buffers) ";
             String explainUpdate = "explain (analyze) ";
 
+            if (this.getWorkloadConfiguration().getXmlConfig().containsKey("use_dist_in_explain")
+                && this.getWorkloadConfiguration().getXmlConfig().getBoolean("use_dist_in_explain")) {
+                if (this.getWorkloadConfiguration().getXmlConfig().getString("type").equalsIgnoreCase("YUGABYTE")) {
+                    explainSelect = "explain (analyze, dist) ";
+                } else {
+                    throw new RuntimeException("dist option for explain not supported by this database type, Please remove key!");
+                }
+            }
+
             try {
                 ps = new PrintStream(FileUtil.joinPath(outputDirectory, fileForExplain));
             } catch (FileNotFoundException exc) {
