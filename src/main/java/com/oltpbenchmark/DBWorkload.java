@@ -209,6 +209,7 @@ public class DBWorkload {
 
             String targetWorkloads = null;
             List<String> RunWorkloads = new ArrayList<>();
+            Set<String> uniqueRunWorkloads = new HashSet<>();
             List<String> allWorkloads = new ArrayList<>();
 
             for (int workcount = 1; workcount <= totalworkcount; workcount++) {
@@ -218,17 +219,19 @@ public class DBWorkload {
 
             String workloadListDirectory = "workloadList";
             FileUtil.makeDirIfNotExists(workloadListDirectory);
-            String fileForWorkloadList = "workloads" + ".txt";
-            PrintStream ps;
+            String fileForAllWorkloadList = "allWorkloads" + ".txt";
+            String fileForToRunWorkloadList = "toRunWorkloads" + ".txt";
+            PrintStream psForAllWorkloads;
+            PrintStream psForToRunWorkloads;
             try {
-                ps = new PrintStream(FileUtil.joinPath(workloadListDirectory, fileForWorkloadList));
+                psForAllWorkloads = new PrintStream(FileUtil.joinPath(workloadListDirectory, fileForAllWorkloadList));
+                psForToRunWorkloads = new PrintStream(FileUtil.joinPath(workloadListDirectory, fileForToRunWorkloadList));
             } catch (FileNotFoundException exc) {
                 throw new RuntimeException(exc);
             }
-            ps.println("All Workloads:");
             System.out.println("All Workloads:");
             for (int workcount = 1; workcount <= totalworkcount; workcount++) {
-                ps.println((workloads.get(workcount - 1).containsKey("workload") ? workloads.get(workcount - 1).getString("workload") : workcount));
+                psForAllWorkloads.println((workloads.get(workcount - 1).containsKey("workload") ? workloads.get(workcount - 1).getString("workload") : workcount));
                 System.out.println((workloads.get(workcount - 1).containsKey("workload") ? workloads.get(workcount - 1).getString("workload") : workcount));
             }
 
@@ -236,20 +239,21 @@ public class DBWorkload {
             if ((argsLine.hasOption("workloads"))) {
                 targetWorkloads = argsLine.getOptionValue("workloads");
                 RunWorkloads = List.of(targetWorkloads.trim().split(","));
-                ps.println("Executed Workloads:");
-                for (String runWorkload : RunWorkloads) {
+                for (String workload : RunWorkloads) {
+                    uniqueRunWorkloads.add(workload);
+                }
+                for (String runWorkload : uniqueRunWorkloads) {
                     if (allWorkloads.contains(runWorkload)) {
                         LOG.info("Workload: " + runWorkload + " will be run");
-                        ps.println(runWorkload);
+                        psForToRunWorkloads.println(runWorkload);
                     } else {
                         throw new RuntimeException("Wrong workload name provided in --workload args: " + runWorkload);
                     }
                 }
             } else {
-                ps.println("Executed Workloads:");
                 for (String workload : allWorkloads) {
                     LOG.info("Workload: " + workload + " will be run");
-                    ps.println(workload);
+                    psForToRunWorkloads.println(workload);
                 }
             }
 
