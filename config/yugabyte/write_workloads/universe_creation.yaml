@@ -25,8 +25,8 @@ benchmarks:
               yb_owner: perf-team
       clusterSpec:
           platformId: 301
+          #Template has ysql auth enabled . Password is Password@321
           templateName: m6i_8core_3node_1az_secure
-          #ysql_password: Password@321
           properties:
               ybSoftwareVersion: 2.17.1.0-b44
               # Review the gflags with actual before using in this yaml.
@@ -42,8 +42,8 @@ benchmarks:
                     "value": true
                   - "name": "ysql_enable_packed_row"
                     "value": true
-        #       - "name": "ysql_yb_enable_expression_pushdown"
-        #          "value": true
+          #       - "name": "ysql_yb_enable_expression_pushdown"
+          #          "value": true
       jobGroup:
           - name: sysbench
             numClusters: 1
