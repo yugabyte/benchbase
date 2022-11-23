@@ -40,7 +40,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.sql.SQLException;
@@ -199,69 +198,68 @@ public class DBWorkload {
                 numTxnTypes = xmlConfig.configurationsAt("transactiontypes" + pluginTest + "/transactiontype").size();
             }
 
-            List<HierarchicalConfiguration<ImmutableNode>> workloads = xmlConfig.configurationsAt("microbenchmark/properties/executeRules");
+            List<HierarchicalConfiguration<ImmutableNode>> workloads =
+                xmlConfig.configurationsAt("microbenchmark/properties/executeRules");
 
-            int totalworkcount = plugin.equalsIgnoreCase("featurebench") ? (workloads == null ? 1 : (workloads.size() == 0 ? 1 : workloads.size())) : 1;
+            int totalWorkloadCount =
+                plugin.equalsIgnoreCase("featurebench") ?
+                    (workloads == null ? 1 : (workloads.size() == 0 ? 1 : workloads.size())) : 1;
 
             boolean createDone = false;
             boolean loadDone = false;
 
 
-            String targetWorkloads;
-            List<String> RunWorkloads;
             Set<String> uniqueRunWorkloads = new HashSet<>();
-            List<String> allWorkloads = new ArrayList<>();
+            List<String> workloadsFromExecuteRules = new ArrayList<>();
 
             if (workloads != null && workloads.size() != 0) {
-                for (int workcount = 1; workcount <= totalworkcount; workcount++) {
-                    allWorkloads.add(workloads.get(workcount - 1).containsKey("workload") ? workloads.get(workcount - 1).getString("workload") : String.valueOf(workcount));
+                for (int workCount = 1; workCount <= totalWorkloadCount; workCount++) {
+                    workloadsFromExecuteRules.add(workloads.get(workCount - 1)
+                        .containsKey("workload") ? workloads.get(workCount - 1)
+                        .getString("workload") : String.valueOf(workCount));
                 }
             }
 
-            String workloadListDirectory = "workloadList";
-            FileUtil.makeDirIfNotExists(workloadListDirectory);
             String fileForAllWorkloadList = "allWorkloads" + ".txt";
-            PrintStream psForAllWorkloads;
-
-            try {
-                psForAllWorkloads = new PrintStream(FileUtil.joinPath(workloadListDirectory, fileForAllWorkloadList));
-            } catch (FileNotFoundException exc) {
-                throw new RuntimeException(exc);
-            }
-
-            if (workloads != null && workloads.size() != 0) {
-                System.out.println("All Workloads:");
-                for (int workcount = 1; workcount <= totalworkcount; workcount++) {
-                    psForAllWorkloads.println((workloads.get(workcount - 1).containsKey("workload") ? workloads.get(workcount - 1).getString("workload") : workcount));
-                    System.out.println((workloads.get(workcount - 1).containsKey("workload") ? workloads.get(workcount - 1).getString("workload") : workcount));
+            try (PrintStream ps = new PrintStream(FileUtil.joinPath(fileForAllWorkloadList))) {
+                if (workloads != null && workloads.size() != 0) {
+                    System.out.println("All Workloads:");
+                    for (int workCount = 1; workCount <= totalWorkloadCount; workCount++) {
+                        ps.println((workloads.get(workCount - 1)
+                            .containsKey("workload") ? workloads.get(workCount - 1).getString("workload") : workCount));
+                        System.out.println((workloads.get(workCount - 1)
+                            .containsKey("workload") ? workloads.get(workCount - 1).getString("workload") : workCount));
+                    }
                 }
             }
 
             if (isBooleanOptionSet(argsLine, "execute")) {
+                String targetWorkloads;
+                List<String> RunWorkloads;
                 if ((argsLine.hasOption("workloads")) && !argsLine.getOptionValue("workloads").isEmpty()) {
                     targetWorkloads = argsLine.getOptionValue("workloads");
                     RunWorkloads = List.of(targetWorkloads.trim().split("\\s*,\\s*"));
-                    for (String workload : RunWorkloads) {
-                        uniqueRunWorkloads.add(workload);
-                    }
-                    for (String runWorkload : uniqueRunWorkloads) {
-                        if (allWorkloads.contains(runWorkload)) {
-                            LOG.info("Workload: " + runWorkload + " will be run");
+                    uniqueRunWorkloads.addAll(RunWorkloads);
+                    uniqueRunWorkloads.forEach(uniqueWorkload -> {
+                        if (workloadsFromExecuteRules.contains(uniqueWorkload)) {
+                            LOG.info("Workload: " + uniqueWorkload + " will be scheduled to run");
                         } else {
-                            throw new RuntimeException("Wrong workload name provided in --workload args: " + runWorkload);
+                            throw new RuntimeException("Wrong workload name provided in --workloads args: " + uniqueWorkload);
                         }
-                    }
+                    });
                 } else {
-                    for (String workload : allWorkloads) {
-                        LOG.info("Workload: " + workload + " will be run");
-                    }
+                    workloadsFromExecuteRules
+                        .forEach(workloadFromExecuteRule -> LOG.info("Workload: "
+                            + workloadFromExecuteRule + " will be scheduled to run"));
                 }
             }
 
 
-            for (int workcount = 1; workcount <= totalworkcount; workcount++) {
+            for (int workCount = 1; workCount <= totalWorkloadCount; workCount++) {
 
-                List<HierarchicalConfiguration<ImmutableNode>> executeRules = (workloads == null || workloads.size() == 0) ? null : workloads.get(workcount - 1).configurationsAt("run");
+                List<HierarchicalConfiguration<ImmutableNode>> executeRules =
+                    (workloads == null || workloads.size() == 0) ? null : workloads.get(workCount - 1)
+                        .configurationsAt("run");
 
 
                 boolean isExecutePresent = xmlConfig.containsKey("microbenchmark/properties/execute");
@@ -622,12 +620,12 @@ public class DBWorkload {
 
 
                 if (isBooleanOptionSet(argsLine, "execute") && (argsLine.hasOption("workloads")) && executeRules != null) {
-                    String val = workloads.get(workcount - 1).getString("workload");
+                    String val = workloads.get(workCount - 1).getString("workload");
                     if (uniqueRunWorkloads.contains(val)) {
-                        LOG.info("Starting Workload " + (workloads.get(workcount - 1).containsKey("workload") ? workloads.get(workcount - 1).getString("workload") : workcount));
+                        LOG.info("Starting Workload " + (workloads.get(workCount - 1).containsKey("workload") ? workloads.get(workCount - 1).getString("workload") : workCount));
                         try {
-                            Results r = runWorkload(benchList, intervalMonitor, workcount);
-                            writeOutputs(r, activeTXTypes, argsLine, xmlConfig, executeRules == null ? null : workloads.get(workcount - 1).getString("workload"));
+                            Results r = runWorkload(benchList, intervalMonitor, workCount);
+                            writeOutputs(r, activeTXTypes, argsLine, xmlConfig, executeRules == null ? null : workloads.get(workCount - 1).getString("workload"));
                             writeHistograms(r);
 
                             if (argsLine.hasOption("json-histograms")) {
@@ -647,14 +645,14 @@ public class DBWorkload {
                 // Execute Workload
                 else if (isBooleanOptionSet(argsLine, "execute")) {
                     if (executeRules == null) {
-                        LOG.info("Starting Workload " + workcount);
+                        LOG.info("Starting Workload " + workCount);
                     } else {
-                        LOG.info("Starting Workload " + (workloads.get(workcount - 1).containsKey("workload") ? workloads.get(workcount - 1).getString("workload") : workcount));
+                        LOG.info("Starting Workload " + (workloads.get(workCount - 1).containsKey("workload") ? workloads.get(workCount - 1).getString("workload") : workCount));
                     }
                     // Bombs away!
                     try {
-                        Results r = runWorkload(benchList, intervalMonitor, workcount);
-                        writeOutputs(r, activeTXTypes, argsLine, xmlConfig, executeRules == null ? null : workloads.get(workcount - 1).getString("workload"));
+                        Results r = runWorkload(benchList, intervalMonitor, workCount);
+                        writeOutputs(r, activeTXTypes, argsLine, xmlConfig, executeRules == null ? null : workloads.get(workCount - 1).getString("workload"));
                         writeHistograms(r);
 
                         if (argsLine.hasOption("json-histograms")) {
