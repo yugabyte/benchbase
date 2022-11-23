@@ -207,8 +207,8 @@ public class DBWorkload {
             boolean loadDone = false;
 
 
-            String targetWorkloads = null;
-            List<String> RunWorkloads = new ArrayList<>();
+            String targetWorkloads;
+            List<String> RunWorkloads;
             Set<String> uniqueRunWorkloads = new HashSet<>();
             List<String> allWorkloads = new ArrayList<>();
 
@@ -237,23 +237,24 @@ public class DBWorkload {
                 }
             }
 
-
-            if ((argsLine.hasOption("workloads"))) {
-                targetWorkloads = argsLine.getOptionValue("workloads");
-                RunWorkloads = List.of(targetWorkloads.trim().split(","));
-                for (String workload : RunWorkloads) {
-                    uniqueRunWorkloads.add(workload);
-                }
-                for (String runWorkload : uniqueRunWorkloads) {
-                    if (allWorkloads.contains(runWorkload)) {
-                        LOG.info("Workload: " + runWorkload + " will be run");
-                    } else {
-                        throw new RuntimeException("Wrong workload name provided in --workload args: " + runWorkload);
+            if (isBooleanOptionSet(argsLine, "execute")) {
+                if ((argsLine.hasOption("workloads")) && !argsLine.getOptionValue("workloads").isEmpty()) {
+                    targetWorkloads = argsLine.getOptionValue("workloads");
+                    RunWorkloads = List.of(targetWorkloads.trim().split("\\s*,\\s*"));
+                    for (String workload : RunWorkloads) {
+                        uniqueRunWorkloads.add(workload);
                     }
-                }
-            } else {
-                for (String workload : allWorkloads) {
-                    LOG.info("Workload: " + workload + " will be run");
+                    for (String runWorkload : uniqueRunWorkloads) {
+                        if (allWorkloads.contains(runWorkload)) {
+                            LOG.info("Workload: " + runWorkload + " will be run");
+                        } else {
+                            throw new RuntimeException("Wrong workload name provided in --workload args: " + runWorkload);
+                        }
+                    }
+                } else {
+                    for (String workload : allWorkloads) {
+                        LOG.info("Workload: " + workload + " will be run");
+                    }
                 }
             }
 
@@ -261,9 +262,7 @@ public class DBWorkload {
             for (int workcount = 1; workcount <= totalworkcount; workcount++) {
 
                 List<HierarchicalConfiguration<ImmutableNode>> executeRules = (workloads == null || workloads.size() == 0) ? null : workloads.get(workcount - 1).configurationsAt("run");
-                if (executeRules == null) {
-                    LOG.info("Starting Workload " + workcount);
-                }
+
 
                 boolean isExecutePresent = xmlConfig.containsKey("microbenchmark/properties/execute");
                 boolean isExecuteTrue = false;
@@ -622,9 +621,9 @@ public class DBWorkload {
                 }
 
 
-                if (isBooleanOptionSet(argsLine, "execute") && (argsLine.hasOption("workloads"))) {
+                if (isBooleanOptionSet(argsLine, "execute") && (argsLine.hasOption("workloads")) && executeRules != null) {
                     String val = workloads.get(workcount - 1).getString("workload");
-                    if (RunWorkloads.contains(val)) {
+                    if (uniqueRunWorkloads.contains(val)) {
                         LOG.info("Starting Workload " + (workloads.get(workcount - 1).containsKey("workload") ? workloads.get(workcount - 1).getString("workload") : workcount));
                         try {
                             Results r = runWorkload(benchList, intervalMonitor, workcount);
@@ -646,10 +645,12 @@ public class DBWorkload {
 
 
                 // Execute Workload
-                else if (isBooleanOptionSet(argsLine, "execute") && !(argsLine.hasOption("workload")) &&
-                    ((workloads != null && workloads.size() != 0)) ) {
-
-                    LOG.info("Starting Workload " + (workloads.get(workcount - 1).containsKey("workload") ? workloads.get(workcount - 1).getString("workload") : workcount));
+                else if (isBooleanOptionSet(argsLine, "execute")) {
+                    if (executeRules == null) {
+                        LOG.info("Starting Workload " + workcount);
+                    } else {
+                        LOG.info("Starting Workload " + (workloads.get(workcount - 1).containsKey("workload") ? workloads.get(workcount - 1).getString("workload") : workcount));
+                    }
                     // Bombs away!
                     try {
                         Results r = runWorkload(benchList, intervalMonitor, workcount);
