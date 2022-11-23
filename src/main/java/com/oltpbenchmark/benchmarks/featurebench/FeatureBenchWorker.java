@@ -93,7 +93,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             if (this.getWorkloadConfiguration().getXmlConfig().containsKey("use_dist_in_explain")
                 && this.getWorkloadConfiguration().getXmlConfig().getBoolean("use_dist_in_explain")) {
                 if (this.getWorkloadConfiguration().getXmlConfig().getString("type").equalsIgnoreCase("YUGABYTE")) {
-                    explainSelect = "explain (analyze, dist) ";
+                    explainSelect = "explain (analyze,dist,verbose,costs,buffers) ";
                 } else {
                     throw new RuntimeException("dist option for explain not supported by this database type, Please remove key!");
                 }
