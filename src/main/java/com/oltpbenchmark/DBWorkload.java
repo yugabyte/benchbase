@@ -243,7 +243,9 @@ public class DBWorkload {
                     uniqueRunWorkloads.forEach(uniqueWorkload -> {
                         if (workloadsFromExecuteRules.contains(uniqueWorkload)) {
                             LOG.info("Workload: " + uniqueWorkload + " will be scheduled to run");
-                        } else if(uniqueWorkload.equalsIgnoreCase("DEFAULT_WORKLOAD")) {
+                        }
+                        else if(workloadsFromExecuteRules.size() == 0 &&
+                            uniqueWorkload.equalsIgnoreCase("DEFAULT_WORKLOAD")) {
                             LOG.info("Running workload specified through code implementation");
                         }
                         else {
@@ -254,6 +256,7 @@ public class DBWorkload {
                     workloadsFromExecuteRules
                         .forEach(workloadFromExecuteRule -> LOG.info("Workload: "
                             + workloadFromExecuteRule + " will be scheduled to run"));
+                    uniqueRunWorkloads.addAll(workloadsFromExecuteRules);
                 }
             }
 
