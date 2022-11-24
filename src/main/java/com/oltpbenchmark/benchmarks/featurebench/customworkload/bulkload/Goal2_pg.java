@@ -14,6 +14,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -142,5 +143,16 @@ public class Goal2_pg extends YBMicroBenchmark {
                 throw new RuntimeException(e);
             }
         });
+    }
+    @Override
+    public void cleanUp(Connection conn) throws SQLException {
+        String countQuery = "select count(*) from " + this.tableName;
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery(countQuery);
+        long count = 0;
+        while (rs.next()) {
+            count = rs.getLong(1);
+        }
+        LOG.info("Number of rows inserted are: " + count);
     }
 }
