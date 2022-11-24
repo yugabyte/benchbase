@@ -1,8 +1,8 @@
 package com.oltpbenchmark.benchmarks.featurebench.customworkload.bulkload;
 
 import com.oltpbenchmark.benchmarks.featurebench.YBMicroBenchmark;
-import com.yugabyte.copy.CopyManager;
-import com.yugabyte.core.BaseConnection;
+import org.postgresql.copy.CopyManager;
+import org.postgresql.core.BaseConnection;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.commons.lang3.RandomStringUtils;
