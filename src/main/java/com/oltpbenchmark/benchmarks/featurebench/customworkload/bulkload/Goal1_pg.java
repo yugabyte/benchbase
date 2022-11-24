@@ -19,23 +19,23 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Goal4 extends YBMicroBenchmark {
-
-    private static final Logger LOG = LoggerFactory.getLogger(Goal4.class);
-
+public class Goal1_pg extends YBMicroBenchmark {
+    private static final Logger LOG = LoggerFactory.getLogger(Goal1_pg.class);
     String tableName;
     int numOfColumns;
     int numOfRows;
+    int indexCount;
     String filePath;
     int stringLength;
 
-    public Goal4(HierarchicalConfiguration<ImmutableNode> config) {
+    public Goal1_pg(HierarchicalConfiguration<ImmutableNode> config) {
         super(config);
         this.executeOnceImplemented = true;
         this.loadOnceImplemented = true;
         this.tableName = config.getString("/tableName");
         this.numOfColumns = config.getInt("/columns");
         this.numOfRows = config.getInt("/rows");
+        this.indexCount = config.getInt("/indexes");
         this.filePath = config.getString("/filePath");
         this.stringLength = config.getInt("/stringLength");
     }
@@ -45,9 +45,7 @@ public class Goal4 extends YBMicroBenchmark {
         LOG.info("Recreate table if it exists");
         stmtOBj.executeUpdate(String.format("DROP TABLE IF EXISTS %s", this.tableName));
         stmtOBj.close();
-        LOG.info("Creating table");
-        createTable(conn);
-
+        createTableAndIndexes(conn);
         LOG.info("Create CSV file with data");
         createCSV();
     }
@@ -59,7 +57,8 @@ public class Goal4 extends YBMicroBenchmark {
         runCopyCommand(conn);
     }
 
-    public void createTable(Connection conn) {
+    public void createTableAndIndexes(Connection conn) {
+        List<String> ddls = new ArrayList<>();
         StringBuilder createStmt = new StringBuilder();
         createStmt.append(String.format("CREATE TABLE %s (id INT primary key, ", tableName));
         for (int i = 1; i <= this.numOfColumns; i++) {
@@ -69,11 +68,21 @@ public class Goal4 extends YBMicroBenchmark {
             else
                 createStmt.append(");");
         }
-        try (Statement stmt = conn.createStatement()) {
-            stmt.execute(createStmt.toString());
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+        ddls.add(createStmt.toString());
+
+        if (this.indexCount > 0 && this.indexCount <= this.numOfColumns) {
+            for (int i = 0; i < this.indexCount; i++) {
+                ddls.add(String.format("CREATE INDEX idx%d on %s(col%d);", i + 1, this.tableName, i + 1));
+            }
         }
+
+        ddls.forEach(ddl -> {
+            try (Statement stmt = conn.createStatement()) {
+                stmt.execute(ddl);
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     public void createCSV() {

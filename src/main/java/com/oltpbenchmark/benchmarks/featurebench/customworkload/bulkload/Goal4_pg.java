@@ -16,35 +16,26 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
 
-public class Goal2 extends YBMicroBenchmark {
+public class Goal4_pg extends YBMicroBenchmark {
 
-    private static final Logger LOG = LoggerFactory.getLogger(Goal2.class);
+    private static final Logger LOG = LoggerFactory.getLogger(Goal4_pg.class);
 
     String tableName;
     int numOfColumns;
     int numOfRows;
-    int indexCount;
     String filePath;
     int stringLength;
 
-    boolean create_index_before_load;
-    boolean create_index_after_load;
-
-    public Goal2(HierarchicalConfiguration<ImmutableNode> config) {
+    public Goal4_pg(HierarchicalConfiguration<ImmutableNode> config) {
         super(config);
         this.executeOnceImplemented = true;
         this.loadOnceImplemented = true;
         this.tableName = config.getString("/tableName");
         this.numOfColumns = config.getInt("/columns");
         this.numOfRows = config.getInt("/rows");
-        this.indexCount = config.getInt("/indexes");
         this.filePath = config.getString("/filePath");
         this.stringLength = config.getInt("/stringLength");
-        this.create_index_before_load = config.getBoolean("/create_index_before_load");
-        this.create_index_after_load = config.getBoolean("/create_index_after_load");
     }
 
     public void create(Connection conn) throws SQLException {
@@ -57,25 +48,13 @@ public class Goal2 extends YBMicroBenchmark {
 
         LOG.info("Create CSV file with data");
         createCSV();
-
     }
 
     public void loadOnce(Connection conn) throws SQLException {
     }
 
     public void executeOnce(Connection conn) throws SQLException {
-        if(this.create_index_before_load && (this.indexCount > 0 && this.indexCount <= this.numOfColumns)){
-            LOG.info("Creating indexes before load");
-            createIndexes(conn);
-            LOG.info("Done creating indexes");
-        }
         runCopyCommand(conn);
-        if(this.create_index_after_load && (this.indexCount > 0 && this.indexCount <= this.numOfColumns)) {
-            LOG.info("Creating indexes after load(index back-filling)");
-            createIndexes(conn);
-            LOG.info("Done creating indexes(Index back-filling done)");
-        }
-
     }
 
     public void createTable(Connection conn) {
@@ -130,17 +109,5 @@ public class Goal2 extends YBMicroBenchmark {
         }
     }
 
-    public void createIndexes(Connection conn) {
-        List<String> ddls = new ArrayList<>();
-        for (int i = 0; i < this.indexCount; i++) {
-            ddls.add(String.format("CREATE INDEX idx%d on %s(col%d);", i + 1, this.tableName, i + 1));
-        }
-        ddls.forEach(ddl -> {
-            try (Statement stmt = conn.createStatement()) {
-                stmt.execute(ddl);
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
-        });
-    }
+
 }

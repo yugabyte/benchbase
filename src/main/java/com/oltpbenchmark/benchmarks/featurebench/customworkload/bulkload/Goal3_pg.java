@@ -16,12 +16,10 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
 
-public class Goal3 extends YBMicroBenchmark {
+public class Goal3_pg extends YBMicroBenchmark {
 
-    private static final Logger LOG = LoggerFactory.getLogger(Goal3.class);
+    private static final Logger LOG = LoggerFactory.getLogger(Goal3_pg.class);
 
     String tableName;
     int numOfColumns;
@@ -29,7 +27,7 @@ public class Goal3 extends YBMicroBenchmark {
     String filePath;
     int stringLength;
 
-    public Goal3(HierarchicalConfiguration<ImmutableNode> config) {
+    public Goal3_pg(HierarchicalConfiguration<ImmutableNode> config) {
         super(config);
         this.executeOnceImplemented = true;
         this.loadOnceImplemented = true;

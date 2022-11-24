@@ -18,7 +18,7 @@ transactiontypes:
     transactiontype:
         name: FeatureBench
 microbenchmark:
-    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.bulkload.Goal2
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.bulkload.Goal2_pg
     properties:
         # Goal2 - 1 :: create table with PK -> create 1 index -> Load data (1 index)
         tableName: orders

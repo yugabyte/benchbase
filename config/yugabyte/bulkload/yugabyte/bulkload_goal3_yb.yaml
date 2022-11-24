@@ -1,3 +1,4 @@
+
 type: YUGABYTE
 driver: com.yugabyte.Driver
 url: jdbc:yugabytedb://localhost:5433/yugabyte?sslmode=disable&ApplicationName=featurebench&reWriteBatchedInserts=true
@@ -8,7 +9,6 @@ isolation: TRANSACTION_REPEATABLE_READ
 collect_pg_stat_statements: true
 loaderthreads: 1
 terminals: 1
-
 works:
     work:
         time_secs: 10
@@ -18,25 +18,25 @@ transactiontypes:
     transactiontype:
         name: FeatureBench
 microbenchmark:
-    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.bulkload.Goal4
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.bulkload.pg.Goal3_yb
     properties:
-        # Goal4 - 1 :: create table with 10 fields, 3M rows -> load data (only PK)
+        # Goal3 - 1 :: create table with 15 fields -> load data for 3M rows (only PK)
         tableName: orders
-        columns: 10
+        columns: 15
         rows: 3000000
         filePath: orders.csv
         stringLength: 32
 
-#        # Goal4 - 2 :: create table with 20 fields, 3M rows -> load data (only PK)
+#        # Goal3 - 2 :: create table with 15 fields -> load data for 30M rows (only PK)
 #        tableName: orders
-#        columns: 20
-#        rows: 3000000
+#        columns: 15
+#        rows: 30000000
 #        filePath: orders.csv
 #        stringLength: 32
 #
-#        # Goal4 - 3 :: create table with 100 fields, 3M rows -> load data (only PK)
+#        # Goal3 - 3 :: create table with 15 fields -> load data for 300M rows (only PK)
 #        tableName: orders
-#        columns: 100
-#        rows: 3000000
+#        columns: 15
+#        rows: 300000000
 #        filePath: orders.csv
 #        stringLength: 32

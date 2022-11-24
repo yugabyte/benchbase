@@ -19,8 +19,8 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Goal1 extends YBMicroBenchmark {
-    private static final Logger LOG = LoggerFactory.getLogger(Goal1.class);
+public class Goal1_yb extends YBMicroBenchmark {
+    private static final Logger LOG = LoggerFactory.getLogger(Goal1_pg.class);
     String tableName;
     int numOfColumns;
     int numOfRows;
@@ -28,7 +28,7 @@ public class Goal1 extends YBMicroBenchmark {
     String filePath;
     int stringLength;
 
-    public Goal1(HierarchicalConfiguration<ImmutableNode> config) {
+    public Goal1_yb(HierarchicalConfiguration<ImmutableNode> config) {
         super(config);
         this.executeOnceImplemented = true;
         this.loadOnceImplemented = true;
@@ -60,14 +60,11 @@ public class Goal1 extends YBMicroBenchmark {
     public void createTableAndIndexes(Connection conn) {
         List<String> ddls = new ArrayList<>();
         StringBuilder createStmt = new StringBuilder();
-        createStmt.append(String.format("CREATE TABLE %s (id INT primary key, ", tableName));
+        createStmt.append(String.format("CREATE TABLE %s (id INT, ", tableName));
         for (int i = 1; i <= this.numOfColumns; i++) {
-            createStmt.append(String.format("col%d TEXT", i));
-            if (i != this.numOfColumns)
-                createStmt.append(",");
-            else
-                createStmt.append(");");
+            createStmt.append(String.format("col%d TEXT ,", i));
         }
+        createStmt.append("primary key (id asc) );");
         ddls.add(createStmt.toString());
 
         if (this.indexCount > 0 && this.indexCount <= this.numOfColumns) {

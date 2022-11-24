@@ -17,7 +17,7 @@ works:
         warmup: 0
 
 microbenchmark:
-    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.bulkload.Goal1
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.bulkload.Goal1_pg
     properties:
         # Goal 1 - 1 :: create table with PK -> load data (no index)
         tableName: orders
