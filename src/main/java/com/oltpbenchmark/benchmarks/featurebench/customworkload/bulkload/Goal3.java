@@ -44,13 +44,13 @@ public class Goal3 extends YBMicroBenchmark {
         Statement stmtOBj = conn.createStatement();
         LOG.info("Recreate table if it exists");
         stmtOBj.executeUpdate(String.format("DROP TABLE IF EXISTS %s", this.tableName));
-
+        stmtOBj.close();
         LOG.info("Creating table");
         createTable(conn);
 
         LOG.info("Create CSV file with data");
         createCSV();
-        stmtOBj.close();
+
     }
 
     public void loadOnce(Connection conn) throws SQLException {

@@ -51,26 +51,24 @@ public class Goal2 extends YBMicroBenchmark {
         Statement stmtOBj = conn.createStatement();
         LOG.info("Recreate table if it exists");
         stmtOBj.executeUpdate(String.format("DROP TABLE IF EXISTS %s", this.tableName));
-
+        stmtOBj.close();
         LOG.info("Creating table");
         createTable(conn);
 
-        if(this.create_index_before_load && (this.indexCount > 0 && this.indexCount <= this.numOfColumns)){
-            LOG.info("Creating indexes before load");
-            createIndexes(conn);
-            LOG.info("Done creating indexes");
-        }
-
-
         LOG.info("Create CSV file with data");
         createCSV();
-        stmtOBj.close();
+
     }
 
     public void loadOnce(Connection conn) throws SQLException {
     }
 
     public void executeOnce(Connection conn) throws SQLException {
+        if(this.create_index_before_load && (this.indexCount > 0 && this.indexCount <= this.numOfColumns)){
+            LOG.info("Creating indexes before load");
+            createIndexes(conn);
+            LOG.info("Done creating indexes");
+        }
         runCopyCommand(conn);
         if(this.create_index_after_load && (this.indexCount > 0 && this.indexCount <= this.numOfColumns)) {
             LOG.info("Creating indexes after load(index back-filling)");
