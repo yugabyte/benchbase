@@ -198,21 +198,69 @@ public class DBWorkload {
                 numTxnTypes = xmlConfig.configurationsAt("transactiontypes" + pluginTest + "/transactiontype").size();
             }
 
-            List<HierarchicalConfiguration<ImmutableNode>> workloads = xmlConfig.configurationsAt("microbenchmark/properties/executeRules");
+            List<HierarchicalConfiguration<ImmutableNode>> workloads =
+                xmlConfig.configurationsAt("microbenchmark/properties/executeRules");
 
-            int totalworkcount = plugin.equalsIgnoreCase("featurebench") ? (workloads == null ? 1 : (workloads.size() == 0 ? 1 : workloads.size())) : 1;
+            int totalWorkloadCount =
+                plugin.equalsIgnoreCase("featurebench") ?
+                    (workloads == null ? 1 : (workloads.size() == 0 ? 1 : workloads.size())) : 1;
 
             boolean createDone = false;
             boolean loadDone = false;
 
-            for (int workcount = 1; workcount <= totalworkcount; workcount++) {
 
-                List<HierarchicalConfiguration<ImmutableNode>> executeRules = (workloads == null || workloads.size() == 0) ? null : workloads.get(workcount - 1).configurationsAt("run");
-                if (executeRules == null) {
-                    LOG.info("Starting Workload " + workcount);
-                } else {
-                    LOG.info("Starting Workload " + (workloads.get(workcount - 1).containsKey("workload") ? workloads.get(workcount - 1).getString("workload") : workcount));
+            Set<String> uniqueRunWorkloads = new HashSet<>();
+            List<String> workloadsFromExecuteRules = new ArrayList<>();
+
+            if (workloads != null && workloads.size() != 0) {
+                for (int workCount = 1; workCount <= totalWorkloadCount; workCount++) {
+                    workloadsFromExecuteRules.add(workloads.get(workCount - 1)
+                        .containsKey("workload") ? workloads.get(workCount - 1)
+                        .getString("workload") : String.valueOf(workCount));
                 }
+            }
+
+            String fileForAllWorkloadList = "allWorkloads" + ".txt";
+            try (PrintStream ps = new PrintStream(FileUtil.joinPath(fileForAllWorkloadList))) {
+                if (workloads != null && workloads.size() != 0) {
+                    System.out.println("All Workloads:");
+                    for (int workCount = 1; workCount <= totalWorkloadCount; workCount++) {
+                        ps.println((workloads.get(workCount - 1)
+                            .containsKey("workload") ? workloads.get(workCount - 1).getString("workload") : workCount));
+                        System.out.println((workloads.get(workCount - 1)
+                            .containsKey("workload") ? workloads.get(workCount - 1).getString("workload") : workCount));
+                    }
+                }
+            }
+
+            if (isBooleanOptionSet(argsLine, "execute")) {
+                String targetWorkloads;
+                List<String> RunWorkloads;
+                if ((argsLine.hasOption("workloads")) && !argsLine.getOptionValue("workloads").isEmpty()) {
+                    targetWorkloads = argsLine.getOptionValue("workloads");
+                    RunWorkloads = List.of(targetWorkloads.trim().split("\\s*,\\s*"));
+                    uniqueRunWorkloads.addAll(RunWorkloads);
+                    uniqueRunWorkloads.forEach(uniqueWorkload -> {
+                        if (workloadsFromExecuteRules.contains(uniqueWorkload)) {
+                            LOG.info("Workload: " + uniqueWorkload + " will be scheduled to run");
+                        } else {
+                            throw new RuntimeException("Wrong workload name provided in --workloads args: " + uniqueWorkload);
+                        }
+                    });
+                } else {
+                    workloadsFromExecuteRules
+                        .forEach(workloadFromExecuteRule -> LOG.info("Workload: "
+                            + workloadFromExecuteRule + " will be scheduled to run"));
+                }
+            }
+
+
+            for (int workCount = 1; workCount <= totalWorkloadCount; workCount++) {
+
+                List<HierarchicalConfiguration<ImmutableNode>> executeRules =
+                    (workloads == null || workloads.size() == 0) ? null : workloads.get(workCount - 1)
+                        .configurationsAt("run");
+
 
                 boolean isExecutePresent = xmlConfig.containsKey("microbenchmark/properties/execute");
                 boolean isExecuteTrue = false;
@@ -502,6 +550,7 @@ public class DBWorkload {
                             LOG.info("Creating new {} database...", benchmark.getBenchmarkName().toUpperCase());
                             if (benchmark.getBenchmarkName().equalsIgnoreCase("featurebench") && benchmark.getWorkloadConfiguration().getXmlConfig().containsKey("createdb")) {
                                 String newUrl = runCreatorDB(benchmark, benchmark.getWorkloadConfiguration().getXmlConfig().getString("createdb"));
+                                LOG.info("New JDBC URL : " + newUrl);
                                 benchmark.getWorkloadConfiguration().setUrl(newUrl);
                                 benchmark.getWorkloadConfiguration().getXmlConfig().setProperty("url", newUrl);
                             }
@@ -520,6 +569,7 @@ public class DBWorkload {
                     for (BenchmarkModule benchmark : benchList) {
                         if (benchmark.getBenchmarkName().equalsIgnoreCase("featurebench") && benchmark.getWorkloadConfiguration().getXmlConfig().containsKey("createdb")) {
                             String newUrl = getNewUrl(benchmark, benchmark.getWorkloadConfiguration().getXmlConfig().getString("createdb"));
+                            LOG.info("New JDBC URL : " + newUrl);
                             benchmark.getWorkloadConfiguration().setUrl(newUrl);
                             benchmark.getWorkloadConfiguration().getXmlConfig().setProperty("url", newUrl);
                         }
@@ -568,12 +618,41 @@ public class DBWorkload {
                     LOG.debug("Skipping loading benchmark database records");
                 }
 
+
+                if (isBooleanOptionSet(argsLine, "execute") && (argsLine.hasOption("workloads")) && executeRules != null) {
+                    String val = workloads.get(workCount - 1).getString("workload");
+                    if (uniqueRunWorkloads.contains(val)) {
+                        LOG.info("Starting Workload " + (workloads.get(workCount - 1).containsKey("workload") ? workloads.get(workCount - 1).getString("workload") : workCount));
+                        try {
+                            Results r = runWorkload(benchList, intervalMonitor, workCount);
+                            writeOutputs(r, activeTXTypes, argsLine, xmlConfig, executeRules == null ? null : workloads.get(workCount - 1).getString("workload"));
+                            writeHistograms(r);
+
+                            if (argsLine.hasOption("json-histograms")) {
+                                String histogram_json = writeJSONHistograms(r);
+                                String fileName = argsLine.getOptionValue("json-histograms");
+                                FileUtil.writeStringToFile(new File(fileName), histogram_json);
+                                LOG.info("Histograms JSON Data: " + fileName);
+                            }
+                        } catch (Throwable ex) {
+                            LOG.error("Unexpected error when executing benchmarks.", ex);
+                            System.exit(1);
+                        }
+                    }
+                }
+
+
                 // Execute Workload
-                if (isBooleanOptionSet(argsLine, "execute")) {
+                else if (isBooleanOptionSet(argsLine, "execute")) {
+                    if (executeRules == null) {
+                        LOG.info("Starting Workload " + workCount);
+                    } else {
+                        LOG.info("Starting Workload " + (workloads.get(workCount - 1).containsKey("workload") ? workloads.get(workCount - 1).getString("workload") : workCount));
+                    }
                     // Bombs away!
                     try {
-                        Results r = runWorkload(benchList, intervalMonitor, workcount);
-                        writeOutputs(r, activeTXTypes, argsLine, xmlConfig, executeRules == null ? null : workloads.get(workcount - 1).getString("workload"));
+                        Results r = runWorkload(benchList, intervalMonitor, workCount);
+                        writeOutputs(r, activeTXTypes, argsLine, xmlConfig, executeRules == null ? null : workloads.get(workCount - 1).getString("workload"));
                         writeHistograms(r);
 
                         if (argsLine.hasOption("json-histograms")) {
@@ -611,6 +690,7 @@ public class DBWorkload {
         options.addOption("d", "directory", true, "Base directory for the result files, default is current directory");
         options.addOption(null, "dialects-export", true, "Export benchmark SQL to a dialects file");
         options.addOption("jh", "json-histograms", true, "Export histograms to JSON file");
+        options.addOption("workloads", "workloads", true, "Run some specific workloads");
         return options;
     }
 
@@ -775,7 +855,7 @@ public class DBWorkload {
     private static String runCreatorDB(BenchmarkModule benchmark, String totalDDL) throws SQLException {
         Statement stmtObj = benchmark.makeConnection().createStatement();
         stmtObj.execute(totalDDL);
-        Pattern patternCreateDB = Pattern.compile("create database (.+?);", Pattern.CASE_INSENSITIVE);
+        Pattern patternCreateDB = Pattern.compile("create database (.+?)", Pattern.CASE_INSENSITIVE);
         Matcher matcherCreateDB = patternCreateDB.matcher(totalDDL);
         boolean matchFoundforcreate = matcherCreateDB.find();
         String createDDL = matcherCreateDB.group(0);
@@ -805,7 +885,7 @@ public class DBWorkload {
     }
 
     private static String getNewUrl(BenchmarkModule benchmark, String totalDDL) throws SQLException {
-        Pattern patternCreateDB = Pattern.compile("create database (.+?);", Pattern.CASE_INSENSITIVE);
+        Pattern patternCreateDB = Pattern.compile("create database (.+?) ", Pattern.CASE_INSENSITIVE);
         Matcher matcherCreateDB = patternCreateDB.matcher(totalDDL);
         boolean matchFoundforcreate = matcherCreateDB.find();
         String createDDL = matcherCreateDB.group(0);
