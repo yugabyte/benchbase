@@ -430,10 +430,8 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
                         LOG.debug(String.format("%s %s committing...", this, transactionType));
                     }
 
-                    if (!autoCommitVal) {
-                        LOG.info("Connection commit");
+                    if (!autoCommitVal)
                         conn.commit();
-                    }
 
 
                     break;
