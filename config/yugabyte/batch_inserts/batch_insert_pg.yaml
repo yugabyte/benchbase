@@ -18,7 +18,7 @@ works:
         warmup: 0
 microbenchmark:
     #    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
-    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.batchinsert.BatchInsertYB
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.batchinsert.BatchInsertPG
     properties:
         setAutoCommit: true
 #        create:
