@@ -17,8 +17,12 @@ public class Column {
     public String util;
 
 
+    @JsonProperty("count")
+    public int count = 1;
+
+
     @JsonProperty("params")
-    public List<Object> params=new ArrayList<>();
+    public List<Object> params = new ArrayList<>();
 
     public String getName() {
         return name;
@@ -46,11 +50,21 @@ public class Column {
     }
 
 
+    public int getCount() {
+        return count;
+    }
+
+    public void setCount(int count) {
+        this.count = count;
+    }
+
+
     @Override
     public String toString() {
         return "Column{" +
             "name='" + name + '\'' +
             ", util='" + util + '\'' +
+            ", count=" + count +
             ", params=" + params +
             '}';
     }

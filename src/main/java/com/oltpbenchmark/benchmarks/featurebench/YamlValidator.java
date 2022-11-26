@@ -13,7 +13,7 @@ public class YamlValidator {
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         mapper.findAndRegisterModules();
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        File file = new File(classLoader.getResource("yaml_validation.yaml").getFile());
+        File file = new File(classLoader.getResource("7.yaml").getFile());
         Properties properties = mapper.readValue(file, Properties.class);
         System.out.println(properties.getProperties().toString());
     }

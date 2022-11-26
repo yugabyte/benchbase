@@ -10,8 +10,12 @@ public class Binding {
     @JsonProperty("util")
     public String util;
 
+
+    @JsonProperty("count")
+    public int count = 1;
+
     @JsonProperty("params")
-    public List<Object> params=new ArrayList<>();
+    public List<Object> params = new ArrayList<>();
 
 
     public List<Object> getParams() {
@@ -30,10 +34,21 @@ public class Binding {
         this.util = util;
     }
 
+
+    public int getCount() {
+        return count;
+    }
+
+    public void setCount(int count) {
+        this.count = count;
+    }
+
+
     @Override
     public String toString() {
         return "Binding{" +
             "util='" + util + '\'' +
+            ", count=" + count +
             ", params=" + params +
             '}';
     }

@@ -8,7 +8,7 @@ import java.util.List;
 public class MicrobenchmarkProperties {
 
     @JsonProperty("create")
-    private List<String> create = new ArrayList<String>();
+    public List<String> create = new ArrayList<>();
 
     @JsonProperty("loadRules")
     public ArrayList<LoadRule> loadRules;
@@ -17,8 +17,25 @@ public class MicrobenchmarkProperties {
     public ArrayList<ExecuteRule> executeRules;
 
     @JsonProperty("cleanup")
-    private List<String> cleanup = new ArrayList<String>();
+    public List<String> cleanup = new ArrayList<>();
 
+    @JsonProperty("setAutoCommit")
+    public boolean setAutoCommit = false;
+
+    @JsonProperty("execute")
+    public boolean execute = false;
+
+
+    @JsonProperty("afterLoad")
+    public List<String> afterLoad = new ArrayList<>();
+
+    public List<String> getAfterLoad() {
+        return afterLoad;
+    }
+
+    public void setAfterLoad(List<String> afterLoad) {
+        this.afterLoad = afterLoad;
+    }
 
     public List<String> getCreate() {
         return create;
@@ -54,13 +71,33 @@ public class MicrobenchmarkProperties {
     }
 
 
+    public boolean isSetAutoCommit() {
+        return setAutoCommit;
+    }
+
+    public void setSetAutoCommit(boolean setAutoCommit) {
+        this.setAutoCommit = setAutoCommit;
+    }
+
+
+    public boolean isExecute() {
+        return execute;
+    }
+
+    public void setExecute(boolean execute) {
+        this.execute = execute;
+    }
+
     @Override
     public String toString() {
-        return "MicrobenchmarkProperties = {" +
+        return "MicrobenchmarkProperties{" +
             "create=" + create +
             ", loadRules=" + loadRules +
             ", executeRules=" + executeRules +
             ", cleanup=" + cleanup +
+            ", setAutoCommit=" + setAutoCommit +
+            ", execute=" + execute +
+            ", afterLoad=" + afterLoad +
             '}';
     }
 }

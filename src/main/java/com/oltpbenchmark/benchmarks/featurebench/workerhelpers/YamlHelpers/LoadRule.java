@@ -11,11 +11,14 @@ public class LoadRule {
     @JsonProperty("table")
     public String table;
 
+    @JsonProperty("count")
+    public int count = 1;
+
     @JsonProperty("rows")
     public int rows;
 
     @JsonProperty("columns")
-    public HashSet<Column> columns=new HashSet<>();
+    public HashSet<Column> columns = new HashSet<>();
 
     public String getTable() {
         return table;
@@ -41,11 +44,22 @@ public class LoadRule {
         this.columns = columns;
     }
 
+
+    public int getCount() {
+        return count;
+    }
+
+    public void setCount(int count) {
+        this.count = count;
+    }
+
+
     @Override
     public String toString() {
         return "LoadRule{" +
-            "tableName='" + table + '\'' +
-            ", noRows=" + rows +
+            "table='" + table + '\'' +
+            ", count=" + count +
+            ", rows=" + rows +
             ", columns=" + columns +
             '}';
     }
