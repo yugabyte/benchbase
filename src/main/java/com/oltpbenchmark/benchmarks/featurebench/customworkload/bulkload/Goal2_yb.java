@@ -22,7 +22,7 @@ import java.util.List;
 
 public class Goal2_yb extends YBMicroBenchmark {
 
-    private static final Logger LOG = LoggerFactory.getLogger(Goal2_pg.class);
+    private static final Logger LOG = LoggerFactory.getLogger(Goal2_yb.class);
 
     String tableName;
     int numOfColumns;

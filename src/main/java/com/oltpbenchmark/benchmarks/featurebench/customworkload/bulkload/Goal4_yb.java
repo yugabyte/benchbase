@@ -20,7 +20,7 @@ import java.sql.Statement;
 
 public class Goal4_yb extends YBMicroBenchmark {
 
-    private static final Logger LOG = LoggerFactory.getLogger(Goal4_pg.class);
+    private static final Logger LOG = LoggerFactory.getLogger(Goal4_yb.class);
 
     String tableName;
     int numOfColumns;

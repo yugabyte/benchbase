@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Goal1_yb extends YBMicroBenchmark {
-    private static final Logger LOG = LoggerFactory.getLogger(Goal1_pg.class);
+    private static final Logger LOG = LoggerFactory.getLogger(Goal1_yb.class);
     String tableName;
     int numOfColumns;
     int numOfRows;
