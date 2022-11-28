@@ -433,6 +433,7 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
                     if (!autoCommitVal)
                         conn.commit();
 
+
                     break;
 
                 } catch (UserAbortException ex) {
