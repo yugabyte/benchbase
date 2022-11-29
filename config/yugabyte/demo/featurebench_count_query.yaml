@@ -10,7 +10,6 @@ terminals: 1
 works:
     work:
         time_secs: 5
-        active_terminals: 1
         rate: 1000
         warmup: 0
 microbenchmark:
@@ -35,7 +34,7 @@ microbenchmark:
                     params:
                         - 128
         executeRules:
-            - workload: RangeScan
+            - workload: RangeScan1
               run:
                   - name: ReadQuery1
                     weight: 50
@@ -56,8 +55,8 @@ microbenchmark:
                                 params:
                                     - 1
                                     - 1000
-
-            - run:
+            - workload: RangeScan2
+              run:
                   - name: ReadQuery2
                     weight: 50
                     queries:

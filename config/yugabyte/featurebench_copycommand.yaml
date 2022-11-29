@@ -8,20 +8,20 @@ isolation: TRANSACTION_REPEATABLE_READ
 loaderThreads: 6
 terminals: 6
 microbenchmark:
-    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.CopyCommandBenchmark
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.CopyCommand
     properties:
         rows: 100
         columns: 10
         indexes: 2
-        rowspertransaction: 1000
+        rowsPerTransaction: 1000
 #        tableName: accounts
 #        filePath: accounts.csv
 
 works:
     work:
-        time: 10
+        time_secs: 10
         rate: 1000
         weights: 100
-transactiontypes:
-    transactiontype:
-        name: FeatureBench
+#transactiontypes:
+#    transactiontype:
+#        name: FeatureBench

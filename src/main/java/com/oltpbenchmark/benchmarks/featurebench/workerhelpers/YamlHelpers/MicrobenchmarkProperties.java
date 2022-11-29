@@ -25,9 +25,67 @@ public class MicrobenchmarkProperties {
     @JsonProperty("execute")
     public boolean execute = false;
 
-
     @JsonProperty("afterLoad")
     public List<String> afterLoad = new ArrayList<>();
+
+    @JsonProperty("tableName")
+    public String tableName;
+
+    @JsonProperty("columns")
+    public int columns;
+
+    @JsonProperty("rows")
+    public int rows;
+
+    @JsonProperty("indexes")
+    public int indexes;
+
+    @JsonProperty("filePath")
+    public String filePath;
+    @JsonProperty("rowsPerTransaction")
+    public int rowsPerTransaction;
+
+    public int getColumns() {
+        return columns;
+    }
+
+    public void setColumns(int columns) {
+        this.columns = columns;
+    }
+
+    public int getRows() {
+        return rows;
+    }
+
+    public void setRows(int rows) {
+        this.rows = rows;
+    }
+
+    public int getIndexes() {
+        return indexes;
+    }
+
+    public void setIndexes(int indexes) {
+        this.indexes = indexes;
+    }
+
+
+    public String getFilePath() {
+        return filePath;
+    }
+
+    public void setFilePath(String filePath) {
+        this.filePath = filePath;
+    }
+
+
+    public int getRowsPerTransaction() {
+        return rowsPerTransaction;
+    }
+
+    public void setRowsPerTransaction(int rowsPerTransaction) {
+        this.rowsPerTransaction = rowsPerTransaction;
+    }
 
     public List<String> getAfterLoad() {
         return afterLoad;
@@ -88,6 +146,15 @@ public class MicrobenchmarkProperties {
         this.execute = execute;
     }
 
+    public String getTableName() {
+        return tableName;
+    }
+
+    public void setTableName(String tableName) {
+        this.tableName = tableName;
+    }
+
+
     @Override
     public String toString() {
         return "MicrobenchmarkProperties{" +
@@ -98,6 +165,12 @@ public class MicrobenchmarkProperties {
             ", setAutoCommit=" + setAutoCommit +
             ", execute=" + execute +
             ", afterLoad=" + afterLoad +
+            ", tableName='" + tableName + '\'' +
+            ", columns=" + columns +
+            ", rows=" + rows +
+            ", indexes=" + indexes +
+            ", filePath='" + filePath + '\'' +
+            ", rowsPerTransaction=" + rowsPerTransaction +
             '}';
     }
 }

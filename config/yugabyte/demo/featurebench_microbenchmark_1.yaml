@@ -12,9 +12,6 @@ works:
         time_secs: 10
         rate: 1000
         weights: 100
-transactiontypes:
-    transactiontype:
-        name: FeatureBench
 microbenchmark:
     class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
     properties:

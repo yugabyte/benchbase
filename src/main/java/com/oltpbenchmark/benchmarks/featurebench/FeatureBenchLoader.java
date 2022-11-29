@@ -237,7 +237,6 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
     private synchronized void afterLoadPhaseYaml() {
         if (config.containsKey("afterLoad") && !isAfterLoadDone.get()) {
             try {
-                System.out.println("In after load");
                 Statement stmtObj = benchmark.makeConnection().createStatement();
                 List<String> afterLoadDDLs = config.getList(String.class, "afterLoad");
                 long afterLoadStart = System.currentTimeMillis();

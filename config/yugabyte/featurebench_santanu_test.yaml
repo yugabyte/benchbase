@@ -9,13 +9,9 @@ loaderthreads: 1
 terminals: 1
 works:
     work:
-        serial: true
-        active_terminals: 1
+#        serial: true
         rate: 1000
         weights: 100
-transactiontypes:
-    transactiontype:
-        name: FeatureBench
 microbenchmark:
     class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
     properties:
@@ -41,7 +37,7 @@ microbenchmark:
                         - 100
                         - 500
                   - name: k2
-                    util: RandomAstring
+                    util: RandomAString
                     params:
                         - 2
                         - 5

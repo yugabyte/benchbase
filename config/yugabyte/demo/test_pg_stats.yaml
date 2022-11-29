@@ -11,7 +11,6 @@ collect_pg_stat_statements: true
 works:
     work:
         time_secs: 3
-        active_terminals: 1
         rate: 1000
         warmup: 0
 microbenchmark:

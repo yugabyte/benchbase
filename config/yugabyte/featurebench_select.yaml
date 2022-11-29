@@ -10,7 +10,6 @@ terminals: 1
 works:
     work:
         time_secs: 60
-        active_terminals: 1
         rate: 1000
         warmup: 0
 microbenchmark:

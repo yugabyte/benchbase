@@ -18,10 +18,15 @@
 
 package com.oltpbenchmark;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.oltpbenchmark.api.BenchmarkModule;
 import com.oltpbenchmark.api.TransactionType;
 import com.oltpbenchmark.api.TransactionTypes;
 import com.oltpbenchmark.api.Worker;
+import com.oltpbenchmark.benchmarks.featurebench.workerhelpers.YamlHelpers.Microbenchmark;
+import com.oltpbenchmark.benchmarks.featurebench.workerhelpers.YamlHelpers.Root;
 import com.oltpbenchmark.types.DatabaseType;
 import com.oltpbenchmark.util.*;
 import org.apache.commons.cli.*;
@@ -36,6 +41,7 @@ import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.commons.configuration2.tree.xpath.XPathExpressionEngine;
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -111,9 +117,34 @@ public class DBWorkload {
         int lastTxnId = 0;
         for (String plugin : targetList) {
             String pluginTest = "[@bench='" + plugin + "']";
-            if (plugin.equalsIgnoreCase("featurebench"))
+            if (plugin.equalsIgnoreCase("featurebench")) {
+
+                ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+                mapper.findAndRegisterModules();
+                File file = new File(configFile);
+                Root root = mapper.readValue(file, Root.class);
+                System.out.println(root.toString());
                 xmlConfig = buildConfigurationFromYaml(configFile);
-            else
+
+//                xmlConfig = buildConfigurationFromYaml(configFile);
+//                HierarchicalConfiguration<ImmutableNode> conf = xmlConfig.configurationAt("microbenchmark");
+//                JSONObject ob=new JSONObject(conf);
+//                Microbenchmark mr=new Microbenchmark();
+//                Map<HierarchicalConfiguration<ImmutableNode>,Microbenchmark> map = null;
+//                map.put(conf,mr);
+
+//                File file = File.createTempFile("temp_microbenchmark", ".yaml");
+//
+//                ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+//
+//                mapper.findAndRegisterModules();
+//                System.out.println(conf.toString());
+//                Microbenchmark microbenchmark = mapper.readValue(conf, Microbenchmark.class);
+
+//                file.deleteOnExit();
+//                System.out.println(microbenchmark.toString());
+
+            } else
                 xmlConfig = buildConfiguration(configFile);
 
             // ----------------------------------------------------------------
@@ -229,8 +260,7 @@ public class DBWorkload {
                             .containsKey("workload") ? workloads.get(workCount - 1).getString("workload") : workCount));
                     }
                 }
-            }
-            else {
+            } else {
                 try (PrintStream ps = new PrintStream(FileUtil.joinPath(fileForAllWorkloadList))) {
                     ps.println("DEFAULT_WORKLOAD");
                 }
@@ -243,12 +273,10 @@ public class DBWorkload {
                     uniqueRunWorkloads.forEach(uniqueWorkload -> {
                         if (workloadsFromExecuteRules.contains(uniqueWorkload)) {
                             LOG.info("Workload: " + uniqueWorkload + " will be scheduled to run");
-                        }
-                        else if(workloadsFromExecuteRules.size() == 0 &&
+                        } else if (workloadsFromExecuteRules.size() == 0 &&
                             uniqueWorkload.equalsIgnoreCase("DEFAULT_WORKLOAD")) {
                             LOG.info("Running workload specified through code implementation");
-                        }
-                        else {
+                        } else {
                             throw new RuntimeException("Wrong workload name provided in --workloads args: " + uniqueWorkload);
                         }
                     });
