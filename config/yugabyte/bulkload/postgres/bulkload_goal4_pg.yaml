@@ -19,7 +19,7 @@ transactiontypes:
     transactiontype:
         name: FeatureBench
 microbenchmark:
-    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.bulkload.Goal4_pg
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.bulkload.Goal4
     properties:
         # Goal4 - 1 :: create table with 10 fields, 3M rows -> load data (only PK)
         tableName: orders
