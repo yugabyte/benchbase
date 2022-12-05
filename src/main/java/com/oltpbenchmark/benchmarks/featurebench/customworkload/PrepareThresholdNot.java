@@ -31,11 +31,11 @@ public class PrepareThresholdNot extends YBMicroBenchmark {
         for (int i = 0; i < count; i++) {
             ResultSet rs = pstmt.executeQuery();
             pgstmt.setPrepareThreshold(0);
-            int result = 0;
+
             while (rs.next()) {
-                result++;
+                System.out.println(rs.toString());
             }
-            System.out.println(result);
+
             rs.close();
         }
         pstmt.close();
