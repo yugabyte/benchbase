@@ -33,7 +33,7 @@ public class PrepareThresholdNot extends YBMicroBenchmark {
             pgstmt.setPrepareThreshold(0);
 
             while (rs.next()) {
-                System.out.println(rs.toString());
+                System.out.println(rs.getString(1));
             }
 
             rs.close();
