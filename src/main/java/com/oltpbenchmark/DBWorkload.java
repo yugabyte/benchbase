@@ -18,7 +18,7 @@
 
 package com.oltpbenchmark;
 
-import com.google.common.base.Defaults;
+
 import com.hubspot.jinjava.Jinjava;
 import com.hubspot.jinjava.JinjavaConfig;
 import com.hubspot.jinjava.interpret.RenderResult;
@@ -109,12 +109,6 @@ public class DBWorkload {
 
         String configFile = argsLine.getOptionValue("c");
 
-        String[] params=null;
-        if (argsLine.hasOption("params")) {
-            params = argsLine.getOptionValues("params");
-            configFile = replaceParametersInYaml(params,configFile);
-        }
-
         XMLConfiguration xmlConfig = null;
 
         // Load the configuration for each benchmark
@@ -122,7 +116,16 @@ public class DBWorkload {
         for (String plugin : targetList) {
             String pluginTest = "[@bench='" + plugin + "']";
             if (plugin.equalsIgnoreCase("featurebench"))
+            {
+                String[] params=null;
+                if (argsLine.hasOption("params")) {
+                    params = argsLine.getOptionValues("params");
+                    LOG.info("Creating modified temporary input yaml with passed parameters from : "+ configFile);
+                    configFile = replaceParametersInYaml(params,configFile);
+                }
                 xmlConfig = buildConfigurationFromYaml(configFile);
+            }
+
             else
                 xmlConfig = buildConfiguration(configFile);
 

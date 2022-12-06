@@ -10,7 +10,7 @@ terminals: 1
 collect_pg_stat_statements: true
 works:
     work:
-        time_secs: 10
+        time_secs: {{time}}
         rate: 1000
         warmup: 0
 microbenchmark:
