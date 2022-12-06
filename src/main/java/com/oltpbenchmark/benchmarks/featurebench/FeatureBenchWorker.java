@@ -23,6 +23,8 @@ import com.oltpbenchmark.api.Worker;
 import com.oltpbenchmark.benchmarks.featurebench.helpers.UtilToMethod;
 import com.oltpbenchmark.benchmarks.featurebench.workerhelpers.ExecuteRule;
 import com.oltpbenchmark.benchmarks.featurebench.workerhelpers.Query;
+import com.oltpbenchmark.jdbc.AutoIncrementPreparedStatement;
+import com.oltpbenchmark.types.DatabaseType;
 import com.oltpbenchmark.types.State;
 import com.oltpbenchmark.types.TransactionStatus;
 import com.oltpbenchmark.util.FileUtil;
@@ -185,9 +187,10 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
 
             int executeRuleIndex = txnType.getId() - 1;
             ExecuteRule executeRule = executeRules.get(executeRuleIndex);
+            boolean isRetry = false;
             for (Query query : executeRule.getQueries()) {
                 String querystmt = query.getQuery();
-                PreparedStatement stmt = conn.prepareStatement(querystmt);
+                PreparedStatement stmt = new AutoIncrementPreparedStatement(DatabaseType.YUGABYTE, conn.prepareStatement(querystmt));
                 List<UtilToMethod> baseUtils = query.getBaseUtils();
                 int count = query.getCount();
                 for (int i = 0; i < count; i++) {
@@ -201,16 +204,18 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                             countSet++;
                         }
                         if (countSet == 0) {
-                            return TransactionStatus.RETRY;
+                            isRetry = true;
                         }
                     } else {
                         int updatedRows = stmt.executeUpdate();
                         if (updatedRows == 0) {
-                            return TransactionStatus.RETRY;
+                            isRetry = true;
                         }
                     }
                 }
             }
+            if (isRetry)
+                return TransactionStatus.RETRY;
 
         } catch (ClassNotFoundException | InvocationTargetException
                  | InstantiationException | IllegalAccessException |
