@@ -88,7 +88,6 @@ public class DBWorkload {
         }
 
 
-
         // Seconds
         int intervalMonitor = 0;
         if (argsLine.hasOption("im")) {
@@ -125,7 +124,6 @@ public class DBWorkload {
                 }
                 xmlConfig = buildConfigurationFromYaml(configFile);
             }
-
             else
                 xmlConfig = buildConfiguration(configFile);
 
@@ -1021,5 +1019,3 @@ public class DBWorkload {
         }
     }
 }
-
-
