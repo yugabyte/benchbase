@@ -10,7 +10,7 @@
 #Time to fetch 15 columns based on one PK
 type: POSTGRES
 driver: org.postgresql.Driver
-url: jdbc:postgresql://sgupta-pg-i-westc-validate.cbtcvpszcgdq.us-west-2.rds.amazonaws.com:5432/postgres?sslmode=require
+url: jdbc:postgresql://{{endpoint}}:5432/postgres?sslmode=require
 username: postgres
 password: Password321
 batchsize: 128

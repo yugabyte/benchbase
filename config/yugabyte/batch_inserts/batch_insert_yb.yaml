@@ -1,7 +1,7 @@
 type: YUGABYTE
 driver: com.yugabyte.Driver
 #url: jdbc:yugabytedb://172.151.23.87:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
-url: jdbc:yugabytedb://172.151.31.149:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
+url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
 username: yugabyte
 password: Password@321
 

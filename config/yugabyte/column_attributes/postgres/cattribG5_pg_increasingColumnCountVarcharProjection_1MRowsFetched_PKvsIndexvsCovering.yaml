@@ -9,7 +9,7 @@
 #Time to fetch 2 covered column based on one indexed column
 type: POSTGRES
 driver: org.postgresql.Driver
-url: jdbc:postgresql://sgupta-pg-i-westc-validate.cbtcvpszcgdq.us-west-2.rds.amazonaws.com:5432/postgres?sslmode=require
+url: jdbc:postgresql://{{endpoint}}:5432/postgres?sslmode=require
 username: postgres
 password: Password321
 batchsize: 128

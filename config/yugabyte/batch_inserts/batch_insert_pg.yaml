@@ -1,6 +1,6 @@
 type: postgres
 driver: org.postgresql.Driver
-url: jdbc:postgresql://sagarwal-pg-rds-14.cbtcvpszcgdq.us-west-2.rds.amazonaws.com:5432/postgres?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
+url: jdbc:postgresql://{{endpoint}}:5432/postgres?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
 username: postgres
 password: Password321
 

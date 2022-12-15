@@ -1,6 +1,6 @@
 type: postgres
 driver: org.postgresql.Driver
-url: jdbc:postgresql://localhost:5432/postgres?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
+url: jdbc:postgresql://{{endpoint}}:5432/postgres?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
 username: postgres
 password: password
 batchsize: 128
