@@ -72,7 +72,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
 
             if (this.getWorkloadConfiguration().getXmlConfig().containsKey("collect_pg_stat_statements") &&
                 this.getWorkloadConfiguration().getXmlConfig().getBoolean("collect_pg_stat_statements")) {
-                LOG.info("Resetting pg_stat_statements");
+                LOG.info("Resetting pg_stat_statements for workload : " + this.workloadName);
                 try {
                     Statement stmt = conn.createStatement();
                     stmt.executeQuery("SELECT pg_stat_statements_reset();");
@@ -135,7 +135,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
 
 
     public void writeExplain(PrintStream os, List<PreparedStatement> explainSQLS) throws SQLException {
-        LOG.info("Running explain for select/update queries before execute phase");
+        LOG.info("Running explain for select/update queries before execute phase for workload : " + this.workloadName);
         Map<String, JSONObject> summaryMap = new TreeMap<>();
         int count = 0;
         for (PreparedStatement ddl : explainSQLS) {
@@ -185,6 +185,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
 
             int executeRuleIndex = txnType.getId() - 1;
             ExecuteRule executeRule = executeRules.get(executeRuleIndex);
+            boolean isRetry = false;
             for (Query query : executeRule.getQueries()) {
                 String querystmt = query.getQuery();
                 PreparedStatement stmt = conn.prepareStatement(querystmt);
@@ -201,16 +202,18 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                             countSet++;
                         }
                         if (countSet == 0) {
-                            return TransactionStatus.RETRY;
+                            isRetry = true;
                         }
                     } else {
                         int updatedRows = stmt.executeUpdate();
                         if (updatedRows == 0) {
-                            return TransactionStatus.RETRY;
+                            isRetry = true;
                         }
                     }
                 }
             }
+            if (isRetry)
+                return TransactionStatus.RETRY;
 
         } catch (ClassNotFoundException | InvocationTargetException
                  | InstantiationException | IllegalAccessException |
@@ -229,7 +232,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             if (!this.configuration.getNewConnectionPerTxn() && this.configuration.getWorkloadState().getGlobalState() == State.EXIT && !isTearDownDone) {
                 if (this.getWorkloadConfiguration().getXmlConfig().containsKey("collect_pg_stat_statements") &&
                     this.getWorkloadConfiguration().getXmlConfig().getBoolean("collect_pg_stat_statements")) {
-                    LOG.info("Collecting pg_stat_statements");
+                    LOG.info("Collecting pg_stat_statements for workload : " + this.workloadName);
                     try {
                         excutePgStatStatements();
                     } catch (SQLException e) {
