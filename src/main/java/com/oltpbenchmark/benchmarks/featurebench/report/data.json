@@ -1,0 +1,79 @@
+{
+    "cluster": [
+        {
+            "name": "PG",
+            "DB_type": "Postgress",
+            "Url": "jdbc://localhost:5432/postgres",
+            "Version": "PostgresSQL 11.2-YB-2.17.1.0-b0 on x86_64-pc-linux-gnu"
+        },
+        {
+            "name": "YB",
+            "DB_type": "Yugabyte",
+            "Url": "jdbc://localhost:5432/postgres",
+            "Version": "PostgresSQL 11.2-YB-2.17.1.0-b0 on x86_64-pc-linux-gnu"
+        },
+        {
+            "name": "Aurora",
+            "DB_type": "Postgress",
+            "Url": "jdbc://localhost:5432/aurora",
+            "Version": "PostgresSQL 11.2-YB-2.17.1.0-b0 on x86_64-pc-linux-gnu"
+        }
+    ],
+    "workloads": [
+        {
+            "workload": "RangeScan",
+            "average_latency": {
+                "RangeScan(PG)": 0.65,
+                "RangeScan(YB)": 1.95,
+                "RangeScan(Aurora)": 0.75
+            },
+
+            "queries": [
+                {
+                    "query": "select * from reservation where limit 1",
+                    "name": "limit 1",
+                    "weight": "50"
+                },
+                {
+                    "query": "select * from reservation where limit 1",
+                    "name": "limit 1",
+                    "weight": "50"
+                },
+                {
+                    "query": "select * from reservation where limit 1",
+                    "name": "limit 1",
+                    "weight": "50"
+                }
+            ],
+            "average_ratio": {
+                "YB/PG": 0.65,
+                "Aurora/YB": 0.95
+            }
+        },
+
+        {
+            "workload": "IndexScan",
+            "average_latency": {
+                "IndexScan(PG)": 0.65,
+                "IndexScan(YB)": 0.95,
+                "IndexScan(Aurora)": 0.75
+            },
+            "queries": [
+                {
+                    "query": "select * from index where limit 1",
+                    "name": "limit 1",
+                    "weight": "50"
+                },
+                {
+                    "query": "select * from index where limit 1",
+                    "name": "limit 1",
+                    "weight": "50"
+                }
+            ],
+            "average_ratio": {
+                "YB/PG": 0.65,
+                "Aurora/YB": 0.95
+            }
+        }
+    ]
+}
