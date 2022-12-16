@@ -87,6 +87,38 @@ public class ToHtml {
         text = text + "</div>";
         div.append(text);
 
+        div.append(generateAvergaeLatency(workload));
+
+    }
+
+    public static String generateAvergaeLatency(JSONObject workload) {
+        String text = "<div class='accordion mt-10'><div class='accordion-box'><div class='text-xl font-semibold text-blue-900 mt-4 label cursor-pointer bg-section px-2 py-2 rounded-md hover:border-b-2 hover:border-accent transition duration-150 shadow'>Avergae Latency</div><div class='flex flex-row mt-6 justify-between content'>";
+
+        // Client Side Latency Div
+        text = text
+                + "<div class='bg-section p-2 w-[20%] shadow-lg rounded-md px-8 flex flex-col'><div class='text-primary font-light w-full mt-4'>Client Side Latency (ms)</div><div class='flex flex-col mt-2 grow justify-around'>";
+
+        Map<String, Object> average_latency = (Map) workload.get("average_latency");
+
+        int i = 0;
+        for (Map.Entry<String, Object> entry : average_latency.entrySet()) {
+            Map<String, Object> context = new HashMap<>();
+            context.put("key", entry.getKey());
+            context.put("value", entry.getValue());
+            String renderedTemplate = jinjava.render(
+                    "<div class='flex flex-row w-full'><div class='text-primary font-semibold flex-grow'>{{ key }}</div><div class='text-accent font-semibold w-[40%]'>{{ value }}</div></div>",
+                    context);
+            if (i + 1 < average_latency.size()) {
+                renderedTemplate = renderedTemplate + "<div class='h-[1px] bg-accent w-full'></div>";
+            }
+            text = text + renderedTemplate;
+            i++;
+        }
+
+        text = text + "</div></div>";
+
+        return text;
+
     }
 
     public static void generateChartVertical(Element script, String elementId, JSONArray workloads) {

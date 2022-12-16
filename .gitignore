@@ -55,3 +55,5 @@ build/
 
 # vim swap files
 .*.swp
+
+node_modules
