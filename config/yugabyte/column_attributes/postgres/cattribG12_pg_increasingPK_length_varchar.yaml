@@ -12,8 +12,8 @@
 type: POSTGRES
 driver: org.postgresql.Driver
 url: jdbc:postgresql://{{endpoint}}:5432/postgres?sslmode=require
-username: postgres
-password: Password321
+username: {{username}}
+password: {{password}}
 batchsize: 128
 isolation: TRANSACTION_REPEATABLE_READ
 loaderthreads: 1
