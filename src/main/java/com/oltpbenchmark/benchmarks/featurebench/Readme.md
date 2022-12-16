@@ -61,21 +61,33 @@ In case of execute the workload is executed multiple times(multithreaded).
 java -jar benchbase.jar -b featurebench -c config/yugabyte/demo/featurebench_microbenchmark1_sonal.yaml --create=true --load=true --execute=true
 ```
 
+
+**Additional properties**
+We can parameterize our YAML's and can run them from CLI using the `--params` option. YAML will contain a variable in this format `{{ variable_name }}`
+and while running, pass the value for this parameter this way: `-p variable_name=value`
+Eg:-
+```bash
+java -jar benchbase.jar -b featurebench -c config/yugabyte/scan_workloads/yb_colocated/scanG1_colo_hash_pointlookup_primarykey_vs_index.yaml
+ --create=true --load=true --execute=true --params endpoint=localhost --params username=yugabyte --params password=password
+```
+
+
 ### YAML Config
-| Key           | Description                                                                                                      |
-|---------------|------------------------------------------------------------------------------------------------------------------|
-| createdb      | To make databases with additional properties. DDL's for database to be written here(eg. for colocated property). |
- | create        | Has DDL's for create phase from YAML.                                                                            |
-| loadRules     | Has key/value for table name, util and parameters for util functions.                                            |
-| executeRules  | Has key/value for workload name and their details (parallel run names,weights and queries+bindings).             |
-| cleanup       | Has DDL's for cleaning up tables from YAML.                                                                      |
-| execute       | True/false (User writes their own execute Rules in execute() of customworkload class).                           |
-| setAutoCommit | True/False                                                                                                       |
-
-
+| Key                        | Description                                                                                                      |
+|----------------------------|------------------------------------------------------------------------------------------------------------------|
+| createdb                   | To make databases with additional properties. DDL's for database to be written here(eg. for colocated property). |
+ | create                     | Has DDL's for create phase from YAML.                                                                            |
+| loadRules                  | Has key/value for table name, util and parameters for util functions.                                            |
+| executeRules               | Has key/value for workload name and their details (parallel run names,weights and queries+bindings).             |
+| cleanup                    | Has DDL's for cleaning up tables from YAML.                                                                      |
+| execute                    | True/False (User writes their own execute Rules in execute() of customworkload class).                           |
+| setAutoCommit              | True/False                                                                                                       |
+| collect_pg_stat_statements | True/False                                                                                                       |
+| afterLoad                  | Has DDL's for adding dependencies after load Phase (i.e Foreign keys).                                           |
 NOTE :-
 1. `properties: {}` in YAML ( under `microbenchmark/properties`) implies user has made their own customworkload class overriding the create(), loadOnce and executeOnce() of YBMicrobenchmark abstract class.
-2.  If you are using `execute` or `executeOnce` in YAML set the flag `setAutoCommit` to `false`.
+2. In order to use `collect_pg_stat_statements` for databases besides yugabyteDB, make sure to enable the extension in your database by running `CREATE EXTENSION pg_stat_statements;`
+if not enabled by default in your database.
 ### Utility Functions:-
 
 Utility functions are present inside the folder :-
@@ -121,7 +133,9 @@ Utility functions are present inside the folder :-
 
 The results for each YAML config run can be found inside the `results` folder.
 
-Serial runs inside a YAML have separate sub-folders inside `results` folder with names same as either run name(if provided) or timestamp of run.
+1. Serial runs inside a YAML have separate sub-folders inside `results` folder with names same as either run name(if provided) or timestamp of run.
+2. Results for explain and pg_stats are stored in separate folders (ResultsForExplain ,ResultsForPgStats) with the workload name appended with the
+timestamp of run.
 
 
 
