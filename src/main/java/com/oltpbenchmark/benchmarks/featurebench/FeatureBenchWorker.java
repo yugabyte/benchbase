@@ -324,8 +324,6 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
         }
         isTearDownDone = true;
     }
-
-
     int similarity(String pg_query, String actual_query) {
         return new LevenshteinDistance().apply(pg_query, actual_query);
     }
