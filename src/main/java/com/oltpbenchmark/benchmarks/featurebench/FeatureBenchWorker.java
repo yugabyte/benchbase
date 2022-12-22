@@ -234,7 +234,6 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                     try {
                         List<Query> allqueries = new ArrayList<>();
                         for (ExecuteRule er : executeRules) {
-                            System.out.println(er.getName());
                             for (int i = 0; i < er.getQueries().size(); i++) {
                                 er.getQueries().get(i);
                                 allqueries.add(er.getQueries().get(i));
@@ -243,7 +242,6 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                         List<String> allqueryStrings = new ArrayList<>();
                         for (int i = 0; i < allqueries.size(); i++) {
                             allqueryStrings.add(allqueries.get(i).getQuery());
-                           // System.out.println(allqueries.get(i).getQuery());
                         }
                         excutePgStatStatements(allqueryStrings);
                     } catch (SQLException e) {
@@ -255,8 +253,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
         synchronized (this) {
             if (!this.configuration.getNewConnectionPerTxn() && this.conn != null && ybm != null) {
                 try {
-                    if ((config.containsKey("execute") && config.getBoolean("execute")) || (executeRules == null || executeRules.size() == 0))
-                    {
+                    if ((config.containsKey("execute") && config.getBoolean("execute")) || (executeRules == null || executeRules.size() == 0)) {
                         if (this.configuration.getWorkloadState().getGlobalState() == State.EXIT && !isCleanUpDone.get()) {
                             ybm.cleanUp(conn);
                             LOG.info("\n=================Cleanup Phase taking from User=========\n");
@@ -274,16 +271,11 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
     private void excutePgStatStatements(List<String> allqueries) throws SQLException {
         String pgStatDDL = "select * from pg_stat_statements;";
         String PgStatsDir = "ResultsForPgStats";
-        String PgStatsDirQuery = "ResultsForPgStatsQuery";
         FileUtil.makeDirIfNotExists("results" + "/" + PgStatsDir);
-        FileUtil.makeDirIfNotExists("results" + "/" + PgStatsDirQuery);
         String fileForPgStats = PgStatsDir + "/" + workloadName + "_" + TimeUtil.getCurrentTimeString() + ".json";
-        String fileForPgStatsQuery = PgStatsDirQuery + "/" + workloadName + "_" + TimeUtil.getCurrentTimeString() + ".json";
         PrintStream ps;
-        PrintStream pg;
         try {
             ps = new PrintStream(FileUtil.joinPath("results", fileForPgStats));
-            pg = new PrintStream(FileUtil.joinPath("results", fileForPgStatsQuery));
 
         } catch (FileNotFoundException exc) {
             throw new RuntimeException(exc);
@@ -316,7 +308,6 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             for (String key : allrecords.keySet()) {
                 JSONObject value = (JSONObject) allrecords.get(key);
                 String onlyquery = value.getString("query");
-                System.out.println(key + ": " + onlyquery);
                 if (minDistance > similarity(onlyquery, query)) {
                     minDistance = similarity(onlyquery, query);
                     keymatters = key;
@@ -326,9 +317,11 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
         }
         Map<String, JSONObject> QueryMap = new TreeMap<>();
         QueryMap.put("PgStats", outerQueries);
-        //System.out.println(JSONUtil.format(JSONUtil.toJSONString(QueryMap)));
-        ps.println(JSONUtil.format(JSONUtil.toJSONString(summaryMap)));
-        pg.println(JSONUtil.format(JSONUtil.toJSONString(QueryMap)));
+        if (allqueries.size() == 0) {
+            ps.println(JSONUtil.format(JSONUtil.toJSONString(summaryMap)));
+        } else {
+            ps.println(JSONUtil.format(JSONUtil.toJSONString(QueryMap)));
+        }
         isTearDownDone = true;
     }
 
