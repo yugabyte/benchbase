@@ -30,6 +30,7 @@ import com.oltpbenchmark.util.JSONUtil;
 import com.oltpbenchmark.util.TimeUtil;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.tree.ImmutableNode;
+import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,10 +39,7 @@ import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 
@@ -234,7 +232,20 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                     this.getWorkloadConfiguration().getXmlConfig().getBoolean("collect_pg_stat_statements")) {
                     LOG.info("Collecting pg_stat_statements for workload : " + this.workloadName);
                     try {
-                        excutePgStatStatements();
+                        List<Query> allqueries = new ArrayList<>();
+                        for (ExecuteRule er : executeRules) {
+                            System.out.println(er.getName());
+                            for (int i = 0; i < er.getQueries().size(); i++) {
+                                er.getQueries().get(i);
+                                allqueries.add(er.getQueries().get(i));
+                            }
+                        }
+                        List<String> allqueryStrings = new ArrayList<>();
+                        for (int i = 0; i < allqueries.size(); i++) {
+                            allqueryStrings.add(allqueries.get(i).getQuery());
+                           // System.out.println(allqueries.get(i).getQuery());
+                        }
+                        excutePgStatStatements(allqueryStrings);
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
                     }
@@ -244,25 +255,14 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
         synchronized (this) {
             if (!this.configuration.getNewConnectionPerTxn() && this.conn != null && ybm != null) {
                 try {
-                    if (this.configuration.getWorkloadState().getGlobalState() == State.EXIT && !isCleanUpDone.get()) {
-                        if (config.containsKey("cleanup")) {
-                            LOG.info("\n=================Cleanup Phase taking from Yaml=========\n");
-                            List<String> ddls = config.getList(String.class, "cleanup");
-                            try {
-                                Statement stmtObj = conn.createStatement();
-                                for (String ddl : ddls) {
-                                    stmtObj.execute(ddl);
-                                }
-                                stmtObj.close();
-                            } catch (Exception ex) {
-                                ex.printStackTrace();
-                            }
-
-                        } else {
+                    if ((config.containsKey("execute") && config.getBoolean("execute")) || (executeRules == null || executeRules.size() == 0))
+                    {
+                        if (this.configuration.getWorkloadState().getGlobalState() == State.EXIT && !isCleanUpDone.get()) {
                             ybm.cleanUp(conn);
+                            LOG.info("\n=================Cleanup Phase taking from User=========\n");
+                            conn.close();
+                            isCleanUpDone.set(true);
                         }
-                        conn.close();
-                        isCleanUpDone.set(true);
                     }
                 } catch (SQLException e) {
                     LOG.error("Connection couldn't be closed.", e);
@@ -271,14 +271,20 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
         }
     }
 
-    private void excutePgStatStatements() throws SQLException {
+    private void excutePgStatStatements(List<String> allqueries) throws SQLException {
         String pgStatDDL = "select * from pg_stat_statements;";
         String PgStatsDir = "ResultsForPgStats";
+        String PgStatsDirQuery = "ResultsForPgStatsQuery";
         FileUtil.makeDirIfNotExists("results" + "/" + PgStatsDir);
+        FileUtil.makeDirIfNotExists("results" + "/" + PgStatsDirQuery);
         String fileForPgStats = PgStatsDir + "/" + workloadName + "_" + TimeUtil.getCurrentTimeString() + ".json";
+        String fileForPgStatsQuery = PgStatsDirQuery + "/" + workloadName + "_" + TimeUtil.getCurrentTimeString() + ".json";
         PrintStream ps;
+        PrintStream pg;
         try {
             ps = new PrintStream(FileUtil.joinPath("results", fileForPgStats));
+            pg = new PrintStream(FileUtil.joinPath("results", fileForPgStatsQuery));
+
         } catch (FileNotFoundException exc) {
             throw new RuntimeException(exc);
         }
@@ -300,7 +306,34 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             count++;
         }
         summaryMap.put("PgStats", outer);
+        JSONObject outerQueries = new JSONObject();
+        int minDistance;
+        String keymatters;
+        for (String query : allqueries) {
+            minDistance = Integer.MAX_VALUE;
+            keymatters = null;
+            JSONObject allrecords = summaryMap.get("PgStats");
+            for (String key : allrecords.keySet()) {
+                JSONObject value = (JSONObject) allrecords.get(key);
+                String onlyquery = value.getString("query");
+                System.out.println(key + ": " + onlyquery);
+                if (minDistance > similarity(onlyquery, query)) {
+                    minDistance = similarity(onlyquery, query);
+                    keymatters = key;
+                }
+            }
+            outerQueries.put(keymatters, allrecords.get(keymatters));
+        }
+        Map<String, JSONObject> QueryMap = new TreeMap<>();
+        QueryMap.put("PgStats", outerQueries);
+        //System.out.println(JSONUtil.format(JSONUtil.toJSONString(QueryMap)));
         ps.println(JSONUtil.format(JSONUtil.toJSONString(summaryMap)));
+        pg.println(JSONUtil.format(JSONUtil.toJSONString(QueryMap)));
         isTearDownDone = true;
+    }
+
+
+    int similarity(String pg_query, String actual_query) {
+        return new LevenshteinDistance().apply(pg_query, actual_query);
     }
 }
