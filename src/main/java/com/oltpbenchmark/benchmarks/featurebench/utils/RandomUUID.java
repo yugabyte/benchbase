@@ -23,8 +23,7 @@ public class RandomUUID implements BaseUtil {
     @Override
     public Object run() {
         UUID uuid = UUID.randomUUID();
-        String uuidAsString = uuid.toString();
-        return uuidAsString;
+        return uuid;
     }
 }
 
