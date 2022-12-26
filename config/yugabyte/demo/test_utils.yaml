@@ -23,7 +23,7 @@ microbenchmark:
             - DROP TABLE IF EXISTS USERS;
             - DROP TABLE IF EXISTS CUSTOMERS;
             - DROP TABLE IF EXISTS EMPLOYEE;
-            - CREATE TABLE STUDENTS(id text PRIMARY KEY, name text,subject text,merits int, time1 DATE,time2 text,time3 text,cgpa numeric(6,2),standard int,DOB date[])
+            - CREATE TABLE STUDENTS(id text PRIMARY KEY, name text,subject text,merits int, time1 DATE,time2 text,time3 text,cgpa numeric(6,2),standard int)
             - CREATE TABLE ALUMNI(regno text,is_2022_passout boolean,passoutYear text,no_of_subjects int, savings int)
             - CREATE TABLE users (id uuid PRIMARY KEY, name varchar(255), customer_code text, credits int,total_expenditure bigint,date_issue DATE);
             - CREATE TABLE customers(id serial primary key,cid text, customer_points numeric(5,2));
@@ -56,9 +56,6 @@ microbenchmark:
                     -   name: standard
                         util: ConstantValue
                         params: [5.5]
-                    -   name: DOB
-                        util: ArrayOfDates
-                        params: [3]
             -   table: alumni
                 rows: 10
                 columns:
