@@ -102,6 +102,7 @@ public class DBWorkload {
 
         String[] targetList = targetBenchmarks.split(",");
         List<BenchmarkModule> benchList = new ArrayList<>();
+        List<BenchmarkModule> copyBenchList = new ArrayList<>();
 
         // Use this list for filtering of the output
         List<TransactionType> activeTXTypes = new ArrayList<>();
@@ -384,6 +385,9 @@ public class DBWorkload {
 
 
                 benchList.add(bench);
+                if (workCount == 1) {
+                    copyBenchList.add(bench);
+                }
 
                 // ----------------------------------------------------------------
                 // WORKLOAD CONFIGURATION
@@ -687,6 +691,27 @@ public class DBWorkload {
                 wrkld.clearPhase();
                 activeTXTypes.clear();
             }
+
+            if (argsLine.hasOption("cleanup") && isBooleanOptionSet(argsLine, "cleanup")) {
+                for (BenchmarkModule benchmarkModule : copyBenchList) {
+                    if (xmlConfig.containsKey("microbenchmark/properties/cleanup")) {
+                        List<String> ddls = xmlConfig.getList(String.class, "microbenchmark/properties/cleanup");
+                        try {
+                            Statement stmtObj = benchmarkModule.makeConnection().createStatement();
+                            for (String ddl : ddls) {
+                                stmtObj.execute(ddl);
+                            }
+                            LOG.info("\n=================Cleanup Phase taking from Yaml=========\n");
+                            stmtObj.close();
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+                    else {
+                        LOG.info("No cleanup phase mentioned in YAML, but flag provided in run! ");
+                    }
+                }
+            }
         }
     }
 
@@ -706,6 +731,7 @@ public class DBWorkload {
         options.addOption("jh", "json-histograms", true, "Export histograms to JSON file");
         options.addOption("workloads", "workloads", true, "Run some specific workloads");
         options.addOption("p", "params", true, "Use varibles through CLI for YAML");
+        options.addOption(null, "cleanup", true, "Clean up the database");
         return options;
     }
 
