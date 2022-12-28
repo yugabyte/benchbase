@@ -226,6 +226,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
     @Override
     public void tearDown() {
 
+
         synchronized (this) {
             if (!this.configuration.getNewConnectionPerTxn() && this.configuration.getWorkloadState().getGlobalState() == State.EXIT && !isTearDownDone) {
                 if (this.getWorkloadConfiguration().getXmlConfig().containsKey("collect_pg_stat_statements") &&
