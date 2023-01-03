@@ -236,25 +236,37 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
 
         synchronized (this) {
             if (!this.configuration.getNewConnectionPerTxn() && this.configuration.getWorkloadState().getGlobalState() == State.EXIT && !isTearDownDone) {
+
+                List<Query> allqueries = new ArrayList<>();
+                for (ExecuteRule er : executeRules) {
+                    for (int i = 0; i < er.getQueries().size(); i++) {
+                        er.getQueries().get(i);
+                        allqueries.add(er.getQueries().get(i));
+                    }
+                }
+                List<String> allqueryStrings = new ArrayList<>();
+                for (int i = 0; i < allqueries.size(); i++) {
+                    allqueryStrings.add(allqueries.get(i).getQuery());
+                }
                 if (this.getWorkloadConfiguration().getXmlConfig().containsKey("collect_pg_stat_statements") &&
                     this.getWorkloadConfiguration().getXmlConfig().getBoolean("collect_pg_stat_statements")) {
                     LOG.info("Collecting pg_stat_statements for workload : " + this.workloadName);
                     try {
-                        List<Query> allqueries = new ArrayList<>();
-                        for (ExecuteRule er : executeRules) {
-                            for (int i = 0; i < er.getQueries().size(); i++) {
-                                er.getQueries().get(i);
-                                allqueries.add(er.getQueries().get(i));
-                            }
-                        }
-                        List<String> allqueryStrings = new ArrayList<>();
-                        for (int i = 0; i < allqueries.size(); i++) {
-                            allqueryStrings.add(allqueries.get(i).getQuery());
-                        }
                         executePgStatStatements(allqueryStrings);
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
                     }
+                }
+                else{
+                    List<JSONObject> jsonResultsList = new ArrayList<>();
+                    for(int i=0;i<allqueryStrings.size();i++)
+                    {
+                        JSONObject inner = new JSONObject();
+                        inner.put("query",allqueryStrings.get(i));
+                        inner.put("explain",queryToExplainMap.get(allqueryStrings.get(i)));
+                        jsonResultsList.add(inner);
+                    }
+                    this.featurebenchAdditionalResults.setJsonResultsList(jsonResultsList);
                 }
             }
         }
