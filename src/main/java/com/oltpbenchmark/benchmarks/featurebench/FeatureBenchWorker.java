@@ -263,7 +263,11 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                     {
                         JSONObject inner = new JSONObject();
                         inner.put("query",allqueryStrings.get(i));
-                        inner.put("explain",queryToExplainMap.get(allqueryStrings.get(i)));
+                        inner.put("pg_stat_statements",new JSONObject());
+                        if(queryToExplainMap.containsKey(allqueryStrings.get(i)))
+                         inner.put("explain",queryToExplainMap.get(allqueryStrings.get(i)));
+                        else
+                         inner.put("explain",new JSONObject());
                         jsonResultsList.add(inner);
                     }
                     this.featurebenchAdditionalResults.setJsonResultsList(jsonResultsList);
@@ -347,7 +351,10 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                 JSONObject inner = new JSONObject();
                 inner.put("query",allQueries.get(i));
                 inner.put("pg_stat_statements",outerQueries.get(allQueries.get(i)));
-                inner.put("explain",queryToExplainMap.get(allQueries.get(i)));
+                if(queryToExplainMap.containsKey(allQueries.get(i)))
+                    inner.put("explain",queryToExplainMap.get(allQueries.get(i)));
+                else
+                    inner.put("explain",new JSONObject());
                 jsonResultsList.add(inner);
             }
             this.featurebenchAdditionalResults.setJsonResultsList(jsonResultsList);
