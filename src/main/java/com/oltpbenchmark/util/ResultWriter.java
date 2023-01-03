@@ -252,8 +252,7 @@ public class ResultWriter {
         }
         Map<String, Object> detailedSummaryMap = new TreeMap<>();
         detailedSummaryMap.put("Summary", summaryMap);
-        detailedSummaryMap.put("pg_stat_statements", results.getFeaturebenchAdditionalResults().getPgStats().toMap());
-        detailedSummaryMap.put("explainAnalyze", results.getFeaturebenchAdditionalResults().getExplainAnalyze());
+        detailedSummaryMap.put("queries", results.getFeaturebenchAdditionalResults().getJsonResultsList());
         os.println(JSONUtil.format(JSONUtil.toJSONString(detailedSummaryMap)));
     }
 }

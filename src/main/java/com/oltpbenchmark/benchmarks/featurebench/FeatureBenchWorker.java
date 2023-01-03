@@ -55,6 +55,8 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
     public List<ExecuteRule> executeRules = null;
     public String workloadName = "";
 
+    public Map<String,JSONObject> queryToExplainMap = new HashMap<>();
+
     public boolean isTearDownDone = false;
 
     public boolean isInitializeDone = false;
@@ -94,8 +96,13 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                 throw new RuntimeException(exc);
             }
 
+            List<String> allQueries = new ArrayList<>();
+            for (ExecuteRule er : executeRules) {
+                for (int i = 0; i < er.getQueries().size(); i++) {
+                    allQueries.add(er.getQueries().get(i).getQuery());
+                }
+            }
             List<PreparedStatement> explainDDLs = new ArrayList<>();
-
             for (ExecuteRule er : executeRules) {
                 for (Query query : er.getQueries()) {
                     if (query.isSelectQuery() || query.isUpdateQuery()) {
@@ -123,7 +130,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             }
             try {
                 if (explainDDLs.size() > 0)
-                    writeExplain(ps, explainDDLs);
+                    writeExplain(ps, explainDDLs,allQueries);
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -132,7 +139,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
     }
 
 
-    public void writeExplain(PrintStream os, List<PreparedStatement> explainSQLS) throws SQLException {
+    public void writeExplain(PrintStream os, List<PreparedStatement> explainSQLS,List<String> allQueries) throws SQLException {
         LOG.info("Running explain for select/update queries before execute phase for workload : " + this.workloadName);
         Map<String, JSONObject> summaryMap = new TreeMap<>();
         int count = 0;
@@ -156,8 +163,8 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             jsonObject.put("ResultSet", data.toString());
             jsonObject.put("Time(ms) ", explainEnd - explainStart);
             summaryMap.put("ExplainSQL" + count, jsonObject);
+            queryToExplainMap.put(allQueries.get(count-1),jsonObject);
         }
-        this.featurebenchAdditionalResults.setExplainAnalyze(summaryMap);
         os.println(JSONUtil.format(JSONUtil.toJSONString(summaryMap)));
     }
 
@@ -314,16 +321,24 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                     keymatters = key;
                 }
             }
-            outerQueries.put(keymatters, allrecords.get(keymatters));
+            outerQueries.put(query, allrecords.get(keymatters));
         }
         Map<String, JSONObject> queryMap = new TreeMap<>();
         queryMap.put("PgStats", outerQueries);
         if (allQueries.size() == 0) {
             ps.println(JSONUtil.format(JSONUtil.toJSONString(summaryMap)));
-            this.featurebenchAdditionalResults.setPgStats(outer);
         } else {
             ps.println(JSONUtil.format(JSONUtil.toJSONString(queryMap)));
-            this.featurebenchAdditionalResults.setPgStats(outerQueries);
+            List<JSONObject> jsonResultsList = new ArrayList<>();
+            for(int i=0;i<allQueries.size();i++)
+            {
+                JSONObject inner = new JSONObject();
+                inner.put("query",allQueries.get(i));
+                inner.put("pg_stat_statements",outerQueries.get(allQueries.get(i)));
+                inner.put("explain",queryToExplainMap.get(allQueries.get(i)));
+                jsonResultsList.add(inner);
+            }
+            this.featurebenchAdditionalResults.setJsonResultsList(jsonResultsList);
         }
         isTearDownDone = true;
     }
