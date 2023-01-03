@@ -13,6 +13,7 @@ public class FeaturebenchAdditionalResults {
 
     public void setJsonResultsList(List<JSONObject> jsonResultsList) {
         this.jsonResultsList = jsonResultsList;
+
     }
 
 }
