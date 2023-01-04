@@ -19,6 +19,10 @@
 package com.oltpbenchmark;
 
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.hubspot.jinjava.Jinjava;
 import com.hubspot.jinjava.JinjavaConfig;
 import com.hubspot.jinjava.interpret.RenderResult;
@@ -60,7 +64,8 @@ public class DBWorkload {
     private static final String RATE_DISABLED = "disabled";
     private static final String RATE_UNLIMITED = "unlimited";
 
-    private static Map<String, Map<String, Object>> workloadToSummaryMap = new TreeMap<>();
+
+
 
     /**
      * @param args
@@ -865,18 +870,33 @@ public class DBWorkload {
             String fbDetailedFileName = baseFileName + ".detailed.json";
             try (PrintStream ps = new PrintStream(FileUtil.joinPath(outputDirectory, fbDetailedFileName))) {
                 LOG.info("Output detailed summary into file: {}", fbDetailedFileName);
+                rw.writeDetailedSummary(ps);
 
-                workloadToSummaryMap.put(workload_name, rw.writeDetailedSummary(ps));
-
-                try {
-                    File file = new File(filePathForOutputJson);
-                    FileWriter writer;
-                    writer = new FileWriter(filePathForOutputJson);
-                    writer.write(JSONUtil.format(JSONUtil.toJSONString(workloadToSummaryMap)));
-                    writer.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
+                String filePath = "results/output.json";
+                String json =JSONUtil.format(JSONUtil.toJSONString(rw.writeDetailedSummary(ps)));
+                File newFile = new File(filePath);
+                JsonObject jsonObject;
+                if (newFile.length() == 0) {
+                    // Create a new JSON object if the file is empty
+                    jsonObject = new JsonObject();
+                } else {
+                    // Parse the contents of the file if it is not empty
+                    JsonParser parser = new JsonParser();
+                    jsonObject = parser.parse(new FileReader(newFile)).getAsJsonObject();
                 }
+                // Add a key-value pair to the JSON object
+                jsonObject.addProperty(workload_name, json);
+
+                // Write the JSON object to the file
+                FileWriter fileWriter = new FileWriter(newFile);
+
+                GsonBuilder builder = new GsonBuilder();
+                builder.setPrettyPrinting();
+                Gson gson = builder.create();
+
+                String prettyJson = JSONUtil.format(gson.toJson(jsonObject));
+                fileWriter.write(prettyJson);
+                fileWriter.close();
             }
         } else {
             String configFileName = baseFileName + ".config.xml";
