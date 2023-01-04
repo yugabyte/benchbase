@@ -41,6 +41,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.sql.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 /**
@@ -161,6 +163,21 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             }
             double explainEnd = System.currentTimeMillis();
             jsonObject.put("ResultSet", data.toString());
+            Pattern executionTimePattern = Pattern.compile("Execution Time: (\\d+\\.\\d+) ms");
+            Matcher executionTimeMatcher = executionTimePattern.matcher(data.toString());
+            if (executionTimeMatcher.find()) {
+                jsonObject.put("Execution Time(ms)", executionTimeMatcher.group(1));
+            }
+            Pattern planningTimePattern = Pattern.compile("Planning Time: (\\d+\\.\\d+) ms");
+            Matcher planningTimeMatcher = planningTimePattern.matcher(data.toString());
+            if (planningTimeMatcher.find()) {
+                jsonObject.put("Planning Time(ms)", planningTimeMatcher.group(1));
+            }
+            Pattern patternPlan = Pattern.compile("^(.*?) on");
+            Matcher matcherPlan = patternPlan.matcher(data.toString());
+            if (matcherPlan.find()) {
+                jsonObject.put("Plan", matcherPlan.group(1));
+            }
             jsonObject.put("Time(ms) ", explainEnd - explainStart);
             summaryMap.put("ExplainSQL" + count, jsonObject);
             queryToExplainMap.put(allQueries.get(count-1),jsonObject);

@@ -74,12 +74,12 @@ microbenchmark:
                   -   name: ReadQuery1
                       weight: 50
                       queries:
-                          -   query: SELECT * FROM demo100col WHERE id < 10
+                          -   query: SELECT * FROM demo3col WHERE id < 10
 
                   -   name: WriteQuery1
                       weight: 50
                       queries:
-                          -   query: UPDATE demo100col set col2 = ? where id = ?
+                          -   query: UPDATE demo3col set col2 = ? where id = ?
                               bindings:
                                   -   util: RandomAString
                                       params:
