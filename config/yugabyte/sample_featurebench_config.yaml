@@ -10,11 +10,7 @@ collect_pg_stat_statements: true
 terminals: 1
 works:
     work:
-<<<<<<< Updated upstream
-        time_secs: 3
-=======
         time_secs: 5
->>>>>>> Stashed changes
         active_terminals: 1
         rate: 1000
         warmup: 0
@@ -54,16 +50,10 @@ microbenchmark:
                                     params:
                                          - 5
                                          - 5
-
-
-
-
-
-<<<<<<< Updated upstream
                   -   name: WriteQuery2
                       weight: 50
                       queries:
-                          -   query: UPDATE demo100col set col3 = ? where id = ?
+                          -   query: UPDATE demo100col set col1 = ? where id = ?
                               bindings:
                                   -   util: RandomAString
                                       params:
@@ -73,6 +63,3 @@ microbenchmark:
                                       params:
                                           - 1
                                           - 1000
-
-=======
->>>>>>> Stashed changes
