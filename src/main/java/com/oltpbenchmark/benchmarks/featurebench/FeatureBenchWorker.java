@@ -132,7 +132,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             }
             try {
                 if (explainDDLs.size() > 0)
-                    writeExplain(ps, explainDDLs,allQueries);
+                    writeExplain(ps, explainDDLs, allQueries);
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -141,7 +141,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
     }
 
 
-    public void writeExplain(PrintStream os, List<PreparedStatement> explainSQLS,List<String> allQueries) throws SQLException {
+    public void writeExplain(PrintStream os, List<PreparedStatement> explainSQLS, List<String> allQueries) throws SQLException {
         LOG.info("Running explain for select/update queries before execute phase for workload : " + this.workloadName);
         Map<String, JSONObject> summaryMap = new TreeMap<>();
         int count = 0;
@@ -163,24 +163,20 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             }
             double explainEnd = System.currentTimeMillis();
             jsonObject.put("ResultSet", data.toString());
-            Pattern executionTimePattern = Pattern.compile("Execution Time: (\\d+\\.\\d+) ms");
-            Matcher executionTimeMatcher = executionTimePattern.matcher(data.toString());
-            if (executionTimeMatcher.find()) {
-                jsonObject.put("Execution Time(ms)", executionTimeMatcher.group(1));
+
+            Pattern pattern = Pattern.compile("(.*?) on .* Planning Time: (.+?) ms Execution Time: (.+?) ms " +
+                "Peak Memory Usage: (.+?)");
+            Matcher matcher = pattern.matcher(data.toString());
+            while(matcher.find()) {
+                jsonObject.put("Plan", matcher.group(1));
+                jsonObject.put("Planning Time(ms)", matcher.group(2));
+                jsonObject.put("Execution Time(ms)", matcher.group(3));
+                jsonObject.put("Peak Memory Usage(kB)", matcher.group(4));
             }
-            Pattern planningTimePattern = Pattern.compile("Planning Time: (\\d+\\.\\d+) ms");
-            Matcher planningTimeMatcher = planningTimePattern.matcher(data.toString());
-            if (planningTimeMatcher.find()) {
-                jsonObject.put("Planning Time(ms)", planningTimeMatcher.group(1));
-            }
-            Pattern patternPlan = Pattern.compile("^(.*?) on");
-            Matcher matcherPlan = patternPlan.matcher(data.toString());
-            if (matcherPlan.find()) {
-                jsonObject.put("Plan", matcherPlan.group(1));
-            }
+
             jsonObject.put("Time(ms) ", explainEnd - explainStart);
             summaryMap.put("ExplainSQL" + count, jsonObject);
-            queryToExplainMap.put(allQueries.get(count-1),jsonObject);
+            queryToExplainMap.put(allQueries.get(count-1), jsonObject);
         }
         os.println(JSONUtil.format(JSONUtil.toJSONString(summaryMap)));
     }
@@ -210,8 +206,8 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             ExecuteRule executeRule = executeRules.get(executeRuleIndex);
             boolean isRetry = false;
             for (Query query : executeRule.getQueries()) {
-                String querystmt = query.getQuery();
-                PreparedStatement stmt = conn.prepareStatement(querystmt);
+                String queryStmt = query.getQuery();
+                PreparedStatement stmt = conn.prepareStatement(queryStmt);
                 List<UtilToMethod> baseUtils = query.getBaseUtils();
                 int count = query.getCount();
                 for (int i = 0; i < count; i++) {
@@ -254,37 +250,36 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
         synchronized (this) {
             if (!this.configuration.getNewConnectionPerTxn() && this.configuration.getWorkloadState().getGlobalState() == State.EXIT && !isTearDownDone) {
 
-                List<Query> allqueries = new ArrayList<>();
+                List<Query> allQueries = new ArrayList<>();
                 for (ExecuteRule er : executeRules) {
                     for (int i = 0; i < er.getQueries().size(); i++) {
-                        er.getQueries().get(i);
-                        allqueries.add(er.getQueries().get(i));
+                        allQueries.add(er.getQueries().get(i));
                     }
                 }
-                List<String> allqueryStrings = new ArrayList<>();
-                for (int i = 0; i < allqueries.size(); i++) {
-                    allqueryStrings.add(allqueries.get(i).getQuery());
+                List<String> allQueryStrings = new ArrayList<>();
+                for (int i = 0; i < allQueries.size(); i++) {
+                    allQueryStrings.add(allQueries.get(i).getQuery());
                 }
                 if (this.getWorkloadConfiguration().getXmlConfig().containsKey("collect_pg_stat_statements") &&
                     this.getWorkloadConfiguration().getXmlConfig().getBoolean("collect_pg_stat_statements")) {
                     LOG.info("Collecting pg_stat_statements for workload : " + this.workloadName);
                     try {
-                        executePgStatStatements(allqueryStrings);
+                        executePgStatStatements(allQueryStrings);
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
                     }
                 }
                 else{
                     List<JSONObject> jsonResultsList = new ArrayList<>();
-                    for(int i=0;i<allqueryStrings.size();i++)
+                    for(int i = 0; i < allQueryStrings.size(); i++)
                     {
                         JSONObject inner = new JSONObject();
-                        inner.put("query",allqueryStrings.get(i));
-                        inner.put("pg_stat_statements",new JSONObject());
-                        if(queryToExplainMap.containsKey(allqueryStrings.get(i)))
-                         inner.put("explain",queryToExplainMap.get(allqueryStrings.get(i)));
+                        inner.put("query", allQueryStrings.get(i));
+                        inner.put("pg_stat_statements", new JSONObject());
+                        if(queryToExplainMap.containsKey(allQueryStrings.get(i)))
+                            inner.put("explain", queryToExplainMap.get(allQueryStrings.get(i)));
                         else
-                         inner.put("explain",new JSONObject());
+                            inner.put("explain", new JSONObject());
                         jsonResultsList.add(inner);
                     }
                     this.featurebenchAdditionalResults.setJsonResultsList(jsonResultsList);
