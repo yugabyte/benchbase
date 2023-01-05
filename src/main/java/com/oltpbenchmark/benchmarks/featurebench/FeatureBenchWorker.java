@@ -41,6 +41,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.sql.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 /**
@@ -54,6 +56,8 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
     public YBMicroBenchmark ybm = null;
     public List<ExecuteRule> executeRules = null;
     public String workloadName = "";
+
+    public Map<String,JSONObject> queryToExplainMap = new HashMap<>();
 
     public boolean isTearDownDone = false;
 
@@ -94,8 +98,13 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                 throw new RuntimeException(exc);
             }
 
+            List<String> allQueries = new ArrayList<>();
+            for (ExecuteRule er : executeRules) {
+                for (int i = 0; i < er.getQueries().size(); i++) {
+                    allQueries.add(er.getQueries().get(i).getQuery());
+                }
+            }
             List<PreparedStatement> explainDDLs = new ArrayList<>();
-
             for (ExecuteRule er : executeRules) {
                 for (Query query : er.getQueries()) {
                     if (query.isSelectQuery() || query.isUpdateQuery()) {
@@ -123,7 +132,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             }
             try {
                 if (explainDDLs.size() > 0)
-                    writeExplain(ps, explainDDLs);
+                    writeExplain(ps, explainDDLs,allQueries);
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -132,7 +141,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
     }
 
 
-    public void writeExplain(PrintStream os, List<PreparedStatement> explainSQLS) throws SQLException {
+    public void writeExplain(PrintStream os, List<PreparedStatement> explainSQLS,List<String> allQueries) throws SQLException {
         LOG.info("Running explain for select/update queries before execute phase for workload : " + this.workloadName);
         Map<String, JSONObject> summaryMap = new TreeMap<>();
         int count = 0;
@@ -154,10 +163,25 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             }
             double explainEnd = System.currentTimeMillis();
             jsonObject.put("ResultSet", data.toString());
+            Pattern executionTimePattern = Pattern.compile("Execution Time: (\\d+\\.\\d+) ms");
+            Matcher executionTimeMatcher = executionTimePattern.matcher(data.toString());
+            if (executionTimeMatcher.find()) {
+                jsonObject.put("Execution Time(ms)", executionTimeMatcher.group(1));
+            }
+            Pattern planningTimePattern = Pattern.compile("Planning Time: (\\d+\\.\\d+) ms");
+            Matcher planningTimeMatcher = planningTimePattern.matcher(data.toString());
+            if (planningTimeMatcher.find()) {
+                jsonObject.put("Planning Time(ms)", planningTimeMatcher.group(1));
+            }
+            Pattern patternPlan = Pattern.compile("^(.*?) on");
+            Matcher matcherPlan = patternPlan.matcher(data.toString());
+            if (matcherPlan.find()) {
+                jsonObject.put("Plan", matcherPlan.group(1));
+            }
             jsonObject.put("Time(ms) ", explainEnd - explainStart);
             summaryMap.put("ExplainSQL" + count, jsonObject);
+            queryToExplainMap.put(allQueries.get(count-1),jsonObject);
         }
-        this.featurebenchAdditionalResults.setExplainAnalyze(summaryMap);
         os.println(JSONUtil.format(JSONUtil.toJSONString(summaryMap)));
     }
 
@@ -229,25 +253,41 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
 
         synchronized (this) {
             if (!this.configuration.getNewConnectionPerTxn() && this.configuration.getWorkloadState().getGlobalState() == State.EXIT && !isTearDownDone) {
+
+                List<Query> allqueries = new ArrayList<>();
+                for (ExecuteRule er : executeRules) {
+                    for (int i = 0; i < er.getQueries().size(); i++) {
+                        er.getQueries().get(i);
+                        allqueries.add(er.getQueries().get(i));
+                    }
+                }
+                List<String> allqueryStrings = new ArrayList<>();
+                for (int i = 0; i < allqueries.size(); i++) {
+                    allqueryStrings.add(allqueries.get(i).getQuery());
+                }
                 if (this.getWorkloadConfiguration().getXmlConfig().containsKey("collect_pg_stat_statements") &&
                     this.getWorkloadConfiguration().getXmlConfig().getBoolean("collect_pg_stat_statements")) {
                     LOG.info("Collecting pg_stat_statements for workload : " + this.workloadName);
                     try {
-                        List<Query> allqueries = new ArrayList<>();
-                        for (ExecuteRule er : executeRules) {
-                            for (int i = 0; i < er.getQueries().size(); i++) {
-                                er.getQueries().get(i);
-                                allqueries.add(er.getQueries().get(i));
-                            }
-                        }
-                        List<String> allqueryStrings = new ArrayList<>();
-                        for (int i = 0; i < allqueries.size(); i++) {
-                            allqueryStrings.add(allqueries.get(i).getQuery());
-                        }
                         executePgStatStatements(allqueryStrings);
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
                     }
+                }
+                else{
+                    List<JSONObject> jsonResultsList = new ArrayList<>();
+                    for(int i=0;i<allqueryStrings.size();i++)
+                    {
+                        JSONObject inner = new JSONObject();
+                        inner.put("query",allqueryStrings.get(i));
+                        inner.put("pg_stat_statements",new JSONObject());
+                        if(queryToExplainMap.containsKey(allqueryStrings.get(i)))
+                         inner.put("explain",queryToExplainMap.get(allqueryStrings.get(i)));
+                        else
+                         inner.put("explain",new JSONObject());
+                        jsonResultsList.add(inner);
+                    }
+                    this.featurebenchAdditionalResults.setJsonResultsList(jsonResultsList);
                 }
             }
         }
@@ -314,16 +354,27 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                     keymatters = key;
                 }
             }
-            outerQueries.put(keymatters, allrecords.get(keymatters));
+            outerQueries.put(query, allrecords.get(keymatters));
         }
         Map<String, JSONObject> queryMap = new TreeMap<>();
         queryMap.put("PgStats", outerQueries);
         if (allQueries.size() == 0) {
             ps.println(JSONUtil.format(JSONUtil.toJSONString(summaryMap)));
-            this.featurebenchAdditionalResults.setPgStats(outer);
         } else {
             ps.println(JSONUtil.format(JSONUtil.toJSONString(queryMap)));
-            this.featurebenchAdditionalResults.setPgStats(outerQueries);
+            List<JSONObject> jsonResultsList = new ArrayList<>();
+            for(int i=0;i<allQueries.size();i++)
+            {
+                JSONObject inner = new JSONObject();
+                inner.put("query",allQueries.get(i));
+                inner.put("pg_stat_statements",outerQueries.get(allQueries.get(i)));
+                if(queryToExplainMap.containsKey(allQueries.get(i)))
+                    inner.put("explain",queryToExplainMap.get(allQueries.get(i)));
+                else
+                    inner.put("explain",new JSONObject());
+                jsonResultsList.add(inner);
+            }
+            this.featurebenchAdditionalResults.setJsonResultsList(jsonResultsList);
         }
         isTearDownDone = true;
     }
