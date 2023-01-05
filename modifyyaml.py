@@ -16,10 +16,6 @@ def main():
                 doc["works"]["work"]["time_secs"] = value
             elif key == "url":
                 doc[key] = doc[key].replace("localhost", value)
-                if "sslmode" in data:
-                    doc[key] = doc[key].replace("disable", "require") if data["sslmode"] else doc[key].replace(
-                        "require", "disable")
-            elif key == "endpoint":
                 doc[key] = doc[key].replace("{{endpoint}}", value)
                 if "sslmode" in data:
                     doc[key] = doc[key].replace("disable", "require") if data["sslmode"] else doc[key].replace(
