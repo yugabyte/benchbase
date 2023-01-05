@@ -15,9 +15,17 @@ def main():
             elif key == "time":
                 doc["works"]["work"]["time_secs"] = value
             elif key == "url":
-                doc[key] = doc[key].replace("localhost",value)
+                if "{{endpoint}}" in data:
+                    doc[key] = doc[key].replace("{{endpoint}}", value)
+                else:
+                    doc[key] = doc[key].replace("localhost", value)
                 if "sslmode" in data:
-                 doc[key] = doc[key].replace("disable","require") if data["sslmode"] else doc[key].replace("require","disable")
+                    doc[key] = doc[key].replace("disable", "require") if data["sslmode"] else doc[key].replace(
+                        "require", "disable")
+            elif key == "{{username}}":
+                doc["username"] = value
+            elif key == "{{password}}":
+                doc["password"] = value
             else:
                 doc[key] = value
             print(key, value)
