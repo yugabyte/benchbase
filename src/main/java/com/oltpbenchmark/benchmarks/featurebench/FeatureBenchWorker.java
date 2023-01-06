@@ -174,7 +174,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                 jsonObject.put("Peak Memory Usage(kB)", matcher.group(4));
             }
 
-            jsonObject.put("Time(ms) ", explainEnd - explainStart);
+            jsonObject.put("ClientSideExplainTime(ms)", explainEnd - explainStart);
             summaryMap.put("ExplainSQL" + count, jsonObject);
             queryToExplainMap.put(allQueries.get(count-1), jsonObject);
         }
