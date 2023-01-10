@@ -15,7 +15,8 @@ def jinja2_modification(context, input_yaml):
 def main():
     context = sys.argv[1]
     yaml_file = sys.argv[2]
-    jinja2_modification(context, yaml_file)
+    data = json.loads(context)
+    jinja2_modification(data, yaml_file)
     data = json.loads(context)
     with open(yaml_file) as f:
         doc = yaml.load(f, Loader=yaml.FullLoader)
