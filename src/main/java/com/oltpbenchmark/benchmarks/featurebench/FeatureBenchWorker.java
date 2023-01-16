@@ -164,14 +164,13 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             double explainEnd = System.currentTimeMillis();
             jsonObject.put("ResultSet", data.toString());
 
-            Pattern pattern = Pattern.compile("(.*?) on .* Planning Time: (.+?) ms Execution Time: (.+?) ms " +
+            Pattern pattern = Pattern.compile("Planning Time: (.+?) ms Execution Time: (.+?) ms " +
                 "Peak Memory Usage: (.+?)");
             Matcher matcher = pattern.matcher(data.toString());
             while(matcher.find()) {
-                jsonObject.put("Plan", matcher.group(1));
-                jsonObject.put("Planning Time(ms)", matcher.group(2));
-                jsonObject.put("Execution Time(ms)", matcher.group(3));
-                jsonObject.put("Peak Memory Usage(kB)", matcher.group(4));
+                jsonObject.put("Planning Time(ms)", matcher.group(1));
+                jsonObject.put("Execution Time(ms)", matcher.group(2));
+                jsonObject.put("Peak Memory Usage(kB)", matcher.group(3));
             }
 
             jsonObject.put("ClientSideExplainTime(ms)", explainEnd - explainStart);
