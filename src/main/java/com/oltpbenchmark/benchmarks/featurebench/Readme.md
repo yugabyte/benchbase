@@ -83,7 +83,6 @@ Utility functions are present inside the folder :-
 
 | Name                      | Description                                                                                                                           | Parameters                              | Parameter Type           |
 |---------------------------|---------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------|--------------------------|
-| ArrayOfDates              | Returns an array of random dates. User has to send the array size.                                                                    | arraySize                               | Integer                  |
 | ConstantValue             | Returns the value(constant) passed to it.                                                                                             | constantVal                             | List of Objects          |
 | CurrentTime               | Returns SQL TIMESTAMP value.                                                                                                          | None                                    | None                     |
 | CurrentTimeString         | Returns the Current Time in yyyy-MM-dd_HH-mm-ss format.                                                                               | None                                    | None                     |
@@ -92,7 +91,7 @@ Utility functions are present inside the folder :-
 | OneNumberFromArray        | Returns a number randomly from a predefined array of numbers passed by user.                                                          | listOfIntegers                          | List of Integers         |
 | OneStringFromArray        | Returns a string randomly from a predefined array of strings passed by user.                                                          | str                                     | List of Strings          |
 | PrimaryIntGen             | Integer Primary key generator between a range.(sequential incremental keys generated).                                                | upperRange,lowerRange                   | Integer,Integer          |
-| PrimaryStringGen          | String Integer Primary key generator between a range.(sequential incremental numeric strings generated).                              | startNumber,desiredLength               | Integer,Integer          |
+| PrimaryStringGen          | String Integer Primary key generator starting from a numeric no.(sequential incremental numeric strings generated).                   | startNumber,desiredLength               | Integer,Integer          |
 | RandomAString             | Returns a random alphabetic string with length in range [minimumlength,maximumlength].                                                | minimumLength,maximumLength             | Integer,Integer          |
 | RandomBoolean             | Returns a random boolean value.                                                                                                       | None                                    | None                     |
 | RandomDate                | Returns a random date string in range [yearlowerBound,yearupperBound]                                                                 | yearlowerBound,yearupperBound           | Integer,Integer          |
@@ -100,7 +99,7 @@ Utility functions are present inside the folder :-
 | RandomExpoInt             | Returns a random exponential distribution int value with average equal to center.                                                     | center,deviation                        | Integer,Integer          |
 | RandomExpoLong            | Returns a random exponential distribution long value with average equal to center.                                                    | center,deviation                        | Long,Long                |
 | RandomInt                 | Returns a random int value between minimum and maximum (inclusive).                                                                   | minimum,maximum                         | Integer,Integer          |
-| RandomJson                | Returns a random json with pre-defined number of fields, level of nestedness, size of keys, size of values (nestedness=1 for now)     | fields,nestedness,valueType,valueLength | Integer,1,Object,Integer |
+| RandomJson                | Returns a random json with pre-defined number of fields, size of values, level of nestedness(optional - nestedness=1 for now)         | fields,valueLength,nestedness           | Integer,Integer,Integer  |
 | RandomLong                | Returns a random long value between minimum and maximum (inclusive)                                                                   | minimum, maximum                        | Long,Long                |
 | RandomNormalFloat         | Returns a random normal distribution float value with average equal to center                                                         | center,deviation                        | Double,Double            |
 | RandomNormalInt           | Returns a random normal distribution int value with average equal to center                                                           | center,deviation                        | Integer,Integer          |
@@ -110,12 +109,12 @@ Utility functions are present inside the folder :-
 | RandomNumber              | Returns a random number in range [minimum,maximum].                                                                                   | minimum,maximum                         | Integer,Integer          |
 | RandomStringAlphabets     | Returns a random alphabetic string of passed length.                                                                                  | desiredLength                           | Integer                  |
 | RandomStringNumeric       | Returns a random numeric string of passed length.                                                                                     | desiredLength                           | Integer                  |
-| RandomUUID                | Returns a random String UUID                                                                                                          | None                                    | None                     |
+| RandomUUID                | Returns a random  UUID                                                                                                                | None                                    | None                     |
 | RowRandomBoundedInt       | Returns a random int in the range[lowValue,highValue]                                                                                 | lowValue,highValue                      | Integer,Integer          |
 | RowRandomBoundedLong      | Returns a random long in the range[lowValue,highValue]                                                                                | lowValue,highValue                      | Long,Long                |
 | RandomDateBtwYears        | Returns a random date in the range[yearLowerBound,yearUpperBound]                                                                     | yearLowerBound,yearUpperBound           | Integer,Integer          |
 | RandomNumberDefault       | Returns a random number in range [Integer.MIN_VALUE,Integer.MAX_VALUE]                                                                | None                                    | None                     |
-
+| RandomPKString            | Returns a random Primary key of String type in range [startNumber, endNumber] of desired length.(extra characters appended with 'a')  | startNumber,endNumber,desiredLength     | Integer,Integer,Integer  |
 
 ### Results:-
 

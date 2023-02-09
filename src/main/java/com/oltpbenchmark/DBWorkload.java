@@ -18,6 +18,14 @@
 
 package com.oltpbenchmark;
 
+
+
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import com.hubspot.jinjava.Jinjava;
+import com.hubspot.jinjava.JinjavaConfig;
+import com.hubspot.jinjava.interpret.RenderResult;
 import com.oltpbenchmark.api.BenchmarkModule;
 import com.oltpbenchmark.api.TransactionType;
 import com.oltpbenchmark.api.TransactionTypes;
@@ -39,14 +47,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintStream;
+import java.io.*;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class DBWorkload {
     private static final Logger LOG = LoggerFactory.getLogger(DBWorkload.class);
@@ -99,6 +107,7 @@ public class DBWorkload {
 
         String[] targetList = targetBenchmarks.split(",");
         List<BenchmarkModule> benchList = new ArrayList<>();
+        List<BenchmarkModule> copyBenchList = new ArrayList<>();
 
         // Use this list for filtering of the output
         List<TransactionType> activeTXTypes = new ArrayList<>();
@@ -112,7 +121,15 @@ public class DBWorkload {
         for (String plugin : targetList) {
             String pluginTest = "[@bench='" + plugin + "']";
             if (plugin.equalsIgnoreCase("featurebench"))
+            {
+                String[] params=null;
+                if (argsLine.hasOption("params")) {
+                    params = argsLine.getOptionValues("params");
+                    LOG.info("Creating modified temporary input yaml with passed parameters from : "+ configFile);
+                    configFile = replaceParametersInYaml(params,configFile);
+                }
                 xmlConfig = buildConfigurationFromYaml(configFile);
+            }
             else
                 xmlConfig = buildConfiguration(configFile);
 
@@ -229,8 +246,7 @@ public class DBWorkload {
                             .containsKey("workload") ? workloads.get(workCount - 1).getString("workload") : workCount));
                     }
                 }
-            }
-            else {
+            } else {
                 try (PrintStream ps = new PrintStream(FileUtil.joinPath(fileForAllWorkloadList))) {
                     ps.println("DEFAULT_WORKLOAD");
                 }
@@ -243,12 +259,10 @@ public class DBWorkload {
                     uniqueRunWorkloads.forEach(uniqueWorkload -> {
                         if (workloadsFromExecuteRules.contains(uniqueWorkload)) {
                             LOG.info("Workload: " + uniqueWorkload + " will be scheduled to run");
-                        }
-                        else if(workloadsFromExecuteRules.size() == 0 &&
+                        } else if (workloadsFromExecuteRules.size() == 0 &&
                             uniqueWorkload.equalsIgnoreCase("DEFAULT_WORKLOAD")) {
                             LOG.info("Running workload specified through code implementation");
-                        }
-                        else {
+                        } else {
                             throw new RuntimeException("Wrong workload name provided in --workloads args: " + uniqueWorkload);
                         }
                     });
@@ -376,6 +390,9 @@ public class DBWorkload {
 
 
                 benchList.add(bench);
+                if (workCount == 1) {
+                    copyBenchList.add(bench);
+                }
 
                 // ----------------------------------------------------------------
                 // WORKLOAD CONFIGURATION
@@ -679,6 +696,27 @@ public class DBWorkload {
                 wrkld.clearPhase();
                 activeTXTypes.clear();
             }
+
+            if (argsLine.hasOption("cleanup") && isBooleanOptionSet(argsLine, "cleanup")) {
+                for (BenchmarkModule benchmarkModule : copyBenchList) {
+                    if (xmlConfig.containsKey("microbenchmark/properties/cleanup")) {
+                        List<String> ddls = xmlConfig.getList(String.class, "microbenchmark/properties/cleanup");
+                        try {
+                            Statement stmtObj = benchmarkModule.makeConnection().createStatement();
+                            for (String ddl : ddls) {
+                                stmtObj.execute(ddl);
+                            }
+                            LOG.info("\n=================Cleanup Phase taking from Yaml=========\n");
+                            stmtObj.close();
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+                    else {
+                        LOG.info("No cleanup phase mentioned in YAML, but flag provided in run! ");
+                    }
+                }
+            }
         }
     }
 
@@ -697,6 +735,8 @@ public class DBWorkload {
         options.addOption(null, "dialects-export", true, "Export benchmark SQL to a dialects file");
         options.addOption("jh", "json-histograms", true, "Export histograms to JSON file");
         options.addOption("workloads", "workloads", true, "Run some specific workloads");
+        options.addOption("p", "params", true, "Use varibles through CLI for YAML");
+        options.addOption(null, "cleanup", true, "Clean up the database");
         return options;
     }
 
@@ -768,6 +808,9 @@ public class DBWorkload {
         // If an output directory is used, store the information
         String outputDirectory = "results";
 
+        String filePathForOutputJson = "results/output.json";
+        Map<String, Map<String, Object>> workloadToSummaryMap = new TreeMap<>();
+
         if (argsLine.hasOption("d")) {
             outputDirectory = argsLine.getOptionValue("d");
         }
@@ -816,17 +859,38 @@ public class DBWorkload {
             }
         }
 
-        if (!name.equalsIgnoreCase("featurebench")) {
-            String configFileName = baseFileName + ".config.xml";
-            try (PrintStream ps = new PrintStream(FileUtil.joinPath(outputDirectory, configFileName))) {
-                LOG.info("Output benchmark config into file: {}", configFileName);
-                rw.writeConfig(ps);
-            }
-        } else {
+        if (name.equalsIgnoreCase("featurebench")) {
             String configFileName = baseFileName + ".config.yaml";
             try (PrintStream ps = new PrintStream(FileUtil.joinPath(outputDirectory, configFileName))) {
                 LOG.info("Output benchmark config into file: {}", configFileName);
                 rw.writeYamlConfig(ps);
+            }
+            String fbDetailedFileName = baseFileName + ".detailed.json";
+            try (PrintStream ps = new PrintStream(FileUtil.joinPath(outputDirectory, fbDetailedFileName))) {
+                LOG.info("Output detailed summary into file: {}", fbDetailedFileName);
+                File file = new File(filePathForOutputJson);
+                if (file.exists()) {
+                    ObjectMapper mapper = new ObjectMapper(new JsonFactory());
+                    workloadToSummaryMap.putAll(mapper.readValue(file, TreeMap.class));
+                }
+                if(workload_name == null || workload_name.isEmpty())
+                    workload_name = baseFileName;
+                workloadToSummaryMap.put(workload_name, rw.writeDetailedSummary(ps));
+
+                try {
+                    FileWriter writer = new FileWriter(filePathForOutputJson);
+                    writer.write(JSONUtil.format(JSONUtil.toJSONString(workloadToSummaryMap)));
+                    writer.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        } else {
+            String configFileName = baseFileName + ".config.xml";
+            try (PrintStream ps = new PrintStream(FileUtil.joinPath(outputDirectory, configFileName))) {
+                LOG.info("Output benchmark config into file: {}", configFileName);
+                rw.writeConfig(ps);
             }
         }
 
@@ -967,5 +1031,46 @@ public class DBWorkload {
             return (val != null && val.equalsIgnoreCase("true"));
         }
         return (false);
+    }
+    private static String replaceParametersInYaml(String[] params, String file) throws IOException {
+
+        Map<String, Object> context = new HashMap<>();
+        JinjavaConfig jc = JinjavaConfig.newBuilder().withFailOnUnknownTokens(true).build();
+        Jinjava jinjava = new Jinjava(jc);
+
+        int index;
+        for (String var : params) {
+            index = var.indexOf('=');
+            context.put(var.substring(0, index), var.substring(index + 1));
+        }
+
+        String configFilename = file.substring(file.lastIndexOf("/") + 1);
+        InputStream inputStream = new FileInputStream(file);
+        assert inputStream != null;
+        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+        String template = reader.lines().collect(Collectors.joining(System.lineSeparator()));
+
+        RenderResult renderResult = jinjava.renderForResult(template, context);
+        if (renderResult.getErrors().isEmpty()) {
+
+            String newYaml = jinjava.render(template, context);
+            String newPath = Paths.get("").toAbsolutePath() + "/temp_input.yaml";
+            File newfile = new File(newPath);
+
+            if (!newfile.exists()) {
+                newfile.createNewFile();
+            }
+
+            FileWriter fw = new FileWriter(newfile);
+            BufferedWriter bw = new BufferedWriter(fw);
+            bw.write(newYaml);
+            bw.close();
+            return newPath;
+
+        } else {
+            throw new IllegalArgumentException(renderResult.getErrors().stream()
+                .map(Object::toString)
+                .collect(Collectors.joining(",")));
+        }
     }
 }

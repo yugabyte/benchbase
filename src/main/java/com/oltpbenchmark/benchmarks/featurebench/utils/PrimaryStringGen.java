@@ -3,7 +3,7 @@ package com.oltpbenchmark.benchmarks.featurebench.utils;
 import java.util.List;
 
 /*
-Description :- String Integer Primary key generator between a range.
+
 Params :
 1.int startNumber (values[0]) :- starting number for numeric string Primary Key.
 2.int desiredLength (values[1]) :- desired length for numeric string Primary key.(extra characters appended by 'a').
@@ -48,7 +48,7 @@ public class PrimaryStringGen implements BaseUtil {
         }
     }
 
-    public String numberToIdString(long number) {
+    public String numberToIdString() {
         StringBuilder baseNumberStr = new StringBuilder(String.valueOf(currentValue));
         while (baseNumberStr.length() < desiredLength) {
             baseNumberStr.append('a');
@@ -59,7 +59,7 @@ public class PrimaryStringGen implements BaseUtil {
     @Override
     public Object run() {
         currentValue++;
-        key = numberToIdString(currentValue);
+        key = numberToIdString();
         return key;
     }
 }
