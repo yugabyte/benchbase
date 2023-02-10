@@ -85,10 +85,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
 
             String outputDirectory = "results";
             FileUtil.makeDirIfNotExists(outputDirectory);
-            String explainDir = "ResultsForExplain";
-            FileUtil.makeDirIfNotExists(outputDirectory + "/" + explainDir);
-            String fileForExplain = explainDir + "/" + workloadName + "_" + TimeUtil.getCurrentTimeString() + ".json";
-            PrintStream ps;
+
             String explainSelect = "explain (analyze,verbose,costs,buffers) ";
             String explainUpdate = "explain (analyze) ";
 
@@ -101,11 +98,6 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                 }
             }
 
-            try {
-                ps = new PrintStream(FileUtil.joinPath(outputDirectory, fileForExplain));
-            } catch (FileNotFoundException exc) {
-                throw new RuntimeException(exc);
-            }
 
             List<String> allQueries = new ArrayList<>();
             for (ExecuteRule er : executeRules) {
@@ -141,7 +133,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             }
             try {
                 if (explainDDLs.size() > 0)
-                    writeExplain(ps, explainDDLs, allQueries);
+                    writeExplain(explainDDLs, allQueries);
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -150,7 +142,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
     }
 
 
-    public void writeExplain(PrintStream os, List<PreparedStatement> explainSQLS, List<String> allQueries) throws SQLException {
+    public void writeExplain(List<PreparedStatement> explainSQLS, List<String> allQueries) throws SQLException {
         LOG.info("Running explain for select/update queries before execute phase for workload : " + this.workloadName);
         Map<String, JSONObject> summaryMap = new TreeMap<>();
         int count = 0;
@@ -186,7 +178,6 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             summaryMap.put("ExplainSQL" + count, jsonObject);
             queryToExplainMap.put(allQueries.get(count-1), jsonObject);
         }
-        os.println(JSONUtil.format(JSONUtil.toJSONString(summaryMap)));
     }
 
 
@@ -314,17 +305,6 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
 
     private void executePgStatStatements(List<String> allQueries) throws SQLException {
         String pgStatDDL = "select * from pg_stat_statements;";
-        String PgStatsDir = "ResultsForPgStats";
-        FileUtil.makeDirIfNotExists("results" + "/" + PgStatsDir);
-        String fileForPgStats = PgStatsDir + "/" + workloadName + "_" + TimeUtil.getCurrentTimeString() + ".json";
-        PrintStream ps;
-        try {
-            ps = new PrintStream(FileUtil.joinPath("results", fileForPgStats));
-
-        } catch (FileNotFoundException exc) {
-            throw new RuntimeException(exc);
-        }
-
         Map<String, JSONObject> summaryMap = new TreeMap<>();
         Statement stmt = this.getBenchmark().makeConnection().createStatement();
         JSONObject outer = new JSONObject();
@@ -361,10 +341,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
         }
         Map<String, JSONObject> queryMap = new TreeMap<>();
         queryMap.put("PgStats", outerQueries);
-        if (allQueries.size() == 0) {
-            ps.println(JSONUtil.format(JSONUtil.toJSONString(summaryMap)));
-        } else {
-            ps.println(JSONUtil.format(JSONUtil.toJSONString(queryMap)));
+        if (allQueries.size() != 0) {
             List<JSONObject> jsonResultsList = new ArrayList<>();
             for(int i=0;i<allQueries.size();i++)
             {
