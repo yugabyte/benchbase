@@ -16,7 +16,7 @@ works:
         time_secs: 120
         active_terminals: 1
         rate: unlimited
-        warmup: 240
+        warmup: 30
 microbenchmark:
     class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
     properties:
