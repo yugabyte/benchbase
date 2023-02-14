@@ -34,7 +34,9 @@ microbenchmark:
           - CREATE TABLE pkeyBigint1M_comp2keys_1(col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_1 bigint, col_bigint_2 bigint, col_bigint_3 bigint, col_bigint_4 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1 ASC, col_bigint_id_2 ASC));
           - CREATE TABLE Indexed1M_comp2keys_1(col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_1 bigint, col_bigint_2 bigint, col_bigint_3 bigint, col_bigint_4 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500));
           - CREATE INDEX ON Indexed1M_comp2keys_1(col_bigint_id_1 ASC, col_bigint_id_1 ASC);
-
+        cleanup:
+          - DROP TABLE IF EXISTS pkeyBigint1M_comp2keys_1;
+          - DROP TABLE IF EXISTS Indexed1M_comp2keys_1;
         loadRules:
               - table: pkeyBigint1M_comp2keys_
                 count: 1
@@ -108,37 +110,37 @@ microbenchmark:
                       params: [1, 500]
 
         executeRules:
-            - workload: AGGRG8_yb_count_bigint_comp_pkey_first_ele
+            - workload: AGGRG8_count_bigint_comp_pkey_first_ele
               run:
                   - name: yb_count_bigint_comp_pkey_first_ele
                     weight: 100
                     queries:
                         - query: select count(col_bigint_id_1) from pkeyBigint1M_comp2keys_1
-            - workload: AGGRG8_yb_count_bigint_comp_pkey_second_ele
+            - workload: AGGRG8_count_bigint_comp_pkey_second_ele
               run:
                   - name: yb_count_bigint_comp_pkey_first_ele
                     weight: 100
                     queries:
                         - query: select count(col_bigint_id_2) from pkeyBigint1M_comp2keys_1
-            - workload: AGGRG8_yb_count_bigint_comp_pkey_withfilter_first_ele
+            - workload: AGGRG8_count_bigint_comp_pkey_withfilter_first_ele
               run:
                   - name: yb_count_bigint_comp_pkey_withfilter_first_ele
                     weight: 100
                     queries:
                         - query: select count(col_bigint_id_1) from pkeyBigint1M_comp2keys_1 where col_bigint_id_1>1
-            - workload: AGGRG8_yb_count_bigint_comp_pkey_withfilter_second_ele
+            - workload: AGGRG8_count_bigint_comp_pkey_withfilter_second_ele
               run:
                   - name: yb_count_bigint_comp_pkey_withfilter_second_ele
                     weight: 100
                     queries:
                         - query: select count(col_bigint_id_2) from pkeyBigint1M_comp2keys_1 where col_bigint_id_2>1
-            - workload: AGGRG8_yb_count_bigint_comp_pkey_project_first_ele_withfilter_sec_ele
+            - workload: AGGRG8_count_bigint_comp_pkey_project_first_ele_withfilter_sec_ele
               run:
                   - name: yb_count_bigint_comp_pkey_project_first_ele_withfilter_sec_ele
                     weight: 100
                     queries:
                         - query: select count(col_bigint_id_1) from pkeyBigint1M_comp2keys_1 where col_bigint_id_2>1
-            - workload: AGGRG8_yb_count_bigint_comp_pkey_project_sec_ele_withfilter_first_ele
+            - workload: AGGRG8_count_bigint_comp_pkey_project_sec_ele_withfilter_first_ele
               run:
                   - name: yb_count_bigint_comp_pkey_project_sec_ele_withfilter_first_ele
                     weight: 100
@@ -146,37 +148,37 @@ microbenchmark:
                         - query: select count(col_bigint_id_2) from pkeyBigint1M_comp2keys_1 where col_bigint_id_1>1
 
 
-            - workload: AGGRG8_yb_count_bigint_comp_index_first_ele
+            - workload: AGGRG8_count_bigint_comp_index_first_ele
               run:
                   - name: yb_count_bigint_comp_index_first_ele
                     weight: 100
                     queries:
                         - query: select count(col_bigint_id_1) from Indexed1M_comp2keys_1
-            - workload: AGGRG8_yb_count_bigint_comp_index_second_ele
+            - workload: AGGRG8_count_bigint_comp_index_second_ele
               run:
                   - name: yb_count_bigint_comp_index_first_ele
                     weight: 100
                     queries:
                         - query: select count(col_bigint_id_2) from Indexed1M_comp2keys_1
-            - workload: AGGRG8_yb_count_bigint_comp_index_withfilter_first_ele
+            - workload: AGGRG8_count_bigint_comp_index_withfilter_first_ele
               run:
                   - name: yb_count_bigint_comp_index_withfilter_first_ele
                     weight: 100
                     queries:
                         - query: select count(col_bigint_id_1) from Indexed1M_comp2keys_1 where col_bigint_id_1>1
-            - workload: AGGRG8_yb_count_bigint_comp_index_withfilter_second_ele
+            - workload: AGGRG8_count_bigint_comp_index_withfilter_second_ele
               run:
                   - name: yb_count_bigint_comp_index_withfilter_second_ele
                     weight: 100
                     queries:
                         - query: select count(col_bigint_id_2) from Indexed1M_comp2keys_1 where col_bigint_id_2>1
-            - workload: AGGRG8_yb_count_bigint_comp_index_project_first_ele_withfilter_sec_ele
+            - workload: AGGRG8_count_bigint_comp_index_project_first_ele_withfilter_sec_ele
               run:
                   - name: yb_count_bigint_comp_index_project_first_ele_withfilter_sec_ele
                     weight: 100
                     queries:
                         - query: select count(col_bigint_id_1) from Indexed1M_comp2keys_1 where col_bigint_id_2>1
-            - workload: AGGRG8_yb_count_bigint_comp_index_project_sec_ele_withfilter_first_ele
+            - workload: AGGRG8_count_bigint_comp_index_project_sec_ele_withfilter_first_ele
               run:
                   - name: yb_count_bigint_comp_index_project_sec_ele_withfilter_first_ele
                     weight: 100

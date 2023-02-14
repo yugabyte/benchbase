@@ -33,7 +33,8 @@ microbenchmark:
             - CREATE INDEX ON Indexed1M_1(col_varchar10_id_1);
             - CREATE INDEX ON Indexed1M_1(col_varchar500_id_1);
             - CREATE INDEX ON Indexed1M_1(col_float5_1);
-
+        cleanup:
+            - DROP TABLE IF EXISTS Indexed1M_1;
         loadRules:
               - table: Indexed1M_
                 count: 1
@@ -71,31 +72,31 @@ microbenchmark:
                       util: PrimaryStringGen
                       params: [1, 500]
         executeRules:
-            - workload: AGGRG3_pg_count_on_all_tupples_columns
+            - workload: AGGRG3_count_on_all_tupples_columns
               run:
                   - name: pg_count_bigint_on_all_tupples_columns
                     weight: 100
                     queries:
                         - query: select count(*) from Indexed1M_1
-            - workload: AGGRG3_pg_count_bigint_on_indexed
+            - workload: AGGRG3_count_bigint_on_indexed
               run:
                   - name: pg_count_on_indexed_bigint
                     weight: 100
                     queries:
                         - query: select count(col_bigint_id_1) from Indexed1M_1
-            - workload: AGGRG3_pg_count_on_indexed_float
+            - workload: AGGRG3_count_on_indexed_float
               run:
                   - name: pg_count_on_indexed_varchar10
                     weight: 100
                     queries:
                         - query: select count(col_float5_1) from Indexed1M_1
-            - workload: AGGRG3_pg_count_on_indexed_varchar10
+            - workload: AGGRG3_count_on_indexed_varchar10
               run:
                   - name: pg_count_on_indexed_varchar10
                     weight: 100
                     queries:
                         - query: select count(col_varchar10_id_1) from Indexed1M_1
-            - workload: AGGRG3_pg_count_on_indexed_varchar500
+            - workload: AGGRG3_count_on_indexed_varchar500
               run:
                   - name: pg_count_on_indexed_varchar500
                     weight: 100

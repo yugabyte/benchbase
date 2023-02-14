@@ -1,13 +1,12 @@
-#TEST FOR YUGABYTE COLOCATED TABLES
+#TEST FOR POSTGRES
 #GOAL7 Impact of index type on aggregation
 #TESTS:
 #Aggregate function count with 1 filter condition on non indexed column of bigint datatype
 #Aggregate function count  with 1 filter condition on pkey column of bigint datatype
 #Aggregate function count  with 1 filter condition on secondary indexed column of bigint datatype
-type: YUGABYTE
-driver: com.yugabyte.Driver
-url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require
-createdb: drop database if exists yb_colocated; create database yb_colocated with colocated=true
+type: POSTGRES
+driver: org.postgresql.Driver
+url: jdbc:postgresql://{{endpoint}}:5432/postgres?sslmode=require
 username: {{username}}
 password: {{password}}
 batchsize: 128
@@ -36,7 +35,10 @@ microbenchmark:
             - CREATE INDEX ON Indexed1M_1(col_varchar10_id_1);
             - CREATE INDEX ON Indexed1M_1(col_varchar500_id_1);
             - CREATE INDEX ON Indexed1M_1(col_float5_1);
-
+        cleanup:
+            - DROP TABLE IF EXISTS nonIndexed1M_1;
+            - DROP TABLE IF EXISTS pkeyBigint1M_1;
+            - DROP TABLE IF EXISTS Indexed1M_1;
         loadRules:
               - table: nonIndexed1M_
                 count: 1
@@ -146,19 +148,19 @@ microbenchmark:
         executeRules:
             - workload: AGGRG7_count_bigint_non_indexed_column_with_filter_condition
               run:
-                  - name: ybc_count_bigint_non_indexed_column_with_filter_condition
+                  - name: pg_count_bigint_non_indexed_column_with_filter_condition
                     weight: 100
                     queries:
                         - query: select count(col_bigint_id_1) from nonIndexed1M_1 where col_bigint_id_1>1
             - workload: AGGRG7_count_bigint_pkey_column_with_filter_condition
               run:
-                  - name: ybc_count_bigint_non_indexed_column_with_filter_condition
+                  - name: pg_count_bigint_non_indexed_column_with_filter_condition
                     weight: 100
                     queries:
                         - query: select count(col_bigint_id_1) from pkeyBigint1M_1 where col_bigint_id_1>1
             - workload: AGGRG7_count_bigint_secondary_indexed_column_with_filter_condition
               run:
-                  - name: ybc_count_bigint_non_indexed_column_with_filter_condition
+                  - name: pg_count_bigint_non_indexed_column_with_filter_condition
                     weight: 100
                     queries:
                         - query: select count(col_bigint_id_1) from Indexed1M_1 where col_bigint_id_1>1

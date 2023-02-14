@@ -35,7 +35,10 @@ microbenchmark:
             - CREATE INDEX ON Indexed1M_1(col_varchar10_id_1);
             - CREATE INDEX ON Indexed1M_1(col_varchar500_id_1);
             - CREATE INDEX ON Indexed1M_1(col_float5_1);
-
+        cleanup:
+            - DROP TABLE IF EXISTS nonIndexed1M_1;
+            - DROP TABLE IF EXISTS pkeyBigint1M_1;
+            - DROP TABLE IF EXISTS Indexed1M_1;
         loadRules:
               - table: nonIndexed1M_
                 count: 1
