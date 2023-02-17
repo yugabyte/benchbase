@@ -78,6 +78,8 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                 try {
                     Statement stmt = conn.createStatement();
                     stmt.executeQuery("SELECT pg_stat_statements_reset();");
+                    if(!conn.getAutoCommit())
+                        conn.commit();
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }
@@ -152,10 +154,14 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             int countResultSetGen = 0;
             while (countResultSetGen < 3) {
                 ddl.executeQuery();
+                if(!conn.getAutoCommit())
+                    conn.commit();
                 countResultSetGen++;
             }
             double explainStart = System.currentTimeMillis();
             ResultSet rs = ddl.executeQuery();
+            if(!conn.getAutoCommit())
+                conn.commit();
             StringBuilder data = new StringBuilder();
             while (rs.next()) {
                 data.append(rs.getString(1));
@@ -321,6 +327,8 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
         JSONObject outer = new JSONObject();
         int count = 0;
         ResultSet resultSet = stmt.executeQuery(pgStatDDL);
+        if(!conn.getAutoCommit())
+            conn.commit();
         ResultSetMetaData rsmd = resultSet.getMetaData();
         int columnsNumber = rsmd.getColumnCount();
         while (resultSet.next()) {
