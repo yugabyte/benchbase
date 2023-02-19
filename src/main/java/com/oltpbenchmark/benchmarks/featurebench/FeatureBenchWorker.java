@@ -28,6 +28,7 @@ import com.oltpbenchmark.types.TransactionStatus;
 import com.oltpbenchmark.util.FileUtil;
 import com.oltpbenchmark.util.JSONUtil;
 import com.oltpbenchmark.util.TimeUtil;
+import com.yugabyte.util.PSQLException;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.commons.text.similarity.LevenshteinDistance;
@@ -148,13 +149,25 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
         int count = 0;
         for (PreparedStatement ddl : explainSQLS) {
             JSONObject jsonObject = new JSONObject();
-            jsonObject.put("SQL", ddl);
             count++;
             int countResultSetGen = 0;
+            boolean distOptionPresent = true;
             while (countResultSetGen < 3) {
-                ddl.executeQuery();
+                try {
+                    ddl.executeQuery();
+                } catch (PSQLException e) {
+                    if (distOptionPresent && e.getMessage().contains("unrecognized EXPLAIN option \"dist\"")) {
+                        String modifiedQuery = ddl.toString().replace("dist,", "");
+                        ddl = conn.prepareStatement(modifiedQuery);
+                        distOptionPresent = false;
+                        continue;
+                    } else {
+                        throw e;
+                    }
+                }
                 countResultSetGen++;
             }
+            jsonObject.put("SQL", ddl);
             double explainStart = System.currentTimeMillis();
             ResultSet rs = ddl.executeQuery();
             StringBuilder data = new StringBuilder();
