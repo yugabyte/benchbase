@@ -438,7 +438,11 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
                     break;
 
                 } catch (UserAbortException ex) {
-                    conn.rollback();
+
+                    if (!autoCommitVal)
+                        conn.rollback();
+
+
 
                     ABORT_LOG.debug(String.format("%s Aborted", transactionType), ex);
 
@@ -447,7 +451,11 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
                     break;
 
                 } catch (SQLException ex) {
-                    conn.rollback();
+
+                    if (!autoCommitVal)
+                        conn.rollback();
+
+
 
                     if (isRetryable(ex)) {
                         LOG.debug(String.format("Retryable SQLException occurred during [%s]... current retry attempt [%d], max retry attempts [%d], sql state [%s], error code [%d].", transactionType, retryCount, maxRetryCount, ex.getSQLState(), ex.getErrorCode()), ex);
