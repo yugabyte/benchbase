@@ -153,8 +153,6 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             while (countResultSetGen < 3) {
                 try {
                     ddl.executeQuery();
-                    if(!conn.getAutoCommit())
-                        conn.commit();
                 } catch (PSQLException e) {
                     if (distOptionPresent && e.getMessage().contains("unrecognized EXPLAIN option \"dist\"")) {
                         String modifiedQuery = ddl.toString().replace("dist,", "");
@@ -170,8 +168,6 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             jsonObject.put("SQL", ddl);
             double explainStart = System.currentTimeMillis();
             ResultSet rs = ddl.executeQuery();
-            if(!conn.getAutoCommit())
-                conn.commit();
             StringBuilder data = new StringBuilder();
             while (rs.next()) {
                 data.append(rs.getString(1));
