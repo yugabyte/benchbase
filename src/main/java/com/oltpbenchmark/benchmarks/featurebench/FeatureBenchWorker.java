@@ -53,7 +53,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
     public YBMicroBenchmark ybm = null;
     public List<ExecuteRule> executeRules = null;
     public String workloadName = "";
-
+    public HashMap<String, PreparedStatement> preparedStatementsPerQuery;
     public Map<String,JSONObject> queryToExplainMap = new HashMap<>();
 
     static AtomicBoolean isTearDownDone = new AtomicBoolean(false);
@@ -73,7 +73,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                 try {
                     Statement stmt = conn.createStatement();
                     stmt.executeQuery("SELECT pg_stat_statements_reset();");
-                    if(!conn.getAutoCommit())
+                    if (!conn.getAutoCommit())
                         conn.commit();
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
@@ -116,7 +116,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                                 try {
                                     stmt.setObject(j + 1, baseUtils.get(j).get());
                                 } catch (SQLException | InvocationTargetException | IllegalAccessException |
-                                         ClassNotFoundException | NoSuchMethodException | InstantiationException e) {
+                                    ClassNotFoundException | NoSuchMethodException | InstantiationException e) {
                                     throw new RuntimeException(e);
                                 }
                             }
@@ -133,6 +133,21 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                     writeExplain(explainDDLs, allQueries);
             } catch (SQLException e) {
                 e.printStackTrace();
+            }
+            try {
+                ybm = (YBMicroBenchmark) Class.forName(workloadClass)
+                    .getDeclaredConstructor(HierarchicalConfiguration.class)
+                    .newInstance(config);
+                preparedStatementsPerQuery = new HashMap<>();
+                for (ExecuteRule executeRule : executeRules) {
+                    for (Query query : executeRule.getQueries()) {
+                        String queryStmt = query.getQuery();
+                        PreparedStatement stmt = conn.prepareStatement(queryStmt);
+                        preparedStatementsPerQuery.put(queryStmt, stmt);
+                    }
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
             isInitializeDone.set(true);
         }
@@ -200,10 +215,6 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
 
 
         try {
-            ybm = (YBMicroBenchmark) Class.forName(workloadClass)
-                .getDeclaredConstructor(HierarchicalConfiguration.class)
-                .newInstance(config);
-
             if (config.containsKey("execute") && config.getBoolean("execute")) {
                 ybm.execute(conn);
                 return TransactionStatus.SUCCESS;
@@ -219,7 +230,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             boolean isRetry = false;
             for (Query query : executeRule.getQueries()) {
                 String queryStmt = query.getQuery();
-                PreparedStatement stmt = conn.prepareStatement(queryStmt);
+                PreparedStatement stmt = this.preparedStatementsPerQuery.get(queryStmt);
                 List<UtilToMethod> baseUtils = query.getBaseUtils();
                 int count = query.getCount();
                 for (int i = 0; i < count; i++) {
