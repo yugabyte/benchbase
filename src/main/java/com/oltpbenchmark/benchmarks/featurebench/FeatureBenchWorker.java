@@ -56,19 +56,17 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
 
     public Map<String,JSONObject> queryToExplainMap = new HashMap<>();
 
-    public boolean isTearDownDone = false;
+    static AtomicBoolean isTearDownDone = new AtomicBoolean(false);
 
-    public boolean isInitializeDone = false;
+    static AtomicBoolean isInitializeDone = new AtomicBoolean(false);
 
     public FeatureBenchWorker(FeatureBenchBenchmark benchmarkModule, int id) {
         super(benchmarkModule, id);
     }
 
     protected void initialize() {
-
-        synchronized (this) {
-            if (isInitializeDone) return;
-
+        if (isInitializeDone.get()) return;
+        synchronized (FeatureBenchWorker.class) {
             if (this.getWorkloadConfiguration().getXmlConfig().containsKey("collect_pg_stat_statements") &&
                 this.getWorkloadConfiguration().getXmlConfig().getBoolean("collect_pg_stat_statements")) {
                 LOG.info("Resetting pg_stat_statements for workload : " + this.workloadName);
@@ -136,7 +134,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             } catch (SQLException e) {
                 e.printStackTrace();
             }
-            isInitializeDone = true;
+            isInitializeDone.set(true);
         }
     }
 
@@ -259,10 +257,8 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
 
     @Override
     public void tearDown() {
-
-
-        synchronized (this) {
-            if (!this.configuration.getNewConnectionPerTxn() && this.configuration.getWorkloadState().getGlobalState() == State.EXIT && !isTearDownDone) {
+        synchronized (FeatureBenchWorker.class) {
+            if (!this.configuration.getNewConnectionPerTxn() && this.configuration.getWorkloadState().getGlobalState() == State.EXIT && !isTearDownDone.get()) {
 
                 List<Query> allQueries = new ArrayList<>();
                 for (ExecuteRule er : executeRules) {
@@ -300,7 +296,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                 }
             }
         }
-        synchronized (this) {
+        synchronized (FeatureBenchWorker.class) {
             if (!this.configuration.getNewConnectionPerTxn() && this.conn != null && ybm != null) {
                 try {
                     if ((config.containsKey("execute") && config.getBoolean("execute")) || (executeRules == null || executeRules.size() == 0)) {
@@ -373,7 +369,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             }
             this.featurebenchAdditionalResults.setJsonResultsList(jsonResultsList);
         }
-        isTearDownDone = true;
+        isTearDownDone.set(true);
     }
     int similarity(String pg_query, String actual_query) {
         return new LevenshteinDistance().apply(pg_query, actual_query);
