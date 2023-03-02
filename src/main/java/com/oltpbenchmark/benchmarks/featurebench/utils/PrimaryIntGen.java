@@ -19,7 +19,6 @@ Return type (Integer) :- Any value between 10 and 20 including these bounds.
 */
 
 public class PrimaryIntGen implements BaseUtil {
-    private static final Logger LOG = LoggerFactory.getLogger(PrimaryIntGen.class);
     private final int upperRange;
     private final int lowerRange;
     private int currentValue;
@@ -51,7 +50,6 @@ public class PrimaryIntGen implements BaseUtil {
         this.lowerRange = workerId == 0 ? low : low + workerId * diff + 1;
         this.upperRange = Math.min(low + diff* (workerId+1), high);
         this.currentValue = this.lowerRange;
-        LOG.info("lowerRange: {} upperRange: {} currentVal: {} totalWorkers: {} workerID: {}", lowerRange, upperRange, currentValue, totalWorkers, workerId);
         if (upperRange < lowerRange) {
             throw new RuntimeException("Upper bound less than lower bound");
         }
@@ -65,11 +63,8 @@ public class PrimaryIntGen implements BaseUtil {
 
     @Override
     public Object run() {
-        LOG.info("lowerRange: {} upperRange: {} currentVal: {}", lowerRange, upperRange, currentValue);
         if (currentValue > upperRange) {
-//            LOG.info("lowerRange: {} upperRange: {} currentVal: {} ... Resetting to low {}", lowerRange, upperRange, currentValue, this.lowerRange);
-            this.currentValue = this.lowerRange;
-//            throw new RuntimeException("Out of bounds primary key access");
+            throw new RuntimeException("Out of bounds primary key access");
         }
         currentValue = findNextHigherValue();
         return currentValue;
