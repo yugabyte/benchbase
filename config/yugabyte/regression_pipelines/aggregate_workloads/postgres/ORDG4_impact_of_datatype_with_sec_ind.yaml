@@ -7,7 +7,7 @@
 #Impact of orderby clause on SecIND of date datatype
 type: POSTGRES
 driver: org.postgresql.Driver
-url: jdbc:postgresql://{{endpoint}}:5432/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true&load-balance=false
+url: jdbc:postgresql://{{endpoint}}:5432/postgres?sslmode=require
 username: {{username}}
 password: {{password}}
 batchsize: 128
@@ -15,6 +15,7 @@ isolation: TRANSACTION_REPEATABLE_READ
 loaderthreads: 1
 terminals: 1
 collect_pg_stat_statements: true
+yaml_version: v1.1
 works:
     work:
         time_secs: 120
