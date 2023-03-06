@@ -280,25 +280,25 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                     }
                 }
 
+                List<JSONObject> jsonResultsList = new ArrayList<>();
+                JSONObject pgStatOutputs = null;
                 if (this.getWorkloadConfiguration().getXmlConfig().getBoolean("collect_pg_stat_statements", false)) {
-                    LOG.info("Collecting pg_stat_statements for workload : " + this.workloadName);
                     try {
-                        executePgStatStatements(queryStrings);
+                        LOG.info("Collecting pg_stat_statements for workload : " + this.workloadName);
+                        pgStatOutputs = callPGStats();
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
                     }
                 }
-                else {
-                    List<JSONObject> jsonResultsList = new ArrayList<>();
-                    for (String queryString : queryStrings) {
-                        JSONObject inner = new JSONObject();
-                        inner.put("query", queryString);
-                        inner.put("pg_stat_statements", new JSONObject());
-                        inner.put("explain", queryToExplainMap.getOrDefault(queryString, new JSONObject()));
-                        jsonResultsList.add(inner);
-                    }
-                    this.featurebenchAdditionalResults.setJsonResultsList(jsonResultsList);
+                for (String queryString : queryStrings) {
+                    JSONObject inner = new JSONObject();
+                    inner.put("query", queryString);
+                    inner.put("pg_stat_statements", pgStatOutputs == null ? new JSONObject() : findQueryInPgStat(pgStatOutputs, queryString));
+                    inner.put("explain", queryToExplainMap.getOrDefault(queryString, new JSONObject()));
+                    jsonResultsList.add(inner);
                 }
+                this.featurebenchAdditionalResults.setJsonResultsList(jsonResultsList);
+                isTearDownDone.set(true);
             }
         }
         synchronized (FeatureBenchWorker.class) {
@@ -319,53 +319,38 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
         }
     }
 
-    private void executePgStatStatements(List<String> allQueries) throws SQLException {
-        String pgStatDDL = "select * from pg_stat_statements;";
+    private JSONObject callPGStats() throws SQLException{
+        String pgStatQuery = "select * from pg_stat_statements;";
         Statement stmt = this.getBenchmark().makeConnection().createStatement();
-        JSONObject outer = new JSONObject();
-        int count = 0;
-        ResultSet resultSet = stmt.executeQuery(pgStatDDL);
+        ResultSet resultSet = stmt.executeQuery(pgStatQuery);
         if(!conn.getAutoCommit())
             conn.commit();
         ResultSetMetaData rsmd = resultSet.getMetaData();
-        int columnsNumber = rsmd.getColumnCount();
+        int resultSetCount = 0;
+        JSONObject pgStatOutputs = new JSONObject();
         while (resultSet.next()) {
-            JSONObject inner = new JSONObject();
-            for (int i = 1; i <= columnsNumber; i++) {
-                String columnValue = resultSet.getString(i);
-                inner.put(rsmd.getColumnName(i), columnValue);
+            JSONObject pgStatOutputPerRecord = new JSONObject();
+            for ( int i = 1; i <= rsmd.getColumnCount(); i++) {
+                pgStatOutputPerRecord.put(rsmd.getColumnName(i), resultSet.getString(i));
             }
-            outer.put("Record_" + count, inner);
-            count++;
+            pgStatOutputs.put("Record_" + resultSetCount, pgStatOutputPerRecord);
+            resultSetCount++;
         }
-        JSONObject outerQueries = new JSONObject();
-        int minDistance;
-        String keymatters;
-        for (String query : allQueries) {
-            minDistance = Integer.MAX_VALUE;
-            keymatters = null;
-            for (String key : outer.keySet()) {
-                JSONObject value = (JSONObject) outer.get(key);
-                String onlyquery = value.getString("query");
-                if (minDistance > similarity(onlyquery, query)) {
-                    minDistance = similarity(onlyquery, query);
-                    keymatters = key;
-                }
+        return pgStatOutputs;
+    }
+
+    private JSONObject findQueryInPgStat(JSONObject pgStatOutputs, String query) {
+        int minDistance = Integer.MAX_VALUE;
+        String keymatters = null;
+        for (String key : pgStatOutputs.keySet()) {
+            JSONObject value = (JSONObject) pgStatOutputs.get(key);
+            String onlyquery = value.getString("query");
+            if (minDistance > similarity(onlyquery, query)) {
+                minDistance = similarity(onlyquery, query);
+                keymatters = key;
             }
-            outerQueries.put(query, outer.get(keymatters));
         }
-        if (allQueries.size() != 0) {
-            List<JSONObject> jsonResultsList = new ArrayList<>();
-            for (String query : allQueries) {
-                JSONObject inner = new JSONObject();
-                inner.put("query", query);
-                inner.put("pg_stat_statements", outerQueries.get(query));
-                inner.put("explain", queryToExplainMap.getOrDefault(query, new JSONObject()));
-                jsonResultsList.add(inner);
-            }
-            this.featurebenchAdditionalResults.setJsonResultsList(jsonResultsList);
-        }
-        isTearDownDone.set(true);
+        return (JSONObject) pgStatOutputs.get(keymatters);
     }
     int similarity(String pg_query, String actual_query) {
         return new LevenshteinDistance().apply(pg_query, actual_query);
