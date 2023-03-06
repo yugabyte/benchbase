@@ -65,6 +65,22 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
     }
 
     protected void initialize() {
+        try {
+            ybm = (YBMicroBenchmark) Class.forName(workloadClass)
+                .getDeclaredConstructor(HierarchicalConfiguration.class)
+                .newInstance(config);
+            preparedStatementsPerQuery = new HashMap<>();
+            for (ExecuteRule executeRule : executeRules) {
+                for (Query query : executeRule.getQueries()) {
+                    String queryStmt = query.getQuery();
+                    PreparedStatement stmt = conn.prepareStatement(queryStmt);
+                    preparedStatementsPerQuery.put(queryStmt, stmt);
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
         if (isInitializeDone.get()) return;
         synchronized (FeatureBenchWorker.class) {
             if (this.getWorkloadConfiguration().getXmlConfig().containsKey("collect_pg_stat_statements") &&
@@ -133,21 +149,6 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                     writeExplain(explainDDLs, allQueries);
             } catch (SQLException e) {
                 e.printStackTrace();
-            }
-            try {
-                ybm = (YBMicroBenchmark) Class.forName(workloadClass)
-                    .getDeclaredConstructor(HierarchicalConfiguration.class)
-                    .newInstance(config);
-                preparedStatementsPerQuery = new HashMap<>();
-                for (ExecuteRule executeRule : executeRules) {
-                    for (Query query : executeRule.getQueries()) {
-                        String queryStmt = query.getQuery();
-                        PreparedStatement stmt = conn.prepareStatement(queryStmt);
-                        preparedStatementsPerQuery.put(queryStmt, stmt);
-                    }
-                }
-            } catch (Exception e) {
-                throw new RuntimeException(e);
             }
             isInitializeDone.set(true);
         }
