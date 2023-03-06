@@ -148,7 +148,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                 }
                 try {
                     if (explainDDLs.size() > 0)
-                        writeExplain(explainDDLs, allQueries);
+                        runExplainAnalyse(explainDDLs, allQueries);
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
@@ -158,9 +158,8 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
     }
 
 
-    public void writeExplain(List<PreparedStatement> explainSQLS, List<String> allQueries) throws SQLException {
+    public void runExplainAnalyse(List<PreparedStatement> explainSQLS, List<String> allQueries) throws SQLException {
         LOG.info("Running explain for select/update queries before execute phase for workload : " + this.workloadName);
-        Map<String, JSONObject> summaryMap = new TreeMap<>();
         int count = 0;
         for (PreparedStatement ddl : explainSQLS) {
             JSONObject jsonObject = new JSONObject();
@@ -207,7 +206,6 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             }
 
             jsonObject.put("ClientSideExplainTime(ms)", explainEnd - explainStart);
-            summaryMap.put("ExplainSQL" + count, jsonObject);
             queryToExplainMap.put(allQueries.get(count-1), jsonObject);
         }
     }
