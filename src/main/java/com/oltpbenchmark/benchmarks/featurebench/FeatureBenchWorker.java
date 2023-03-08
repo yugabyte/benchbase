@@ -56,7 +56,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
     public HashMap<String, PreparedStatement> preparedStatementsPerQuery;
     public static Map<String,JSONObject> queryToExplainMap = new HashMap<>();
 
-    static AtomicBoolean isTearDownDone = new AtomicBoolean(false);
+    static AtomicBoolean isPGStatStatementCollected = new AtomicBoolean(false);
 
     static AtomicBoolean isInitializeDone = new AtomicBoolean(false);
 
@@ -271,7 +271,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
     @Override
     public void tearDown() {
         synchronized (FeatureBenchWorker.class) {
-            if (!this.configuration.getNewConnectionPerTxn() && this.configuration.getWorkloadState().getGlobalState() == State.EXIT && !isTearDownDone.get()) {
+            if (!this.configuration.getNewConnectionPerTxn() && this.configuration.getWorkloadState().getGlobalState() == State.EXIT && !isPGStatStatementCollected.get()) {
 
                 List<String> queryStrings = new ArrayList<>();
                 for (ExecuteRule er : executeRules) {
@@ -298,7 +298,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                     jsonResultsList.add(inner);
                 }
                 this.featurebenchAdditionalResults.setJsonResultsList(jsonResultsList);
-                isTearDownDone.set(true);
+                isPGStatStatementCollected.set(true);
             }
         }
         synchronized (FeatureBenchWorker.class) {
