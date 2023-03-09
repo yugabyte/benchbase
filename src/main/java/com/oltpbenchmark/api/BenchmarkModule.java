@@ -260,8 +260,8 @@ public abstract class BenchmarkModule {
             LOG.warn("Overriding default DDL script path");
             LOG.debug("Executing script [{}] for database type [{}]", ddlPath, dbType);
             runner.runExternalScript(ddlPath);
-        } else if (workConf.getBenchmarkName().equalsIgnoreCase("featurebench") &&  (workConf.getXmlConfig() != null)
-                      && workConf.getXmlConfig().containsKey("microbenchmark/properties/create")) {
+        } else if (workConf.getBenchmarkName().equalsIgnoreCase("featurebench") &&  (workConf.getXmlConfig() != null
+                      && workConf.getXmlConfig().containsKey("microbenchmark/properties/create"))) {
 
             createFromYaml(workConf,conn);
 
