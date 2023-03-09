@@ -84,7 +84,6 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
         if (isInitializeDone.get()) return;
         synchronized (FeatureBenchWorker.class) {
             if (!isInitializeDone.get()) {
-                LOG.info("!!!!!!!!!!!synchronized on class!!!!!!!!!!!!!!!!!!!!!!");
                 if (this.getWorkloadConfiguration().getXmlConfig().containsKey("collect_pg_stat_statements") &&
                     this.getWorkloadConfiguration().getXmlConfig().getBoolean("collect_pg_stat_statements")) {
                     LOG.info("Resetting pg_stat_statements for workload : " + this.workloadName);

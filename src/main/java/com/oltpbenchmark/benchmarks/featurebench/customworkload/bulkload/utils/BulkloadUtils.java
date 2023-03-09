@@ -96,7 +96,7 @@ public class BulkloadUtils {
         }
     }
 
-    public static void cleanUp(Connection conn,String tableName) throws SQLException {
+    public static void cleanUp(Connection conn, String tableName) throws SQLException {
         String countQuery = "select count(*) from " + tableName;
         Statement stmt = conn.createStatement();
         ResultSet rs = stmt.executeQuery(countQuery);

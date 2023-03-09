@@ -33,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,13 +56,26 @@ public class FeatureBenchBenchmark extends BenchmarkModule {
         List<HierarchicalConfiguration<ImmutableNode>> confExecuteRules = conf.configurationsAt("properties/executeRules[" + workcount + "]/run");
         String workloadName = conf.getString("properties/executeRules[" + workcount + "]/workload") != null ? conf.getString("properties/executeRules[" + workcount + "]/workload") : TimeUtil.getCurrentTimeString();
 
-        for (int i = 0; i < workConf.getTerminals(); ++i) {
-            FeatureBenchWorker worker = new FeatureBenchWorker(this, i);
-            worker.workloadClass = conf.getString("class");
-            worker.config = conf.configurationAt("properties");
-            worker.executeRules = configToExecuteRues(confExecuteRules, i, workConf.getTerminals());
-            worker.workloadName = workloadName;
-            workers.add(worker);
+        if(conf.getString("properties/type").equalsIgnoreCase("list")) {
+
+            for(int i = 0; i < conf.configurationsAt("properties/workloads").size(); i++) {
+                FeatureBenchWorker worker = new FeatureBenchWorker(this, i);
+                worker.workloadClass = conf.getString("class");
+                worker.config = conf.configurationsAt("properties/workloads").get(i);
+                worker.executeRules = configToExecuteRules(confExecuteRules, i, workConf.getTerminals());
+                worker.workloadName = workloadName;
+                workers.add(worker);
+            }
+        }
+        else {
+            for (int i = 0; i < workConf.getTerminals(); ++i) {
+                FeatureBenchWorker worker = new FeatureBenchWorker(this, i);
+                worker.workloadClass = conf.getString("class");
+                worker.config = conf.configurationAt("properties");
+                worker.executeRules = configToExecuteRules(confExecuteRules, i, workConf.getTerminals());
+                worker.workloadName = workloadName;
+                workers.add(worker);
+            }
         }
         return workers;
     }
@@ -76,6 +90,9 @@ public class FeatureBenchBenchmark extends BenchmarkModule {
         HierarchicalConfiguration<ImmutableNode> conf = workConf.getXmlConfig().configurationAt("microbenchmark");
         FeatureBenchLoader loader = new FeatureBenchLoader(this);
         loader.workloadClass = conf.getString("class");
+/*        if(conf.getString("properties/type").equalsIgnoreCase("list"))
+            loader.config = conf.configurationsAt("properties/workloads").get(0);
+        else*/
         loader.config = conf.configurationAt("properties");
         return loader;
     }
@@ -85,7 +102,7 @@ public class FeatureBenchBenchmark extends BenchmarkModule {
         return FeatureBench.class.getPackage();
     }
 
-    private List<ExecuteRule> configToExecuteRues(List<HierarchicalConfiguration<ImmutableNode>> confExecuteRules, int workerId, int totalWorker) {
+    private List<ExecuteRule> configToExecuteRules(List<HierarchicalConfiguration<ImmutableNode>> confExecuteRules, int workerId, int totalWorker) {
         List<ExecuteRule> executeRules = new ArrayList<>();
         for (HierarchicalConfiguration<ImmutableNode> confExecuteRule : confExecuteRules) {
 
