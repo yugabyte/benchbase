@@ -48,28 +48,41 @@ import java.util.regex.Pattern;
 public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
     private static final Logger LOG = LoggerFactory.getLogger(FeatureBenchWorker.class);
     static AtomicBoolean isCleanUpDone = new AtomicBoolean(false);
-    public String workloadClass = null;
-    public HierarchicalConfiguration<ImmutableNode> config = null;
-    public YBMicroBenchmark ybm = null;
-    public List<ExecuteRule> executeRules = null;
-    public String workloadName = "";
-    public HashMap<String, PreparedStatement> preparedStatementsPerQuery;
+    private final String workloadClass;
+    private final HierarchicalConfiguration<ImmutableNode> config;
+    private YBMicroBenchmark ybm;
+    private final List<ExecuteRule> executeRules;
+    private final String workloadName;
+    private HashMap<String, PreparedStatement> preparedStatementsPerQuery;
     public static Map<String,JSONObject> queryToExplainMap = new HashMap<>();
 
     static AtomicBoolean isPGStatStatementCollected = new AtomicBoolean(false);
 
     static AtomicBoolean isInitializeDone = new AtomicBoolean(false);
 
-    public FeatureBenchWorker(FeatureBenchBenchmark benchmarkModule, int id) {
+    public FeatureBenchWorker(FeatureBenchBenchmark benchmarkModule,
+                              int id,
+                              String workloadClass,
+                              HierarchicalConfiguration<ImmutableNode> workerConfig,
+                              List<ExecuteRule> executeRules,
+                              String workloadName) {
         super(benchmarkModule, id);
-    }
-
-    protected void initialize() {
+        this.workloadClass = workloadClass;
+        this.executeRules = executeRules;
+        this.config = workerConfig;
+        this.workloadName = workloadName;
         try {
             ybm = (YBMicroBenchmark) Class.forName(workloadClass)
                 .getDeclaredConstructor(HierarchicalConfiguration.class)
                 .newInstance(config);
-                preparedStatementsPerQuery = new HashMap<>();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    protected void initialize() {
+        try {
+            preparedStatementsPerQuery = new HashMap<>();
             for (ExecuteRule executeRule : executeRules) {
                 for (Query query : executeRule.getQueries()) {
                     String queryStmt = query.getQuery();
@@ -83,78 +96,78 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
 
         if (isInitializeDone.get()) return;
         synchronized (FeatureBenchWorker.class) {
-            if (!isInitializeDone.get()) {
-                LOG.info("!!!!!!!!!!!synchronized on class!!!!!!!!!!!!!!!!!!!!!!");
-                if (this.getWorkloadConfiguration().getXmlConfig().containsKey("collect_pg_stat_statements") &&
-                    this.getWorkloadConfiguration().getXmlConfig().getBoolean("collect_pg_stat_statements")) {
-                    LOG.info("Resetting pg_stat_statements for workload : " + this.workloadName);
-                    try {
-                        Statement stmt = conn.createStatement();
-                        stmt.executeQuery("SELECT pg_stat_statements_reset();");
-                        if (!conn.getAutoCommit())
-                            conn.commit();
-                    } catch (SQLException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-
-                String outputDirectory = "results";
-                FileUtil.makeDirIfNotExists(outputDirectory);
-
-                String explainSelect = "explain (analyze,verbose,costs,buffers) ";
-                String explainUpdate = "explain (analyze) ";
-
-                if (this.getWorkloadConfiguration().getXmlConfig().containsKey("use_dist_in_explain")
-                    && this.getWorkloadConfiguration().getXmlConfig().getBoolean("use_dist_in_explain")) {
-                    if (this.getWorkloadConfiguration().getXmlConfig().getString("type").equalsIgnoreCase("YUGABYTE")) {
-                        explainSelect = "explain (analyze,dist,verbose,costs,buffers) ";
-                    } else {
-                        throw new RuntimeException("dist option for explain not supported by this database type, Please remove key!");
-                    }
-                }
-
-
-                List<String> allQueries = new ArrayList<>();
-                for (ExecuteRule er : executeRules) {
-                    for (int i = 0; i < er.getQueries().size(); i++) {
-                        allQueries.add(er.getQueries().get(i).getQuery());
-                    }
-                }
-                List<PreparedStatement> explainDDLs = new ArrayList<>();
-                for (ExecuteRule er : executeRules) {
-                    for (Query query : er.getQueries()) {
-                        if (query.isSelectQuery() || query.isUpdateQuery()) {
-                            String querystmt = query.getQuery();
-                            try {
-
-                                PreparedStatement stmt = conn.prepareStatement((query.isSelectQuery() ? explainSelect : explainUpdate) + querystmt);
-                                List<UtilToMethod> baseUtils = query.getBaseUtils();
-                                for (int j = 0; j < baseUtils.size(); j++) {
-                                    try {
-                                        stmt.setObject(j + 1, baseUtils.get(j).get());
-                                    } catch (SQLException | InvocationTargetException | IllegalAccessException |
-                                             ClassNotFoundException | NoSuchMethodException |
-                                             InstantiationException e) {
-                                        throw new RuntimeException(e);
-                                    }
-                                }
-                                explainDDLs.add(stmt);
-                            } catch (SQLException e) {
-                                throw new RuntimeException(e);
-                            }
-                        }
-
-                    }
-                }
+        if (isInitializeDone.get()) return;
+            LOG.info("!!!!!!!!!!!synchronized on class!!!!!!!!!!!!!!!!!!!!!!");
+            if (this.getWorkloadConfiguration().getXmlConfig().containsKey("collect_pg_stat_statements") &&
+                this.getWorkloadConfiguration().getXmlConfig().getBoolean("collect_pg_stat_statements")) {
+                LOG.info("Resetting pg_stat_statements for workload : " + this.workloadName);
                 try {
-                    if (explainDDLs.size() > 0)
-                        runExplainAnalyse(explainDDLs, allQueries);
+                    Statement stmt = conn.createStatement();
+                    stmt.executeQuery("SELECT pg_stat_statements_reset();");
+                    if (!conn.getAutoCommit())
+                        conn.commit();
                 } catch (SQLException e) {
-                    e.printStackTrace();
+                    throw new RuntimeException(e);
                 }
-                isInitializeDone.set(true);
             }
+
+            String outputDirectory = "results";
+            FileUtil.makeDirIfNotExists(outputDirectory);
+
+            String explainSelect = "explain (analyze,verbose,costs,buffers) ";
+            String explainUpdate = "explain (analyze) ";
+
+            if (this.getWorkloadConfiguration().getXmlConfig().containsKey("use_dist_in_explain")
+                && this.getWorkloadConfiguration().getXmlConfig().getBoolean("use_dist_in_explain")) {
+                if (this.getWorkloadConfiguration().getXmlConfig().getString("type").equalsIgnoreCase("YUGABYTE")) {
+                    explainSelect = "explain (analyze,dist,verbose,costs,buffers) ";
+                } else {
+                    throw new RuntimeException("dist option for explain not supported by this database type, Please remove key!");
+                }
+            }
+
+
+            List<String> allQueries = new ArrayList<>();
+            for (ExecuteRule er : executeRules) {
+                for (int i = 0; i < er.getQueries().size(); i++) {
+                    allQueries.add(er.getQueries().get(i).getQuery());
+                }
+            }
+            List<PreparedStatement> explainDDLs = new ArrayList<>();
+            for (ExecuteRule er : executeRules) {
+                for (Query query : er.getQueries()) {
+                    if (query.isSelectQuery() || query.isUpdateQuery()) {
+                        String querystmt = query.getQuery();
+                        try {
+
+                            PreparedStatement stmt = conn.prepareStatement((query.isSelectQuery() ? explainSelect : explainUpdate) + querystmt);
+                            List<UtilToMethod> baseUtils = query.getBaseUtils();
+                            for (int j = 0; j < baseUtils.size(); j++) {
+                                try {
+                                    stmt.setObject(j + 1, baseUtils.get(j).get());
+                                } catch (SQLException | InvocationTargetException | IllegalAccessException |
+                                         ClassNotFoundException | NoSuchMethodException |
+                                         InstantiationException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            }
+                            explainDDLs.add(stmt);
+                        } catch (SQLException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+
+                }
+            }
+            try {
+                if (explainDDLs.size() > 0)
+                    runExplainAnalyse(explainDDLs, allQueries);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            isInitializeDone.set(true);
         }
+
     }
 
 
@@ -214,8 +227,6 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
     @Override
     protected TransactionStatus executeWork(Connection conn, TransactionType txnType) throws
         UserAbortException, SQLException {
-
-
         try {
             if (config.containsKey("execute") && config.getBoolean("execute")) {
                 ybm.execute(conn);
