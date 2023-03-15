@@ -56,7 +56,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
     private HashMap<String, PreparedStatement> preparedStatementsPerQuery;
     public static Map<String,JSONObject> queryToExplainMap = new HashMap<>();
 
-    static AtomicBoolean isPGStatStatementCollected = new AtomicBoolean(false);
+    public AtomicBoolean isPGStatStatementCollected = new AtomicBoolean(false);
 
     static AtomicBoolean isInitializeDone = new AtomicBoolean(false);
 
@@ -97,7 +97,6 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
         if (isInitializeDone.get()) return;
         synchronized (FeatureBenchWorker.class) {
             if (isInitializeDone.get()) return;
-            LOG.info("!!!!!!!!!!!synchronized on class!!!!!!!!!!!!!!!!!!!!!!");
             if (this.getWorkloadConfiguration().getXmlConfig().containsKey("collect_pg_stat_statements") &&
                 this.getWorkloadConfiguration().getXmlConfig().getBoolean("collect_pg_stat_statements")) {
                 LOG.info("Resetting pg_stat_statements for workload : " + this.workloadName);
@@ -293,19 +292,35 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
 
                 List<JSONObject> jsonResultsList = new ArrayList<>();
                 JSONObject pgStatOutputs = null;
+                JSONObject pgPreparedStatementOutputs = null;
                 if (this.getWorkloadConfiguration().getXmlConfig().getBoolean("collect_pg_stat_statements", false)) {
                     try {
                         LOG.info("Collecting pg_stat_statements for workload : " + this.workloadName);
                         pgStatOutputs = callPGStats();
+                        /*TODO: remove collecting prepared_statements*/
+                        pgPreparedStatementOutputs = collectPgPreparedStatements();
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
                     }
                 }
+                // reset pg_stat_statements
+                try {
+                    Statement stmt = null;
+                    stmt = conn.createStatement();
+                    stmt.executeQuery("SELECT pg_stat_statements_reset();");
+                    if (!conn.getAutoCommit())
+                        conn.commit();
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+
                 for (String queryString : queryStrings) {
                     JSONObject inner = new JSONObject();
                     inner.put("query", queryString);
                     inner.put("pg_stat_statements", pgStatOutputs == null ? new JSONObject() : findQueryInPgStat(pgStatOutputs, queryString));
                     inner.put("explain", queryToExplainMap.getOrDefault(queryString, new JSONObject()));
+                    /*TODO: remove prepared_statements*/
+                    inner.put("prepared_statements", pgPreparedStatementOutputs == null ? new JSONObject() : pgPreparedStatementOutputs);
                     jsonResultsList.add(inner);
                 }
                 this.featurebenchAdditionalResults.setJsonResultsList(jsonResultsList);
@@ -332,7 +347,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
 
     private JSONObject callPGStats() throws SQLException{
         String pgStatQuery = "select * from pg_stat_statements;";
-        Statement stmt = this.getBenchmark().makeConnection().createStatement();
+        Statement stmt = this.conn.createStatement();
         ResultSet resultSet = stmt.executeQuery(pgStatQuery);
         if(!conn.getAutoCommit())
             conn.commit();
@@ -365,5 +380,28 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
     }
     int similarity(String pg_query, String actual_query) {
         return new LevenshteinDistance().apply(pg_query, actual_query);
+    }
+
+    /*TODO: remove collectPgPreparedStatements*/
+    private JSONObject collectPgPreparedStatements() throws SQLException{
+        LOG.info("********COLLECTING PG PREPARED STATEMENTS*********");
+        String pgPreparedStatements = "select * from pg_prepared_statements;";
+        Statement stmt = this.conn.createStatement();
+        ResultSet resultSet = stmt.executeQuery(pgPreparedStatements);
+        if(!conn.getAutoCommit())
+            conn.commit();
+        ResultSetMetaData rsmd = resultSet.getMetaData();
+        int resultSetCount = 0;
+        JSONObject pgPreparedStatementOutputs = new JSONObject();
+        while (resultSet.next()) {
+            JSONObject pgPreparedStatementOutputPerRecord = new JSONObject();
+            for ( int i = 1; i <= rsmd.getColumnCount(); i++) {
+                pgPreparedStatementOutputPerRecord.put(rsmd.getColumnName(i), resultSet.getString(i));
+            }
+            pgPreparedStatementOutputs.put("Record_" + resultSetCount, pgPreparedStatementOutputPerRecord);
+            resultSetCount++;
+        }
+        System.out.println(pgPreparedStatementOutputs.toString());
+        return pgPreparedStatementOutputs;
     }
 }
