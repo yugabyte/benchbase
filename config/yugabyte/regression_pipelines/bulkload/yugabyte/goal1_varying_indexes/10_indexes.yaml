@@ -10,9 +10,8 @@ loaderthreads: 1
 terminals: 1
 works:
     work:
-        time: 60
         rate: unlimited
-        warmup: 0
+        serial: true
 
 microbenchmark:
     class: com.oltpbenchmark.benchmarks.featurebench.customworkload.bulkload.Goal1

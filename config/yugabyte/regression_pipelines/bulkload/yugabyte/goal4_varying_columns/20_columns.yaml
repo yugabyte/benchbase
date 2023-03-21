@@ -11,12 +11,8 @@ terminals: 1
 
 works:
     work:
-        time_secs: 10
-        rate: 1000
-        weights: 100
-transactiontypes:
-    transactiontype:
-        name: FeatureBench
+        rate: unlimited
+        serial: true
 microbenchmark:
     class: com.oltpbenchmark.benchmarks.featurebench.customworkload.bulkload.Goal4
     properties:
