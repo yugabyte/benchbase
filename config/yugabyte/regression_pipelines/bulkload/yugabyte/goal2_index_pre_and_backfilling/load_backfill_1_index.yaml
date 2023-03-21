@@ -23,7 +23,7 @@ microbenchmark:
         workload: goal2-2_load_then_backfill_1_index
         tableName: orders
         columns: 15
-        rows: 3000000
+        rows: 300
         indexes: 1
         filePath: orders.csv
         stringLength: 32

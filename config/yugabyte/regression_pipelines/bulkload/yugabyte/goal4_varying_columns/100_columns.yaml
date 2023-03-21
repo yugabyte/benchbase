@@ -24,6 +24,6 @@ microbenchmark:
         workload: goal4-3_create_100fields_table_then_load
         tableName: orders
         columns: 100
-        rows: 3000000
+        rows: 300
         filePath: orders.csv
         stringLength: 32

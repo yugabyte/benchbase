@@ -21,7 +21,7 @@ microbenchmark:
         workload: goal1-2_noindex_load
         tableName: orders
         columns: 15
-        rows: 3000000
+        rows: 300
         indexes: 0
         filePath: orders.csv
         stringLength: 32

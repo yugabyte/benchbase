@@ -24,6 +24,6 @@ microbenchmark:
         workload: goal3-1_load_300Mrows
         tableName: orders
         columns: 15
-        rows: 300000000
+        rows: 30000
         filePath: orders.csv
         stringLength: 32

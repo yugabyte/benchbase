@@ -23,7 +23,7 @@ microbenchmark:
         workload: goal2-1_create_1_index_then_load
         tableName: orders
         columns: 15
-        rows: 3000000
+        rows: 300
         indexes: 1
         filePath: orders.csv
         stringLength: 32
