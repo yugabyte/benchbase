@@ -18,7 +18,7 @@ microbenchmark:
     class: com.oltpbenchmark.benchmarks.featurebench.customworkload.bulkload.Goal1
     properties:
         # Goal 1 - 1 :: create table with PK -> load data (no index)
-        workload: goal1-2_noindex_load
+        workload: noindex_load
         tableName: orders
         columns: 15
         rows: 300

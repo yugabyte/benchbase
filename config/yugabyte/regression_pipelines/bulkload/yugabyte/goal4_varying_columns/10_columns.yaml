@@ -21,7 +21,7 @@ microbenchmark:
     class: com.oltpbenchmark.benchmarks.featurebench.customworkload.bulkload.Goal4
     properties:
         # Goal4 - 1 :: create table with 10 fields, 3M rows -> load data (only PK)
-        workload: goal4-1_create_10fields_table_then_load
+        workload: create_10fields_table_then_load
         tableName: orders
         columns: 10
         rows: 300

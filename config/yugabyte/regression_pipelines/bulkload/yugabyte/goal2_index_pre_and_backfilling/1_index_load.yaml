@@ -20,7 +20,7 @@ microbenchmark:
     class: com.oltpbenchmark.benchmarks.featurebench.customworkload.bulkload.Goal2
     properties:
         # Goal2 - 1 :: create table with PK -> create 1 index -> Load data (1 index)
-        workload: goal2-1_create_1_index_then_load
+        workload: create_1_index_then_load
         tableName: orders
         columns: 15
         rows: 300
