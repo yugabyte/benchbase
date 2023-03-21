@@ -1,4 +1,3 @@
-
 type: YUGABYTE
 driver: com.yugabyte.Driver
 url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=disable&ApplicationName=featurebench&reWriteBatchedInserts=true
@@ -6,7 +5,7 @@ username: {{username}}
 password: {{password}}
 batchsize: 128
 isolation: TRANSACTION_REPEATABLE_READ
-collect_pg_stat_statements: true
+collect_pg_stat_statements: false
 loaderthreads: 1
 terminals: 1
 works:
@@ -20,6 +19,6 @@ microbenchmark:
         workload: load_3Mrows
         tableName: orders
         columns: 15
-        rows: 300
+        rows: 3000000
         filePath: orders.csv
         stringLength: 32

@@ -5,7 +5,7 @@ username: {{username}}
 password: {{password}}
 batchsize: 128
 isolation: TRANSACTION_REPEATABLE_READ
-collect_pg_stat_statements: true
+collect_pg_stat_statements: false
 loaderthreads: 1
 terminals: 1
 works:
@@ -20,7 +20,8 @@ microbenchmark:
         workload: create10index_load
         tableName: orders
         columns: 15
-        rows: 300
+        rows: 3000000
         indexes: 10
         filePath: orders.csv
         stringLength: 32
+        recreateCsvIfExists: false
