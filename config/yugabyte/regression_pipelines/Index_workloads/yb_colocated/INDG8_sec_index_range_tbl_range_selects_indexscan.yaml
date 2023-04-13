@@ -13,7 +13,7 @@ use_dist_in_explain : true
 yaml_version: v1.0
 works:
     work:
-        time_secs: 300
+        time_secs: 180
         active_terminals: 1
         rate: unlimited
         warmup: 60
@@ -22,17 +22,17 @@ microbenchmark:
     properties:
         setAutoCommit: true
         create:
-            - DROP TABLE IF EXISTS Rangetbl_1;
-            - CREATE TABLE Rangetbl_1(col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_bigint_id_4 bigint, col_bigint_id_5 bigint, col_bigint_id_6 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1 ASC));
-            - CREATE INDEX ON Rangetbl_1(col_bigint_id_2 ASC);
+            - DROP TABLE IF EXISTS Rangetbl_comp_skey_1;
+            - CREATE TABLE Rangetbl_comp_skey_1(col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_bigint_id_4 bigint, col_bigint_id_5 bigint, col_bigint_id_6 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1 ASC));
+            - CREATE INDEX ON Rangetbl_comp_skey_1(col_bigint_id_2 ASC);
             - CREATE INDEX ON Rangetbl_comp_skey_1(col_bigint_id_3 ASC, col_bigint_id_4 ASC);
 
         cleanup:
-            - DROP TABLE IF EXISTS Rangetbl_1;
+            - DROP TABLE IF EXISTS Rangetbl_comp_skey_1;
 
         loadRules:
 
-              - table: Rangetbl_
+              - table: Rangetbl_comp_skey_
                 count: 1
                 rows: 1000000
                 columns:
@@ -92,4 +92,4 @@ microbenchmark:
                   - name: hashtbl_index_scan_pkey
                     weight: 100
                     queries:
-                        - query: select * from Rangetbl_1 where col_bigint_id_3<250000 and col_bigint_id_3>750000
+                        - query: select * from Rangetbl_comp_skey_1 where col_bigint_id_3<250000 and col_bigint_id_3>750000

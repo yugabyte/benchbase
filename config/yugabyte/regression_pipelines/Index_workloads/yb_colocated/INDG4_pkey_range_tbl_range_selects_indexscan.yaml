@@ -13,7 +13,7 @@ use_dist_in_explain : true
 yaml_version: v1.0
 works:
     work:
-        time_secs: 300
+        time_secs: 180
         active_terminals: 1
         rate: unlimited
         warmup: 60
@@ -94,4 +94,4 @@ microbenchmark:
                   - name: hashtbl_index_scan_pkey
                     weight: 100
                     queries:
-                        - query: select * from Rangetbl_1 where col_bigint_id_1>250000 and col_bigint_id_1<750000
+                        - query: select * from CompositeRangetbl_1 where col_bigint_id_1>250000 and col_bigint_id_1<750000
