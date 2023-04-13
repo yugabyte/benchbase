@@ -13,7 +13,6 @@ loaderthreads: 1
 terminals: 1
 collect_pg_stat_statements: true
 yaml_version: v1.0
-use_dist_in_explain : true
 works:
     work:
         time_secs: 300
