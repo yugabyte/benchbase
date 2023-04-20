@@ -4,21 +4,22 @@
     <!-- Connection details -->
     <type>POSTGRES</type>
     <driver>org.postgresql.Driver</driver>
-    <url>jdbc:postgresql://localhost:5432/benchbase?sslmode=disable&amp;ApplicationName=seats&amp;reWriteBatchedInserts=true</url>
-    <username>admin</username>
-    <password>password</password>
-    <isolation>TRANSACTION_SERIALIZABLE</isolation>
+    <url>jdbc:postgresql://sagarwal-pg-rds-14.cbtcvpszcgdq.us-west-2.rds.amazonaws.com:5432/postgres?sslmode=require&amp;ApplicationName=seats&amp;reWriteBatchedInserts=true</url>
+    <username>postgres</username>
+    <password>Password321</password>
+    <isolation>TRANSACTION_REPEATABLE_READ</isolation>
     <batchsize>128</batchsize>
 
     <!-- Scalefactor in SEATS scales by *1000 the number of customers-->
-    <scalefactor>1</scalefactor>
+    <scalefactor>10</scalefactor>
 
     <!-- The workload -->
     <terminals>1</terminals>
     <works>
         <work>
-            <time>60</time>
-            <rate>10000</rate>
+            <warmup>60</warmup>
+            <time>300</time>
+            <rate>unlimited</rate>
             <weights>10, 10, 35, 20, 10, 15</weights>
         </work>
     </works>
