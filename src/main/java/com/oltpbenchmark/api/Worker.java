@@ -56,6 +56,7 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
     private final Histogram<TransactionType> txnAbort = new Histogram<>();
     private final Histogram<TransactionType> txnRetry = new Histogram<>();
     private final Histogram<TransactionType> txnErrors = new Histogram<>();
+    private final Histogram<TransactionType> txnZeroRows = new Histogram<>();
     private final Histogram<TransactionType> txtRetryDifferent = new Histogram<>();
     protected Connection conn = null;
     private WorkloadState workloadState;
@@ -171,6 +172,9 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
         return (this.txtRetryDifferent);
     }
 
+    public final Histogram<TransactionType> getTransactionZeroRowsHistogram() {
+        return (this.txnZeroRows);
+    }
     /**
      * Stop executing the current statement.
      */
@@ -482,6 +486,7 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
                         case RETRY -> this.txnRetry.put(transactionType);
                         case RETRY_DIFFERENT -> this.txtRetryDifferent.put(transactionType);
                         case ERROR -> this.txnErrors.put(transactionType);
+                        case ZERO_ROWS -> this.txnZeroRows.put(transactionType);
                     }
 
                 }
@@ -515,7 +520,7 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
         } else if (errorCode == 1205 && sqlState.equals("41000")) {
             // MySQL ER_LOCK_WAIT_TIMEOUT
             return true;
-        } else if(errorCode > 0 && !sqlState.isEmpty()) {
+        } else if(errorCode >= 0 && !sqlState.isEmpty()) {
             return true;
         }
 

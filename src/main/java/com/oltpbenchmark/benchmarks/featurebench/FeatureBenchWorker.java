@@ -255,19 +255,18 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                         while (rs.next()) {
                             countSet++;
                         }
-                        if (countSet == 0) {
-                            isRetry = true;
-                        }
+                        if (countSet == 0) return TransactionStatus.ZERO_ROWS;
+//                        if (countSet == 0) isRetry = true;
+
                     } else {
                         int updatedRows = stmt.executeUpdate();
-                        if (updatedRows == 0) {
-                            isRetry = true;
-                        }
+                        if (updatedRows == 0) return TransactionStatus.ZERO_ROWS;
+//                        if (updatedRows == 0) isRetry = true;
                     }
                 }
             }
-            if (isRetry)
-                return TransactionStatus.RETRY;
+//            if (isRetry)
+//                return TransactionStatus.RETRY;
 
         } catch (ClassNotFoundException | InvocationTargetException
                  | InstantiationException | IllegalAccessException |

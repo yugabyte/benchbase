@@ -259,6 +259,7 @@ public class ResultWriter {
         metadata.put("Rejected Transactions (Retry Different)", results.getRetryDifferent().getSampleCount());
         metadata.put("Unexpected SQL Errors", results.getError().getSampleCount());
         metadata.put("Unknown Status Transactions", results.getUnknown().getSampleCount());
+        metadata.put("Zero Rows Returned", results.getZeroRows().getSampleCount());
         detailedSummaryMap.put("metadata", metadata);
         detailedSummaryMap.put("Summary", summaryMap);
         detailedSummaryMap.put("queries", results.getFeaturebenchAdditionalResults().getJsonResultsList());
