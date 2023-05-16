@@ -520,7 +520,8 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
         } else if (errorCode == 1205 && sqlState.equals("41000")) {
             // MySQL ER_LOCK_WAIT_TIMEOUT
             return true;
-        } else if(errorCode >= 0 && !sqlState.isEmpty()) {
+        } else if(errorCode > 0 && !sqlState.isEmpty()) {
+            // Added by Yugabyte to retry on all errors
             return true;
         }
 
