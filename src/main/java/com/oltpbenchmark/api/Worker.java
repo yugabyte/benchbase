@@ -309,7 +309,15 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
                             break;
                         }
                         if (preState == MEASURE && postPhase.getId() == prePhase.getId()) {
-                            latencies.addLatency(transactionType.getId(), start, end, this.id, prePhase.getId());
+                            /*latencies.addLatency(transactionType.getId(), start, end, this.id, prePhase.getId());
+                            intervalRequests.incrementAndGet();*/
+
+                            // change to only add latencies of success transactions.
+                            long totalTimeTakenForSuccessTxn = 0;
+                            for (TransactionType txn: this.txnSuccess.values()) {
+                                totalTimeTakenForSuccessTxn += txn.getTimeTaken();
+                            }
+                            latencies.addLatencyForSuccessTxn(transactionType.getId(), start, end, this.id, prePhase.getId(), totalTimeTakenForSuccessTxn);
                             intervalRequests.incrementAndGet();
                         }
                         if (prePhase.isLatencyRun()) {
@@ -391,7 +399,8 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
      * @param transactionType TODO
      */
     protected final void doWork(DatabaseType databaseType, TransactionType transactionType) {
-
+        long start = 0;
+        long end = 0;
         try {
             int retryCount = 0;
             int maxRetryCount = configuration.getMaxRetries();
@@ -425,8 +434,9 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
                     if (LOG.isDebugEnabled()) {
                         LOG.debug(String.format("%s %s attempting...", this, transactionType));
                     }
-
+                    start = System.nanoTime();
                     status = this.executeWork(conn, transactionType);
+                    end = System.nanoTime();
 
                     if (LOG.isDebugEnabled()) {
                         LOG.debug(String.format("%s %s completed with status [%s]...", this, transactionType, status.name()));
@@ -481,7 +491,10 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
 
                     switch (status) {
                         case UNKNOWN -> this.txnUnknown.put(transactionType);
-                        case SUCCESS -> this.txnSuccess.put(transactionType);
+                        case SUCCESS -> {
+                            transactionType.setTimeTaken(end-start);
+                            this.txnSuccess.put(transactionType);
+                        }
                         case USER_ABORTED -> this.txnAbort.put(transactionType);
                         case RETRY -> this.txnRetry.put(transactionType);
                         case RETRY_DIFFERENT -> this.txtRetryDifferent.put(transactionType);
@@ -520,7 +533,8 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
         } else if (errorCode == 1205 && sqlState.equals("41000")) {
             // MySQL ER_LOCK_WAIT_TIMEOUT
             return true;
-        } else if(errorCode >= 0 && !sqlState.isEmpty()) {
+        } else if(errorCode > 0 && !sqlState.isEmpty()) {
+            // Added by Yugabyte to retry on all errors
             return true;
         }
 

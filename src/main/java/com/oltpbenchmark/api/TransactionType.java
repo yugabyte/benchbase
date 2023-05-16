@@ -33,6 +33,7 @@ public class TransactionType implements Comparable<TransactionType> {
     private final boolean supplemental;
     private final long preExecutionWait;
     private final long postExecutionWait;
+    private long timeTaken;
     private  String transactionName;
     protected TransactionType(Class<? extends Procedure> procedureClass, int id, boolean supplemental, long preExecutionWait, long postExecutionWait) {
         this.procedureClass = procedureClass;
@@ -107,4 +108,11 @@ public class TransactionType implements Comparable<TransactionType> {
         return this.transactionName;
     }
 
+    public long getTimeTaken() {
+        return timeTaken;
+    }
+
+    public void setTimeTaken(long timeTaken) {
+        this.timeTaken = timeTaken;
+    }
 }

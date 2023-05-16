@@ -68,6 +68,24 @@ public class LatencyRecord implements Iterable<LatencyRecord.Sample> {
         lastNanosecond += startOffsetNanosecond;
     }
 
+    public void addLatencyForSuccessTxn(int transType, long startNanosecond, long endNanosecond, int workerId,
+                                        int phaseId, long totalTimeTakenForSuccessTxn) {
+
+        if (nextIndex == ALLOC_SIZE) {
+            allocateChunk();
+        }
+        Sample[] chunk = values.get(values.size() - 1);
+
+        long startOffsetNanosecond = (startNanosecond - lastNanosecond + 500);
+
+        int latencyMicroseconds = (int) ((totalTimeTakenForSuccessTxn + 500) / 1000);
+
+        chunk[nextIndex] = new Sample(transType, startOffsetNanosecond, latencyMicroseconds, workerId, phaseId);
+        ++nextIndex;
+
+        lastNanosecond += startOffsetNanosecond;
+    }
+
     private void allocateChunk() {
         values.add(new Sample[ALLOC_SIZE]);
         nextIndex = 0;
