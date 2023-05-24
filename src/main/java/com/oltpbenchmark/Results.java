@@ -101,6 +101,10 @@ public final class Results {
         return (double) measuredRequests / (double) nanoseconds * 1e9;
     }
 
+    public double requestsPerSecondThroughputFeaturebench() {
+        return (double) (success.getSampleCount() + zeroRows.getSampleCount()) / (double) nanoseconds * 1e9;
+    }
+
     public double requestsPerSecondGoodput() {
         return (double) success.getSampleCount() / (double) nanoseconds * 1e9;
     }

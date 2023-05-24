@@ -312,7 +312,12 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
                             break;
                         }
                         if (preState == MEASURE && postPhase.getId() == prePhase.getId()) {
-                            if (this.isFeaturebenchWorkload && (transactionStatus == TransactionStatus.SUCCESS || transactionStatus == TransactionStatus.ZERO_ROWS)) {
+                            if (this.isFeaturebenchWorkload) {
+                                if (transactionStatus == TransactionStatus.SUCCESS || transactionStatus == TransactionStatus.ZERO_ROWS) {
+                                    latencies.addLatency(transactionType.getId(), start, end, this.id, prePhase.getId());
+                                    intervalRequests.incrementAndGet();
+                                }
+                            } else {
                                 latencies.addLatency(transactionType.getId(), start, end, this.id, prePhase.getId());
                                 intervalRequests.incrementAndGet();
                             }
