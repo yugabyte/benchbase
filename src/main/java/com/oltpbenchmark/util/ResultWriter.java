@@ -260,7 +260,7 @@ public class ResultWriter {
         metadata.put("Unexpected SQL Errors", results.getError().getSampleCount());
         metadata.put("Unknown Status Transactions", results.getUnknown().getSampleCount());
         metadata.put("Zero Rows Returned", results.getZeroRows().getSampleCount());
-        metadata.put("Total measured Transactions", results.getMeasuredRequests());
+        metadata.put("Total measured requests", results.getMeasuredRequests());
         detailedSummaryMap.put("metadata", metadata);
         detailedSummaryMap.put("Summary", summaryMap);
         detailedSummaryMap.put("queries", results.getFeaturebenchAdditionalResults().getJsonResultsList());
