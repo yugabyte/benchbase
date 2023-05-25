@@ -56,9 +56,7 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
     private final Histogram<TransactionType> txnAbort = new Histogram<>();
     private final Histogram<TransactionType> txnRetry = new Histogram<>();
     private final Histogram<TransactionType> txnErrors = new Histogram<>();
-
     private final Histogram<TransactionType> txnZeroRows = new Histogram<>();
-
     private final Histogram<TransactionType> txtRetryDifferent = new Histogram<>();
     protected Connection conn = null;
     private WorkloadState workloadState;
@@ -176,9 +174,7 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
         return (this.txtRetryDifferent);
     }
 
-    public final Histogram<TransactionType> getTransactionZeroRowsHistogram() {
-        return (this.txnZeroRows);
-    }
+    public final Histogram<TransactionType> getTransactionZeroRowsHistogram() { return (this.txnZeroRows); }
     /**
      * Stop executing the current statement.
      */
