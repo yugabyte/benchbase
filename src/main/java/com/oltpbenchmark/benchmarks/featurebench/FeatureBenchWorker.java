@@ -246,23 +246,16 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                 List<UtilToMethod> baseUtils = query.getBaseUtils();
                 int count = query.getCount();
                 for (int i = 0; i < count; i++) {
-                    for (int j = 0; j < baseUtils.size(); j++) {
+                    for (int j = 0; j < baseUtils.size(); j++)
                         stmt.setObject(j + 1, baseUtils.get(j).get());
-                    }
                     if (query.isSelectQuery()) {
                         ResultSet rs = stmt.executeQuery();
                         int countSet = 0;
-                        while (rs.next()) {
-                            countSet++;
-                        }
-                        if (countSet == 0) {
-                            isRetry = true;
-                        }
+                        while (rs.next()) countSet++;
+                        if (countSet == 0) return TransactionStatus.ZERO_ROWS;
                     } else {
                         int updatedRows = stmt.executeUpdate();
-                        if (updatedRows == 0) {
-                            isRetry = true;
-                        }
+                        if (updatedRows == 0) return TransactionStatus.ZERO_ROWS;
                     }
                 }
             }
