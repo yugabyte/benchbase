@@ -650,7 +650,7 @@ public class DBWorkload {
                             Results r = runWorkload(benchList, intervalMonitor, workCount);
                             writeOutputs(r, activeTXTypes, argsLine, xmlConfig,
                                 executeRules == null ? null : workloads.get(workCount - 1).getString("workload"),
-                                executeRules == null ? null : workloads.get(workCount - 1).getString("customerTags", null));
+                                executeRules == null ? null : workloads.get(workCount - 1).getString("customTags", null));
                             writeHistograms(r);
 
                             if (argsLine.hasOption("json-histograms")) {
@@ -685,7 +685,7 @@ public class DBWorkload {
                         else {
                             writeOutputs(r, activeTXTypes, argsLine, xmlConfig,
                                 executeRules == null ? null : workloads.get(workCount - 1).getString("workload"),
-                                executeRules == null ? null : workloads.get(workCount - 1).getString("customerTags", null));
+                                executeRules == null ? null : workloads.get(workCount - 1).getString("customTags", null));
                         }
                         writeHistograms(r);
 
@@ -816,7 +816,7 @@ public class DBWorkload {
      */
     private static void writeOutputs(Results r, List<TransactionType> activeTXTypes, CommandLine argsLine,
                                      XMLConfiguration xmlConfig, String workload_name,
-                                     String customerTags) throws Exception {
+                                     String customTags) throws Exception {
 
         // If an output directory is used, store the information
         String outputDirectory = "results";
@@ -888,7 +888,7 @@ public class DBWorkload {
                 }
                 if(workload_name == null || workload_name.isEmpty())
                     workload_name = baseFileName;
-                workloadToSummaryMap.put(workload_name, rw.writeDetailedSummary(ps, customerTags));
+                workloadToSummaryMap.put(workload_name, rw.writeDetailedSummary(ps, customTags));
 
                 try {
                     FileWriter writer = new FileWriter(filePathForOutputJson);
