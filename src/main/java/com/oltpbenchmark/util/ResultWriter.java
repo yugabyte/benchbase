@@ -236,7 +236,7 @@ public class ResultWriter {
         }
     }
 
-    public Map<String, Object> writeDetailedSummary(PrintStream os) {
+    public Map<String, Object> writeDetailedSummary(PrintStream os, String customerTags) {
         Map<String, Object> summaryMap = new TreeMap<>();
         TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
         Date now = new Date();
@@ -253,6 +253,7 @@ public class ResultWriter {
         Map<String, Object> detailedSummaryMap = new TreeMap<>();
         Map<String, Object> metadata = new TreeMap<>();
         metadata.put("yaml_version", expConf.getString("yaml_version", "v1.0"));
+        metadata.put("customerTags", customerTags);
         detailedSummaryMap.put("metadata", metadata);
         detailedSummaryMap.put("Summary", summaryMap);
         detailedSummaryMap.put("queries", results.getFeaturebenchAdditionalResults().getJsonResultsList());
