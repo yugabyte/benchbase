@@ -253,11 +253,26 @@ public class ResultWriter {
         Map<String, Object> detailedSummaryMap = new TreeMap<>();
         Map<String, Object> metadata = new TreeMap<>();
         metadata.put("yaml_version", expConf.getString("yaml_version", "v1.0"));
-        metadata.put("customTags", customTags);
+        metadata.put("customTags", formatCustomTags(customTags));
         detailedSummaryMap.put("metadata", metadata);
         detailedSummaryMap.put("Summary", summaryMap);
         detailedSummaryMap.put("queries", results.getFeaturebenchAdditionalResults().getJsonResultsList());
         os.println(JSONUtil.format(JSONUtil.toJSONString(detailedSummaryMap)));
         return detailedSummaryMap;
+    }
+
+    public static Map<String, String> formatCustomTags(String customTags) {
+        Map<String, String> resultTags = new HashMap<>();
+
+        if (customTags == null) return resultTags;
+        for(String tag: customTags.split(",")) {
+            String[] keyValue = tag.split("=");
+            if (keyValue.length == 2)
+                resultTags.put(keyValue[0], keyValue[1]);
+            else
+                resultTags.put(keyValue[0], "");
+        }
+
+        return resultTags;
     }
 }
