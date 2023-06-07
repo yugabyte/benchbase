@@ -39,6 +39,7 @@ public final class Results {
     private final Histogram<TransactionType> retry = new Histogram<>(false);
     private final Histogram<TransactionType> error = new Histogram<>(false);
     private final Histogram<TransactionType> retryDifferent = new Histogram<>(false);
+    private final Histogram<TransactionType> zeroRows = new Histogram<>(true);
     private final Map<TransactionType, Histogram<String>> abortMessages = new HashMap<>();
     private final FeaturebenchAdditionalResults featurebenchAdditionalResults = new FeaturebenchAdditionalResults();
 
@@ -82,6 +83,10 @@ public final class Results {
 
     public Histogram<TransactionType> getRetryDifferent() {
         return retryDifferent;
+    }
+
+    public Histogram<TransactionType> getZeroRows() {
+        return zeroRows;
     }
 
     public FeaturebenchAdditionalResults getFeaturebenchAdditionalResults() {
