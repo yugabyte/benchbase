@@ -56,10 +56,12 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
     private final Histogram<TransactionType> txnAbort = new Histogram<>();
     private final Histogram<TransactionType> txnRetry = new Histogram<>();
     private final Histogram<TransactionType> txnErrors = new Histogram<>();
+    private final Histogram<TransactionType> txnZeroRows = new Histogram<>();
     private final Histogram<TransactionType> txtRetryDifferent = new Histogram<>();
     protected Connection conn = null;
     private WorkloadState workloadState;
     private LatencyRecord latencies;
+    boolean isFeaturebenchWorkload = false;
     private boolean seenDone = false;
     public final FeaturebenchAdditionalResults featurebenchAdditionalResults = new FeaturebenchAdditionalResults();
 
@@ -71,9 +73,11 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
         this.currStatement = null;
         this.transactionTypes = this.configuration.getTransTypes();
         boolean autoCommitVal = false;
+
         if (this.benchmark.getBenchmarkName().equalsIgnoreCase("featurebench") &&
             this.benchmark.getWorkloadConfiguration().getXmlConfig().containsKey("microbenchmark/properties/setAutoCommit")) {
             autoCommitVal = this.benchmark.getWorkloadConfiguration().getXmlConfig().getBoolean("microbenchmark/properties/setAutoCommit");
+            this.isFeaturebenchWorkload = true;
         }
         if (!this.configuration.getNewConnectionPerTxn()) {
             try {
@@ -171,6 +175,9 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
         return (this.txtRetryDifferent);
     }
 
+    public final Histogram<TransactionType> getTransactionZeroRowsHistogram() {
+        return (this.txnZeroRows);
+    }
     /**
      * Stop executing the current statement.
      */
@@ -280,7 +287,7 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
 
                 long start = System.nanoTime();
 
-                doWork(configuration.getDatabaseType(), transactionType);
+                TransactionStatus transactionStatus = doWork(configuration.getDatabaseType(), transactionType);
 
                 long end = System.nanoTime();
 
@@ -305,8 +312,15 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
                             break;
                         }
                         if (preState == MEASURE && postPhase.getId() == prePhase.getId()) {
-                            latencies.addLatency(transactionType.getId(), start, end, this.id, prePhase.getId());
-                            intervalRequests.incrementAndGet();
+                            if (this.isFeaturebenchWorkload) {
+                                if (transactionStatus == TransactionStatus.SUCCESS || transactionStatus == TransactionStatus.ZERO_ROWS) {
+                                    latencies.addLatency(transactionType.getId(), start, end, this.id, prePhase.getId());
+                                    intervalRequests.incrementAndGet();
+                                }
+                            } else {
+                                latencies.addLatency(transactionType.getId(), start, end, this.id, prePhase.getId());
+                                intervalRequests.incrementAndGet();
+                            }
                         }
                         if (prePhase.isLatencyRun()) {
                             workloadState.startColdQuery();
@@ -386,8 +400,8 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
      * @param databaseType    TODO
      * @param transactionType TODO
      */
-    protected final void doWork(DatabaseType databaseType, TransactionType transactionType) {
-
+    protected final TransactionStatus doWork(DatabaseType databaseType, TransactionType transactionType) {
+        TransactionStatus status = TransactionStatus.UNKNOWN;
         try {
             int retryCount = 0;
             int maxRetryCount = configuration.getMaxRetries();
@@ -399,8 +413,7 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
             }
 
             while (retryCount < maxRetryCount && this.workloadState.getGlobalState() != State.DONE) {
-
-                TransactionStatus status = TransactionStatus.UNKNOWN;
+                status = TransactionStatus.UNKNOWN;
 
                 if (this.conn == null) {
                     try {
@@ -482,6 +495,7 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
                         case RETRY -> this.txnRetry.put(transactionType);
                         case RETRY_DIFFERENT -> this.txtRetryDifferent.put(transactionType);
                         case ERROR -> this.txnErrors.put(transactionType);
+                        case ZERO_ROWS -> this.txnZeroRows.put(transactionType);
                     }
 
                 }
@@ -492,7 +506,7 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
 
             throw new RuntimeException(msg, ex);
         }
-
+        return status;
     }
 
     private boolean isRetryable(SQLException ex) {
@@ -516,6 +530,7 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
             // MySQL ER_LOCK_WAIT_TIMEOUT
             return true;
         } else if(errorCode > 0 && !sqlState.isEmpty()) {
+            // Added by Yugabyte to retry on all errors
             return true;
         }
 

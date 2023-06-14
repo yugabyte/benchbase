@@ -782,6 +782,8 @@ public class DBWorkload {
 
         sb.append(StringUtil.bold("Unknown Status Transactions:")).append("\n").append(r.getUnknown()).append("\n\n");
 
+        sb.append(StringUtil.bold("Zero Rows Transactions:")).append("\n").append(r.getZeroRows()).append("\n\n");
+
         if (!r.getAbortMessages().isEmpty()) {
             sb.append("\n\n").append(StringUtil.bold("User Aborts:")).append("\n").append(r.getAbortMessages());
         }
@@ -845,12 +847,6 @@ public class DBWorkload {
             rw.writeSamples(ps);
         }
 
-        String summaryFileName = baseFileName + ".summary.json";
-        try (PrintStream ps = new PrintStream(FileUtil.joinPath(outputDirectory, summaryFileName))) {
-            LOG.info("Output summary data into file: {}", summaryFileName);
-            rw.writeSummary(ps);
-        }
-
         String paramsFileName = baseFileName + ".params.json";
         try (PrintStream ps = new PrintStream(FileUtil.joinPath(outputDirectory, paramsFileName))) {
             LOG.info("Output DBMS parameters into file: {}", paramsFileName);
@@ -865,7 +861,14 @@ public class DBWorkload {
             }
         }
 
+        String summaryFileName = baseFileName + ".summary.json";
+
         if (name.equalsIgnoreCase("featurebench")) {
+            try (PrintStream ps = new PrintStream(FileUtil.joinPath(outputDirectory, summaryFileName))) {
+                LOG.info("Output summary data into file: {}", summaryFileName);
+                rw.writeSummaryFeaturebench(ps);
+            }
+
             String configFileName = baseFileName + ".config.yaml";
             try (PrintStream ps = new PrintStream(FileUtil.joinPath(outputDirectory, configFileName))) {
                 LOG.info("Output benchmark config into file: {}", configFileName);
@@ -893,6 +896,11 @@ public class DBWorkload {
 
             }
         } else {
+            try (PrintStream ps = new PrintStream(FileUtil.joinPath(outputDirectory, summaryFileName))) {
+                LOG.info("Output summary data into file: {}", summaryFileName);
+                rw.writeSummary(ps);
+            }
+
             String configFileName = baseFileName + ".config.xml";
             try (PrintStream ps = new PrintStream(FileUtil.joinPath(outputDirectory, configFileName))) {
                 LOG.info("Output benchmark config into file: {}", configFileName);

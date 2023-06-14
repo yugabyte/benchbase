@@ -124,6 +124,23 @@ public class ResultWriter {
         os.println(JSONUtil.format(JSONUtil.toJSONString(summaryMap)));
     }
 
+    public void writeSummaryFeaturebench(PrintStream os) {
+        Map<String, Object> summaryMap = new TreeMap<>();
+        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+        Date now = new Date();
+        summaryMap.put("Current Timestamp (milliseconds)", now.getTime());
+        summaryMap.put("DBMS Type", dbType);
+        summaryMap.put("DBMS Version", collector.collectVersion());
+        summaryMap.put("Benchmark Type", benchType);
+        summaryMap.put("Latency Distribution", results.getDistributionStatistics().toMap());
+        summaryMap.put("Throughput (requests/second)", results.requestsPerSecondThroughputFeaturebench());
+        summaryMap.put("Goodput (requests/second)", results.requestsPerSecondGoodput());
+        for (String field : BENCHMARK_KEY_FIELD) {
+            summaryMap.put(field, expConf.getString(field));
+        }
+        os.println(JSONUtil.format(JSONUtil.toJSONString(summaryMap)));
+    }
+
     public void writeResults(int windowSizeSeconds, PrintStream out) {
         writeResults(windowSizeSeconds, out, TransactionType.INVALID);
     }
@@ -245,7 +262,7 @@ public class ResultWriter {
         summaryMap.put("DBMS Version", collector.collectVersion());
         summaryMap.put("Benchmark Type", benchType);
         summaryMap.put("Latency Distribution", results.getDistributionStatistics().toMap());
-        summaryMap.put("Throughput (requests/second)", results.requestsPerSecondThroughput());
+        summaryMap.put("Throughput (requests/second)", results.requestsPerSecondThroughputFeaturebench());
         summaryMap.put("Goodput (requests/second)", results.requestsPerSecondGoodput());
         for (String field : BENCHMARK_KEY_FIELD) {
             summaryMap.put(field, expConf.getString(field));
@@ -253,6 +270,13 @@ public class ResultWriter {
         Map<String, Object> detailedSummaryMap = new TreeMap<>();
         Map<String, Object> metadata = new TreeMap<>();
         metadata.put("yaml_version", expConf.getString("yaml_version", "v1.0"));
+        metadata.put("Completed Transactions", results.getSuccess().getSampleCount());
+        metadata.put("Aborted Transactions", results.getAbort().getSampleCount());
+        metadata.put("Rejected Transactions (Server Retry)", results.getRetry().getSampleCount());
+        metadata.put("Rejected Transactions (Retry Different)", results.getRetryDifferent().getSampleCount());
+        metadata.put("Unexpected SQL Errors", results.getError().getSampleCount());
+        metadata.put("Unknown Status Transactions", results.getUnknown().getSampleCount());
+        metadata.put("Zero Rows Returned", results.getZeroRows().getSampleCount());
         detailedSummaryMap.put("metadata", metadata);
         detailedSummaryMap.put("Summary", summaryMap);
         detailedSummaryMap.put("queries", results.getFeaturebenchAdditionalResults().getJsonResultsList());

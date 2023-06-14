@@ -39,6 +39,7 @@ public final class Results {
     private final Histogram<TransactionType> retry = new Histogram<>(false);
     private final Histogram<TransactionType> error = new Histogram<>(false);
     private final Histogram<TransactionType> retryDifferent = new Histogram<>(false);
+    private final Histogram<TransactionType> zeroRows = new Histogram<>(true);
     private final Map<TransactionType, Histogram<String>> abortMessages = new HashMap<>();
     private final FeaturebenchAdditionalResults featurebenchAdditionalResults = new FeaturebenchAdditionalResults();
 
@@ -84,6 +85,10 @@ public final class Results {
         return retryDifferent;
     }
 
+    public Histogram<TransactionType> getZeroRows() {
+        return zeroRows;
+    }
+
     public FeaturebenchAdditionalResults getFeaturebenchAdditionalResults() {
         return featurebenchAdditionalResults;
     }
@@ -94,6 +99,10 @@ public final class Results {
 
     public double requestsPerSecondThroughput() {
         return (double) measuredRequests / (double) nanoseconds * 1e9;
+    }
+
+    public double requestsPerSecondThroughputFeaturebench() {
+        return (double) (success.getSampleCount() + zeroRows.getSampleCount()) / (double) nanoseconds * 1e9;
     }
 
     public double requestsPerSecondGoodput() {
