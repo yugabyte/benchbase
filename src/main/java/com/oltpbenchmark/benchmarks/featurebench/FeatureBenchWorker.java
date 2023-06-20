@@ -239,7 +239,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
 
             int executeRuleIndex = txnType.getId() - 1;
             ExecuteRule executeRule = executeRules.get(executeRuleIndex);
-            boolean isRetry = false;
+            boolean zeroRowsTransaction = false;
             for (Query query : executeRule.getQueries()) {
                 String queryStmt = query.getQuery();
                 PreparedStatement stmt = this.preparedStatementsPerQuery.get(queryStmt);
@@ -252,15 +252,15 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                         ResultSet rs = stmt.executeQuery();
                         int countSet = 0;
                         while (rs.next()) countSet++;
-                        if (countSet == 0) return TransactionStatus.ZERO_ROWS;
+                        if (countSet == 0) zeroRowsTransaction = true;
                     } else {
                         int updatedRows = stmt.executeUpdate();
-                        if (updatedRows == 0) return TransactionStatus.ZERO_ROWS;
+                        if (updatedRows == 0) zeroRowsTransaction = true;
                     }
                 }
             }
-            if (isRetry)
-                return TransactionStatus.RETRY;
+            if (zeroRowsTransaction)
+                return TransactionStatus.ZERO_ROWS;
 
         } catch (ClassNotFoundException | InvocationTargetException
                  | InstantiationException | IllegalAccessException |
