@@ -111,7 +111,6 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
 
             if (this.getWorkloadConfiguration().getXmlConfig().getBoolean("analyze_on_all_tables", false)) {
                 LOG.info("Running analyze on all tables");
-                System.out.println("Running analyze on all tables");
                 try {
                     Statement stmt = conn.createStatement();
                     stmt.execute("ANALYZE;");
