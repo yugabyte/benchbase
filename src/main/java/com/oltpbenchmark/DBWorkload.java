@@ -572,20 +572,20 @@ public class DBWorkload {
                         for (BenchmarkModule benchmark : benchList) {
                             LOG.info("Creating new {} database...", benchmark.getBenchmarkName().toUpperCase());
 
-                            boolean yb_enable_optimizer_statistics = benchmark.getWorkloadConfiguration().getXmlConfig()
-                                .getBoolean("yb_enable_optimizer_statistics", false);
+                            boolean analyze_on_all_tables = benchmark.getWorkloadConfiguration().getXmlConfig()
+                                .getBoolean("analyze_on_all_tables", false);
 
                             if (benchmark.getBenchmarkName().equalsIgnoreCase("featurebench"))
                             {
                                 if (benchmark.getWorkloadConfiguration().getXmlConfig().containsKey("createdb")) {
                                     String createDbDDL =
                                         benchmark.getWorkloadConfiguration().getXmlConfig().getString("createdb");
-                                    String newUrl = runCreatorDB(benchmark, createDbDDL, yb_enable_optimizer_statistics);
+                                    String newUrl = runCreatorDB(benchmark, createDbDDL, analyze_on_all_tables);
                                     LOG.info("New JDBC URL : " + newUrl);
                                     benchmark.getWorkloadConfiguration().setUrl(newUrl);
                                     benchmark.getWorkloadConfiguration().getXmlConfig().setProperty("url", newUrl);
                                 }
-                                else if(yb_enable_optimizer_statistics) {
+                                else if(analyze_on_all_tables) {
                                     enableOptimizerStatistics(benchmark);
                                 }
                             }
@@ -941,7 +941,7 @@ public class DBWorkload {
     }
 
     private static String runCreatorDB(BenchmarkModule benchmark, String totalDDL,
-                                       boolean yb_enable_optimizer_statistics) throws SQLException {
+                                       boolean analyze_on_all_tables) throws SQLException {
         Statement stmtObj = benchmark.makeConnection().createStatement();
         stmtObj.execute(totalDDL);
         Pattern patternCreateDB = Pattern.compile("create database (.+?) ", Pattern.CASE_INSENSITIVE);
@@ -967,7 +967,7 @@ public class DBWorkload {
         } else {
             LOG.info("No match!");
         }
-        if (yb_enable_optimizer_statistics) {
+        if (analyze_on_all_tables) {
             stmtObj.execute(String.format("ALTER DATABASE %s SET yb_enable_optimizer_statistics to true;", dbName));
         }
         int index = url.indexOf(matcher.group(0), url.indexOf(matcher.group(0)) + 1);
