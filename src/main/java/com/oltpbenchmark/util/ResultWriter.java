@@ -237,6 +237,16 @@ public class ResultWriter {
     }
 
     public Map<String, Object> writeDetailedSummary(PrintStream os, String customTags) {
+        Map<String, Object> transactionsMap = new TreeMap<>();
+        transactionsMap.put("Completed Transactions", results.getSuccess().getSampleCount());
+        transactionsMap.put("Aborted Transactions", results.getAbort().getSampleCount());
+        transactionsMap.put("Rejected Transactions (Server Retry)", results.getRetry().getSampleCount());
+        transactionsMap.put("Rejected Transactions (Retry Different)", results.getRetryDifferent().getSampleCount());
+        transactionsMap.put("Unexpected SQL Errors", results.getError().getSampleCount());
+        transactionsMap.put("Unknown Status Transactions", results.getUnknown().getSampleCount());
+        transactionsMap.put("Zero Rows Returned", results.getZeroRows().getSampleCount());
+        transactionsMap.put("Total measured requests", results.getMeasuredRequests());
+
         Map<String, Object> summaryMap = new TreeMap<>();
         TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
         Date now = new Date();
@@ -247,6 +257,8 @@ public class ResultWriter {
         summaryMap.put("Latency Distribution", results.getDistributionStatistics().toMap());
         summaryMap.put("Throughput (requests/second)", results.requestsPerSecondThroughput());
         summaryMap.put("Goodput (requests/second)", results.requestsPerSecondGoodput());
+        summaryMap.put("Transaction Distribution", transactionsMap);
+
         for (String field : BENCHMARK_KEY_FIELD) {
             summaryMap.put(field, expConf.getString(field));
         }
@@ -254,7 +266,6 @@ public class ResultWriter {
         Map<String, Object> metadata = new TreeMap<>();
         metadata.put("yaml_version", expConf.getString("yaml_version", "v1.0"));
         metadata.put("customTags", formatCustomTags(customTags));
-        metadata.put("Transactions", transactionsMap(results));
         detailedSummaryMap.put("metadata", metadata);
         detailedSummaryMap.put("Summary", summaryMap);
         detailedSummaryMap.put("queries", results.getFeaturebenchAdditionalResults().getJsonResultsList());
@@ -275,18 +286,5 @@ public class ResultWriter {
         }
 
         return resultTags;
-    }
-
-    public static Map<String, Object> transactionsMap(Results results) {
-        Map<String, Object> transactions = new HashMap<>();
-        transactions.put("Completed Transactions", results.getSuccess().getSampleCount());
-        transactions.put("Aborted Transactions", results.getAbort().getSampleCount());
-        transactions.put("Rejected Transactions (Server Retry)", results.getRetry().getSampleCount());
-        transactions.put("Rejected Transactions (Retry Different)", results.getRetryDifferent().getSampleCount());
-        transactions.put("Unexpected SQL Errors", results.getError().getSampleCount());
-        transactions.put("Unknown Status Transactions", results.getUnknown().getSampleCount());
-        transactions.put("Zero Rows Returned", results.getZeroRows().getSampleCount());
-        transactions.put("Total measured requests", results.getMeasuredRequests());
-        return transactions;
     }
 }
