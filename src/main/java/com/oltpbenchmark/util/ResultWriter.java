@@ -108,16 +108,7 @@ public class ResultWriter {
     }
 
     public void writeSummary(PrintStream os) {
-        Map<String, Object> summaryMap = new TreeMap<>();
-        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
-        Date now = new Date();
-        summaryMap.put("Current Timestamp (milliseconds)", now.getTime());
-        summaryMap.put("DBMS Type", dbType);
-        summaryMap.put("DBMS Version", collector.collectVersion());
-        summaryMap.put("Benchmark Type", benchType);
-        summaryMap.put("Latency Distribution", results.getDistributionStatistics().toMap());
-        summaryMap.put("Throughput (requests/second)", results.requestsPerSecondThroughput());
-        summaryMap.put("Goodput (requests/second)", results.requestsPerSecondGoodput());
+        Map<String, Object> summaryMap = buildSummaryMap(dbType, collector, benchType, results);
         for (String field : BENCHMARK_KEY_FIELD) {
             summaryMap.put(field, expConf.getString(field));
         }
@@ -246,17 +237,7 @@ public class ResultWriter {
         transactionsMap.put("Unknown Status Transactions", results.getUnknown().getSampleCount());
         transactionsMap.put("Zero Rows Returned", results.getZeroRows().getSampleCount());
         transactionsMap.put("Total measured requests", results.getMeasuredRequests());
-
-        Map<String, Object> summaryMap = new TreeMap<>();
-        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
-        Date now = new Date();
-        summaryMap.put("Current Timestamp (milliseconds)", now.getTime());
-        summaryMap.put("DBMS Type", dbType);
-        summaryMap.put("DBMS Version", collector.collectVersion());
-        summaryMap.put("Benchmark Type", benchType);
-        summaryMap.put("Latency Distribution", results.getDistributionStatistics().toMap());
-        summaryMap.put("Throughput (requests/second)", results.requestsPerSecondThroughput());
-        summaryMap.put("Goodput (requests/second)", results.requestsPerSecondGoodput());
+        Map<String, Object> summaryMap = buildSummaryMap(dbType, collector, benchType, results);
         summaryMap.put("Transaction Distribution", transactionsMap);
 
         for (String field : BENCHMARK_KEY_FIELD) {
@@ -271,6 +252,20 @@ public class ResultWriter {
         detailedSummaryMap.put("queries", results.getFeaturebenchAdditionalResults().getJsonResultsList());
         os.println(JSONUtil.format(JSONUtil.toJSONString(detailedSummaryMap)));
         return detailedSummaryMap;
+    }
+
+    private static Map<String, Object>  buildSummaryMap(DatabaseType dbType, DBParameterCollector collector, String benchType, Results results) {
+        Map<String, Object> summaryMap = new TreeMap<>();
+        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+        Date now = new Date();
+        summaryMap.put("Current Timestamp (milliseconds)", now.getTime());
+        summaryMap.put("DBMS Type", dbType);
+        summaryMap.put("DBMS Version", collector.collectVersion());
+        summaryMap.put("Benchmark Type", benchType);
+        summaryMap.put("Latency Distribution", results.getDistributionStatistics().toMap());
+        summaryMap.put("Throughput (requests/second)", results.requestsPerSecondThroughput());
+        summaryMap.put("Goodput (requests/second)", results.requestsPerSecondGoodput());
+        return summaryMap;
     }
 
     public static Map<String, String> formatCustomTags(String customTags) {
