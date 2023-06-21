@@ -254,14 +254,7 @@ public class ResultWriter {
         Map<String, Object> metadata = new TreeMap<>();
         metadata.put("yaml_version", expConf.getString("yaml_version", "v1.0"));
         metadata.put("customTags", formatCustomTags(customTags));
-        metadata.put("Completed Transactions", results.getSuccess().getSampleCount());
-        metadata.put("Aborted Transactions", results.getAbort().getSampleCount());
-        metadata.put("Rejected Transactions (Server Retry)", results.getRetry().getSampleCount());
-        metadata.put("Rejected Transactions (Retry Different)", results.getRetryDifferent().getSampleCount());
-        metadata.put("Unexpected SQL Errors", results.getError().getSampleCount());
-        metadata.put("Unknown Status Transactions", results.getUnknown().getSampleCount());
-        metadata.put("Zero Rows Returned", results.getZeroRows().getSampleCount());
-        metadata.put("Total measured requests", results.getMeasuredRequests());
+        metadata.put("Transactions", transactionsMap(results));
         detailedSummaryMap.put("metadata", metadata);
         detailedSummaryMap.put("Summary", summaryMap);
         detailedSummaryMap.put("queries", results.getFeaturebenchAdditionalResults().getJsonResultsList());
@@ -282,5 +275,18 @@ public class ResultWriter {
         }
 
         return resultTags;
+    }
+
+    public static Map<String, Object> transactionsMap(Results results) {
+        Map<String, Object> transactions = new HashMap<>();
+        transactions.put("Completed Transactions", results.getSuccess().getSampleCount());
+        transactions.put("Aborted Transactions", results.getAbort().getSampleCount());
+        transactions.put("Rejected Transactions (Server Retry)", results.getRetry().getSampleCount());
+        transactions.put("Rejected Transactions (Retry Different)", results.getRetryDifferent().getSampleCount());
+        transactions.put("Unexpected SQL Errors", results.getError().getSampleCount());
+        transactions.put("Unknown Status Transactions", results.getUnknown().getSampleCount());
+        transactions.put("Zero Rows Returned", results.getZeroRows().getSampleCount());
+        transactions.put("Total measured requests", results.getMeasuredRequests());
+        return transactions;
     }
 }
