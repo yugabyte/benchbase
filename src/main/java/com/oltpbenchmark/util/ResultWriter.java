@@ -279,13 +279,12 @@ public class ResultWriter {
     public static Map<String, Object> help() {
         Map<String, Object> help = new TreeMap<>();
         help.put("Various Latencies", "Latency of transactions during the measure phase. Includes the time taken for retries.");
-
-        help.put("Completed Transactions", "Success transactions both in warmup and measure phases.");
-        help.put("Aborted Transactions", "Total aborted transactions in warmup and measure phases");
-        help.put("Rejected Transactions (Server Retry)", "Total retries in warmup and measure phases. The retries are done with different bind variables as of now.");
+        help.put("Completed Transactions", "Success transactions both in warmup, measure and cool-down phases.");
+        help.put("Aborted Transactions", "Total aborted transactions in warmup, measure and cool-down phases");
+        help.put("Rejected Transactions (Server Retry)", "Total retries in warmup, measure and cool-down phases. The retries are done with different bind variables as of now.");
         help.put("Rejected Transactions (Retry Different)", "Not applicable for featurebench.");
-        help.put("Unexpected SQL Errors", "Total transactions with unknown SQL error in warmup and measure phases");
-        help.put("Unknown Status Transactions", "Total transactions with unknown status in warmup and measure phases");
+        help.put("Unexpected SQL Errors", "Total transactions with unknown SQL error in warmup, measure and cool-down phases");
+        help.put("Unknown Status Transactions", "Total transactions with unknown status in warmup, measure and cool-down phases");
         help.put("Zero Rows Returned", "Total transactions in warmup, measure and cool-down phases which returned/updated 0 rows.");
         help.put("Total measured requests", "Total transactions during the measure phase (multiple retries are counted as 1)");
         help.put("Throughput (requests/second)", "(Total measured requests/Measure(Execute) phase time)");
