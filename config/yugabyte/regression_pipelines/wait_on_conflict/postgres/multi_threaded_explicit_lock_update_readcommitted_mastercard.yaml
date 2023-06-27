@@ -9,7 +9,6 @@ isolation: TRANSACTION_READ_COMMITTED
 loaderthreads: 1
 terminals: 24
 collect_pg_stat_statements: true
-use_dist_in_explain : true
 works:
     work:
         time_secs: 120
