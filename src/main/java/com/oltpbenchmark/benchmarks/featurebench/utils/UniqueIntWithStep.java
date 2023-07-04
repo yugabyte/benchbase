@@ -20,18 +20,14 @@ public class UniqueIntWithStep implements BaseUtil {
         }
         int firstParam = ((Number) values.get(0)).intValue();
         int secondParam = ((Number) values.get(1)).intValue();
-
-        int divide = (secondParam - firstParam) / totalWorkers;
-        this.currentValue = firstParam - 1 + divide * workerId;
-        int upperRangeTemp = (firstParam + (divide) * (workerId + 1) + (workerId == 0 ? 0 : 1));
-        this.upperLimit = Math.min(upperRangeTemp, secondParam);
-        this.lowerLimit =firstParam + divide * (workerId) + (workerId == 0 ? 0 : 1);
+        int workerRange = (secondParam - firstParam) / totalWorkers;
+        this.lowerLimit = firstParam + workerRange * workerId;
+        this.currentValue = this.lowerLimit;
+        this.upperLimit = lowerLimit + workerRange;
+        stepValue = ((Number) values.get(2)).intValue();
         if (upperLimit < lowerLimit) {
             throw new RuntimeException("Upper bound less than lower bound");
         }
-        stepValue = ((Number) values.get(2)).intValue();
-        LOG.warn("UniqueIntWithStep. upper limit " + upperLimit + " lower limit " + lowerLimit +
-            " step value " + stepValue + " currentValue: " + currentValue );
         if (stepValue >= (upperLimit - lowerLimit)) {
             throw new RuntimeException("Step value is larger than range");
         }
