@@ -23,9 +23,13 @@ microbenchmark:
             - drop table if exists test_varying_rows_10;
             - drop table if exists test_varying_rows_100;
             - drop table if exists test_varying_rows_1000;
+            - drop table if exists test_varying_rows_3000;
+            - drop table if exists test_varying_rows_10000;
             - create table test_varying_rows_10 (id bigint, col_int_1 int, col_int_2 int, col_int_3 int, col_int_4 int, col_int_5 int, col_int_6 int, col_int_7 int, col_int_8 int, col_int_9 int, col_int_10 int, col_varchar_1 varchar(20), col_varchar_2 varchar(20), col_varchar_3 varchar(20), col_date text, col_boolean boolean, primary key (id asc))
             - create table test_varying_rows_100 (id bigint, col_int_1 int, col_int_2 int, col_int_3 int, col_int_4 int, col_int_5 int, col_int_6 int, col_int_7 int, col_int_8 int, col_int_9 int, col_int_10 int, col_varchar_1 varchar(20), col_varchar_2 varchar(20), col_varchar_3 varchar(20), col_date text, col_boolean boolean, primary key (id asc))
             - create table test_varying_rows_1000 (id bigint, col_int_1 int, col_int_2 int, col_int_3 int, col_int_4 int, col_int_5 int, col_int_6 int, col_int_7 int, col_int_8 int, col_int_9 int, col_int_10 int, col_varchar_1 varchar(20), col_varchar_2 varchar(20), col_varchar_3 varchar(20), col_date text, col_boolean boolean, primary key (id asc))
+            - create table test_varying_rows_3000 (id bigint, col_int_1 int, col_int_2 int, col_int_3 int, col_int_4 int, col_int_5 int, col_int_6 int, col_int_7 int, col_int_8 int, col_int_9 int, col_int_10 int, col_varchar_1 varchar(20), col_varchar_2 varchar(20), col_varchar_3 varchar(20), col_date text, col_boolean boolean, primary key (id asc))
+            - create table test_varying_rows_10000 (id bigint, col_int_1 int, col_int_2 int, col_int_3 int, col_int_4 int, col_int_5 int, col_int_6 int, col_int_7 int, col_int_8 int, col_int_9 int, col_int_10 int, col_varchar_1 varchar(20), col_varchar_2 varchar(20), col_varchar_3 varchar(20), col_date text, col_boolean boolean, primary key (id asc))
             - DROP PROCEDURE IF EXISTS insert_demo_hash;
             - CREATE PROCEDURE insert_demo_hash(start_id int,_numRows int)
                 LANGUAGE plpgsql
@@ -35,6 +39,8 @@ microbenchmark:
                 insert into test_varying_rows_10 (id, col_int_1, col_int_2, col_int_3, col_int_4, col_int_5, col_int_6, col_int_7, col_int_8, col_int_9, col_int_10, col_varchar_1, col_varchar_2, col_varchar_3, col_date, col_boolean) select n, n, n+100, (n%100)+1, (n%1000)+1, n%50, n*10, n%10, n*2, n, n, 'aaa'||(n%1000)+1,  'bbb'||n, 'ccc'||(n%100), '2022-12-10', RANDOM()::INT::BOOLEAN from generate_series(start_id,_numRows) n;
                 insert into test_varying_rows_100 (id, col_int_1, col_int_2, col_int_3, col_int_4, col_int_5, col_int_6, col_int_7, col_int_8, col_int_9, col_int_10, col_varchar_1, col_varchar_2, col_varchar_3, col_date, col_boolean) select n, n, n+100, (n%100)+1, (n%1000)+1, n%50, n*10, n%10, n*2, n, n, 'aaa'||(n%1000)+1,  'bbb'||n, 'ccc'||(n%100), '2022-12-10', RANDOM()::INT::BOOLEAN from generate_series(start_id,_numRows) n;
                 insert into test_varying_rows_1000 (id, col_int_1, col_int_2, col_int_3, col_int_4, col_int_5, col_int_6, col_int_7, col_int_8, col_int_9, col_int_10, col_varchar_1, col_varchar_2, col_varchar_3, col_date, col_boolean) select n, n, n+100, (n%100)+1, (n%1000)+1, n%50, n*10, n%10, n*2, n, n, 'aaa'||(n%1000)+1,  'bbb'||n, 'ccc'||(n%100), '2022-12-10', RANDOM()::INT::BOOLEAN from generate_series(start_id,_numRows) n;
+                insert into test_varying_rows_3000 (id, col_int_1, col_int_2, col_int_3, col_int_4, col_int_5, col_int_6, col_int_7, col_int_8, col_int_9, col_int_10, col_varchar_1, col_varchar_2, col_varchar_3, col_date, col_boolean) select n, n, n+100, (n%100)+1, (n%1000)+1, n%50, n*10, n%10, n*2, n, n, 'aaa'||(n%1000)+1,  'bbb'||n, 'ccc'||(n%100), '2022-12-10', RANDOM()::INT::BOOLEAN from generate_series(start_id,_numRows) n;
+                insert into test_varying_rows_10000 (id, col_int_1, col_int_2, col_int_3, col_int_4, col_int_5, col_int_6, col_int_7, col_int_8, col_int_9, col_int_10, col_varchar_1, col_varchar_2, col_varchar_3, col_date, col_boolean) select n, n, n+100, (n%100)+1, (n%1000)+1, n%50, n*10, n%10, n*2, n, n, 'aaa'||(n%1000)+1,  'bbb'||n, 'ccc'||(n%100), '2022-12-10', RANDOM()::INT::BOOLEAN from generate_series(start_id,_numRows) n;
                 END;
                 $$;
             - call insert_demo_hash(0,10000);
@@ -73,3 +79,25 @@ microbenchmark:
                                   params: [ 1000001, 200000001, 1000 ]
                               -   util: UniqueIntWithStep
                                   params: [ 1001000, 200001000, 1000 ]
+            - workload: BatchedInsert_3000_rows
+              run:
+                  - name: insert_3000_rows
+                    weight: 100
+                    queries:
+                        - query: insert into test_varying_rows_3000 (id, col_int_1, col_int_2, col_int_3, col_int_4, col_int_5, col_int_6, col_int_7, col_int_8, col_int_9, col_int_10, col_varchar_1, col_varchar_2, col_varchar_3, col_date, col_boolean) select n, n, n+100, (n%100)+1, (n%1000)+1, n%50, n*10, n%10, n*2, n, n, 'aaa'||(n%1000)+1,  'bbb'||n, 'ccc'||(n%100), '2022-12-10', RANDOM()::INT::BOOLEAN from generate_series(?, ?) n;
+                          bindings:
+                              -   util: UniqueIntWithStep
+                                  params: [ 1000001, 200000001, 3000 ]
+                              -   util: UniqueIntWithStep
+                                  params: [ 1003000, 200003000, 3000 ]
+            - workload: BatchedInsert_10000_rows
+              run:
+                  - name: insert_10000_rows
+                    weight: 100
+                    queries:
+                        - query: insert into test_varying_rows_10000 (id, col_int_1, col_int_2, col_int_3, col_int_4, col_int_5, col_int_6, col_int_7, col_int_8, col_int_9, col_int_10, col_varchar_1, col_varchar_2, col_varchar_3, col_date, col_boolean) select n, n, n+100, (n%100)+1, (n%1000)+1, n%50, n*10, n%10, n*2, n, n, 'aaa'||(n%1000)+1,  'bbb'||n, 'ccc'||(n%100), '2022-12-10', RANDOM()::INT::BOOLEAN from generate_series(?, ?) n;
+                          bindings:
+                              -   util: UniqueIntWithStep
+                                  params: [ 1000001, 200000001, 10000 ]
+                              -   util: UniqueIntWithStep
+                                  params: [ 1010000, 200010000, 10000 ]
