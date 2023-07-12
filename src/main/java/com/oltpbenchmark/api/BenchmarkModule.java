@@ -28,6 +28,8 @@ import com.oltpbenchmark.util.ThreadUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -73,13 +75,19 @@ public abstract class BenchmarkModule {
     public BenchmarkModule(WorkloadConfiguration workConf) {
         this.workConf = workConf;
         this.dialects = new StatementDialects(workConf);
+        try {
+            createDataSource();
+        } catch(Exception e) {
+            LOG.error("Failed to create Data Source", e);
+            throw e;
+        }
     }
 
     // --------------------------------------------------------------------------
     // DATABASE CONNECTION
     // --------------------------------------------------------------------------
 
-    public final Connection makeConnection() throws SQLException {
+    /*public final Connection makeConnection() throws SQLException {
 
         if (StringUtils.isEmpty(workConf.getUsername())) {
             return DriverManager.getConnection(workConf.getUrl());
@@ -89,6 +97,24 @@ public abstract class BenchmarkModule {
                     workConf.getUsername(),
                     workConf.getPassword());
         }
+    }*/
+
+    private HikariDataSource hikariDataSource;
+
+    public void createDataSource() {
+        HikariConfig config = new HikariConfig();
+        config.setJdbcUrl(workConf.getUrl());
+        if (!StringUtils.isEmpty(workConf.getUsername())) {
+            config.setUsername(workConf.getUsername());
+            config.setPassword(workConf.getPassword());
+            config.setMaximumPoolSize(workConf.getTerminals());
+        }
+        config.setTransactionIsolation(workConf.getIsolationString());
+        hikariDataSource = new HikariDataSource(config);
+    }
+
+    public final Connection makeConnection() throws SQLException {
+        return hikariDataSource.getConnection();
     }
 
     // --------------------------------------------------------------------------
