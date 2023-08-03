@@ -56,9 +56,11 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
     private final Histogram<TransactionType> txnAbort = new Histogram<>();
     private final Histogram<TransactionType> txnRetry = new Histogram<>();
     private final Histogram<TransactionType> txnErrors = new Histogram<>();
+    private final Histogram<TransactionType> txnZeroRows = new Histogram<>();
     private final Histogram<TransactionType> txtRetryDifferent = new Histogram<>();
     protected Connection conn = null;
     private WorkloadState workloadState;
+    boolean isFeaturebenchWorkload = false;
     private LatencyRecord latencies;
     private boolean seenDone = false;
     public final FeaturebenchAdditionalResults featurebenchAdditionalResults = new FeaturebenchAdditionalResults();
@@ -74,6 +76,7 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
         if (this.benchmark.getBenchmarkName().equalsIgnoreCase("featurebench") &&
             this.benchmark.getWorkloadConfiguration().getXmlConfig().containsKey("microbenchmark/properties/setAutoCommit")) {
             autoCommitVal = this.benchmark.getWorkloadConfiguration().getXmlConfig().getBoolean("microbenchmark/properties/setAutoCommit");
+            this.isFeaturebenchWorkload = true;
         }
         if (!this.configuration.getNewConnectionPerTxn()) {
             try {
@@ -171,6 +174,7 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
         return (this.txtRetryDifferent);
     }
 
+    public final Histogram<TransactionType> getTransactionZeroRowsHistogram() { return (this.txnZeroRows); }
     /**
      * Stop executing the current statement.
      */
@@ -402,7 +406,7 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
 
                 TransactionStatus status = TransactionStatus.UNKNOWN;
 
-                if (this.conn == null) {
+                if (this.conn == null || this.conn.isClosed()) {
                     try {
                         this.conn = this.benchmark.makeConnection();
                         this.conn.setAutoCommit(autoCommitVal);
@@ -438,7 +442,7 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
                     break;
 
                 } catch (UserAbortException ex) {
-                    if (!conn.getAutoCommit())
+                    if (!this.conn.isClosed() && !conn.getAutoCommit())
                         conn.rollback();
 
                     ABORT_LOG.debug(String.format("%s Aborted", transactionType), ex);
@@ -448,7 +452,7 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
                     break;
 
                 } catch (SQLException ex) {
-                    if (!conn.getAutoCommit())
+                    if (!this.conn.isClosed() && !conn.getAutoCommit())
                         conn.rollback();
 
                     if (isRetryable(ex)) {
@@ -458,7 +462,7 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
 
                         retryCount++;
                     } else {
-                        LOG.warn(String.format("SQLException occurred during [%s] and will not be retried... sql state [%s], error code [%d].", transactionType, ex.getSQLState(), ex.getErrorCode()), ex);
+                        LOG.debug(String.format("SQLException occurred during [%s] and will not be retried... sql state [%s], error code [%d], Message: %s.", transactionType, ex.getSQLState(), ex.getErrorCode(), ex.getMessage()));
 
                         status = TransactionStatus.ERROR;
 
@@ -466,7 +470,7 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
                     }
 
                 } finally {
-                    if (this.configuration.getNewConnectionPerTxn() && this.conn != null) {
+                    if (this.configuration.getNewConnectionPerTxn() && this.conn != null && !this.conn.isClosed()) {
                         try {
                             this.conn.close();
                             this.conn = null;
@@ -482,6 +486,7 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
                         case RETRY -> this.txnRetry.put(transactionType);
                         case RETRY_DIFFERENT -> this.txtRetryDifferent.put(transactionType);
                         case ERROR -> this.txnErrors.put(transactionType);
+                        case ZERO_ROWS -> this.txnZeroRows.put(transactionType);
                     }
 
                 }
@@ -516,6 +521,7 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
             // MySQL ER_LOCK_WAIT_TIMEOUT
             return true;
         } else if(errorCode > 0 && !sqlState.isEmpty()) {
+            // Added by Yugabyte to retry on all errors
             return true;
         }
 
