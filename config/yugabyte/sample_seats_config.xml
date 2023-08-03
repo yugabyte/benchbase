@@ -11,14 +11,14 @@
     <batchsize>128</batchsize>
 
     <!-- Scalefactor in SEATS scales by *1000 the number of customers-->
-    <scalefactor>10</scalefactor>
+    <scalefactor>100</scalefactor>
 
     <!-- The workload -->
-    <terminals>1</terminals>
+    <terminals>5</terminals>
     <works>
         <work>
-            <warmup>60</warmup>
-            <time>300</time>
+            <warmup>300</warmup>
+            <time>600</time>
             <rate>unlimited</rate>
             <weights>10, 10, 35, 20, 10, 15</weights>
         </work>
