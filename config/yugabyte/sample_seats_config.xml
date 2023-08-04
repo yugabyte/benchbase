@@ -6,9 +6,10 @@
     <driver>com.yugabyte.Driver</driver>
     <url>jdbc:yugabytedb://localhost:5433/yugabyte?sslmode=require&amp;load-balance=true&amp;ApplicationName=seats&amp;reWriteBatchedInserts=true</url>
     <username>yugabyte</username>
-    <password>Password@321</password>
+    <password></password>
     <isolation>TRANSACTION_REPEATABLE_READ</isolation>
     <batchsize>128</batchsize>
+    <retries>10</retries>
 
     <!-- Scalefactor in SEATS scales by *1000 the number of customers-->
     <scalefactor>100</scalefactor>

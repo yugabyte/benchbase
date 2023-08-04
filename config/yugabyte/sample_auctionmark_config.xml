@@ -6,10 +6,10 @@
     <driver>com.yugabyte.Driver</driver>
     <url>jdbc:yugabytedb://localhost:5433/yugabyte?sslmode=require&amp;load-balance=true&amp;ApplicationName=auctionmark&amp;reWriteBatchedInserts=true</url>
     <username>yugabyte</username>
-    <password>password</password>
+    <password></password>
     <isolation>TRANSACTION_REPEATABLE_READ</isolation>
     <batchsize>128</batchsize>
-    <retries>4</retries>
+    <retries>10</retries>
 
     <!-- Scalefactor in AuctionMark scales by *1000 the number of customers-->
     <scalefactor>100</scalefactor>
@@ -20,7 +20,7 @@
         <work>
             <warmup>300</warmup>
             <time>600</time>
-            <rate>10000</rate>
+            <rate>unlimited</rate>
             <weights>45, 10, 20, 2, 1, 4, 10, 5, 3</weights>
         </work>
     </works>

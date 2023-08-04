@@ -6,9 +6,10 @@
     <driver>org.postgresql.Driver</driver>
     <url>jdbc:postgresql://localhost:5432/postgres?sslmode=require&amp;ApplicationName=seats&amp;reWriteBatchedInserts=true</url>
     <username>postgres</username>
-    <password>password</password>
+    <password></password>
     <isolation>TRANSACTION_REPEATABLE_READ</isolation>
     <batchsize>128</batchsize>
+    <retries>10</retries>
 
     <!-- Scalefactor in SEATS scales by *1000 the number of customers-->
     <scalefactor>100</scalefactor>
