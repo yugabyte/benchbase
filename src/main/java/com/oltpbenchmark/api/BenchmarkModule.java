@@ -75,7 +75,7 @@ public abstract class BenchmarkModule {
     public BenchmarkModule(WorkloadConfiguration workConf) {
         this.workConf = workConf;
         this.dialects = new StatementDialects(workConf);
-        if (workConf.getXmlConfig().getBoolean("use_hikari", false)) {
+        if (workConf.getXmlConfig().getBoolean("use_hikari_pool", false)) {
             try {
                 createDataSource();
             } catch (Exception e) {
@@ -90,7 +90,7 @@ public abstract class BenchmarkModule {
     // --------------------------------------------------------------------------
 
     public final Connection makeConnection() throws SQLException {
-        if (workConf.getXmlConfig().getBoolean("use_hikari", false)) {
+        if (workConf.getXmlConfig().getBoolean("use_hikari_pool", false)) {
             LOG.info("Using Hikari-pool to create connection");
             return hikariDataSource.getConnection();
         }
