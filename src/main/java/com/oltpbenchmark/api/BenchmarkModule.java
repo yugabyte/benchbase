@@ -93,8 +93,7 @@ public abstract class BenchmarkModule {
         if (workConf.getXmlConfig().getBoolean("use_hikari_pool", false)) {
             LOG.info("Using Hikari-pool to create connection");
             return hikariDataSource.getConnection();
-        }
-        if (StringUtils.isEmpty(workConf.getUsername())) {
+        } else if (StringUtils.isEmpty(workConf.getUsername())) {
             return DriverManager.getConnection(workConf.getUrl());
         } else {
             return DriverManager.getConnection(
@@ -112,7 +111,8 @@ public abstract class BenchmarkModule {
         if (!StringUtils.isEmpty(workConf.getUsername())) {
             config.setUsername(workConf.getUsername());
             config.setPassword(workConf.getPassword());
-            config.setMaximumPoolSize(workConf.getTerminals());
+            /* take max_pool_size from xmlConfig, default is = number of terminals*/
+            config.setMaximumPoolSize(workConf.getXmlConfig().getInt("max_pool_size", workConf.getTerminals()));
         }
         config.setTransactionIsolation(workConf.getIsolationString());
         hikariDataSource = new HikariDataSource(config);
