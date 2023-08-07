@@ -75,11 +75,13 @@ public abstract class BenchmarkModule {
     public BenchmarkModule(WorkloadConfiguration workConf) {
         this.workConf = workConf;
         this.dialects = new StatementDialects(workConf);
-        try {
-            createDataSource();
-        } catch(Exception e) {
-            LOG.error("Failed to create Data Source", e);
-            throw e;
+        if (workConf.getXmlConfig().getBoolean("use_hikari", false)) {
+            try {
+                createDataSource();
+            } catch (Exception e) {
+                LOG.error("Failed to create Data Source", e);
+                throw e;
+            }
         }
     }
 
@@ -87,8 +89,11 @@ public abstract class BenchmarkModule {
     // DATABASE CONNECTION
     // --------------------------------------------------------------------------
 
-    /*public final Connection makeConnection() throws SQLException {
-
+    public final Connection makeConnection() throws SQLException {
+        if (workConf.getXmlConfig().getBoolean("use_hikari", false)) {
+            LOG.info("Using Hikari-pool to create connection");
+            return hikariDataSource.getConnection();
+        }
         if (StringUtils.isEmpty(workConf.getUsername())) {
             return DriverManager.getConnection(workConf.getUrl());
         } else {
@@ -97,7 +102,7 @@ public abstract class BenchmarkModule {
                     workConf.getUsername(),
                     workConf.getPassword());
         }
-    }*/
+    }
 
     private HikariDataSource hikariDataSource;
 
@@ -111,10 +116,6 @@ public abstract class BenchmarkModule {
         }
         config.setTransactionIsolation(workConf.getIsolationString());
         hikariDataSource = new HikariDataSource(config);
-    }
-
-    public final Connection makeConnection() throws SQLException {
-        return hikariDataSource.getConnection();
     }
 
     // --------------------------------------------------------------------------
