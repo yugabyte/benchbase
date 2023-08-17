@@ -406,7 +406,7 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
 
                 TransactionStatus status = TransactionStatus.UNKNOWN;
 
-                if (this.conn == null) {
+                if (this.conn == null || this.conn.isClosed()) {
                     try {
                         this.conn = this.benchmark.makeConnection();
                         this.conn.setAutoCommit(autoCommitVal);
@@ -442,7 +442,7 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
                     break;
 
                 } catch (UserAbortException ex) {
-                    if (!conn.getAutoCommit())
+                    if (!this.conn.isClosed() && !conn.getAutoCommit())
                         conn.rollback();
 
                     ABORT_LOG.debug(String.format("%s Aborted", transactionType), ex);
@@ -452,7 +452,7 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
                     break;
 
                 } catch (SQLException ex) {
-                    if (!conn.getAutoCommit())
+                    if (!this.conn.isClosed() && !conn.getAutoCommit())
                         conn.rollback();
 
                     if (isRetryable(ex)) {
@@ -462,7 +462,7 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
 
                         retryCount++;
                     } else {
-                        LOG.warn(String.format("SQLException occurred during [%s] and will not be retried... sql state [%s], error code [%d].", transactionType, ex.getSQLState(), ex.getErrorCode()), ex);
+                        LOG.debug(String.format("SQLException occurred during [%s] and will not be retried... sql state [%s], error code [%d], Message: %s.", transactionType, ex.getSQLState(), ex.getErrorCode(), ex.getMessage()));
 
                         status = TransactionStatus.ERROR;
 
@@ -470,7 +470,7 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
                     }
 
                 } finally {
-                    if (this.configuration.getNewConnectionPerTxn() && this.conn != null) {
+                    if (this.configuration.getNewConnectionPerTxn() && this.conn != null && !this.conn.isClosed()) {
                         try {
                             this.conn.close();
                             this.conn = null;

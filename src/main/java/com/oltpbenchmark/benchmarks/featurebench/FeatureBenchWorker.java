@@ -97,12 +97,23 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
         if (isInitializeDone.get()) return;
         synchronized (FeatureBenchWorker.class) {
             if (isInitializeDone.get()) return;
-            if (this.getWorkloadConfiguration().getXmlConfig().containsKey("collect_pg_stat_statements") &&
-                this.getWorkloadConfiguration().getXmlConfig().getBoolean("collect_pg_stat_statements")) {
+            if (this.getWorkloadConfiguration().getXmlConfig().getBoolean("collect_pg_stat_statements", false)) {
                 LOG.info("Resetting pg_stat_statements for workload : " + this.workloadName);
                 try {
                     Statement stmt = conn.createStatement();
                     stmt.executeQuery("SELECT pg_stat_statements_reset();");
+                    if (!conn.getAutoCommit())
+                        conn.commit();
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            if (this.getWorkloadConfiguration().getXmlConfig().getBoolean("analyze_on_all_tables", false)) {
+                LOG.info("Running analyze on all tables");
+                try {
+                    Statement stmt = conn.createStatement();
+                    stmt.execute("ANALYZE;");
                     if (!conn.getAutoCommit())
                         conn.commit();
                 } catch (SQLException e) {
@@ -377,7 +388,6 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
 
     /*TODO: remove collectPgPreparedStatements*/
     private JSONObject collectPgPreparedStatements() throws SQLException{
-        LOG.info("********COLLECTING PG PREPARED STATEMENTS*********");
         String pgPreparedStatements = "select * from pg_prepared_statements;";
         Statement stmt = this.conn.createStatement();
         ResultSet resultSet = stmt.executeQuery(pgPreparedStatements);
@@ -394,7 +404,6 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             pgPreparedStatementOutputs.put("Record_" + resultSetCount, pgPreparedStatementOutputPerRecord);
             resultSetCount++;
         }
-        System.out.println(pgPreparedStatementOutputs.toString());
         return pgPreparedStatementOutputs;
     }
 }
