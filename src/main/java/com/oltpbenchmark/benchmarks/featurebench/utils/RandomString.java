@@ -8,7 +8,7 @@ public class RandomString extends Random implements BaseUtil {
 
 
     /*
-     Description :- returns a random string '{number}aaaaaa' Here number will lie from minimum and maximum value  .
+     Description :- returns a random string '{number}aaaaaa' Here number will lie between minimum and maximum value  .
      Params:-
      1. int: minimumNumber(values[0]) :- minimum number.
      2. int: maximumNumber(values[1]):- maximum number.
