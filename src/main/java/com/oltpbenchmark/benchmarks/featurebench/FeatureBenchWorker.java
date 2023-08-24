@@ -311,7 +311,9 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                 try {
                     Statement stmt = null;
                     stmt = conn.createStatement();
-                    stmt.executeQuery("SELECT pg_stat_statements_reset();");
+                    if (this.getWorkloadConfiguration().getXmlConfig().getBoolean("collect_pg_stat_statements", false)) {
+                        stmt.executeQuery("SELECT pg_stat_statements_reset();");
+                    }
                     if (!conn.getAutoCommit())
                         conn.commit();
                 } catch (SQLException e) {
