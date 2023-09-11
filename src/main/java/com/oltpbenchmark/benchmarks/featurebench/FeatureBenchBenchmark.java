@@ -129,12 +129,19 @@ public class FeatureBenchBenchmark extends BenchmarkModule {
                         int count = bindingsList.getInt("count");
                         for (int i = 0; i < count; i++) {
                             UtilToMethod obj = new UtilToMethod(bindingsList.getString("util"), bindingsList.getList("params"), workerId, totalWorker);
+                            if(bindingsList.containsKey("alias")){
+                                obj.setAlias(bindingsList.getString("alias"));
+                            }
                             baseutils.add(obj);
                         }
                     } else {
                         UtilToMethod obj = new UtilToMethod(bindingsList.getString("util"), bindingsList.getList("params"), workerId, totalWorker);
+                        if(bindingsList.containsKey("alias")){
+                            obj.setAlias(bindingsList.getString("alias"));
+                        }
                         baseutils.add(obj);
                     }
+
                 }
                 query.setBaseUtils(baseutils);
                 queries.add(query);

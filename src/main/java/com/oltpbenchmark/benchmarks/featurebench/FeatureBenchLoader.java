@@ -212,8 +212,11 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
                 PreparedStatement stmt = conn.prepareStatement(insertStmt);
                 int currentBatchSize = 0;
                 for (int i = 0; i < this.numberOfRows; i++) {
+
                     for (int j = 0; j < baseutils.size(); j++) {
-                        stmt.setObject(j + 1, this.baseutils.get(j).get());
+                        UtilToMethod baseClass = this.baseutils.get(j);
+                        Object paramValue = baseClass.get();
+                        stmt.setObject(j + 1, paramValue);
                     }
                     currentBatchSize += 1;
                     stmt.addBatch();

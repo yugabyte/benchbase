@@ -37,29 +37,16 @@ microbenchmark:
         executeRules:
             - workload: RangeScan1
               run:
-                  -   name: ReadQuery1
+                  -   name: WriteQuery2
                       weight: 100
                       queries:
-                          -   query: INSERT INTO demo100col VALUES(?,?)
+                          -   query: select * from demo100col where id > ? and id < ?
                               bindings:
-                                  - util: PrimaryIntGen
-                                    params:
-                                        - 10000
-                                        - 100000
-                                  - util: RandomAString
-                                    params:
-                                         - 5
-                                         - 5
-                  -   name: WriteQuery2
-                      weight: 50
-                      queries:
-                          -   query: UPDATE demo100col set col1 = ? where id = ?
-                              bindings:
-                                  -   util: RandomAString
-                                      params:
-                                          - 10
-                                          - 20
-                                  -   util: RandomNumber
+                                  -   util: RandomInt
+                                      alias: param1
                                       params:
                                           - 1
-                                          - 1000
+                                          - 10
+                                  -   util: ApplyAlias
+                                      params: param1 + 10
+

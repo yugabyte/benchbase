@@ -6,14 +6,22 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class UtilToMethod {
     private BaseUtil clsInstance;
+    String utilName = "";
+
+    String alias = null;
+
+    Object params = null;
 
     public BaseUtil getInstance() {
         return clsInstance;
     }
     public UtilToMethod(Object util, Object params, int workerId, int totalWorkers) {
+        this.utilName = (String) util;
+        this.params=params;
         String className = "com.oltpbenchmark.benchmarks.featurebench.utils." + util;
         try {
             Class<?> cls = Class.forName(className);
@@ -34,6 +42,8 @@ public class UtilToMethod {
     }
 
     public UtilToMethod(Object util, Object params) {
+        this.utilName = (String) util;
+        this.params = params;
         String className = "com.oltpbenchmark.benchmarks.featurebench.utils." + util;
         try {
             Class<?> cls = Class.forName(className);
@@ -55,5 +65,19 @@ public class UtilToMethod {
     public Object get() throws InvocationTargetException, IllegalAccessException,
         ClassNotFoundException, NoSuchMethodException, InstantiationException {
         return this.clsInstance.run();
+    }
+
+    public void setAlias(String alias){
+        this.alias = alias;
+    }
+    public String getAlias(){
+        return this.alias;
+    }
+    public boolean isApplyAlias(){
+        return Objects.equals(this.utilName, "ApplyAlias");
+    }
+
+    public Object getParams(){
+        return  this.params;
     }
 }

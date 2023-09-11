@@ -20,6 +20,7 @@ package com.oltpbenchmark.benchmarks.featurebench;
 import com.oltpbenchmark.api.Procedure.UserAbortException;
 import com.oltpbenchmark.api.TransactionType;
 import com.oltpbenchmark.api.Worker;
+import com.oltpbenchmark.benchmarks.featurebench.helpers.EvaluateAlias;
 import com.oltpbenchmark.benchmarks.featurebench.helpers.UtilToMethod;
 import com.oltpbenchmark.benchmarks.featurebench.workerhelpers.ExecuteRule;
 import com.oltpbenchmark.benchmarks.featurebench.workerhelpers.Query;
@@ -34,6 +35,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.script.ScriptException;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.*;
 import java.util.*;
@@ -59,6 +61,8 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
     public AtomicBoolean isPGStatStatementCollected = new AtomicBoolean(false);
 
     static AtomicBoolean isInitializeDone = new AtomicBoolean(false);
+
+    static EvaluateAlias EvaluateAliasobj = new  EvaluateAlias();
 
     public FeatureBenchWorker(FeatureBenchBenchmark benchmarkModule,
                               int id,
@@ -152,9 +156,20 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
 
                             PreparedStatement stmt = conn.prepareStatement((query.isSelectQuery() ? explainSelect : explainUpdate) + querystmt);
                             List<UtilToMethod> baseUtils = query.getBaseUtils();
+                            HashMap<String,Object> aliasValue = new HashMap<>();
+                            HashMap<Integer,Object> applyAlias = new HashMap<>();
                             for (int j = 0; j < baseUtils.size(); j++) {
                                 try {
-                                    stmt.setObject(j + 1, baseUtils.get(j).get());
+                                    UtilToMethod baseClass = baseUtils.get(j);
+                                    Object paramValue = baseClass.get();
+                                    if(baseClass.isApplyAlias()){
+                                        applyAlias.put(j+1,baseClass.getParams());
+                                    }else {
+                                        stmt.setObject(j + 1, paramValue);
+                                    }
+                                    if(baseClass.getAlias() != null){
+                                        aliasValue.put(baseClass.getAlias(),paramValue);
+                                    }
                                 } catch (SQLException | InvocationTargetException | IllegalAccessException |
                                          ClassNotFoundException | NoSuchMethodException |
                                          InstantiationException e) {
@@ -162,7 +177,9 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                                 }
                             }
                             explainDDLs.add(stmt);
-                        } catch (SQLException e) {
+                            EvaluateAliasobj.Evaluate(stmt,aliasValue,applyAlias);
+
+                        } catch (SQLException | ScriptException e) {
                             throw new RuntimeException(e);
                         }
                     }
