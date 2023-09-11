@@ -1,5 +1,7 @@
 package com.oltpbenchmark.benchmarks.featurebench.utils;
 
+import com.oltpbenchmark.benchmarks.featurebench.helpers.MD5hash;
+
 import java.util.List;
 
 /*
@@ -49,11 +51,11 @@ public class PrimaryStringGen implements BaseUtil {
     }
 
     public String numberToIdString() {
-        StringBuilder baseNumberStr = new StringBuilder(String.valueOf(currentValue));
+        StringBuilder baseNumberStr = new StringBuilder(MD5hash.getMd5(String.valueOf(currentValue)));
         while (baseNumberStr.length() < desiredLength) {
             baseNumberStr.append('a');
         }
-        return baseNumberStr.toString();
+        return baseNumberStr.length() == desiredLength ? baseNumberStr.toString() : baseNumberStr.substring(0,desiredLength);
     }
 
     @Override

@@ -1,5 +1,7 @@
 package com.oltpbenchmark.benchmarks.featurebench.utils;
 
+import com.oltpbenchmark.benchmarks.featurebench.helpers.MD5hash;
+
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Random;
@@ -57,10 +59,11 @@ public class RandomString extends Random implements BaseUtil {
     @Override
     public Object run() throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException,
         InstantiationException, IllegalAccessException {
-        StringBuilder baseNumberStr = new StringBuilder(String.valueOf(number(minimumNumber, maximumNumber)));
+        int curr = number(minimumNumber, maximumNumber);
+        StringBuilder baseNumberStr = new StringBuilder(MD5hash.getMd5(String.valueOf(curr)));
         while (baseNumberStr.length() < length) {
             baseNumberStr.append('a');
         }
-        return baseNumberStr.toString();
+        return baseNumberStr.length() == length ? baseNumberStr.toString() : baseNumberStr.substring(0,length);
     }
 }
