@@ -22,7 +22,7 @@ public class HashedPrimaryStringGen implements BaseUtil {
     private int currentValue;
     private String key;
 
-    public PrimaryStringGenCAB(List<Object> values) {
+    public HashedPrimaryStringGen(List<Object> values) {
         if (values.size() != 2) {
             throw new RuntimeException("Incorrect number of parameters for util function "
                 + this.getClass());
@@ -35,7 +35,7 @@ public class HashedPrimaryStringGen implements BaseUtil {
         }
     }
 
-    public PrimaryStringGenCAB(List<Object> values, int workerId, int totalWorkers) {
+    public HashedPrimaryStringGen(List<Object> values, int workerId, int totalWorkers) {
         if (values.size() != 2) {
             throw new RuntimeException("Incorrect number of parameters for util function "
                 + this.getClass());
@@ -51,9 +51,12 @@ public class HashedPrimaryStringGen implements BaseUtil {
     }
 
     public String numberToIdString() {
-        StringBuilder baseNumberStr = new StringBuilder(MD5hash.getMd5(String.valueOf(currentValue)));
-        while (baseNumberStr.length() < desiredLength) {
-            baseNumberStr.append('a');
+        String md5HASHString= MD5hash.getMd5(String.valueOf(currentValue));
+        StringBuilder baseNumberStr = new StringBuilder(md5HASHString);
+        int currlength = baseNumberStr.length();
+        while (currlength < desiredLength) {
+            baseNumberStr.append(md5HASHString.charAt(currlength%32));
+            currlength++;
         }
         return baseNumberStr.length() == desiredLength ? baseNumberStr.toString() : baseNumberStr.substring(0,desiredLength);
     }
