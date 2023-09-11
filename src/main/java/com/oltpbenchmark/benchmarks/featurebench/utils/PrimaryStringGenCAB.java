@@ -1,5 +1,7 @@
 package com.oltpbenchmark.benchmarks.featurebench.utils;
 
+import com.oltpbenchmark.benchmarks.featurebench.helpers.MD5hash;
+
 import java.util.List;
 
 /*
@@ -14,13 +16,13 @@ String Numeric Primary keys generated :- "0aaaa","1aaaa","2aaaa","3aaaa",......
 Return type :- String (Numeric)
 */
 
-public class PrimaryStringGen implements BaseUtil {
+public class PrimaryStringGenCAB implements BaseUtil {
     private final int desiredLength;
     private final int startNumber;
     private int currentValue;
     private String key;
 
-    public PrimaryStringGen(List<Object> values) {
+    public PrimaryStringGenCAB(List<Object> values) {
         if (values.size() != 2) {
             throw new RuntimeException("Incorrect number of parameters for util function "
                 + this.getClass());
@@ -33,7 +35,7 @@ public class PrimaryStringGen implements BaseUtil {
         }
     }
 
-    public PrimaryStringGen(List<Object> values, int workerId, int totalWorkers) {
+    public PrimaryStringGenCAB(List<Object> values, int workerId, int totalWorkers) {
         if (values.size() != 2) {
             throw new RuntimeException("Incorrect number of parameters for util function "
                 + this.getClass());
@@ -49,11 +51,11 @@ public class PrimaryStringGen implements BaseUtil {
     }
 
     public String numberToIdString() {
-        StringBuilder baseNumberStr = new StringBuilder(String.valueOf(currentValue));
+        StringBuilder baseNumberStr = new StringBuilder(MD5hash.getMd5(String.valueOf(currentValue)));
         while (baseNumberStr.length() < desiredLength) {
             baseNumberStr.append('a');
         }
-        return baseNumberStr.toString();
+        return baseNumberStr.length() == desiredLength ? baseNumberStr.toString() : baseNumberStr.substring(0,desiredLength);
     }
 
     @Override

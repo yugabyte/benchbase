@@ -1,10 +1,12 @@
 package com.oltpbenchmark.benchmarks.featurebench.utils;
 
+import com.oltpbenchmark.benchmarks.featurebench.helpers.MD5hash;
+
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Random;
 
-public class RandomString extends Random implements BaseUtil {
+public class RandomStringCAB extends Random implements BaseUtil {
 
 
     /*
@@ -19,7 +21,7 @@ public class RandomString extends Random implements BaseUtil {
     private int maximumNumber;
     private int length;
 
-    public RandomString(List<Object> values) {
+    public RandomStringCAB(List<Object> values) {
         super((int) System.nanoTime());
         if (values.size() != 3) {
             throw new RuntimeException("Incorrect number of parameters for util function "
@@ -32,7 +34,7 @@ public class RandomString extends Random implements BaseUtil {
             throw new RuntimeException("Please enter correct min, max and no. of characters for random string");
     }
 
-    public RandomString(List<Object> values, int workerId, int totalWorkers) {
+    public RandomStringCAB(List<Object> values, int workerId, int totalWorkers) {
         super((int) System.nanoTime());
         if (values.size() != 3) {
             throw new RuntimeException("Incorrect number of parameters for util function "
@@ -57,10 +59,11 @@ public class RandomString extends Random implements BaseUtil {
     @Override
     public Object run() throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException,
         InstantiationException, IllegalAccessException {
-        StringBuilder baseNumberStr = new StringBuilder(String.valueOf(number(minimumNumber, maximumNumber)));
+        int curr = number(minimumNumber, maximumNumber);
+        StringBuilder baseNumberStr = new StringBuilder(MD5hash.getMd5(String.valueOf(curr)));
         while (baseNumberStr.length() < length) {
             baseNumberStr.append('a');
         }
-        return baseNumberStr.toString();
+        return baseNumberStr.length() == length ? baseNumberStr.toString() : baseNumberStr.substring(0,length);
     }
 }
