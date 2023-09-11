@@ -1,6 +1,7 @@
 package com.oltpbenchmark.benchmarks.featurebench.utils;
 
 import com.oltpbenchmark.benchmarks.featurebench.helpers.MD5hash;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 
@@ -52,13 +53,9 @@ public class HashedPrimaryStringGen implements BaseUtil {
 
     public String numberToIdString() {
         String md5HASHString= MD5hash.getMd5(String.valueOf(currentValue));
-        StringBuilder baseNumberStr = new StringBuilder(md5HASHString);
-        int currlength = baseNumberStr.length();
-        while (currlength < desiredLength) {
-            baseNumberStr.append(md5HASHString.charAt(currlength%32));
-            currlength++;
-        }
-        return baseNumberStr.length() == desiredLength ? baseNumberStr.toString() : baseNumberStr.substring(0,desiredLength);
+        int repeatCount = (int) Math.ceil((double) desiredLength /32);
+        String baseNumberStr = StringUtils.repeat(md5HASHString, repeatCount);
+        return baseNumberStr.length() == desiredLength ? baseNumberStr : baseNumberStr.substring(0,desiredLength);
     }
 
     @Override
