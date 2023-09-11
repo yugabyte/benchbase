@@ -6,7 +6,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Random;
 
-public class RandomStringCAB extends Random implements BaseUtil {
+public class HashedRandomString extends Random implements BaseUtil {
 
 
     /*
@@ -21,7 +21,7 @@ public class RandomStringCAB extends Random implements BaseUtil {
     private int maximumNumber;
     private int length;
 
-    public RandomStringCAB(List<Object> values) {
+    public HashedRandomString(List<Object> values) {
         super((int) System.nanoTime());
         if (values.size() != 3) {
             throw new RuntimeException("Incorrect number of parameters for util function "
@@ -34,7 +34,7 @@ public class RandomStringCAB extends Random implements BaseUtil {
             throw new RuntimeException("Please enter correct min, max and no. of characters for random string");
     }
 
-    public RandomStringCAB(List<Object> values, int workerId, int totalWorkers) {
+    public HashedRandomString(List<Object> values, int workerId, int totalWorkers) {
         super((int) System.nanoTime());
         if (values.size() != 3) {
             throw new RuntimeException("Incorrect number of parameters for util function "
