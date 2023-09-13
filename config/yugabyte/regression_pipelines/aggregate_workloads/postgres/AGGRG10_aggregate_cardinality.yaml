@@ -74,7 +74,6 @@ microbenchmark:
             - workload: AGGRG10_1_count_point_select_multiple_values
               run:
                   - name: count_bigint_non_indexed_column
-                    customTags: schematype=colocated,pkey=composite,partition=hash,aggregate=count,cardinality=multiple,projection=aggregate,aggregateon=rangepkey,queryshape=aggregate,filteron=rangepkey,filtertype=pointselect
                     weight: 100
                     queries:
                         - query: select count(col_bigint_card2_1) from pkeyBigint1M_1 where col_bigint_card2_1 = 1000014
@@ -82,7 +81,6 @@ microbenchmark:
             - workload: AGGRG10_2_count_point_select_multiple_values_IN
               run:
                   - name: count_bigint_non_indexed_column
-                    customTags: schematype=colocated,pkey=composite,partition=hash,aggregate=count,cardinality=multiple,projection=aggregate,aggregateon=rangepkey,queryshape=aggregate,filteron=rangepkey,filtertype=IN
                     weight: 100
                     queries:
                         - query: select count(col_bigint_card2_1) from pkeyBigint1M_1 where col_bigint_card2_1 in (1000014,1000018)
@@ -90,7 +88,6 @@ microbenchmark:
             - workload: AGGRG10_3_count_point_select_multiple_values_IN_groupby
               run:
                   - name: count_bigint_non_indexed_column
-                    customTags: schematype=colocated,pkey=composite,partition=hash,aggregate=count,cardinality=multiple,projection=aggregate,aggregateon=rangepkey,queryshape=aggregate,filteron=rangepkey,filtertype=IN,groupby=rangepkey
                     weight: 100
                     queries:
                         - query: select count(col_bigint_card2_1) from pkeyBigint1M_1 where col_bigint_card2_1 in (1000014,1000018) group by col_bigint_card2_1
@@ -98,7 +95,6 @@ microbenchmark:
             - workload: AGGRG10_4_count_indexed_col_multiple_values_groupby
               run:
                   - name: count_bigint_non_indexed_column
-                    customTags: schematype=colocated,pkey=composite,partition=hash,aggregate=count,cardinality=multiple,projection=aggregate,aggregateon=rangepkey,queryshape=aggregate,groupby=rangepkey
                     weight: 100
                     queries:
                         - query: select col_bigint_card2_1,count(col_bigint_card2_1) from pkeyBigint1M_1 group by col_bigint_card2_1
@@ -106,7 +102,6 @@ microbenchmark:
             - workload: AGGRG10_5_count_indexed_col_multiple_values_groupby_orderby
               run:
                   - name: count_bigint_non_indexed_column
-                    customTags: schematype=colocated,pkey=composite,partition=hash,aggregate=count,cardinality=multiple,projection=aggregate,aggregateon=rangepkey,queryshape=aggregate,groupby=rangepkey,orderbyon=rangepkey
                     weight: 100
                     queries:
                         - query: select col_bigint_card2_1,count(col_bigint_card2_1) from pkeyBigint1M_1 group by col_bigint_card2_1 order by col_bigint_card2_1
@@ -114,7 +109,6 @@ microbenchmark:
             - workload: AGGRG10_6_distinct_indexed_col_multiple_values_orderby
               run:
                   - name: count_bigint_non_indexed_column
-                    customTags: schematype=colocated,partition=hash,aggregate=count,cardinality=multiple,projection=aggregate,aggregateon=rangepkey,queryshape=aggregate,orderbyon=rangepkey
                     weight: 100
                     queries:
                         - query: select distinct(col_bigint_card2_1) from pkeyBigint1M_1 order by col_bigint_card2_1

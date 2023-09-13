@@ -80,58 +80,58 @@ microbenchmark:
 
         executeRules:
             -   workload: JOING10_1_join_on_2tbls_withfilter_onpkey_grpby_1col
+                customTags: schematype=regular,partition=range,pkey=asc,cardinality=single,projectition=indexed,queryshape=join,joinon=rangepkey
                 run:
                     -   name: join_on_pk_3tbl
-                        customTags: schematype=regular,partition=range,pkey=asc,cardinality=single,projectition=indexed,queryshape=join,joinon=rangepkey
                         weight: 100
                         queries:
                             -   query: select a.col_bigint_card2_1, count(a.col_bigint_id_1), count(b.col_bigint_id_1) from pkeyBigint1M_1 as a,pkeyBigint1M_2 as b where a.col_bigint_card1_1 in (1000500) and a.col_bigint_id_1=b.col_bigint_id_1  GROUP BY a.col_bigint_card2_1
 
             - workload: JOING10_2_join_on_3tbls_withfilter_onpkey_grpby_2col
+              customTags: schematype=regular,partition=range,pkey=asc,cardinality=single,projectition=indexed,queryshape=join,joinon=rangepkey
               run:
                   - name: join_on_pk_3tbl
-                    customTags: schematype=regular,partition=range,pkey=asc,cardinality=single,projectition=indexed,queryshape=join,joinon=rangepkey
                     weight: 100
                     queries:
                         - query: select a.col_bigint_card2_1, a.col_bigint_card2_1, count(b.col_bigint_id_1) from pkeyBigint1M_1 as a,pkeyBigint1M_2 as b,pkeyBigint1M_3 as c where a.col_bigint_card2_1 in (1000500) and a.col_bigint_id_1=b.col_bigint_id_1 and a.col_bigint_id_1=c.col_bigint_id_1  GROUP BY a.col_bigint_card2_1,a.col_bigint_card1_1
 
             -   workload: JOING10_3_join_on_2tbls_withfilter_onpkey_grpby_2col
+                customTags: schematype=regular,partition=range,pkey=asc,cardinality=single,projectition=indexed,queryshape=join,joinon=rangepkey
                 run:
                     -   name: join_on_pk_3tbl
-                        customTags: schematype=regular,partition=range,pkey=asc,cardinality=single,projectition=indexed,queryshape=join,joinon=rangepkey
                         weight: 100
                         queries:
                             -   query: select a.col_bigint_card2_1, count(a.col_bigint_id_1), count(b.col_bigint_id_1) from pkeyBigint1M_1 as a,pkeyBigint1M_2 as b where a.col_bigint_card2_1 in (1000500) and a.col_bigint_id_1=b.col_bigint_id_1  GROUP BY a.col_bigint_card2_1
 
 
             -   workload: JOING10_4_join_on_2tbls_withfilter_onpkey_ordby_1col
+                customTags: schematype=regular,partition=range,pkey=asc,cardinality=single,projectition=indexed,queryshape=join,joinon=rangepkey
                 run:
                     -   name: join_on_pk_3tbl
-                        customTags: schematype=regular,partition=range,pkey=asc,cardinality=single,projectition=indexed,queryshape=join,joinon=rangepkey
                         weight: 100
                         queries:
                             -   query: select pkeyBigint1M_1.col_bigint_id_1, pkeyBigint1M_2.col_bigint_id_1 from pkeyBigint1M_1,pkeyBigint1M_2 where pkeyBigint1M_1.col_bigint_card1_1 in (1000500) and pkeyBigint1M_1.col_bigint_id_1=pkeyBigint1M_2.col_bigint_id_1 ORDER BY pkeyBigint1M_1.col_bigint_card1_1
 
             - workload: JOING10_5_join_on_3tbls_withfilter_onpkey_ordby_1col
+              customTags: schematype=regular,partition=range,pkey=asc,cardinality=single,projectition=indexed,queryshape=join,joinon=rangepkey
               run:
                   - name: join_on_pk_3tbl
-                    customTags: schematype=regular,partition=range,pkey=asc,cardinality=single,projectition=indexed,queryshape=join,joinon=rangepkey
                     weight: 100
                     queries:
                         - query: select pkeyBigint1M_1.col_bigint_id_1, pkeyBigint1M_2.col_bigint_id_1, pkeyBigint1M_3.col_bigint_id_1 from pkeyBigint1M_1,pkeyBigint1M_2,pkeyBigint1M_3 where pkeyBigint1M_1.col_bigint_card1_1 in (1000500) and pkeyBigint1M_1.col_bigint_id_1=pkeyBigint1M_2.col_bigint_id_1 and pkeyBigint1M_1.col_bigint_id_1=pkeyBigint1M_3.col_bigint_id_1 ORDER BY pkeyBigint1M_1.col_bigint_card1_1
 
             -   workload: JOING10_6_join_on_2tbls_withfilter_onpkey_ordby_2col
+                customTags: schematype=regular,partition=range,pkey=asc,cardinality=single,projectition=indexed,queryshape=join,joinon=rangepkey
                 run:
                     -   name: join_on_pk_3tbl
-                        customTags: schematype=regular,partition=range,pkey=asc,cardinality=single,projectition=indexed,queryshape=join,joinon=rangepkey
                         weight: 100
                         queries:
                             -   query: select pkeyBigint1M_1.col_bigint_id_1, pkeyBigint1M_2.col_bigint_id_1 from pkeyBigint1M_1,pkeyBigint1M_2 where pkeyBigint1M_1.col_bigint_card1_1 in (1000500) and pkeyBigint1M_1.col_bigint_id_1=pkeyBigint1M_2.col_bigint_id_1 ORDER BY pkeyBigint1M_1.col_bigint_card1_1,pkeyBigint1M_1.col_bigint_card2_1
 
             -   workload: JOING10_7_join_on_2tbls_withfilter_onpkey_ordby_desc_1col
+                customTags: schematype=regular,partition=range,pkey=asc,cardinality=single,projectition=indexed,queryshape=join,joinon=rangepkey
                 run:
                     -   name: join_on_pk_3tbl
-                        customTags: schematype=regular,partition=range,pkey=asc,cardinality=single,projectition=indexed,queryshape=join,joinon=rangepkey
                         weight: 100
                         queries:
                         -   query: select pkeyBigint1M_1.col_bigint_id_1, pkeyBigint1M_2.col_bigint_id_1 from pkeyBigint1M_1,pkeyBigint1M_2 where pkeyBigint1M_1.col_bigint_card1_1 in (1000500) and pkeyBigint1M_1.col_bigint_id_1=pkeyBigint1M_2.col_bigint_id_1 ORDER BY pkeyBigint1M_1.col_bigint_card1_1 DESC

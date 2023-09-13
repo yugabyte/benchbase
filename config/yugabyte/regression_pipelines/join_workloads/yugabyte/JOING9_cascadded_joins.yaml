@@ -80,57 +80,57 @@ microbenchmark:
 
         executeRules:
             - workload: JOING9_1_join_on_3tbls_withfilter_onpkey
+              customTags: schematype=regular,partition=hash,pkey=composite,cardinality=multiple,projection=indexed,filtercount=one,filteron=rangepkey,filtertype=IN,queryshape=join,joinon=hashpkey,jointables=three,joinconditions=two
               run:
                   - name: join_on_pk_3tbl
-                    customTags: schematype=regular,partition=hash,pkey=composite,cardinality=multiple,projection=indexed,filtercount=one,filteron=rangepkey,filtertype=IN,queryshape=join,joinon=hashpkey,jointables=three,joinconditions=two
                     weight: 100
                     queries:
                         - query: select pkeyBigint1M_1.col_bigint_id_1, pkeyBigint1M_2.col_bigint_id_1, pkeyBigint1M_3.col_bigint_id_1 from pkeyBigint1M_1,pkeyBigint1M_2,pkeyBigint1M_3 where pkeyBigint1M_1.col_bigint_card1_1 in (1000500) and pkeyBigint1M_1.col_bigint_id_1=pkeyBigint1M_2.col_bigint_id_1 and pkeyBigint1M_1.col_bigint_id_1=pkeyBigint1M_3.col_bigint_id_1
 
             - workload: JOING9_2_join_on_3tbls_withfilter_onskey
+              customTags: schematype=regular,partition=hash,pkey=composite,cardinality=multiple,projection=indexed,filtercount=one,filteron=hashskey,filtertype=IN,queryshape=join,joinon=hashpkey,jointables=three,joinconditions=two
               run:
                   - name: join_on_pk_3tbl
-                    customTags: schematype=regular,partition=hash,pkey=composite,cardinality=multiple,projection=indexed,filtercount=one,filteron=hashskey,filtertype=IN,queryshape=join,joinon=hashpkey,jointables=three,joinconditions=two
                     weight: 100
                     queries:
                         - query: select pkeyBigint1M_1.col_bigint_id_1, pkeyBigint1M_2.col_bigint_id_1, pkeyBigint1M_3.col_bigint_id_1 from pkeyBigint1M_1,pkeyBigint1M_2,pkeyBigint1M_3 where pkeyBigint1M_1.col_bigint_card2_1 in (1000500) and pkeyBigint1M_1.col_bigint_id_1=pkeyBigint1M_2.col_bigint_id_1 and pkeyBigint1M_1.col_bigint_id_1=pkeyBigint1M_3.col_bigint_id_1
 
             - workload: JOING9_3_join_on_3tbls_withfilter_onpkey_subquery
+              customTags: schematype=regular,partition=hash,pkey=composite,cardinality=multiple,projection=indexed,filtercount=one,filteron=rangepkey,filtertype=subquery,queryshape=join,joinon=hashpkey,jointables=three,joinconditions=two
               run:
                   - name: join_on_pk_3tbl
-                    customTags: schematype=regular,partition=hash,pkey=composite,cardinality=multiple,projection=indexed,filtercount=one,filteron=rangepkey,filtertype=subquery,queryshape=join,joinon=hashpkey,jointables=three,joinconditions=two
                     weight: 100
                     queries:
                         - query: select pkeyBigint1M_1.col_bigint_id_1, pkeyBigint1M_2.col_bigint_id_1, pkeyBigint1M_3.col_bigint_id_1 from pkeyBigint1M_1,pkeyBigint1M_2,pkeyBigint1M_3 where pkeyBigint1M_2.col_bigint_card1_1 IN (select distinct(col_bigint_card1_1) from pkeyBigint1M_1 where col_bigint_card1_1 in (1000500)) and pkeyBigint1M_1.col_bigint_id_1=pkeyBigint1M_2.col_bigint_id_1 and pkeyBigint1M_1.col_bigint_id_1=pkeyBigint1M_3.col_bigint_id_1
 
             - workload: JOING9_4_join_on_3tbls_withfilter_onskey_subquery
+              customTags: schematype=regular,partition=hash,pkey=composite,cardinality=multiple,projection=indexed,filtercount=one,filteron=hashskey,filtertype=subquery,queryshape=join,joinon=hashpkey,jointables=three,joinconditions=two
               run:
                   - name: join_on_pk_3tbl
-                    customTags: schematype=regular,partition=hash,pkey=composite,cardinality=multiple,projection=indexed,filtercount=one,filteron=hashskey,filtertype=subquery,queryshape=join,joinon=hashpkey,jointables=three,joinconditions=two
                     weight: 100
                     queries:
                         - query: select pkeyBigint1M_1.col_bigint_id_1, pkeyBigint1M_2.col_bigint_id_1, pkeyBigint1M_3.col_bigint_id_1 from pkeyBigint1M_1,pkeyBigint1M_2,pkeyBigint1M_3 where pkeyBigint1M_2.col_bigint_card2_1 IN (select distinct(col_bigint_card2_1) from pkeyBigint1M_1 where col_bigint_card1_1 in (1000500)) and pkeyBigint1M_1.col_bigint_id_1=pkeyBigint1M_2.col_bigint_id_1 and pkeyBigint1M_1.col_bigint_id_1=pkeyBigint1M_3.col_bigint_id_1
 
             - workload: JOING9_5_cascade_join_3tbls_withfilter_onpkey
+              customTags: schematype=regular,partition=hash,pkey=composite,cardinality=multiple,projection=indexed,filtercount=one,filteron=rangepkey,filtertype=IN,queryshape=join,joinon=hashpkey,jointables=three,joinconditions=two
               run:
                   - name: join_on_pk_3tbl
-                    customTags: schematype=regular,partition=hash,pkey=composite,cardinality=multiple,projection=indexed,filtercount=one,filteron=rangepkey,filtertype=subquery,queryshape=join,joinon=hashpkey,jointables=three,joinconditions=two
                     weight: 100
                     queries:
                         - query: select pkeyBigint1M_1.col_bigint_id_1, pkeyBigint1M_2.col_bigint_id_1, pkeyBigint1M_3.col_bigint_id_1 from pkeyBigint1M_1 JOIN pkeyBigint1M_2 on pkeyBigint1M_1.col_bigint_id_1=pkeyBigint1M_2.col_bigint_id_1  JOIN pkeyBigint1M_3 on pkeyBigint1M_2.col_bigint_id_1=pkeyBigint1M_3.col_bigint_id_1 where pkeyBigint1M_1.col_bigint_card1_1 in (1000500)
 
             -   workload: JOING9_6_join_on_pkey_2ndpart_3tbls_withfilter_onskey
+                customTags: schematype=regular,partition=hash,pkey=composite,cardinality=multiple,projection=indexed,filtercount=one,filteron=rangepkey,filtertype=IN,queryshape=join,joinon=mixedpkey,jointables=three,joinconditions=two
                 run:
                     -   name: join_on_pk_3tbl
-                        customTags: schematype=regular,partition=hash,pkey=composite,cardinality=multiple,projection=indexed,filtercount=one,filteron=rangepkey,filtertype=subquery,queryshape=join,joinon=mixedpkey,jointables=three,joinconditions=two
                         weight: 100
                         queries:
                             -   query: select pkeyBigint1M_1.col_bigint_id_1, pkeyBigint1M_2.col_bigint_id_1, pkeyBigint1M_3.col_bigint_id_1 from pkeyBigint1M_1 JOIN pkeyBigint1M_2 on pkeyBigint1M_1.col_bigint_id_1=pkeyBigint1M_2.col_bigint_id_1  JOIN pkeyBigint1M_3 on pkeyBigint1M_2.col_bigint_card1_1=pkeyBigint1M_3.col_bigint_card1_1 where pkeyBigint1M_1.col_bigint_card1_1 in (1000500)
 
             -   workload: JOING9_7_join_cte_on_3tbls_withfilter_onpkey_subquery
+                customTags: schematype=regular,partition=hash,pkey=composite,cardinality=multiple,projection=indexed,filtercount=one,filteron=rangepkey,filtertype=subquery,queryshape=join,joinon=mixedpkey,jointables=three,joinconditions=two
                 run:
                     -   name: join_on_pk_3tbl
-                        customTags: schematype=regular,partition=hash,pkey=composite,cardinality=multiple,projection=indexed,filtercount=one,filteron=rangepkey,filtertype=subquery,queryshape=join,joinon=mixedpkey,jointables=three,joinconditions=two
                         weight: 100
                         queries:
                             -   query: With v1 as (select pkeyBigint1M_1.col_bigint_id_1, pkeyBigint1M_2.col_bigint_id_2 from pkeyBigint1M_1,pkeyBigint1M_2 where pkeyBigint1M_2.col_bigint_card1_1 IN (select distinct(col_bigint_card1_1) from pkeyBigint1M_1 where col_bigint_card1_1 in (1000500)) and pkeyBigint1M_1.col_bigint_id_1=pkeyBigint1M_2.col_bigint_id_1), v2 as (select pkeyBigint1M_3.col_bigint_id_1, pkeyBigint1M_3.col_bigint_id_2 from pkeyBigint1M_1,pkeyBigint1M_3 where pkeyBigint1M_1.col_bigint_id_1=pkeyBigint1M_3.col_bigint_id_1) select v1.col_bigint_id_1, v1.col_bigint_id_2, v2.col_bigint_id_1, v2.col_bigint_id_2  from v1 join v2 on v1.col_bigint_id_1=v2.col_bigint_id_1
