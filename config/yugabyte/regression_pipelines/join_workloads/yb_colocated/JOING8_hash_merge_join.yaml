@@ -69,6 +69,7 @@ microbenchmark:
                     params: [500, 500]
         executeRules:
             - workload: JoinG8_hash_join_fetch_1row
+              customTags: customer=1,schematype=colocated,partition=range,pkey=asc,cardinality=single,projection=indexed,filtercount=two,filteron=rangepkey,filtertype=pointselect,queryshape=join,joinon=rangepkey,joinconditions=one
               run:
                   - name: hash_join_fetch_1row
                     weight: 100
@@ -76,6 +77,7 @@ microbenchmark:
                         - query: select pkey_rangescan_join_1.col_bigint_id_1 from pkey_rangescan_join_1 JOIN pkey_rangescan_join_2 on pkey_rangescan_join_1.col_bigint_2=pkey_rangescan_join_2.col_bigint_2 and pkey_rangescan_join_1.col_bigint_id_1 = 2 and pkey_rangescan_join_2.col_bigint_id_1 = 2 ;
 
             - workload: JoinG8_hash_join_fetch_1000row
+              customTags: schematype=colocated,partition=range,pkey=asc,cardinality=single,projection=indexed,filtercount=two,filteron=rangepkey,filtertype=pointselect,queryshape=join,joinon=rangepkey,joinconditions=one
               run:
                   - name: hash_join_fetch_1000row
                     weight: 100
@@ -83,6 +85,7 @@ microbenchmark:
                         - query: select pkey_rangescan_join_1.col_bigint_id_1 from pkey_rangescan_join_1 JOIN pkey_rangescan_join_2 on pkey_rangescan_join_1.col_bigint_2=pkey_rangescan_join_2.col_bigint_2 and pkey_rangescan_join_1.col_bigint_id_1 < 1001 and pkey_rangescan_join_2.col_bigint_id_1 < 1001 ;
 
             - workload: JoinG8_merge_join_fetch_1row
+              customTags: schematype=colocated,partition=range,pkey=asc,cardinality=single,projection=indexed,filtercount=two,filteron=rangepkey,filtertype=pointselect,queryshape=join,joinon=rangepkey,joinconditions=one
               run:
                   - name: merge_join_fetch_1row
                     weight: 100
@@ -91,6 +94,7 @@ microbenchmark:
 
 
             - workload: JoinG8_merge_join_fetch_1000row
+              customTags: customer=4,schematype=colocated,partition=range,pkey=asc,cardinality=single,projection=indexed,filtercount=two,filteron=rangepkey,filtertype=pointselect,queryshape=join,joinon=rangepkey,joinconditions=one
               run:
                   - name: merge_join_fetch_1000row
                     weight: 100

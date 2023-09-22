@@ -73,6 +73,7 @@ microbenchmark:
                     params: [1, 1000000]
         executeRules:
             - workload: scanG5_pkey_hash_pointLookup_table1column_fetch1column
+              customTags: schematype=regular,partition=hash,pkey=hash,cardinality=single,projection=all,filtercount=one,filteron=hashpkey,filtertype=pointselect,queryshape=scan
               run:
                   - name: pkey_hash_pointLookup_table1column_fetch1column_test
                     weight: 100
@@ -83,6 +84,7 @@ microbenchmark:
                                   util: RandomNumber
                                   params: [ 1, 1000000 ]
             - workload: scanG5_pkey_hash_pointLookup_table10column_fetch10column
+              customTags: schematype=regular,partition=hash,pkey=hash,cardinality=single,projection=all,filtercount=one,filteron=hashpkey,filtertype=pointselect,queryshape=scan
               run:
                   - name: pkey_hash_pointLookup_table10column_fetch10column_test
                     weight: 100
@@ -93,6 +95,7 @@ microbenchmark:
                               util: RandomNumber
                               params: [ 1, 1000000 ]
             - workload: scanG5_pkey_hash_pointLookup_table100column_fetch100column
+              customTags: schematype=regular,partition=hash,pkey=hash,cardinality=single,projection=all,filtercount=one,filteron=hashpkey,filtertype=pointselect,queryshape=scan
               run:
                   - name: pkey_hash_pointLookup_table100column_fetch100column_test
                     weight: 100

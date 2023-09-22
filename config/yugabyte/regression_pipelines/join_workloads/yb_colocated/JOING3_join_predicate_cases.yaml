@@ -118,6 +118,7 @@ microbenchmark:
 
         executeRules:
             - workload: JOING3_1_join_on_pk_of_range_and_hash_tbl
+              customTags: customer=2,partition=range,pkey=asc,cardinality=single,projection=multiple,queryshape=join,joinon=rangepkey
               run:
                   - name: join_on_pk_of_range_and_hash_tbl
                     weight: 100
@@ -126,6 +127,7 @@ microbenchmark:
 
 
             -   workload: JOING3_2_join_on_hashpk_IN_clause_1k
+                customTags: customer=6,partition=range,pkey=asc,cardinality=single,projection=indexed,filteron=rangepkey,filtertype=IN,queryshape=join,joinon=rangepkey
                 run:
                     -   name: join_on_pk_of_range_and_hash_tbl
                         weight: 100
@@ -137,6 +139,7 @@ microbenchmark:
                                   params: [ 1, 1000000 ]
 
             -   workload: JOING3_3_join_on_hashpk_IN_clause_10k
+                customTags: partition=range,pkey=asc,cardinality=single,projection=indexed,filteron=rangepkey,filtertype=IN,queryshape=join,joinon=rangepkey
                 run:
                     -   name: join_on_pk_of_range_and_hash_tbl
                         weight: 100
@@ -148,6 +151,7 @@ microbenchmark:
                                     params: [ 1, 1000000 ]
 
             -   workload: JOING3_4_join_on_rangepk_IN_clause_1k
+                customTags: customer=3,partition=range,pkey=asc,cardinality=single,projection=indexed,filteron=hashpkey,filtertype=IN,queryshape=join,joinon=rangepkey
                 run:
                     -   name: join_on_pk_of_range_and_hash_tbl
                         weight: 100
@@ -159,6 +163,7 @@ microbenchmark:
                                   params: [ 1, 1000000 ]
 
             -   workload: JOING3_5_join_on_rangepk_IN_clause_10k
+                customTags: partition=range,pkey=asc,cardinality=single,projection=indexed,filteron=rangepkey,filtertype=IN,queryshape=join,joinon=rangepkey
                 run:
                     -   name: join_on_pk_of_range_and_hash_tbl
                         weight: 100
@@ -170,6 +175,7 @@ microbenchmark:
                                     params: [ 1, 1000000 ]
 
             -   workload: JOING3_6_join_on_hashidx_IN_clause_10k
+                customTags: customer=1,partition=range,skey=asc,cardinality=single,projection=indexed,filteron=rangepkey,filtertype=IN,queryshape=join,joinon=rangepkey
                 run:
                     -   name: join_on_pk_of_range_and_hash_tbl
                         weight: 100
@@ -181,6 +187,7 @@ microbenchmark:
                                     params: [ 1, 1000000 ]
 
             -   workload: JOING3_7_join_on_rangeidx_IN_clause_10k
+                customTags: customer=2,partition=range,skey=asc,cardinality=single,projection=indexed,filteron=rangeskey,filtertype=IN,queryshape=join,joinon=rangeskey
                 run:
                     -   name: join_on_pk_of_range_and_hash_tbl
                         weight: 100
