@@ -81,7 +81,6 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
     }
 
     protected void initialize() {
-        System.out.println("FEATUREBENCH initialization");
         try {
             preparedStatementsPerQuery = new HashMap<>();
             for (ExecuteRule executeRule : executeRules) {
@@ -178,6 +177,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             }
             isInitializeDone.set(true);
         }
+
     }
 
 
