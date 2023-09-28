@@ -1023,7 +1023,6 @@ public class DBWorkload {
         for (BenchmarkModule bench : benchList) {
             LOG.info("Creating {} virtual terminals...", bench.getWorkloadConfiguration().getTerminals());
             if (bench.getBenchmarkName().equalsIgnoreCase("featurebench")) {
-                System.out.println("\n\n\n Ever here\n");
                 workers.addAll(bench.makeWorkers(workcount));
             } else {
                 workers.addAll(bench.makeWorkers());
@@ -1035,7 +1034,6 @@ public class DBWorkload {
             workConfs.add(bench.getWorkloadConfiguration());
 
         }
-        System.out.println("\n\n\n SSSSSSS\n");
         Results r = ThreadBench.runRateLimitedBenchmark(workers, workConfs, intervalMonitor);
         LOG.info(SINGLE_LINE);
         LOG.info("Rate limited reqs/s: {}", r);

@@ -95,7 +95,6 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
             this.name_procedures.put(e.getKey().getName(), proc);
             this.class_procedures.put(proc.getClass(), proc);
         }
-        System.out.println("\n\n\n Worker initialization\n");
     }
 
     /**
@@ -191,7 +190,6 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
 
     @Override
     public final void run() {
-
         Thread t = Thread.currentThread();
         t.setName(this.toString());
 
@@ -367,6 +365,7 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
 
 
         LOG.debug("worker calling teardown");
+
         tearDown();
     }
 
@@ -410,7 +409,7 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
      * @param transactionType TODO
      */
     protected final void doWork(DatabaseType databaseType, TransactionType transactionType) {
-        LOG.error("In do work");
+
         try {
             int retryCount = 0;
             int maxRetryCount = configuration.getMaxRetries();
@@ -444,9 +443,7 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
                     if (LOG.isDebugEnabled()) {
                         LOG.debug(String.format("%s %s attempting...", this, transactionType));
                     }
-                    LOG.error("Hikari pool before execute work: {}", this.configuration.getXmlConfig().getBoolean("use_hikari_pool", false));
 
-                    System.out.println("Hikari pool before execute work: " + this.configuration.getXmlConfig().getBoolean("use_hikari_pool", false));
                     status = this.executeWork(conn, transactionType);
 
                     if (LOG.isDebugEnabled()) {
@@ -459,7 +456,7 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
 
                     if (!autoCommitVal)
                         conn.commit();
-                    LOG.info("Hikari pool execute work: {}", this.configuration.getXmlConfig().getBoolean("use_hikari_pool", false));
+
                     break;
 
                 } catch (UserAbortException ex) {
