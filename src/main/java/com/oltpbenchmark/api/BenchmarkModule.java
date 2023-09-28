@@ -91,7 +91,7 @@ public abstract class BenchmarkModule {
 
     public final Connection makeConnection() throws SQLException {
         if (workConf.getXmlConfig().getBoolean("use_hikari_pool", false)) {
-            LOG.info("Using Hikari-pool to create connection");
+            LOG.info("Using Hikari-pool to create connection. Debugging");
             return hikariDataSource.getConnection();
         } else if (StringUtils.isEmpty(workConf.getUsername())) {
             return DriverManager.getConnection(workConf.getUrl());
@@ -113,6 +113,7 @@ public abstract class BenchmarkModule {
             config.setPassword(workConf.getPassword());
             /* take max_pool_size from xmlConfig, default is = number of terminals*/
             config.setMaximumPoolSize(workConf.getXmlConfig().getInt("max_pool_size", workConf.getTerminals()));
+            config.setMinimumIdle(5);
         }
         config.setTransactionIsolation(workConf.getIsolationString());
         hikariDataSource = new HikariDataSource(config);
