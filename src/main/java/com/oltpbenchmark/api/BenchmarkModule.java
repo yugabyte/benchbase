@@ -102,7 +102,7 @@ public abstract class BenchmarkModule {
         }
     }
 
-    private HikariDataSource hikariDataSource;
+    protected HikariDataSource hikariDataSource;
 
     public void createDataSource() {
         HikariConfig config = new HikariConfig();
@@ -116,6 +116,12 @@ public abstract class BenchmarkModule {
         }
         config.setTransactionIsolation(workConf.getIsolationString());
         hikariDataSource = new HikariDataSource(config);
+    }
+
+    public void closeDataSource() {
+        if (workConf.getXmlConfig().getBoolean("use_hikari_pool", false)) {
+            this.hikariDataSource.close();
+        }
     }
 
     // --------------------------------------------------------------------------

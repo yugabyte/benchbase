@@ -97,7 +97,7 @@ public class ThreadBench implements Thread.UncaughtExceptionHandler {
 
             workers.get(i).tearDown();
         }
-
+        this.workers.get(0).getBenchmark().closeDataSource();
         return requests;
     }
 
@@ -340,7 +340,6 @@ public class ThreadBench implements Thread.UncaughtExceptionHandler {
                 results.getZeroRows().putHistogram(w.getTransactionZeroRowsHistogram());
                 results.getFeaturebenchAdditionalResults().setJsonResultsList(w.featurebenchAdditionalResults.getJsonResultsList());
             }
-
             return (results);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
