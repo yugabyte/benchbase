@@ -91,7 +91,6 @@ public abstract class BenchmarkModule {
 
     public final Connection makeConnection() throws SQLException {
         if (workConf.getXmlConfig().getBoolean("use_hikari_pool", false)) {
-//            LOG.info("Using Hikari-pool to create connection.");
             return hikariDataSource.getConnection();
         } else if (StringUtils.isEmpty(workConf.getUsername())) {
             return DriverManager.getConnection(workConf.getUrl());
