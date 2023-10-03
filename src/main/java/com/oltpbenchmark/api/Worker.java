@@ -65,6 +65,9 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
     private boolean seenDone = false;
     public final FeaturebenchAdditionalResults featurebenchAdditionalResults = new FeaturebenchAdditionalResults();
 
+    public boolean usingHikari = false;
+    public boolean autoCommitVal = false;
+
     public Worker(T benchmark, int id) {
         this.id = id;
         this.benchmark = benchmark;
@@ -72,13 +75,14 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
         this.workloadState = this.configuration.getWorkloadState();
         this.currStatement = null;
         this.transactionTypes = this.configuration.getTransTypes();
-        boolean autoCommitVal = false;
+        this.autoCommitVal = false;
+        this.usingHikari = this.getWorkloadConfiguration().getXmlConfig().getBoolean("use_hikari_pool", false);
         if (this.benchmark.getBenchmarkName().equalsIgnoreCase("featurebench") &&
             this.benchmark.getWorkloadConfiguration().getXmlConfig().containsKey("microbenchmark/properties/setAutoCommit")) {
             autoCommitVal = this.benchmark.getWorkloadConfiguration().getXmlConfig().getBoolean("microbenchmark/properties/setAutoCommit");
             this.isFeaturebenchWorkload = true;
         }
-/*        if (!this.configuration.getNewConnectionPerTxn()) {
+        if (!this.configuration.getNewConnectionPerTxn() && !usingHikari) {
             try {
                 this.conn = this.benchmark.makeConnection();
                 this.conn.setAutoCommit(autoCommitVal);
@@ -86,7 +90,7 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
             } catch (SQLException ex) {
                 throw new RuntimeException("Failed to connect to database", ex);
             }
-        }*/
+        }
 
         // Generate all the Procedures that we're going to need
         this.procedures.putAll(this.benchmark.getProcedures());
@@ -198,15 +202,15 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
 
         // Invoke initialize callback
         try {
-            try {
-                if (this.conn == null || this.conn.isClosed()) {
+            if (!this.usingHikari)
+                this.initialize();
+            else {
+                if(this.conn == null || this.conn.isClosed()) {
                     this.conn = this.getBenchmark().makeConnection();
-                    this.conn.setAutoCommit(true);
+                    this.conn.setAutoCommit(this.autoCommitVal);
                     this.initialize();
                     this.conn.close();
                 }
-            } catch (SQLException ex) {
-                throw new RuntimeException("Failed to connect to database", ex);
             }
         } catch (Throwable ex) {
             throw new RuntimeException("Unexpected error when initializing " + this, ex);
@@ -290,20 +294,27 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
                         LOG.error("Pre-execution sleep interrupted", e);
                     }
                 }
+
                 long start = 0;
                 long end = 0;
-                try {
-                    if (this.conn == null || this.conn.isClosed()) {
-                        this.conn = this.getBenchmark().makeConnection();
-                        this.conn.setAutoCommit(true);
-                        start = System.nanoTime();
-                        LOG.error("Before do work");
-                        doWork(configuration.getDatabaseType(), transactionType);
-                        end = System.nanoTime();
-                        this.conn.close();
+                if (!this.usingHikari) {
+                    start = System.nanoTime();
+                    doWork(configuration.getDatabaseType(), transactionType);
+                    end = System.nanoTime();
+                }
+                else {
+                    try {
+                        if (this.conn == null || this.conn.isClosed()) {
+                            this.conn = this.getBenchmark().makeConnection();
+                            this.conn.setAutoCommit(this.autoCommitVal);
+                            start = System.nanoTime();
+                            doWork(configuration.getDatabaseType(), transactionType);
+                            end = System.nanoTime();
+                            this.conn.close();
+                        }
+                    } catch(SQLException ex) {
+                        throw new RuntimeException("Failed to connect to database", ex);
                     }
-                } catch (SQLException ex) {
-                    throw new RuntimeException("Failed to connect to database", ex);
                 }
 
                 // PART 4: Record results
@@ -575,9 +586,13 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
     public void tearDown() {
         if (!this.configuration.getNewConnectionPerTxn() && this.conn != null) {
             try {
-                this.conn = this.getBenchmark().makeConnection();
-                this.conn.setAutoCommit(true);
-                this.conn.close();
+                if(!usingHikari)
+                    conn.close();
+                else {
+                    this.conn = this.getBenchmark().makeConnection();
+                    this.conn.setAutoCommit(true);
+                    this.conn.close();
+                }
             } catch (SQLException e) {
                 LOG.error("Connection couldn't be closed.", e);
             }

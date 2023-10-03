@@ -284,13 +284,15 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
 
     @Override
     public void tearDown() {
-        try {
-            if (this.conn == null || this.conn.isClosed()) {
-                this.conn = this.getBenchmark().makeConnection();
-                this.conn.setAutoCommit(true);
+        if (this.usingHikari) {
+            try {
+                if (this.conn == null || this.conn.isClosed()) {
+                    this.conn = this.getBenchmark().makeConnection();
+                    this.conn.setAutoCommit(true);
+                }
+            } catch (SQLException ex) {
+                throw new RuntimeException("Failed to connect to database", ex);
             }
-        } catch (SQLException ex) {
-            throw new RuntimeException("Failed to connect to database", ex);
         }
         synchronized (FeatureBenchWorker.class) {
             if (!this.configuration.getNewConnectionPerTxn() && this.configuration.getWorkloadState().getGlobalState() == State.EXIT && !isPGStatStatementCollected.get()) {
@@ -357,12 +359,14 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                 }
             }
         }
-        try {
-            if (this.conn != null && !this.conn.isClosed()) {
-                this.conn.close();
+        if(usingHikari) {
+            try {
+                if (this.conn != null && !this.conn.isClosed()) {
+                    this.conn.close();
+                }
+            } catch (SQLException ex) {
+                throw new RuntimeException("Failed to connect to database", ex);
             }
-        } catch (SQLException ex) {
-            throw new RuntimeException("Failed to connect to database", ex);
         }
     }
 
