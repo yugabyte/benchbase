@@ -586,13 +586,7 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
     public void tearDown() {
         if (!this.configuration.getNewConnectionPerTxn() && this.conn != null) {
             try {
-                if(!usingHikari)
-                    conn.close();
-                else {
-                    this.conn = this.getBenchmark().makeConnection();
-                    this.conn.setAutoCommit(true);
-                    this.conn.close();
-                }
+                conn.close();
             } catch (SQLException e) {
                 LOG.error("Connection couldn't be closed.", e);
             }
