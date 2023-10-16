@@ -10,6 +10,7 @@
 type: YUGABYTE
 driver: com.yugabyte.Driver
 url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true&load-balance=false
+createdb: drop database if exists yb_colocated; create database yb_colocated with colocated=true
 username: {{username}}
 password: {{password}}
 batchsize: 128
@@ -71,7 +72,7 @@ microbenchmark:
                     params: [500, 500]
         executeRules:
             - workload: scanG13_pkey_INclause_rangescan_increasing_rows_1row
-              customTags: schematype=colocated,partition=range,pkey=asc,cardinality=single,projection=indexed,filtercount=one,filteron=rangeskey,filtertype=IN,queryshape=scan
+              customTags: schematype=colocated,partition=range,pkey=asc,cardinality=single,projection=multiple,filtercount=one,filteron=rangeskey,filtertype=IN,queryshape=scan
               run:
                   - name: pkey_INclause_rangescan_increasing_rows_1row_test
                     weight: 100
@@ -82,7 +83,7 @@ microbenchmark:
                               util: RandomNumber
                               params: [ 1, 1000000 ]
             - workload: scanG13_pkey_INclause_rangescan_increasing_rows_10row
-              customTags: schematype=colocated,partition=range,pkey=asc,cardinality=single,projection=indexed,filtercount=one,filteron=rangeskey,filtertype=IN,queryshape=scan
+              customTags: schematype=colocated,partition=range,pkey=asc,cardinality=single,projection=multiple,filtercount=one,filteron=rangeskey,filtertype=IN,queryshape=scan
               run:
                   - name: pkey_INclause_rangescan_increasing_rows_10row_test
                     weight: 100
@@ -93,7 +94,7 @@ microbenchmark:
                               util: RandomNumber
                               params: [ 1, 1000000 ]
             - workload: scanG13_pkey_INclause_rangescan_increasing_rows_100row
-              customTags: customer=1,schematype=colocated,partition=range,pkey=asc,cardinality=single,projection=indexed,filtercount=one,filteron=rangeskey,filtertype=IN,queryshape=scan
+              customTags: customer=1,schematype=colocated,partition=range,pkey=asc,cardinality=single,projection=multiple,filtercount=one,filteron=rangeskey,filtertype=IN,queryshape=scan
               run:
                   - name: pkey_INclause_rangescan_increasing_rows_100row_test
                     weight: 100
@@ -104,7 +105,7 @@ microbenchmark:
                               util: RandomNumber
                               params: [ 1, 1000000 ]
             - workload: scanG13_pkey_INclause_rangescan_increasing_rows_1000row
-              customTags: customer=1,schematype=colocated,partition=range,pkey=asc,cardinality=single,projection=indexed,filtercount=one,filteron=rangeskey,filtertype=IN,queryshape=scan
+              customTags: customer=1,schematype=colocated,partition=range,pkey=asc,cardinality=single,projection=multiple,filtercount=one,filteron=rangeskey,filtertype=IN,queryshape=scan
               run:
                   - name: pkey_INclause_rangescan_increasing_rows_1000row_test
                     weight: 100
@@ -115,7 +116,7 @@ microbenchmark:
                               util: RandomNumber
                               params: [ 1, 1000000 ]
             - workload: scanG13_pkey_INclause_rangescan_increasing_rows_10000row
-              customTags: customer=1,schematype=colocated,partition=range,pkey=asc,cardinality=single,projection=indexed,filtercount=one,filteron=rangeskey,filtertype=IN,queryshape=scan
+              customTags: customer=1,schematype=colocated,partition=range,pkey=asc,cardinality=single,projection=multiple,filtercount=one,filteron=rangeskey,filtertype=IN,queryshape=scan
               run:
                   - name: pkey_INclause_rangescan_increasing_rows_10000row_test
                     weight: 100
