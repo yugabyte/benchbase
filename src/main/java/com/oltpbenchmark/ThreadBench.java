@@ -329,6 +329,7 @@ public class ThreadBench implements Thread.UncaughtExceptionHandler {
             results.getError().putAll(txnTypes, 0);
             results.getRetryDifferent().putAll(txnTypes, 0);
             results.getZeroRows().putAll(txnTypes, 0);
+
             for (Worker<?> w : workers) {
                 results.getUnknown().putHistogram(w.getTransactionUnknownHistogram());
                 results.getSuccess().putHistogram(w.getTransactionSuccessHistogram());
