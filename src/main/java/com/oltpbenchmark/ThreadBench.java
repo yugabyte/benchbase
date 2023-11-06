@@ -338,12 +338,6 @@ public class ThreadBench implements Thread.UncaughtExceptionHandler {
                 results.getRetryDifferent().putHistogram(w.getTransactionRetryDifferentHistogram());
                 results.getZeroRows().putHistogram(w.getTransactionZeroRowsHistogram());
                 results.getFeaturebenchAdditionalResults().setJsonResultsList(w.featurebenchAdditionalResults.getJsonResultsList());
-                /*int currentLength = w.featurebenchAdditionalResults.getJsonResultsList().size();
-                int length = 0;
-                if(currentLength > length) {
-                    length = currentLength;
-                    results.getFeaturebenchAdditionalResults().setJsonResultsList(w.featurebenchAdditionalResults.getJsonResultsList());
-                }*/
             }
 
             return (results);
