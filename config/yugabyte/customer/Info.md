@@ -18,12 +18,12 @@
     cd benchbase-yugabyte
     ```
 
-2. run the benchmark by providing using:
+3. run the benchmark by providing using:
     ```shell
     java -jar benchbase.jar -b featurebench -c config/yugabyte/customer/regular/single_threaded_insert.yaml --create=true --load=true --execute=true
     ```
 
-3. results are generated in ```results/``` directory.
+4. results are generated in ```results/``` directory.
 
 
 ## Notes:
@@ -36,5 +36,5 @@
     ```shell
     createdb: drop database if exists yb_colocated; create database yb_colocated with colocation=true
     ```
-
+4. You can modify the pre-loaded number of rows by changing it in the ```loadRules -> rows``` .Accordingly, you also need to change the utility function's ```max``` limit (wherever applicable)
 ## For additional details on Featurebench framework refer to the [document](https://github.com/yugabyte/benchbase/tree/main/src/main/java/com/oltpbenchmark/benchmarks/featurebench)

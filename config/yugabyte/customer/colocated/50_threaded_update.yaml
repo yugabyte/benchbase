@@ -26,16 +26,16 @@ microbenchmark:
 
         loadRules:
             - table: orders
-              rows: 1000 # number of rows to be preloaded in the database before more updates happen in execute phase
+              rows: 1000000 # number of rows to be preloaded in the database before more updates happen in execute phase
               columns:
                   - name: created_at
                     util: CurrentTime
                   - name: user_id
                     util: RandomInt
-                    params: [1, 1000] # one from the range [min, max]
+                    params: [1, 1000000] # one from the range [min, max]
                   - name: product_id
                     util: RandomInt
-                    params: [1, 1000] # one from the range [min, max]
+                    params: [1, 1000000] # one from the range [min, max]
                   - name: discount
                     util: RandomNoWithDecimalPoints
                     params: [1, 70, 2] # one from range with decimal points [min, max, #decimals]
@@ -44,13 +44,13 @@ microbenchmark:
                     params: [1, 10] # one from the range [min, max]
                   - name: subtotal
                     util: RandomNoWithDecimalPoints
-                    params: [1, 10000, 2] # one from range with decimal points [min, max, #decimals]
+                    params: [1, 10000000, 2] # one from range with decimal points [min, max, #decimals]
                   - name: tax
                     util: RandomNoWithDecimalPoints
                     params: [1, 20, 2] # one from range with decimal points [min, max, #decimals]
                   - name: total
                     util: RandomNoWithDecimalPoints
-                    params: [1, 10000, 2] # one from range with decimal points [min, max, #decimals]
+                    params: [1, 10000000, 2] # one from range with decimal points [min, max, #decimals]
         executeRules:
             - workload: 50_terminal_1_update_100_times
               run:
@@ -63,13 +63,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
             - workload: 50_terminal_100_update_100_times
               run:
                   - name: update_orders_query1
@@ -81,13 +81,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query2
                     weight: 1
                     queries:
@@ -97,13 +97,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query3
                     weight: 1
                     queries:
@@ -113,13 +113,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query4
                     weight: 1
                     queries:
@@ -129,13 +129,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query5
                     weight: 1
                     queries:
@@ -145,13 +145,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query6
                     weight: 1
                     queries:
@@ -161,13 +161,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query7
                     weight: 1
                     queries:
@@ -177,13 +177,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query8
                     weight: 1
                     queries:
@@ -193,13 +193,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query9
                     weight: 1
                     queries:
@@ -209,13 +209,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query10
                     weight: 1
                     queries:
@@ -225,13 +225,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query11
                     weight: 1
                     queries:
@@ -241,13 +241,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query12
                     weight: 1
                     queries:
@@ -257,13 +257,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query13
                     weight: 1
                     queries:
@@ -273,13 +273,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query14
                     weight: 1
                     queries:
@@ -289,13 +289,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query15
                     weight: 1
                     queries:
@@ -305,13 +305,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query16
                     weight: 1
                     queries:
@@ -321,13 +321,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query17
                     weight: 1
                     queries:
@@ -337,13 +337,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query18
                     weight: 1
                     queries:
@@ -353,13 +353,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query19
                     weight: 1
                     queries:
@@ -369,13 +369,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query20
                     weight: 1
                     queries:
@@ -385,13 +385,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query21
                     weight: 1
                     queries:
@@ -401,13 +401,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query22
                     weight: 1
                     queries:
@@ -417,13 +417,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query23
                     weight: 1
                     queries:
@@ -433,13 +433,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query24
                     weight: 1
                     queries:
@@ -449,13 +449,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query25
                     weight: 1
                     queries:
@@ -465,13 +465,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query26
                     weight: 1
                     queries:
@@ -481,13 +481,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query27
                     weight: 1
                     queries:
@@ -497,13 +497,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query28
                     weight: 1
                     queries:
@@ -513,13 +513,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query29
                     weight: 1
                     queries:
@@ -529,13 +529,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query30
                     weight: 1
                     queries:
@@ -545,13 +545,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query31
                     weight: 1
                     queries:
@@ -561,13 +561,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query32
                     weight: 1
                     queries:
@@ -577,13 +577,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query33
                     weight: 1
                     queries:
@@ -593,13 +593,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query34
                     weight: 1
                     queries:
@@ -609,13 +609,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query35
                     weight: 1
                     queries:
@@ -625,13 +625,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query36
                     weight: 1
                     queries:
@@ -641,13 +641,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query37
                     weight: 1
                     queries:
@@ -657,13 +657,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query38
                     weight: 1
                     queries:
@@ -673,13 +673,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query39
                     weight: 1
                     queries:
@@ -689,13 +689,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query40
                     weight: 1
                     queries:
@@ -705,13 +705,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query41
                     weight: 1
                     queries:
@@ -721,13 +721,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query42
                     weight: 1
                     queries:
@@ -737,13 +737,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query43
                     weight: 1
                     queries:
@@ -753,13 +753,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query44
                     weight: 1
                     queries:
@@ -769,13 +769,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query45
                     weight: 1
                     queries:
@@ -785,13 +785,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query46
                     weight: 1
                     queries:
@@ -801,13 +801,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query47
                     weight: 1
                     queries:
@@ -817,13 +817,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query48
                     weight: 1
                     queries:
@@ -833,13 +833,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query49
                     weight: 1
                     queries:
@@ -849,13 +849,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query50
                     weight: 1
                     queries:
@@ -865,13 +865,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query51
                     weight: 1
                     queries:
@@ -881,13 +881,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query52
                     weight: 1
                     queries:
@@ -897,13 +897,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query53
                     weight: 1
                     queries:
@@ -913,13 +913,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query54
                     weight: 1
                     queries:
@@ -929,13 +929,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query55
                     weight: 1
                     queries:
@@ -945,13 +945,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query56
                     weight: 1
                     queries:
@@ -961,13 +961,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query57
                     weight: 1
                     queries:
@@ -977,13 +977,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query58
                     weight: 1
                     queries:
@@ -993,13 +993,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query59
                     weight: 1
                     queries:
@@ -1009,13 +1009,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query60
                     weight: 1
                     queries:
@@ -1025,13 +1025,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query61
                     weight: 1
                     queries:
@@ -1041,13 +1041,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query62
                     weight: 1
                     queries:
@@ -1057,13 +1057,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query63
                     weight: 1
                     queries:
@@ -1073,13 +1073,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query64
                     weight: 1
                     queries:
@@ -1089,13 +1089,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query65
                     weight: 1
                     queries:
@@ -1105,13 +1105,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query66
                     weight: 1
                     queries:
@@ -1121,13 +1121,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query67
                     weight: 1
                     queries:
@@ -1137,13 +1137,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query68
                     weight: 1
                     queries:
@@ -1153,13 +1153,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query69
                     weight: 1
                     queries:
@@ -1169,13 +1169,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query70
                     weight: 1
                     queries:
@@ -1185,13 +1185,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query71
                     weight: 1
                     queries:
@@ -1201,13 +1201,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query72
                     weight: 1
                     queries:
@@ -1217,13 +1217,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query73
                     weight: 1
                     queries:
@@ -1233,13 +1233,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query74
                     weight: 1
                     queries:
@@ -1249,13 +1249,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query75
                     weight: 1
                     queries:
@@ -1265,13 +1265,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query76
                     weight: 1
                     queries:
@@ -1281,13 +1281,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query77
                     weight: 1
                     queries:
@@ -1297,13 +1297,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query78
                     weight: 1
                     queries:
@@ -1313,13 +1313,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query79
                     weight: 1
                     queries:
@@ -1329,13 +1329,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query80
                     weight: 1
                     queries:
@@ -1345,13 +1345,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query81
                     weight: 1
                     queries:
@@ -1361,13 +1361,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query82
                     weight: 1
                     queries:
@@ -1377,13 +1377,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query83
                     weight: 1
                     queries:
@@ -1393,13 +1393,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query84
                     weight: 1
                     queries:
@@ -1409,13 +1409,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query85
                     weight: 1
                     queries:
@@ -1425,13 +1425,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query86
                     weight: 1
                     queries:
@@ -1441,13 +1441,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query87
                     weight: 1
                     queries:
@@ -1457,13 +1457,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query88
                     weight: 1
                     queries:
@@ -1473,13 +1473,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query89
                     weight: 1
                     queries:
@@ -1489,13 +1489,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query90
                     weight: 1
                     queries:
@@ -1505,13 +1505,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query91
                     weight: 1
                     queries:
@@ -1521,13 +1521,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query92
                     weight: 1
                     queries:
@@ -1537,13 +1537,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query93
                     weight: 1
                     queries:
@@ -1553,13 +1553,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query94
                     weight: 1
                     queries:
@@ -1569,13 +1569,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query95
                     weight: 1
                     queries:
@@ -1585,13 +1585,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query96
                     weight: 1
                     queries:
@@ -1601,13 +1601,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query97
                     weight: 1
                     queries:
@@ -1617,13 +1617,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query98
                     weight: 1
                     queries:
@@ -1633,13 +1633,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query99
                     weight: 1
                     queries:
@@ -1649,13 +1649,13 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
                   - name: update_orders_query100
                     weight: 1
                     queries:
@@ -1665,12 +1665,12 @@ microbenchmark:
                               -   util: RandomNumber # for quantity
                                   params: [ 1, 10 ]
                               -   util: RandomFloat # for tax
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for subtotal
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: RandomFloat # for total
-                                  params: [ 1, 1000, 2 ]
+                                  params: [ 1, 1000000, 2 ]
                               -   util: PrimaryIntRandomForExecutePhase # for id
-                                  params: [ 1, 1000]
+                                  params: [ 1, 1000000]
         cleanup:
             - DROP TABLE IF EXISTS orders;
