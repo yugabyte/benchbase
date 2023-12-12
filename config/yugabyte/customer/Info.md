@@ -32,5 +32,9 @@
     ```shell
     --workloads=insert_orders_query1
     ```
+3. colocated yamls uses following to create a colocated db named ```yb_colocated``` and use it by replacing it in ```url``` at runtime.
+    ```shell
+    createdb: drop database if exists yb_colocated; create database yb_colocated with colocation=true
+    ```
 
 ## For additional details on Featurebench framework refer to the [document](https://github.com/yugabyte/benchbase/tree/main/src/main/java/com/oltpbenchmark/benchmarks/featurebench)
