@@ -21,12 +21,12 @@ microbenchmark:
     properties:
         setAutoCommit: true
         create:
-            - drop table netscope_1;
+            - drop table IF EXISTS netscope_1;
             - create table netscope_1(op_id_1 text,work_type_1 text,work_id_1 text,sequence_id_1 text,source_1 text,owner_1 text,state_1 text,resource_id_1 text,tracing_data_1 text,created_1 timestamp with time zone,modified_1 timestamp with time zone,timeout_1 timestamp with time zone,retry_count_1 bigint,db_user_id_1 text,shard_id_1 smallint,ingest_time_1 timestamp with time zone,label_1 text,metadata_1 text,primary key ((db_user_id_1, shard_id_1) HASH, op_id_1 ASC));
             - create index on netscope_1 ((db_user_id_1, shard_id_1) HASH, state_1 ASC, owner_1 ASC);
 
         cleanup:
-            - drop table netscope;
+            - drop table IF EXISTS netscope;
 
         loadRules:
             - table: netscope_
