@@ -1,0 +1,111 @@
+type: YUGABYTE
+driver: com.yugabyte.Driver
+url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true&load-balance=false
+username: {{username}}
+password: {{password}}
+batchsize: 128
+isolation: TRANSACTION_REPEATABLE_READ
+loaderthreads: 1
+terminals: 1
+collect_pg_stat_statements: true
+yaml_version: v1.0
+use_dist_in_explain : true
+works:
+    work:
+        time_secs: 300
+        active_terminals: 1
+        rate: unlimited
+        warmup: 60
+microbenchmark:
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
+    properties:
+        setAutoCommit: true
+        create:
+            - drop table netscope_1;
+            - create table netscope_1(op_id_1 text,work_type_1 text,work_id_1 text,sequence_id_1 text,source_1 text,owner_1 text,state_1 text,resource_id_1 text,tracing_data_1 text,created_1 timestamp with time zone,modified_1 timestamp with time zone,timeout_1 timestamp with time zone,retry_count_1 bigint,db_user_id_1 text,shard_id_1 smallint,ingest_time_1 timestamp with time zone,label_1 text,metadata_1 text,primary key ((db_user_id_1, shard_id_1) HASH, op_id_1 ASC));
+            - create index on netscope_1 ((db_user_id_1, shard_id_1) HASH, state_1 ASC, owner_1 ASC);
+
+        cleanup:
+            - drop table netscope;
+
+        loadRules:
+            - table: netscope_
+              count: 1
+              rows: 50000000
+              columns:
+                    - name: op_id_
+                      count: 1
+                      util: RandomAString
+                      params: [ 50, 50 ]
+                    - name: work_type_
+                      count: 1
+                      util: RandomAString
+                      params: [ 50, 50 ]
+                    - name: work_id_
+                      count: 1
+                      util: RandomAString
+                      params: [ 50, 50 ]
+                    - name: sequence_id_
+                      count: 1
+                      util: RandomAString
+                      params: [ 50, 50 ]
+                    - name: source_
+                      count: 1
+                      util: RandomAString
+                      params: [ 50, 50 ]
+                    - name: owner_
+                      count: 1
+                      util: RandomAString
+                      params: [ 50, 50 ]
+                    - name: state_
+                      count: 1
+                      util: RandomAString
+                      params: [ 50, 50 ]
+                    - name: resource_id_
+                      count: 1
+                      util: RandomAString
+                      params: [ 50, 50 ]
+                    - name: tracing_data_
+                      count: 1
+                      util: RandomAString
+                      params: [ 50, 50 ]
+                    - name: created_
+                      count: 1
+                      util: CurrentTime
+                    - name: modified_
+                      count: 1
+                      util: CurrentTime
+                    - name: timeout_
+                      count: 1
+                      util: CurrentTime
+                    - name: retry_count_
+                      count: 1
+                      util: RandomInt
+                      params: [ 1, 50 ]
+                    - name: db_user_id_
+                      count: 1
+                      util: PrimaryStringGen
+                      params: [ 123456789123456789123456789123456789, 50 ]
+                    - name: shard_id_
+                      count: 1
+                      util: RandomNumber
+                      params: [ 1, 500000 ]
+                    - name: ingest_time_
+                      count: 1
+                      util: CurrentTime
+                    - name: label_
+                      count: 1
+                      util: RandomAString
+                      params: [ 50, 50 ]
+                    - name: metadata_
+                      count: 1
+                      util: RandomAString
+                      params: [ 50, 50 ]
+
+        executeRules:
+            - workload: NetG1_query1
+              run:
+                  - name: NetG1_query1
+                    weight: 100
+                    queries:
+                        - query: select count(work_type_1) from netscope_1
