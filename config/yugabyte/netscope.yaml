@@ -85,11 +85,11 @@ microbenchmark:
                     - name: db_user_id_
                       count: 1
                       util: PrimaryStringGen
-                      params: [ 123456789123456789123456789123456789, 50 ]
+                      params: [ 1, 50 ]
                     - name: shard_id_
                       count: 1
                       util: RandomNumber
-                      params: [ 1, 500000 ]
+                      params: [ 1, 50 ]
                     - name: ingest_time_
                       count: 1
                       util: CurrentTime
