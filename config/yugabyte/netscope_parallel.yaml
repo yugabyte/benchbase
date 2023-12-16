@@ -12,8 +12,7 @@ yaml_version: v1.0
 use_dist_in_explain : true
 works:
     work:
-        time_secs: 300
-        active_terminals: 1
+        time_secs: 900
         rate: unlimited
         warmup: 60
 microbenchmark:
