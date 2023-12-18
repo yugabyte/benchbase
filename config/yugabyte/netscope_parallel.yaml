@@ -13,6 +13,7 @@ use_dist_in_explain : true
 works:
     work:
         time_secs: 900
+        active_terminals: 8
         rate: unlimited
         warmup: 60
 microbenchmark:
