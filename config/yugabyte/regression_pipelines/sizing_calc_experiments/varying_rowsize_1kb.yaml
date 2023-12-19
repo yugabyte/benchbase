@@ -46,7 +46,10 @@ microbenchmark:
                     -   name: select_rowsize_1kb
                         weight: 100
                         queries:
-                            -   query: SELECT * from table_4_cols_1kb
+                            -   query: SELECT * from table_4_cols_1kb where id=?
+                                bindings:
+                                    -   util: RandomNumber
+                                        params: [ 1, 10000000 ]
                                 count: 1
             -   workload: 1kb_insert
                 run:

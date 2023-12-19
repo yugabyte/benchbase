@@ -46,7 +46,10 @@ microbenchmark:
                     -   name: Select_with_100cols_test
                         weight: 100
                         queries:
-                            -   query: SELECT * from table_100_cols
+                            -   query: SELECT * from table_100_cols where id=?
+                                bindings:
+                                    -   util: RandomNumber
+                                        params: [ 1, 10000000 ]
                                 count: 1
             -   workload: 100_col_insert
                 run:
