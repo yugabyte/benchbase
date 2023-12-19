@@ -1,0 +1,70 @@
+type: YUGABYTE
+driver: com.yugabyte.Driver
+url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
+username: {{username}}
+password: {{password}}
+
+batchsize: 128
+isolation: TRANSACTION_REPEATABLE_READ
+loaderthreads: 4
+terminals: 1
+collect_pg_stat_statements: true
+use_dist_in_explain : true
+works:
+    work:
+        time_secs: 60
+        active_terminals: 1
+        rate: unlimited
+        warmup: 30
+microbenchmark:
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
+    properties:
+        setAutoCommit: true
+        create:
+            - drop table if exists table_250_cols;
+            - CREATE TABLE table_250_cols (id SERIAL, k INTEGER DEFAULT '0' NOT NULL, c CHAR(120) DEFAULT '' NOT NULL, pad CHAR(60) DEFAULT '' NOT NULL, col1 INT, col2 INT, col3 INT, col4 INT, col5 INT, col6 INT, col7 INT, col8 INT, col9 INT, col10 INT, col11 INT, col12 INT, col13 INT, col14 INT, col15 INT, col16 INT, col17 INT, col18 INT, col19 INT, col20 INT, col21 INT, col22 INT, col23 INT, col24 INT, col25 INT, col26 INT, col27 INT, col28 INT, col29 INT, col30 INT, col31 INT, col32 INT, col33 INT, col34 INT, col35 INT, col36 INT, col37 INT, col38 INT, col39 INT, col40 INT, col41 INT, col42 INT, col43 INT, col44 INT, col45 INT, col46 INT, col47 INT, col48 INT, col49 INT, col50 INT, col51 INT, col52 INT, col53 INT, col54 INT, col55 INT, col56 INT, col57 INT, col58 INT, col59 INT, col60 INT, col61 INT, col62 INT, col63 INT, col64 INT, col65 INT, col66 INT, col67 INT, col68 INT, col69 INT, col70 INT, col71 INT, col72 INT, col73 INT, col74 INT, col75 INT, col76 INT, col77 INT, col78 INT, col79 INT, col80 INT, col81 INT, col82 INT, col83 INT, col84 INT, col85 INT, col86 INT, col87 INT, col88 INT, col89 INT, col90 INT, col91 INT, col92 INT, col93 INT, col94 INT, col95 INT, col96 INT, col97 INT, col98 INT, col99 INT, col100 INT, col101 INT, col102 INT, col103 INT, col104 INT, col105 INT, col106 INT, col107 INT, col108 INT, col109 INT, col110 INT, col111 INT, col112 INT, col113 INT, col114 INT, col115 INT, col116 INT, col117 INT, col118 INT, col119 INT, col120 INT, col121 INT, col122 INT, col123 INT, col124 INT, col125 INT, col126 INT, col127 INT, col128 INT, col129 INT, col130 INT, col131 INT, col132 INT, col133 INT, col134 INT, col135 INT, col136 INT, col137 INT, col138 INT, col139 INT, col140 INT, col141 INT, col142 INT, col143 INT, col144 INT, col145 INT, col146 INT, col147 INT, col148 INT, col149 INT, col150 INT, col151 INT, col152 INT, col153 INT, col154 INT, col155 INT, col156 INT, col157 INT, col158 INT, col159 INT, col160 INT, col161 INT, col162 INT, col163 INT, col164 INT, col165 INT, col166 INT, col167 INT, col168 INT, col169 INT, col170 INT, col171 INT, col172 INT, col173 INT, col174 INT, col175 INT, col176 INT, col177 INT, col178 INT, col179 INT, col180 INT, col181 INT, col182 INT, col183 INT, col184 INT, col185 INT, col186 INT, col187 INT, col188 INT, col189 INT, col190 INT, col191 INT, col192 INT, col193 INT, col194 INT, col195 INT, col196 INT, col197 INT, col198 INT, col199 INT, col200 INT, col201 INT, col202 INT, col203 INT, col204 INT, col205 INT, col206 INT, col207 INT, col208 INT, col209 INT, col210 INT, col211 INT, col212 INT, col213 INT, col214 INT, col215 INT, col216 INT, col217 INT, col218 INT, col219 INT, col220 INT, col221 INT, col222 INT, col223 INT, col224 INT, col225 INT, col226 INT, col227 INT, col228 INT, col229 INT, col230 INT, col231 INT, col232 INT, col233 INT, col234 INT, col235 INT, col236 INT, col237 INT, col238 INT, col239 INT, col240 INT, col241 INT, col242 INT, col243 INT, col244 INT, col245 INT, col246 INT, PRIMARY KEY (id));
+        loadRules:
+            -   table: table_250_cols
+                rows: 10000000
+                columns:
+                    -   name: k
+                        count: 1
+                        util: RandomNumber
+                        params: [ 1, 1000000 ]
+                    -   name: c
+                        count: 1
+                        util: RandomAString
+                        params: [ 120, 120 ]
+                    -   name: pad
+                        count: 1
+                        util: RandomAString
+                        params: [ 60, 60 ]
+                    -   name: col
+                        count: 246
+                        util: RandomNumber
+                        params: [ 1, 1000000 ]
+        executeRules:
+            -   workload: 250_col_select
+                run:
+                    -   name: Select_with_250cols_test
+                        weight: 100
+                        queries:
+                            -   query: SELECT * from table_250_cols
+                                count: 1
+            -   workload: 250_col_insert
+                run:
+                    -   name: insert_with_250cols_test
+                        weight: 100
+                        queries:
+                            -   query: insert into table_250_cols (k, c, pad, col1, col2, col3, col4, col5, col6, col7, col8, col9, col10, col11, col12, col13, col14, col15, col16, col17, col18, col19, col20, col21, col22, col23, col24, col25, col26, col27, col28, col29, col30, col31, col32, col33, col34, col35, col36, col37, col38, col39, col40, col41, col42, col43, col44, col45, col46, col47, col48, col49, col50, col51, col52, col53, col54, col55, col56, col57, col58, col59, col60, col61, col62, col63, col64, col65, col66, col67, col68, col69, col70, col71, col72, col73, col74, col75, col76, col77, col78, col79, col80, col81, col82, col83, col84, col85, col86, col87, col88, col89, col90, col91, col92, col93, col94, col95, col96, col97, col98, col99, col100, col101, col102, col103, col104, col105, col106, col107, col108, col109, col110, col111, col112, col113, col114, col115, col116, col117, col118, col119, col120, col121, col122, col123, col124, col125, col126, col127, col128, col129, col130, col131, col132, col133, col134, col135, col136, col137, col138, col139, col140, col141, col142, col143, col144, col145, col146, col147, col148, col149, col150, col151, col152, col153, col154, col155, col156, col157, col158, col159, col160, col161, col162, col163, col164, col165, col166, col167, col168, col169, col170, col171, col172, col173, col174, col175, col176, col177, col178, col179, col180, col181, col182, col183, col184, col185, col186, col187, col188, col189, col190, col191, col192, col193, col194, col195, col196, col197, col198, col199, col200, col201, col202, col203, col204, col205, col206, col207, col208, col209, col210, col211, col212, col213, col214, col215, col216, col217, col218, col219, col220, col221, col222, col223, col224, col225, col226, col227, col228, col229, col230, col231, col232, col233, col234, col235, col236, col237, col238, col239, col240, col241, col242, col243, col244, col245, col246) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                                count: 1
+                                bindings:
+                                    -   util: RandomNumber
+                                        params: [ 1, 1000000 ]
+                                    -   util: RandomAString
+                                        params: [ 120, 120 ]
+                                    -   util: RandomAString
+                                        params: [ 60, 60 ]
+                                    -   util: RandomNumber
+                                        count: 246
+                                        params: [ 1, 1000000 ]
