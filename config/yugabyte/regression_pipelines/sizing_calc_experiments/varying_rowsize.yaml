@@ -12,10 +12,10 @@ collect_pg_stat_statements: true
 use_dist_in_explain : true
 works:
     work:
-        time_secs: 60
+        time_secs: 300
         active_terminals: 60
         rate: unlimited
-        warmup: 30
+        warmup: 60
 microbenchmark:
     class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
     properties:
