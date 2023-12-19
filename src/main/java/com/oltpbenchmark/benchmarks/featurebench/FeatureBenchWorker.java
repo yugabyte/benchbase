@@ -196,7 +196,8 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             boolean distOptionPresent = true;
             while (countResultSetGen < 3) {
                 try {
-                    ddl.executeQuery();
+                    ResultSet resultSet = ddl.executeQuery();
+                    resultSet.close();
                     if(!conn.getAutoCommit())
                         conn.commit();
                 } catch (PSQLException e) {
@@ -221,6 +222,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                 data.append(rs.getString(1));
                 data.append("\n");
             }
+            rs.close();
             double explainEnd = System.currentTimeMillis();
             jsonObject.put("ResultSet", data.toString());
 
@@ -267,7 +269,8 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                     if (query.isSelectQuery()) {
                         ResultSet rs = stmt.executeQuery();
                         int countSet = 0;
-                        while (rs.next()) countSet++;
+                        if (rs.next()) countSet++;
+                        rs.close();
                         if (countSet == 0) zeroRowsTransaction = true;
                     } else {
                         int updatedRows = stmt.executeUpdate();
