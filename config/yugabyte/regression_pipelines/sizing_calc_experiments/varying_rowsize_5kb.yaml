@@ -30,15 +30,12 @@ microbenchmark:
                 rows: 10000000
                 columns:
                     -   name: k
-                        count: 1
                         util: RandomNumber
                         params: [ 1, 1000000 ]
                     -   name: c
-                        count: 1
                         util: RandomAString
                         params: [ 120, 120 ]
                     -   name: pad
-                        count: 1
                         util: RandomAString
                         params: [ 60, 60 ]
                     -   name: col
