@@ -13,7 +13,7 @@ use_dist_in_explain : true
 works:
     work:
         time_secs: 60
-        active_terminals: 1
+        active_terminals: 60
         rate: unlimited
         warmup: 30
 microbenchmark:
@@ -21,12 +21,10 @@ microbenchmark:
     properties:
         setAutoCommit: true
         create:
-            - drop table if exists table_4_cols_5kb;
-            - CREATE TABLE table_4_cols_5kb (id SERIAL, k INTEGER DEFAULT '0' NOT NULL, c CHAR(120) DEFAULT '' NOT NULL, pad CHAR(60) DEFAULT '' NOT NULL, col1 TEXT, col2 TEXT, col3 TEXT, col4 TEXT, PRIMARY KEY (id));
-        cleanup:
-            - drop table if exists table_4_cols_5kb;
+            - drop table if exists table_20_cols;
+            - CREATE TABLE table_20_cols (id SERIAL, k INTEGER DEFAULT '0' NOT NULL, c CHAR(120) DEFAULT '' NOT NULL, pad CHAR(60) DEFAULT '' NOT NULL, col1 INT, col2 INT, col3 INT, col4 INT, col5 INT, col6 INT, col7 INT, col8 INT, col9 INT, col10 INT, col11 INT, col12 INT, col13 INT, col14 INT, col15 INT, col16 INT, PRIMARY KEY (id));
         loadRules:
-            -   table: table_4_cols_5kb
+            -   table: table_20_cols
                 rows: 10000000
                 columns:
                     -   name: k
@@ -39,26 +37,16 @@ microbenchmark:
                         util: RandomAString
                         params: [ 60, 60 ]
                     -   name: col
-                        count: 4
-                        util: RandomAString
-                        params: [ 1200, 1200 ]
+                        count: 16
+                        util: RandomNumber
+                        params: [ 1, 1000000 ]
         executeRules:
-            -   workload: 5kb_select
+            -   workload: 20_col_insert
                 run:
-                    -   name: select_rowsize_5kb
+                    -   name: insert_with_20cols_test
                         weight: 100
                         queries:
-                            -   query: SELECT * from table_4_cols_5kb where id=?
-                                bindings:
-                                    -   util: RandomNumber
-                                        params: [ 1, 10000000 ]
-                                count: 1
-            -   workload: 5kb_insert
-                run:
-                    -   name: insert_rowsize_5kb
-                        weight: 100
-                        queries:
-                            -   query: insert into table_4_cols_5kb (k, c, pad, col1, col2, col3, col4) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                            -   query: insert into table_20_cols (k, c, pad, col1, col2, col3, col4, col5, col6, col7, col8, col9, col10, col11, col12, col13, col14, col15, col16) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
                                 count: 1
                                 bindings:
                                     -   util: RandomNumber
@@ -67,6 +55,6 @@ microbenchmark:
                                         params: [ 120, 120 ]
                                     -   util: RandomAString
                                         params: [ 60, 60 ]
-                                    -   util: RandomAString
-                                        count: 4
-                                        params: [ 1200, 1200 ]
+                                    -   util: RandomNumber
+                                        count: 16
+                                        params: [ 1, 1000000 ]

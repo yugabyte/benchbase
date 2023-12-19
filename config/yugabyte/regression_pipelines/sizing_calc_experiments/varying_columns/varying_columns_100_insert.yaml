@@ -13,7 +13,7 @@ use_dist_in_explain : true
 works:
     work:
         time_secs: 60
-        active_terminals: 1
+        active_terminals: 60
         rate: unlimited
         warmup: 30
 microbenchmark:
@@ -41,16 +41,6 @@ microbenchmark:
                         util: RandomNumber
                         params: [ 1, 1000000 ]
         executeRules:
-            -   workload: 100_col_select
-                run:
-                    -   name: Select_with_100cols_test
-                        weight: 100
-                        queries:
-                            -   query: SELECT * from table_100_cols where id=?
-                                bindings:
-                                    -   util: RandomNumber
-                                        params: [ 1, 10000000 ]
-                                count: 1
             -   workload: 100_col_insert
                 run:
                     -   name: insert_with_100cols_test

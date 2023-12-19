@@ -13,7 +13,7 @@ use_dist_in_explain : true
 works:
     work:
         time_secs: 60
-        active_terminals: 1
+        active_terminals: 120
         rate: unlimited
         warmup: 30
 microbenchmark:
@@ -21,10 +21,12 @@ microbenchmark:
     properties:
         setAutoCommit: true
         create:
-            - drop table if exists table_4_cols;
-            - CREATE TABLE table_4_cols (id SERIAL, k INTEGER DEFAULT '0' NOT NULL, c CHAR(120) DEFAULT '' NOT NULL, pad CHAR(60) DEFAULT '' NOT NULL,  PRIMARY KEY (id));
+            - drop table if exists table_4_cols_5kb;
+            - CREATE TABLE table_4_cols_5kb (id SERIAL, k INTEGER DEFAULT '0' NOT NULL, c CHAR(120) DEFAULT '' NOT NULL, pad CHAR(60) DEFAULT '' NOT NULL, col1 TEXT, col2 TEXT, col3 TEXT, col4 TEXT, PRIMARY KEY (id));
+        cleanup:
+            - drop table if exists table_4_cols_5kb;
         loadRules:
-            -   table: table_4_cols
+            -   table: table_4_cols_5kb
                 rows: 10000000
                 columns:
                     -   name: k
@@ -36,28 +38,18 @@ microbenchmark:
                     -   name: pad
                         util: RandomAString
                         params: [ 60, 60 ]
+                    -   name: col
+                        count: 4
+                        util: RandomAString
+                        params: [ 1200, 1200 ]
         executeRules:
-            -   workload: 4_col_select
+            -   workload: 5kb_select
                 run:
-                    -   name: Select_with_4cols_test
+                    -   name: select_rowsize_5kb
                         weight: 100
                         queries:
-                            -   query: SELECT * from table_4_cols where id=?
+                            -   query: SELECT * from table_4_cols_5kb where id=?
                                 bindings:
                                     -   util: RandomNumber
                                         params: [ 1, 10000000 ]
                                 count: 1
-            -   workload: 4_col_insert
-                run:
-                    -   name: insert_with_4cols_test
-                        weight: 100
-                        queries:
-                            -   query: insert into table_4_cols (k, c, pad) values (?,?,?)
-                                count: 1
-                                bindings:
-                                    -   util: RandomNumber
-                                        params: [ 1, 1000000 ]
-                                    -   util: RandomAString
-                                        params: [ 120, 120 ]
-                                    -   util: RandomAString
-                                        params: [ 60, 60 ]

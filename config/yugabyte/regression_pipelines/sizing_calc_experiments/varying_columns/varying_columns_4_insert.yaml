@@ -13,7 +13,7 @@ use_dist_in_explain : true
 works:
     work:
         time_secs: 60
-        active_terminals: 1
+        active_terminals: 60
         rate: unlimited
         warmup: 30
 microbenchmark:
@@ -21,10 +21,10 @@ microbenchmark:
     properties:
         setAutoCommit: true
         create:
-            - drop table if exists table_4_cols_200b;
-            - CREATE TABLE table_4_cols_200b (id SERIAL, k INTEGER DEFAULT '0' NOT NULL, c CHAR(120) DEFAULT '' NOT NULL, pad CHAR(60) DEFAULT '' NOT NULL, col1 TEXT, col2 TEXT, col3 TEXT, col4 TEXT, PRIMARY KEY (id));
+            - drop table if exists table_4_cols;
+            - CREATE TABLE table_4_cols (id SERIAL, k INTEGER DEFAULT '0' NOT NULL, c CHAR(120) DEFAULT '' NOT NULL, pad CHAR(60) DEFAULT '' NOT NULL,  PRIMARY KEY (id));
         loadRules:
-            -   table: table_4_cols_200b
+            -   table: table_4_cols
                 rows: 10000000
                 columns:
                     -   name: k
@@ -36,27 +36,13 @@ microbenchmark:
                     -   name: pad
                         util: RandomAString
                         params: [ 60, 60 ]
-                    -   name: col
-                        count: 4
-                        util: RandomAString
-                        params: [ 2, 2 ]
         executeRules:
-            -   workload: 200b_select
+            -   workload: 4_col_insert
                 run:
-                    -   name: select_rowsize_200b
+                    -   name: insert_with_4cols_test
                         weight: 100
                         queries:
-                            -   query: SELECT * from table_4_cols_200b where id=?
-                                bindings:
-                                    -   util: RandomNumber
-                                        params: [ 1, 10000000 ]
-                                count: 1
-            -   workload: 200b_insert
-                run:
-                    -   name: insert_rowsize_200b
-                        weight: 100
-                        queries:
-                            -   query: insert into table_4_cols_200b(k, c, pad, col1, col2, col3, col4) values (?,?,?)
+                            -   query: insert into table_4_cols (k, c, pad) values (?,?,?)
                                 count: 1
                                 bindings:
                                     -   util: RandomNumber
@@ -65,9 +51,3 @@ microbenchmark:
                                         params: [ 120, 120 ]
                                     -   util: RandomAString
                                         params: [ 60, 60 ]
-                                    -   util: RandomAString
-                                        count: 4
-                                        params: [ 2, 2 ]
-
-
-
