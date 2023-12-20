@@ -21,10 +21,11 @@ microbenchmark:
     properties:
         setAutoCommit: true
         create:
-            - drop table if exists table_4_cols_1kb;
-            - CREATE TABLE table_4_cols_1kb (id SERIAL, k INTEGER DEFAULT '0' NOT NULL, c CHAR(120) DEFAULT '' NOT NULL, pad CHAR(60) DEFAULT '' NOT NULL, col1 TEXT, col2 TEXT, col3 TEXT, col4 TEXT, PRIMARY KEY (id));
+            - drop table if exists table_rowsize_1kb;
+            - CREATE TABLE table_rowsize_1kb (id SERIAL, k INTEGER DEFAULT '0' NOT NULL, c CHAR(120) DEFAULT '' NOT NULL, pad CHAR(60) DEFAULT '' NOT NULL, col1 TEXT, col2 TEXT, col3 TEXT, col4 TEXT, PRIMARY KEY (id));
+            - ALTER SEQUENCE table_rowsize_1kb_id_seq  cache 1000
         loadRules:
-            -   table: table_4_cols_1kb
+            -   table: table_rowsize_1kb
                 rows: 10000000
                 columns:
                     -   name: k
@@ -46,7 +47,7 @@ microbenchmark:
                     -   name: insert_rowsize_1kb
                         weight: 100
                         queries:
-                            -   query: insert into table_4_cols_1kb (k, c, pad, col1, col2, col3, col4) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                            -   query: insert into table_rowsize_1kb (k, c, pad, col1, col2, col3, col4) values (?,?,?,?,?,?,?)
                                 count: 1
                                 bindings:
                                     -   util: RandomNumber

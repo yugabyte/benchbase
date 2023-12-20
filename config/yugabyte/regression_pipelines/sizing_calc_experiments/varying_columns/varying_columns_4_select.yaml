@@ -23,6 +23,7 @@ microbenchmark:
         create:
             - drop table if exists table_4_cols;
             - CREATE TABLE table_4_cols (id SERIAL, k INTEGER DEFAULT '0' NOT NULL, c CHAR(120) DEFAULT '' NOT NULL, pad CHAR(60) DEFAULT '' NOT NULL,  PRIMARY KEY (id));
+            - ALTER SEQUENCE table_4_cols_id_seq  cache 1000
         loadRules:
             -   table: table_4_cols
                 rows: 10000000
@@ -43,6 +44,16 @@ microbenchmark:
                         weight: 100
                         queries:
                             -   query: SELECT * from table_4_cols where id=?
+                                bindings:
+                                    -   util: RandomNumber
+                                        params: [ 1, 10000000 ]
+                                count: 1
+            -   workload: 4_col_select
+                run:
+                    -   name: select_with_4cols_test
+                        weight: 100
+                        queries:
+                            -   query: SELECT c from table_4_cols where id=?
                                 bindings:
                                     -   util: RandomNumber
                                         params: [ 1, 10000000 ]

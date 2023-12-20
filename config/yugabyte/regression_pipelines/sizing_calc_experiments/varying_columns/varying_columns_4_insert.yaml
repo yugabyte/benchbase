@@ -23,6 +23,7 @@ microbenchmark:
         create:
             - drop table if exists table_4_cols;
             - CREATE TABLE table_4_cols (id SERIAL, k INTEGER DEFAULT '0' NOT NULL, c CHAR(120) DEFAULT '' NOT NULL, pad CHAR(60) DEFAULT '' NOT NULL,  PRIMARY KEY (id));
+            - ALTER SEQUENCE table_4_cols_id_seq  cache 1000
         loadRules:
             -   table: table_4_cols
                 rows: 10000000

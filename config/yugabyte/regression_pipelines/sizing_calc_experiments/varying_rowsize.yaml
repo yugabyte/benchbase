@@ -21,24 +21,29 @@ microbenchmark:
     properties:
         setAutoCommit: true
         create:
-            - drop table if exists table_4_cols_200b;
-            - drop table if exists table_4_cols_1kb;
-            - drop table if exists table_4_cols_5kb;
-            - drop table if exists table_4_cols_25kb;
-            - drop table if exists table_4_cols_125kb;
-            - CREATE TABLE table_4_cols_200b (id SERIAL, k INTEGER DEFAULT '0' NOT NULL, c CHAR(120) DEFAULT '' NOT NULL, pad CHAR(60) DEFAULT '' NOT NULL, col1 TEXT, col2 TEXT, col3 TEXT, col4 TEXT, PRIMARY KEY (id));
-            - CREATE TABLE table_4_cols_1kb (id SERIAL, k INTEGER DEFAULT '0' NOT NULL, c CHAR(120) DEFAULT '' NOT NULL, pad CHAR(60) DEFAULT '' NOT NULL, col1 TEXT, col2 TEXT, col3 TEXT, col4 TEXT, PRIMARY KEY (id));
-            - CREATE TABLE table_4_cols_5kb (id SERIAL, k INTEGER DEFAULT '0' NOT NULL, c CHAR(120) DEFAULT '' NOT NULL, pad CHAR(60) DEFAULT '' NOT NULL, col1 TEXT, col2 TEXT, col3 TEXT, col4 TEXT, PRIMARY KEY (id));
-            - CREATE TABLE table_4_cols_25kb (id SERIAL, k INTEGER DEFAULT '0' NOT NULL, c CHAR(120) DEFAULT '' NOT NULL, pad CHAR(60) DEFAULT '' NOT NULL, col1 TEXT, col2 TEXT, col3 TEXT, col4 TEXT, PRIMARY KEY (id));
-            - CREATE TABLE table_4_cols_125kb (id SERIAL, k INTEGER DEFAULT '0' NOT NULL, c CHAR(120) DEFAULT '' NOT NULL, pad CHAR(60) DEFAULT '' NOT NULL, col1 TEXT, col2 TEXT, col3 TEXT, col4 TEXT, PRIMARY KEY (id));
+            - drop table if exists table_rowsize_200b;
+            - drop table if exists table_rowsize_1kb;
+            - drop table if exists table_rowsize_5kb;
+            - drop table if exists table_rowsize_25kb;
+            - drop table if exists table_rowsize_125kb;
+            - CREATE TABLE table_rowsize_200b (id SERIAL, k INTEGER DEFAULT '0' NOT NULL, c CHAR(120) DEFAULT '' NOT NULL, pad CHAR(60) DEFAULT '' NOT NULL, col1 TEXT, col2 TEXT, col3 TEXT, col4 TEXT, PRIMARY KEY (id));
+            - CREATE TABLE table_rowsize_1kb (id SERIAL, k INTEGER DEFAULT '0' NOT NULL, c CHAR(120) DEFAULT '' NOT NULL, pad CHAR(60) DEFAULT '' NOT NULL, col1 TEXT, col2 TEXT, col3 TEXT, col4 TEXT, PRIMARY KEY (id));
+            - CREATE TABLE table_rowsize_5kb (id SERIAL, k INTEGER DEFAULT '0' NOT NULL, c CHAR(120) DEFAULT '' NOT NULL, pad CHAR(60) DEFAULT '' NOT NULL, col1 TEXT, col2 TEXT, col3 TEXT, col4 TEXT, PRIMARY KEY (id));
+            - CREATE TABLE table_rowsize_25kb (id SERIAL, k INTEGER DEFAULT '0' NOT NULL, c CHAR(120) DEFAULT '' NOT NULL, pad CHAR(60) DEFAULT '' NOT NULL, col1 TEXT, col2 TEXT, col3 TEXT, col4 TEXT, PRIMARY KEY (id));
+            - CREATE TABLE table_rowsize_125kb (id SERIAL, k INTEGER DEFAULT '0' NOT NULL, c CHAR(120) DEFAULT '' NOT NULL, pad CHAR(60) DEFAULT '' NOT NULL, col1 TEXT, col2 TEXT, col3 TEXT, col4 TEXT, PRIMARY KEY (id));
+            - ALTER SEQUENCE table_rowsize_200b_id_seq  cache 1000
+            - ALTER SEQUENCE table_rowsize_1kb_id_seq  cache 1000
+            - ALTER SEQUENCE table_rowsize_5kb_id_seq  cache 1000
+            - ALTER SEQUENCE table_rowsize_25kb_id_seq  cache 1000
+            - ALTER SEQUENCE table_rowsize_125kb_id_seq  cache 1000
         cleanup:
-            - drop table if exists table_4_cols_200b;
-            - drop table if exists table_4_cols_1kb;
-            - drop table if exists table_4_cols_5kb;
-            - drop table if exists table_4_cols_25kb;
-            - drop table if exists table_4_cols_125kb;
+            - drop table if exists table_rowsize_200b;
+            - drop table if exists table_rowsize_1kb;
+            - drop table if exists table_rowsize_5kb;
+            - drop table if exists table_rowsize_25kb;
+            - drop table if exists table_rowsize_125kb;
         loadRules:
-            -   table: table_4_cols_200b
+            -   table: table_rowsize_200b
                 rows: 10000000
                 columns:
                     -   name: k
@@ -54,7 +59,7 @@ microbenchmark:
                         count: 4
                         util: RandomAString
                         params: [ 2, 2 ]
-            -   table: table_4_cols_1kb
+            -   table: table_rowsize_1kb
                 rows: 10000000
                 columns:
                     -   name: k
@@ -70,7 +75,7 @@ microbenchmark:
                         count: 4
                         util: RandomAString
                         params: [ 100, 100 ]
-            -   table: table_4_cols_5kb
+            -   table: table_rowsize_5kb
                 rows: 10000000
                 columns:
                     -   name: k
@@ -86,7 +91,7 @@ microbenchmark:
                         count: 4
                         util: RandomAString
                         params: [ 1200, 1200 ]
-            -   table: table_4_cols_25kb
+            -   table: table_rowsize_25kb
                 rows: 10000000
                 columns:
                     -   name: k
@@ -102,7 +107,7 @@ microbenchmark:
                         count: 4
                         util: RandomAString
                         params: [ 5750, 5750 ]
-            -   table: table_4_cols_125kb
+            -   table: table_rowsize_125kb
                 rows: 10000000
                 columns:
                     -   name: k
@@ -124,7 +129,7 @@ microbenchmark:
                     -   name: select_rowsize_200b
                         weight: 100
                         queries:
-                            -   query: SELECT * from table_4_cols_200b where id=?
+                            -   query: SELECT * from table_rowsize_200b where id=?
                                 bindings:
                                     -   util: RandomNumber
                                         params: [ 1, 10000000 ]
@@ -134,7 +139,7 @@ microbenchmark:
                     -   name: insert_rowsize_200b
                         weight: 100
                         queries:
-                            -   query: insert into table_4_cols_200b(k, c, pad, col1, col2, col3, col4) values (?,?,?)
+                            -   query: insert into table_rowsize_200b(k, c, pad, col1, col2, col3, col4) values (?,?,?,?,?,?,?)
                                 count: 1
                                 bindings:
                                     -   util: RandomNumber
@@ -151,7 +156,7 @@ microbenchmark:
                     -   name: select_rowsize_1kb
                         weight: 100
                         queries:
-                            -   query: SELECT * from table_4_cols_1kb where id=?
+                            -   query: SELECT * from table_rowsize_1kb where id=?
                                 bindings:
                                     -   util: RandomNumber
                                         params: [ 1, 10000000 ]
@@ -161,7 +166,7 @@ microbenchmark:
                     -   name: insert_rowsize_1kb
                         weight: 100
                         queries:
-                            -   query: insert into table_4_cols_1kb (k, c, pad, col1, col2, col3, col4) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                            -   query: insert into table_rowsize_1kb (k, c, pad, col1, col2, col3, col4) values (?,?,?,?,?,?,?)
                                 count: 1
                                 bindings:
                                     -   util: RandomNumber
@@ -178,7 +183,7 @@ microbenchmark:
                     -   name: select_rowsize_5kb
                         weight: 100
                         queries:
-                            -   query: SELECT * from table_4_cols_5kb where id=?
+                            -   query: SELECT * from table_rowsize_5kb where id=?
                                 bindings:
                                     -   util: RandomNumber
                                         params: [ 1, 10000000 ]
@@ -188,7 +193,7 @@ microbenchmark:
                     -   name: insert_rowsize_5kb
                         weight: 100
                         queries:
-                            -   query: insert into table_4_cols_5kb (k, c, pad, col1, col2, col3, col4) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                            -   query: insert into table_rowsize_5kb (k, c, pad, col1, col2, col3, col4) values(?,?,?,?,?,?,?)
                                 count: 1
                                 bindings:
                                     -   util: RandomNumber
@@ -205,7 +210,7 @@ microbenchmark:
                     -   name: select_rowsize_25kb
                         weight: 100
                         queries:
-                            -   query: SELECT * from table_4_cols_25kb where id=?
+                            -   query: SELECT * from table_rowsize_25kb where id=?
                                 bindings:
                                     -   util: RandomNumber
                                         params: [ 1, 10000000 ]
@@ -215,7 +220,7 @@ microbenchmark:
                     -   name: insert_rowsize_25kb
                         weight: 100
                         queries:
-                            -   query: insert into table_4_cols_25kb (k, c, pad, col1, col2, col3, col4) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                            -   query: insert into table_rowsize_25kb (k, c, pad, col1, col2, col3, col4) values (?,?,?,?,?,?,?)
                                 count: 1
                                 bindings:
                                     -   util: RandomNumber
@@ -232,7 +237,7 @@ microbenchmark:
                     -   name: select_rowsize_125kb
                         weight: 100
                         queries:
-                            -   query: SELECT * from table_4_cols_125kb where id=?
+                            -   query: SELECT * from table_rowsize_125kb where id=?
                                 bindings:
                                     -   util: RandomNumber
                                         params: [ 1, 10000000 ]
@@ -242,7 +247,7 @@ microbenchmark:
                     -   name: insert_rowsize_125kb
                         weight: 100
                         queries:
-                            -   query: insert into from table_4_cols_125kb (k, c, pad, col1, col2, col3, col4) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                            -   query: insert into from table_rowsize_125kb (k, c, pad, col1, col2, col3, col4) values (?,?,?,?,?,?,?)
                                 count: 1
                                 bindings:
                                     -   util: RandomNumber
