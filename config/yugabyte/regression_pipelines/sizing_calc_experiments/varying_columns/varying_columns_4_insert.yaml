@@ -40,7 +40,7 @@ microbenchmark:
         executeRules:
             -   workload: 4_col_insert
                 run:
-                    -   name: insert_with_4cols_test
+                    -   name: insert_4cols_table
                         weight: 100
                         queries:
                             -   query: insert into table_4_cols (k, c, pad) values (?,?,?)

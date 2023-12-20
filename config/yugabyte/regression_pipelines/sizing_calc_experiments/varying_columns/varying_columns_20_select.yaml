@@ -44,7 +44,7 @@ microbenchmark:
         executeRules:
             -   workload: 20_col_select
                 run:
-                    -   name: select_with_20cols_test
+                    -   name: select_all_20cols_table
                         weight: 100
                         queries:
                             -   query: SELECT * from table_20_cols where id=?
