@@ -206,7 +206,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                         distOptionPresent = false;
                         continue;
                     } else if (distOptionPresent && e.getMessage().contains("unrecognized EXPLAIN option \"debug\"")) {
-                        String modifiedQuery = ddl.toString().replace("debug,", "");
+                        String modifiedQuery = ddl.toString().replace("debug", "");
                         ddl = conn.prepareStatement(modifiedQuery);
                         distOptionPresent = false;
                         continue;
