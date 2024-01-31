@@ -40,7 +40,7 @@ microbenchmark:
             - DROP TABLE IF EXISTS Indexed1M_1;
 
         loadRules:
-              - table: Indexed1M1_
+              - table: Indexed1M_
                 count: 1
                 rows: 1000000
                 columns:
