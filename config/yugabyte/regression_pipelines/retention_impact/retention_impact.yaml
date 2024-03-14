@@ -117,7 +117,7 @@ microbenchmark:
                     queries:
                         - query: delete from nets_1 where db_user_id_1 = ? and shard_id_1 = ?
                           bindings:
-                            - util: OneStringFromArray
+                            - util: HashedRandomString
                               params: [ 1, 150 ]
                             - util: RandomInt
                               params: [ 1, 20 ]
