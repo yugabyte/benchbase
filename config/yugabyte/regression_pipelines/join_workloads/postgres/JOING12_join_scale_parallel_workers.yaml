@@ -39,11 +39,11 @@ microbenchmark:
                 columns:
                     - name: col_bigint_card1_
                       count: 1
-                      util: OneNumberFromArray
+                      util: RandomInt
                       params: [ 1000001, 1001000 ]
                     - name: col_bigint_card2_
                       count: 1
-                      util: OneNumberFromArray
+                      util: RandomInt
                       params: [ 1000001, 1010001 ]
                     - name: col_bigint_card3_
                       count: 1
