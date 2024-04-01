@@ -18,25 +18,31 @@ microbenchmark:
     properties:
         setAutoCommit: true
         create:
-          - DROP TABLE IF EXISTS pkeyBigint1M1_1;
-          - DROP TABLE IF EXISTS pkeyBigint1M1_2;
-          - DROP TABLE IF EXISTS pkeyBigint1M1_3;
-          - DROP TABLE IF EXISTS pkeyBigint1Mr_1;
-          - DROP TABLE IF EXISTS pkeyBigint1Mr_2;
-          - CREATE TABLE pkeyBigint1M1_1(col_bigint_card1_1 bigint, col_bigint_card2_1 bigint, col_bigint_card3_1 bigint, col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1));
-          - CREATE TABLE pkeyBigint1M1_2(col_bigint_card1_1 bigint, col_bigint_card2_1 bigint, col_bigint_card3_1 bigint, col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1));
-          - CREATE TABLE pkeyBigint1M1_3(col_bigint_card1_1 bigint, col_bigint_card2_1 bigint, col_bigint_card3_1 bigint, col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1));
-          - CREATE TABLE pkeyBigint1Mr_1(col_bigint_card1_1 bigint, col_bigint_card2_1 bigint, col_bigint_card3_1 bigint, col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1 ));
-          - CREATE TABLE pkeyBigint1Mr_2(col_bigint_card1_1 bigint, col_bigint_card2_1 bigint, col_bigint_card3_1 bigint, col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1 ));
+            - DROP TABLE IF EXISTS pkeyBigint1M1_1;
+            - DROP TABLE IF EXISTS pkeyBigint1M1_2;
+            - DROP TABLE IF EXISTS pkeyBigint1M1_3;
+            - DROP TABLE IF EXISTS pkeyBigint1M1_4;
+            - DROP TABLE IF EXISTS pkeyBigint1Mr_1;
+            - DROP TABLE IF EXISTS pkeyBigint1Mr_2;
+            - DROP TABLE IF EXISTS pkeyBigint1Mr_3;
+            - CREATE TABLE pkeyBigint1M1_1(col_bigint_card1_1 bigint, col_bigint_card2_1 bigint, col_bigint_card3_1 bigint, col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1));
+            - CREATE TABLE pkeyBigint1M1_2(col_bigint_card1_1 bigint, col_bigint_card2_1 bigint, col_bigint_card3_1 bigint, col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1));
+            - CREATE TABLE pkeyBigint1M1_3(col_bigint_card1_1 bigint, col_bigint_card2_1 bigint, col_bigint_card3_1 bigint, col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1));
+            - CREATE TABLE pkeyBigint1M1_4(col_bigint_card1_1 bigint, col_bigint_card2_1 bigint, col_bigint_card3_1 bigint, col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500));
+            - CREATE TABLE pkeyBigint1Mr_1(col_bigint_card1_1 bigint, col_bigint_card2_1 bigint, col_bigint_card3_1 bigint, col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1 ));
+            - CREATE TABLE pkeyBigint1Mr_2(col_bigint_card1_1 bigint, col_bigint_card2_1 bigint, col_bigint_card3_1 bigint, col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1 ));
+            - CREATE TABLE pkeyBigint1Mr_3(col_bigint_card1_1 bigint, col_bigint_card2_1 bigint, col_bigint_card3_1 bigint, col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500));
         cleanup:
             - DROP TABLE IF EXISTS pkeyBigint1M1_1;
             - DROP TABLE IF EXISTS pkeyBigint1M1_2;
             - DROP TABLE IF EXISTS pkeyBigint1M1_3;
+            - DROP TABLE IF EXISTS pkeyBigint1M1_4;
             - DROP TABLE IF EXISTS pkeyBigint1Mr_1;
             - DROP TABLE IF EXISTS pkeyBigint1Mr_2;
+            - DROP TABLE IF EXISTS pkeyBigint1Mr_3;
         loadRules:
               - table: pkeyBigint1M1_
-                count: 3
+                count: 4
                 rows: 1000000
                 columns:
                     - name: col_bigint_card1_
@@ -80,7 +86,7 @@ microbenchmark:
                       params: [1, 500]
 
               - table: pkeyBigint1Mr_
-                count: 2
+                count: 3
                 rows: 1000000
                 columns:
                     - name: col_bigint_card1_
@@ -124,44 +130,59 @@ microbenchmark:
                       params: [1, 500]
 
         executeRules:
-            -   workload: JOING11_1_join_on_2tbls_withfilter_onpkey_grpby_1col_10k_loops
-                run:
-                    -   name: join_on_pk_3tbl
-                        weight: 100
-                        queries:
-                            -   query: select a.col_bigint_card2_1, count(a.col_bigint_id_2) from pkeyBigint1M1_1 as a,pkeyBigint1M1_2 as b where a.col_bigint_id_1=b.col_bigint_id_1 and a.col_bigint_id_2<10000 GROUP BY a.col_bigint_card2_1
 
-            - workload: JOING11_2_join_on_2tbls_withfilter_onpkey_grpby_1col_30k_loops
+            - workload: JOING11_1_join_on_2tbls_withfilter_onpkey_grpby_1col_30k_loops
+              customTags: schematype=regular,partition=hash,pkey=hash,cardinality=single,projectition=indexed,queryshape=join,joinon=pkey
               run:
                   - name: join_on_pk_3tbl
                     weight: 100
                     queries:
                         - query: select a.col_bigint_card2_1, count(a.col_bigint_id_2) from pkeyBigint1M1_1 as a,pkeyBigint1M1_2 as b where a.col_bigint_id_1=b.col_bigint_id_1 and a.col_bigint_id_2<30000 GROUP BY a.col_bigint_card2_1
 
-            -   workload: JOING11_3_join_on_2tbls_withfilter_onpkey_grpby_ordby_1col_10k_loops
+            -   workload: JOING11_2_join_on_2tbls_withfilter_onpkey_grpby_ordby_1col_30k_loops
+                customTags: schematype=regular,partition=hash,pkey=hash,cardinality=single,projectition=indexed,queryshape=join,joinon=pkey
                 run:
                     -   name: join_on_pk_3tbl
                         weight: 100
                         queries:
-                            -   query: select a.col_bigint_card2_1, count(a.col_bigint_id_2) from pkeyBigint1M1_1 as a,pkeyBigint1M1_2 as b where a.col_bigint_id_1=b.col_bigint_id_1 and a.col_bigint_id_2<10000 GROUP BY a.col_bigint_card2_1 ORDER BY col_bigint_card2_1
+                            -   query: select a.col_bigint_card2_1, count(a.col_bigint_id_2) from pkeyBigint1M1_1 as a,pkeyBigint1M1_2 as b where a.col_bigint_id_1=b.col_bigint_id_1 and a.col_bigint_id_2<30000 GROUP BY a.col_bigint_card2_1 ORDER BY col_bigint_card2_1
 
-            -   workload: JOING11_4_join_on_3tbls_withfilter_onpkey_grpby_ordby_1col_10k_loops
+            -   workload: JOING11_3_join_on_3tbls_withfilter_onpkey_grpby_ordby_loops
+                customTags: schematype=regular,partition=hash,pkey=hash,cardinality=single,projectition=indexed,queryshape=join,joinon=pkey
                 run:
                     -   name: join_on_pk_3tbl
                         weight: 100
                         queries:
                             -   query: select a.col_bigint_card2_1, count(a.col_bigint_id_2) from pkeyBigint1M1_1 as a,pkeyBigint1M1_2 as b,pkeyBigint1M1_2 as c  where a.col_bigint_id_1=b.col_bigint_id_1 and a.col_bigint_id_1=c.col_bigint_id_1 and a.col_bigint_id_2<10000  GROUP BY a.col_bigint_card2_1 order by a.col_bigint_card2_1
 
-            -   workload: JOING11_5_join_on_2tbls_range_withfilter_onpkey_grpby_1col_10k_loops
+            -   workload: JOING11_4_join_on_2tbls_range_withfilter_onpkey_grpby_ordby_1col_30k_loops
+                customTags: schematype=regular,partition=range,pkey=range,cardinality=single,projectition=indexed,queryshape=join,joinon=pkey
                 run:
                     -   name: join_on_pk_2tbl
                         weight: 100
                         queries:
-                            -   query: select a.col_bigint_card2_1, count(a.col_bigint_id_2) from pkeyBigint1Mr_1 as a,pkeyBigint1Mr_2 as b where a.col_bigint_id_1=b.col_bigint_id_1 and a.col_bigint_id_2<10000 GROUP BY a.col_bigint_card2_1
+                            -   query: select a.col_bigint_card2_1, count(a.col_bigint_id_2) from pkeyBigint1Mr_1 as a,pkeyBigint1Mr_2 as b where a.col_bigint_id_1=b.col_bigint_id_1 and a.col_bigint_id_2<30000 GROUP BY a.col_bigint_card2_1 ORDER BY col_bigint_card2_1
 
-            -   workload: JOING11_6_join_on_2tbls_range_withfilter_onpkey_grpby_ordby_1col_10k_loops
+            -   workload: JOING11_5_join_on_2tbls_withfilter_nested_loops
+                customTags: schematype=regular,partition=hash,pkey=hash,cardinality=single,projectition=indexed,queryshape=join,joinon=pkey
                 run:
-                    -   name: join_on_pk_2tbl
+                    -   name: join_on_pk_3tbl
                         weight: 100
                         queries:
-                            -   query: select a.col_bigint_card2_1, count(a.col_bigint_id_2) from pkeyBigint1Mr_1 as a,pkeyBigint1Mr_2 as b where a.col_bigint_id_1=b.col_bigint_id_1 and a.col_bigint_id_2<10000 GROUP BY a.col_bigint_card2_1 ORDER BY col_bigint_card2_1
+                            -   query: select count(*) from pkeyBigint1M1_1 as a,pkeyBigint1M1_4 as b where a.col_bigint_id_1=b.col_bigint_id_1 and b.col_bigint_card1_1<=a.col_bigint_card1_1;
+
+            -   workload: JOING11_6_join_on_2tbls_subquery
+                customTags: schematype=regular,partition=hash,pkey=hash,cardinality=single,projectition=indexed,queryshape=join,joinon=pkey
+                run:
+                    -   name: join_on_pk_3tbl
+                        weight: 100
+                        queries:
+                            -   query: select a.col_bigint_id_1, b.col_bigint_id_1,b.col_bigint_card1_1,b.col_bigint_card2_1 from pkeyBigint1M1_1 as a,pkeyBigint1M1_4 as b where b.col_bigint_card1_1 IN (select distinct(col_bigint_card1_1) from pkeyBigint1M_1);
+
+            -   workload: JOING11_7_join_on_range_2tbls_subquery
+                customTags: schematype=regular,partition=hash,pkey=hash,cardinality=single,projectition=indexed,queryshape=join,joinon=pkey
+                run:
+                    -   name: join_on_pk_3tbl
+                        weight: 100
+                        queries:
+                            -   query: select a.col_bigint_id_1, b.col_bigint_id_1,b.col_bigint_card1_1,b.col_bigint_card2_1 from pkeyBigint1Mr_1 as a,pkeyBigint1Mr_3 as b where b.col_bigint_card1_1 IN (select distinct(col_bigint_card1_1) from pkeyBigint1M_1);
