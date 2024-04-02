@@ -177,7 +177,7 @@ microbenchmark:
                     -   name: join_on_pk_3tbl
                         weight: 100
                         queries:
-                            -   query: select a.col_bigint_id_1, b.col_bigint_id_1,b.col_bigint_card1_1,b.col_bigint_card2_1 from pkeyBigint1M1_1 as a,pkeyBigint1M1_4 as b where b.col_bigint_card1_1 IN (select distinct(col_bigint_card1_1) from pkeyBigint1M_1);
+                            -   query: select count(*) from pkeyBigint1M1_1 as a,pkeyBigint1M1_4 as b where b.col_bigint_card1_1 IN (select distinct(col_bigint_card1_1) from pkeyBigint1M1_1 limit 1);
 
             -   workload: JOING11_7_join_on_range_2tbls_subquery
                 customTags: schematype=regular,partition=hash,pkey=hash,cardinality=single,projectition=indexed,queryshape=join,joinon=pkey
@@ -185,4 +185,4 @@ microbenchmark:
                     -   name: join_on_pk_3tbl
                         weight: 100
                         queries:
-                            -   query: select a.col_bigint_id_1, b.col_bigint_id_1,b.col_bigint_card1_1,b.col_bigint_card2_1 from pkeyBigint1Mr_1 as a,pkeyBigint1Mr_3 as b where b.col_bigint_card1_1 IN (select distinct(col_bigint_card1_1) from pkeyBigint1M_1);
+                            -   query: select count(*) from pkeyBigint1Mr_1 as a,pkeyBigint1Mr_3 as b where b.col_bigint_card1_1 IN (select distinct(col_bigint_card1_1) from pkeyBigint1M1_1 limit 1);
