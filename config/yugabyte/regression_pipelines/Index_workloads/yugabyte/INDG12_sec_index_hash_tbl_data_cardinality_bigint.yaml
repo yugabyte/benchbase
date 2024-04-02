@@ -26,10 +26,8 @@ microbenchmark:
           - CREATE INDEX ON pkeyBigint1M_1(col_bigint_card1_1);
           - CREATE INDEX ON pkeyBigint1M_1(col_bigint_card2_1 ASC);
           - CREATE INDEX ON pkeyBigint1M_1(col_bigint_card3_1 DESC);
-
         cleanup:
             - DROP TABLE IF EXISTS pkeyBigint1M_1;
-
         loadRules:
               - table: pkeyBigint1M_
                 count: 1
@@ -78,7 +76,7 @@ microbenchmark:
 
         executeRules:
 
-            - workload: INDG10_1_index_scan_hash_skey_point_select
+            - workload: INDG12_1_index_scan_hash_skey_point_select
               customTags: schematype=regular,partition=hash,pkey=single,cardinality=multiple,projection=all,filtercount=one,filteron=hashskey,filtertype=pointselect
               run:
                   - name: hashtbl_index_scan_using_sec_index
@@ -86,7 +84,7 @@ microbenchmark:
                     queries:
                         - query: select * from pkeyBigint1M_1 where col_bigint_card1_1 IN (1000080,1000100,1000099,1000580,1000880);
 
-            - workload: INDG10_2_index_scan_range_skey_point_select
+            - workload: INDG12_2_index_scan_range_skey_point_select
               customTags: schematype=regular,partition=hash,pkey=single,cardinality=multiple,projection=all,filtercount=one,filteron=rangeskey,filtertype=pointselect
               run:
                   - name: hashtbl_index_scan_using_sec_index
@@ -94,35 +92,10 @@ microbenchmark:
                     queries:
                         - query: select * from pkeyBigint1M_1 where col_bigint_card2_1 IN (1000080,1000100,1000099,1000580,1000880);
 
-            - workload: INDG10_3_index_scan_range_skey_desc_point_select
+            - workload: INDG12_3_index_scan_range_skey_desc_point_select
               customTags: schematype=regular,partition=hash,pkey=single,cardinality=multiple,projection=all,filtercount=one,filteron=rangeskey,filtertype=pointselect
               run:
                   - name: hashtbl_index_scan_using_sec_index
                     weight: 100
                     queries:
                         - query: select * from pkeyBigint1M_1 where col_bigint_card3_1 IN (1000080,1000100,1000099,1000580,1000880);
-
-            - workload: INDG10_4_index_scan_hash_skey_range_scan
-              customTags: schematype=regular,partition=hash,pkey=single,cardinality=multiple,projection=all,filtercount=one,filteron=hashskey,filtertype=pointselect
-              run:
-                  - name: hashtbl_index_scan_using_sec_index
-                    weight: 100
-                    queries:
-                        - query: select * from pkeyBigint1M_1 where col_bigint_card1_1 < 1000500;
-
-            - workload: INDG10_5_index_scan_range_skey_range_scan
-              customTags: schematype=regular,partition=hash,pkey=single,cardinality=multiple,projection=all,filtercount=one,filteron=rangeskey,filtertype=pointselect
-              run:
-                  - name: hashtbl_index_scan_using_sec_index
-                    weight: 100
-                    queries:
-                        - query: select * from pkeyBigint1M_1 where col_bigint_card2_1 < 1000500;
-
-            - workload: INDG10_6_index_scan_range_skey_desc_range_scan
-              customTags: schematype=regular,partition=hash,pkey=single,cardinality=multiple,projection=all,filtercount=one,filteron=rangeskey,filtertype=pointselect
-              run:
-                  - name: hashtbl_index_scan_using_sec_index
-                    weight: 100
-                    queries:
-                        - query: select * from pkeyBigint1M_1 where col_bigint_card3_1 < 1000500;
-
