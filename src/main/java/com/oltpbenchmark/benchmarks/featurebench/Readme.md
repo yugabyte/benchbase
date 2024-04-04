@@ -65,7 +65,7 @@ java -jar benchbase.jar -b featurebench -c config/yugabyte/demo/featurebench_mic
 | Key           | Description                                                                                                      |
 |---------------|------------------------------------------------------------------------------------------------------------------|
 | createdb      | To make databases with additional properties. DDL's for database to be written here(eg. for colocated property). |
- | create        | Has DDL's for create phase from YAML.                                                                            |
+| create        | Has DDL's for create phase from YAML.                                                                            |
 | loadRules     | Has key/value for table name, util and parameters for util functions.                                            |
 | executeRules  | Has key/value for workload name and their details (parallel run names,weights and queries+bindings).             |
 | cleanup       | Has DDL's for cleaning up tables from YAML.                                                                      |
@@ -118,7 +118,6 @@ Utility functions are present inside the folder :-
 The results for each YAML config run can be found inside the `results` folder.
 
 Serial runs inside a YAML have separate sub-folders inside `results` folder with names same as either run name(if provided) or timestamp of run.
-
 
 
 
