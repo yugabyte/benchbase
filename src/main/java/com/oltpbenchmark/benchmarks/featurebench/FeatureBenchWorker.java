@@ -99,6 +99,10 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
         if (isInitializeDone.get()) return;
         synchronized (FeatureBenchWorker.class) {
             if (isInitializeDone.get()) return;
+            if(!this.getWorkloadConfiguration().getXmlConfig().getBoolean("collect_pg_stat_statements", false)){
+                isInitializeDone.set(true);
+                return;
+            }
             if (!isPGStatResetCalled.get() &&
                 this.getWorkloadConfiguration().getXmlConfig().getBoolean("collect_pg_stat_statements", false)
             ) {
