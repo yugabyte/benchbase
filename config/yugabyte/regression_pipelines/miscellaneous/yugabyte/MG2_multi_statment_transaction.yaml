@@ -105,7 +105,7 @@ microbenchmark:
                   - name: statement1_insert
                     weight: 100
                     queries:
-                        - query: INSERT INTO audit_table(account_id, event_id, user_id, delta) VALUES(?,?,?,?)
+                        - query: INSERT INTO audit_table_1(account_id_1, event_id_1, user_id_1, delta_1) VALUES(?,?,?,?)
                           bindings:
                               -   util: PrimaryIntGen
                                   params: [ 2000000, 100000000 ]
@@ -115,11 +115,11 @@ microbenchmark:
                                   params: [ 2000000, 100000000 ]
                               -   util: RandomNoWithDecimalPoints
                                   params: [ 1, 1000000, 2 ]
-                        - query: SELECT bal FROM accounts WHERE account_id = ?
+                        - query: SELECT bal_1 FROM accounts_1 WHERE account_id_1 = ?
                           bindings:
                               -   util: PrimaryIntGen
                                   params: [ 1, 1000000 ]
-                        - query: UPDATE accounts SET bal = ? WHERE account_id = ? and bal = ?
+                        - query: UPDATE accounts_1 SET bal_1 = ? WHERE account_id_1 = ? and bal_1 = ?
                           bindings:
                               -   util: RandomNoWithDecimalPoints
                                   params: [ 1000000, 10000000, 2 ]
@@ -127,7 +127,7 @@ microbenchmark:
                                   params: [ 1, 1000000 ]
                               -   util: RandomNoWithDecimalPoints
                                   params: [ 1000000, 10000000, 2 ]
-                        - query: UPDATE users SET bal = bal + ? WHERE user_id = ?
+                        - query: UPDATE users_1 SET bal_1 = bal_1 + ? WHERE user_id_1 = ?
                           bindings:
                               -   util: RandomInt
                                   params: [ 1, 100 ]
