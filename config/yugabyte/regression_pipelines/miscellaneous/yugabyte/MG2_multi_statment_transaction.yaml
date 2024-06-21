@@ -26,7 +26,7 @@ microbenchmark:
             - CREATE TABLE IF NOT EXISTS users_1(user_id_1 bigint, user_name_1 varchar(10), addr_1 varchar(50), bal_1 float(2), PRIMARY KEY(user_id_1));
             - CREATE TABLE IF NOT EXISTS accounts_1(account_id_1 bigint, user_id_1 bigint, addr_1 varchar(50), bal_1 float(2), PRIMARY KEY(account_id_1));
             - CREATE UNIQUE INDEX user_accounts ON accounts_1( user_id_1, account_id_1);
-            - CREATE TABLEIF NOT EXISTS audit_table_1(account_id_1 bigint, event_id_1 date, user_id_1 bigint, delta_1 float(2), PRIMARY KEY(account_id_1, event_id_1));
+            - CREATE TABLE IF NOT EXISTS audit_table_1(account_id_1 bigint, event_id_1 date, user_id_1 bigint, delta_1 float(2), PRIMARY KEY(account_id_1, event_id_1));
 
         cleanup:
             - DROP TABLE IF EXISTS users_1;
