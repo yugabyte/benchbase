@@ -87,6 +87,33 @@ microbenchmark:
                     -   name: Insert_without_index_test
                         weight: 100
                         queries:
+                            -   query: insert into update_test_table1_varchar_json_col5_16_1 (id,vcol1,vcol2,vcol3,vcol4,vcol5,col1,col2,col3,col4,col5,count) VALUES (?,?,?,?,?,?,?::jsonb,?::jsonb,?::jsonb,?::jsonb,?::jsonb,?)
+                                count: 1
+                                bindings:
+                                    -   util: PrimaryIntGen
+                                        params: [ 100001, 10000000 ]
+                                    -   util: RandomAString
+                                        params: [ 255, 255 ]
+                                    -   util: RandomAString
+                                        params: [ 255, 255 ]
+                                    -   util: RandomAString
+                                        params: [ 255, 255 ]
+                                    -   util: RandomAString
+                                        params: [ 255, 255 ]
+                                    -   util: RandomAString
+                                        params: [ 255, 255 ]
+                                    -   util: RandomJson
+                                        params: [ 5, 16 ]
+                                    -   util: RandomJson
+                                        params: [ 5, 16 ]
+                                    -   util: RandomJson
+                                        params: [ 5, 16 ]
+                                    -   util: RandomJson
+                                        params: [ 5, 16 ]
+                                    -   util: RandomJson
+                                        params: [ 5, 16 ]
+                                    -   util: RandomNumber
+                                        params: [1, 5]
                             -   query: select vcol2 from update_test_table1_varchar_json_col5_16_1 where id = ?
                                 count: 1
                                 bindings:
@@ -110,6 +137,33 @@ microbenchmark:
                     -   name: Insert_without_index_test
                         weight: 100
                         queries:
+                            -   query: insert into update_test_table1_varchar_json_col5_16_2 (id,vcol1,vcol2,vcol3,vcol4,vcol5,col1,col2,col3,col4,col5,count) VALUES (?,?,?,?,?,?,?::jsonb,?::jsonb,?::jsonb,?::jsonb,?::jsonb,?)
+                                count: 1
+                                bindings:
+                                    -   util: PrimaryIntGen
+                                        params: [ 100001, 10000000 ]
+                                    -   util: RandomAString
+                                        params: [ 255, 255 ]
+                                    -   util: RandomAString
+                                        params: [ 255, 255 ]
+                                    -   util: RandomAString
+                                        params: [ 255, 255 ]
+                                    -   util: RandomAString
+                                        params: [ 255, 255 ]
+                                    -   util: RandomAString
+                                        params: [ 255, 255 ]
+                                    -   util: RandomJson
+                                        params: [ 5, 16 ]
+                                    -   util: RandomJson
+                                        params: [ 5, 16 ]
+                                    -   util: RandomJson
+                                        params: [ 5, 16 ]
+                                    -   util: RandomJson
+                                        params: [ 5, 16 ]
+                                    -   util: RandomJson
+                                        params: [ 5, 16 ]
+                                    -   util: RandomNumber
+                                        params: [1, 5]
                             -   query: select vcol2 from update_test_table1_varchar_json_col5_16_2 where id = ?
                                 count: 1
                                 bindings:
@@ -132,6 +186,33 @@ microbenchmark:
                     -   name: Insert_without_index_test
                         weight: 100
                         queries:
+                            -   query: insert into update_test_table1_varchar_json_col5_16_3 (id,vcol1,vcol2,vcol3,vcol4,vcol5,col1,col2,col3,col4,col5,count) VALUES (?,?,?,?,?,?,?::jsonb,?::jsonb,?::jsonb,?::jsonb,?::jsonb,?)
+                                count: 1
+                                bindings:
+                                    -   util: PrimaryIntGen
+                                        params: [ 100001, 10000000 ]
+                                    -   util: RandomAString
+                                        params: [ 255, 255 ]
+                                    -   util: RandomAString
+                                        params: [ 255, 255 ]
+                                    -   util: RandomAString
+                                        params: [ 255, 255 ]
+                                    -   util: RandomAString
+                                        params: [ 255, 255 ]
+                                    -   util: RandomAString
+                                        params: [ 255, 255 ]
+                                    -   util: RandomJson
+                                        params: [ 5, 16 ]
+                                    -   util: RandomJson
+                                        params: [ 5, 16 ]
+                                    -   util: RandomJson
+                                        params: [ 5, 16 ]
+                                    -   util: RandomJson
+                                        params: [ 5, 16 ]
+                                    -   util: RandomJson
+                                        params: [ 5, 16 ]
+                                    -   util: RandomNumber
+                                        params: [1, 5]
                             -   query: select vcol2 from update_test_table1_varchar_json_col5_16_3 where id = ?
                                 count: 1
                                 bindings:
@@ -154,6 +235,33 @@ microbenchmark:
                     -   name: Insert_without_index_test
                         weight: 100
                         queries:
+                            -   query: insert into update_test_table1_varchar_json_col5_16_3 (id,vcol1,vcol2,vcol3,vcol4,vcol5,col1,col2,col3,col4,col5,count) VALUES (?,?,?,?,?,?,?::jsonb,?::jsonb,?::jsonb,?::jsonb,?::jsonb,?)
+                                count: 1
+                                bindings:
+                                    -   util: PrimaryIntGen
+                                        params: [ 100001, 10000000 ]
+                                    -   util: RandomAString
+                                        params: [ 255, 255 ]
+                                    -   util: RandomAString
+                                        params: [ 255, 255 ]
+                                    -   util: RandomAString
+                                        params: [ 255, 255 ]
+                                    -   util: RandomAString
+                                        params: [ 255, 255 ]
+                                    -   util: RandomAString
+                                        params: [ 255, 255 ]
+                                    -   util: RandomJson
+                                        params: [ 5, 16 ]
+                                    -   util: RandomJson
+                                        params: [ 5, 16 ]
+                                    -   util: RandomJson
+                                        params: [ 5, 16 ]
+                                    -   util: RandomJson
+                                        params: [ 5, 16 ]
+                                    -   util: RandomJson
+                                        params: [ 5, 16 ]
+                                    -   util: RandomNumber
+                                        params: [1, 5]
                             -   query: select vcol2 from update_test_table1_varchar_json_col5_16_3 where id = ?
                                 count: 1
                                 bindings:
