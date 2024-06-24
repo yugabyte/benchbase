@@ -105,7 +105,7 @@ microbenchmark:
             - workload: G1_Analyze
               time_secs: 300
               run:
-                  - name: G1_Analyze
+                  - name: analyze_1
                     weight: 100
                     queries:
                         - query: analyze nets_1
