@@ -140,10 +140,6 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                     throw new RuntimeException("dist and debug option for explain not supported by this database type, Please remove key!");
                 }
             }
-            if (this.getWorkloadConfiguration().getXmlConfig().getBoolean("disable_analyze_in_explain", false)) {
-                    explainSelect = explainSelect.replace("analyze,", "");
-                    explainUpdate = explainUpdate.replace("analyze", "");
-            }
 
 
             List<String> allQueries = new ArrayList<>();
@@ -181,7 +177,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                 }
             }
             try {
-                if (explainDDLs.size() > 0)
+                if (!explainDDLs.isEmpty())
                     runExplainAnalyse(explainDDLs, allQueries);
             } catch (SQLException e) {
                 e.printStackTrace();
