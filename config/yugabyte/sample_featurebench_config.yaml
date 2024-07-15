@@ -1,65 +1,123 @@
+#TEST FOR YUGABYTE COLOCATED TABLES
+#GOAL1 from tab Scan queries of doc https://docs.google.com/spreadsheets/d/1-M1i5tWJQJdbmtv7mz_20MZsT2Oqh_T3-6m12qKAMcA/edit#gid=796784261:
+#    Hash Primary lookup vs Hash Index lookup (Index Scan)
+#TESTS:
+#    Time to fetch 1 row based (= operator) on a predicate column which is HASH Primary key
+#    Time to fetch 1 row based (= operator) on a predicate column which is HASH indexed
 type: YUGABYTE
 driver: com.yugabyte.Driver
-url: jdbc:yugabytedb://localhost:5433/yugabyte?sslmode=disable&ApplicationName=featurebench&reWriteBatchedInserts=true
-username: yugabyte
-password: null
+url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true&load-balance=false
+username: {{username}}
+password: {{password}}
 batchsize: 128
 isolation: TRANSACTION_REPEATABLE_READ
 loaderthreads: 1
-collect_pg_stat_statements: true
 terminals: 1
+collect_pg_stat_statements: true
+use_dist_in_explain : true
 works:
     work:
-        time_secs: 5
+        time_secs: 10
         active_terminals: 1
-        rate: 1000
+        rate: unlimited
         warmup: 0
 microbenchmark:
     class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
     properties:
         setAutoCommit: true
         create:
-        - DROP TABLE IF EXISTS demo100col;
-        - CREATE TABLE demo100col (id INT, col1 TEXT, primary key (id ASC)) ;
+            - DROP TABLE IF EXISTS pkey_hash_point_lookup_tbl_1;
+            - DROP TABLE IF EXISTS indx_hash_point_lookup_tbl_1;
+            - CREATE TABLE pkey_hash_point_lookup_tbl_1(col_bigint_id_1 bigint, col_bigint_1 bigint, col_bigint_2 bigint, col_bigint_3 bigint, col_bigint_4 bigint, col_bigint_5 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_1 varchar(10), col_varchar100_1 varchar(100), col_varchar100_2 varchar(100), col_varchar500_1 varchar(500), PRIMARY KEY(col_bigint_id_1));
+            - CREATE TABLE indx_hash_point_lookup_tbl_1(col_bigint_id_1 bigint, col_bigint_1 bigint, col_bigint_2 bigint, col_bigint_3 bigint, col_bigint_4 bigint, col_bigint_5 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_1 varchar(10), col_varchar100_1 varchar(100), col_varchar100_2 varchar(100), col_varchar500_1 varchar(500));
+            - CREATE INDEX ON indx_hash_point_lookup_tbl_1(col_bigint_id_1);
+        cleanup:
+            - DROP TABLE IF EXISTS pkey_hash_point_lookup_tbl_1;
+            - DROP TABLE IF EXISTS indx_hash_point_lookup_tbl_1;
         loadRules:
-        -   table: demo100col
-            rows: 10
-            columns:
-            -   name: id
-                util: PrimaryIntGen
-                params:
-                - 1
-                - 1000
-            -   name: col1
-                util: RandomStringNumeric
-                params:
-                - 128
+            - table: pkey_hash_point_lookup_tbl_
+              count: 1
+              rows: 1000
+              columns:
+                  - name: col_bigint_id_
+                    count: 1
+                    util: PrimaryIntGen
+                    params: [1, 1000000]
+                  - name: col_bigint_
+                    count: 5
+                    util: RandomNumber
+                    params: [1, 1000000]
+                  - name: col_float2_
+                    count: 2
+                    util: RandomNoWithDecimalPoints
+                    params: [1, 1000000, 2]
+                  - name: col_float5_
+                    count: 2
+                    util: RandomNoWithDecimalPoints
+                    params: [1, 1000000, 5]
+                  - name: col_boolean_
+                    count: 1
+                    util: RandomBoolean
+                  - name: col_varchar10_
+                    count: 1
+                    util: RandomAString
+                    params: [10, 10]
+                  - name: col_varchar100_
+                    count: 2
+                    util: RandomAString
+                    params: [100, 100]
+                  - name: col_varchar500_
+                    count: 1
+                    util: RandomAString
+                    params: [500, 500]
+            - table: indx_hash_point_lookup_tbl_
+              count: 1
+              rows: 1000
+              columns:
+                  - name: col_bigint_id_
+                    count: 1
+                    util: PrimaryIntGen
+                    params: [1, 1000000]
+                  - name: col_bigint_
+                    count: 5
+                    util: RandomNumber
+                    params: [1, 1000000]
+                  - name: col_float2_
+                    count: 2
+                    util: RandomNoWithDecimalPoints
+                    params: [1, 1000000, 2]
+                  - name: col_float5_
+                    count: 2
+                    util: RandomNoWithDecimalPoints
+                    params: [1, 1000000, 5]
+                  - name: col_boolean_
+                    count: 1
+                    util: RandomBoolean
+                  - name: col_varchar10_
+                    count: 1
+                    util: RandomAString
+                    params: [10, 10]
+                  - name: col_varchar100_
+                    count: 2
+                    util: RandomAString
+                    params: [100, 100]
+                  - name: col_varchar500_
+                    count: 1
+                    util: RandomAString
+                    params: [500, 500]
         executeRules:
-        -   workload: RangeScan1
-            run:
-            -   name: ReadQuery1
-                weight: 100
-                queries:
-                -   query: INSERT INTO demo100col VALUES(?,?)
-                    bindings:
-                    -   util: PrimaryIntGen
-                        params:
-                        - 10000
-                        - 100000
-                    -   util: RandomAString
-                        params:
-                        - 5
-                        - 5
-            -   name: WriteQuery2
-                weight: 50
-                queries:
-                -   query: UPDATE demo100col set col1 = ? where id = ?
-                    bindings:
-                    -   util: RandomAString
-                        params:
-                        - 10
-                        - 20
-                    -   util: RandomNumber
-                        params:
-                        - 1
-                        - 1000
+            - workload: scanG1_pkey_hash_point_lookup
+              customTags: customer=8,schematype=regular,partition=hash,pkey=hash,cardinality=single,projection=indexed,filtercount=one,filteron=hashpkey,filtertype=pointselect,queryshape=scan
+              run:
+                  - name: pkey_hash_point_lookup_test
+                    weight: 100
+                    queries:
+                        - query: select col_bigint_id_1 from pkey_hash_point_lookup_tbl_1 where col_bigint_id_1=500009
+            - workload: scanG1_indx_hash_point_lookup
+              skipReport: true
+              customTags: customer=6,schematype=regular,partition=hash,skey=hash,cardinality=single,projection=indexed,filtercount=one,filteron=hashskey,filtertype=pointselect,queryshape=scan
+              run:
+                  - name: indx_hash_point_lookup_test
+                    weight: 100
+                    queries:
+                        - query: select col_bigint_id_1 from indx_hash_point_lookup_tbl_1 where col_bigint_id_1=500009
