@@ -28,7 +28,7 @@ microbenchmark:
             - CREATE UNIQUE INDEX ON pkeyBigint1M_1(col_bigint_id_3);
             - CREATE TABLE pkeyBigint1M_child_1(col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_varchar10_id_1 varchar(10), col_bigint_card1_1 bigint, col_bigint_card2_1 bigint, col_bigint_card3_1 bigint, PRIMARY KEY(col_bigint_id_1));
             - ALTER TABLE pkeyBigint1M_child_1 ADD CONSTRAINT pkeyBigint1M_child_id1_fk FOREIGN KEY (col_bigint_id_2) REFERENCES pkeyBigint1M_1 (col_bigint_id_1);
-            - ALTER TABLE pkeyBigint1M_child_1 ADD CONSTRAINT pkeyBigint1M_child_id1_fk FOREIGN KEY (col_bigint_id_3) REFERENCES pkeyBigint1M_1 (col_bigint_id_3);
+            - ALTER TABLE pkeyBigint1M_child_1 ADD CONSTRAINT pkeyBigint1M_child_id2_fk FOREIGN KEY (col_bigint_id_3) REFERENCES pkeyBigint1M_1 (col_bigint_id_3);
             - CREATE INDEX ON pkeyBigint1M_child_1(col_bigint_card1_1);
 
         cleanup:
