@@ -121,23 +121,20 @@ public class DataGeneratorLoader extends Loader<DataGenerator> {
     public List<LoaderThread> createLoaderThreads() throws SQLException {
         Connection conn = benchmark.makeConnection();
         String tableName = workConf.getXmlConfig().getString("tablename");
-        System.out.println(tableName);
         int rows = workConf.getXmlConfig().getInt("rows");
+
+        // get the table schema
         List<Column> tableSchema = getTableSchema(tableName, conn);
-        System.out.println("\ntable schema information:");
-        System.out.println(tableSchema);
 
-        System.out.println("\nPrimary key information:");
+        // key primary key details
         List<PrimaryKey> primaryKeys = getPrimaryKeys(tableName, conn);
-        System.out.println(primaryKeys);
 
-        System.out.println("\n indexes with unique key constraint: ");
+        // get all unique constraints from the indexes
         List<String> uniqueConstraintColumns = getUniqueConstrains(tableName, conn);
-        System.out.println(uniqueConstraintColumns);
 
-        System.out.println("\nforeign key information:");
+        // get all foreign keys of the table
         List<ForeignKey> foreignKeys = getForeignKeys(tableName, conn);
-        System.out.println(foreignKeys);
+//        System.out.println(foreignKeys);
 
 
         int limit = Math.min(10000, rows);
@@ -158,13 +155,13 @@ public class DataGeneratorLoader extends Loader<DataGenerator> {
             // fetch the distinct values from parent table. This could take some time
             getDistinctValuesFromParentTable(conn, foreignKeys, limit);
         }
-
+        // create mapping of utility function to the columns in the table
         Map<String, PropertyMapping> columnToUtilsMapping = utilsMapping(tableSchema, primaryKeys, foreignKeys, limit, rows, uniqueConstraintColumns);
-        System.out.println("\nColumn to utils mapping:");
-        System.out.println(columnToUtilsMapping.toString());
 
-//        generateMappingObject(tableName, rows, columnToUtilsMapping);
+        // generate the mapping object which can be used to create the output yaml file
         Root root = generateMappingObject(tableName, rows, columnToUtilsMapping, fkColNames);
+
+        // create output yaml file
         writeToFile(tableName, rows, root);
         return new ArrayList<>();
     }

@@ -3,5 +3,6 @@
 echo "generating loader file for the table"
 java -jar target/benchbase-yugabyte/benchbase.jar -b perf-dataloader -c $1 -p tableName=$2 -p rows=$3 --load=True
 
+TABLENAME=${1}
 echo "loading the data into the database now! "
-# java -jar target/benchbase-yugabyte/benchbase.jar -b featurebench -c output.yaml --load=True
+java -jar target/benchbase-yugabyte/benchbase.jar -b featurebench -c "${TABLENAME}_output.yaml" --load=True
