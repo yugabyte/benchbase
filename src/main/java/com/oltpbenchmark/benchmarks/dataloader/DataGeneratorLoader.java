@@ -132,6 +132,9 @@ public class DataGeneratorLoader extends Loader<DataGenerator> {
         // get all unique constraints from the indexes
         List<String> uniqueConstraintColumns = getUniqueConstrains(tableName, conn);
 
+        // get all columns with respective user defined ENUM data type
+        Map<String, List<Object>> udColumns = getUserDefinedEnumDataTypes(tableName, "public", conn);
+
         // get all foreign keys of the table
         List<ForeignKey> foreignKeys = getForeignKeys(tableName, conn);
 //        System.out.println(foreignKeys);
@@ -156,10 +159,11 @@ public class DataGeneratorLoader extends Loader<DataGenerator> {
             getDistinctValuesFromParentTable(conn, foreignKeys, limit);
         }
         // create mapping of utility function to the columns in the table
-        Map<String, PropertyMapping> columnToUtilsMapping = utilsMapping(tableSchema, primaryKeys, foreignKeys, limit, rows, uniqueConstraintColumns);
+        Map<String, PropertyMapping> columnToUtilsMapping =
+            utilsMapping(tableSchema, primaryKeys, foreignKeys, limit, rows, uniqueConstraintColumns, udColumns);
 
         // generate the mapping object which can be used to create the output yaml file
-        Root root = generateMappingObject(tableName, rows, columnToUtilsMapping, fkColNames);
+        Root root = generateMappingObject(tableName, rows, columnToUtilsMapping, fkColNames, udColumns);
 
         // create output yaml file
         writeToFile(tableName, rows, root);
@@ -248,6 +252,70 @@ public class DataGeneratorLoader extends Loader<DataGenerator> {
         return uniques;
     }
 
+    public static Map<String, List<Object>> getUserDefinedEnumDataTypes(String tableName, String schemaName, Connection conn) {
+        String query =
+            "SELECT " +
+                "    a.attname AS column_name, " +
+                "    t.typname AS data_type " +
+                "FROM " +
+                "    pg_attribute a " +
+                "JOIN " +
+                "    pg_class c ON a.attrelid = c.oid " +
+                "JOIN " +
+                "    pg_type t ON a.atttypid = t.oid " +
+                "JOIN " +
+                "    pg_namespace n ON t.typnamespace = n.oid " +
+                "WHERE " +
+                "    c.relname = ? AND " +
+                "    n.nspname = ? AND " +
+                "    (t.typtype = 'c' OR t.typtype = 'e' OR t.typtype = 'b') " +
+                "ORDER BY " +
+                "    a.attnum;";
+
+        Map<String, List<Object>> columnDataTypes = new HashMap<>();
+
+        try (PreparedStatement preparedStatement = conn.prepareStatement(query)) {
+            preparedStatement.setString(1, tableName);
+            preparedStatement.setString(2, schemaName);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    String columnName = resultSet.getString("column_name");
+                    String dataType = resultSet.getString("data_type");
+                    List<Object> distinctEnumValues = getEnumValues(dataType, conn);
+                    columnDataTypes.put(columnName, distinctEnumValues);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return columnDataTypes;
+    }
+
+    public static List<Object> getEnumValues(String typename, Connection conn) throws SQLException {
+        String query =
+            "SELECT e.enumlabel AS enum_value " +
+                "FROM pg_enum e " +
+                "JOIN pg_type t ON t.oid = e.enumtypid " +
+                "WHERE t.typname = ? " +
+                "ORDER BY e.enumsortorder";
+
+        List<Object> enumValues = new ArrayList<>();
+
+        try (PreparedStatement preparedStatement = conn.prepareStatement(query)) {
+            preparedStatement.setString(1, typename);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    enumValues.add(resultSet.getString("enum_value"));
+                }
+            }
+        }
+
+        return enumValues;
+    }
+
     // Method to extract column name(s) from index definition
     private static List<String> extractColumnsFromIndexDef(String indexDef) {
         // Example index definition: "CREATE UNIQUE INDEX idx_name ON tablename (column1, column2)"
@@ -319,7 +387,8 @@ public class DataGeneratorLoader extends Loader<DataGenerator> {
 
     public Map<String, PropertyMapping> utilsMapping(List<Column> tableSchema, List<PrimaryKey> primaryKeys,
                                                      List<ForeignKey> foreignKeys, int limit, int rows,
-                                                     List<String> uniqueConstraintColumns) {
+                                                     List<String> uniqueConstraintColumns,
+                                                     Map<String, List<Object>> udColumData) {
         Map<String, PropertyMapping> columnToUtilMapping = new LinkedHashMap<>();
         // take care of the primary keys first
         for(PrimaryKey pk: primaryKeys) {
@@ -327,10 +396,19 @@ public class DataGeneratorLoader extends Loader<DataGenerator> {
         }
 
         for (ForeignKey fk: foreignKeys) {
-            FkPropertyMapping fkm = fkProperties.get(fk.getColumnDataType());
-            PropertyMapping pm = new PropertyMapping(fkm.className, limit, fk.getDistinctValues());
-            columnToUtilMapping.put(fk.getColumnName(), pm);
+            if(!columnToUtilMapping.containsKey(fk.getColumnName())) {
+                FkPropertyMapping fkm = fkProperties.get(fk.getColumnDataType());
+                PropertyMapping pm = new PropertyMapping(fkm.className, limit, fk.getDistinctValues());
+                columnToUtilMapping.put(fk.getColumnName(), pm);
+            }
         }
+        udColumData.forEach((colName, values) -> {
+            if(!columnToUtilMapping.containsKey(colName)) {
+                // Caveat: treating all user defined data types as list of String utility
+                PropertyMapping pm = new PropertyMapping("OneStringFromArray", values.size(), values);
+                columnToUtilMapping.put(colName, pm);
+            }
+        });
         // take care of the rest of the keys
         for(Column col: tableSchema) {
             if(!columnToUtilMapping.containsKey(col.getColumnName())) {
@@ -339,8 +417,9 @@ public class DataGeneratorLoader extends Loader<DataGenerator> {
                 if (uniqueConstraintColumns.contains(col.getColumnName()))
                     pm = pkProperties.get(col.getDataType());
                 else
-                    pm = properties.get(col.getDataType());
+                    pm = properties.get(col.getDataType().toLowerCase());
 
+                System.out.println(pm);
                 for (int i = 0; i < pm.params.size(); i++) {
                     Object obj = pm.params.get(i);
                     if (obj instanceof String) {
@@ -360,13 +439,19 @@ public class DataGeneratorLoader extends Loader<DataGenerator> {
 
 
     public Root generateMappingObject(String tableName, int rows, Map<String, PropertyMapping> colToUtilsMapping,
-                                      List<String> fkColNames) {
+                                      List<String> fkColNames, Map<String, List<Object>> udColumns) {
         LoadRule loadRule = new LoadRule(tableName, rows);
         colToUtilsMapping.forEach((colName, prop) -> {
             Column1 col = new Column1(colName, prop.className);
 
             prop.params.forEach(param -> {
                 if (fkColNames.contains(colName)) {
+                    if (param instanceof Integer )
+                        col.params.add(param);
+                    else
+                        col.params.add(param.toString());
+                }
+                else if (udColumns.containsKey(colName)) {
                     if (param instanceof Integer )
                         col.params.add(param);
                     else
