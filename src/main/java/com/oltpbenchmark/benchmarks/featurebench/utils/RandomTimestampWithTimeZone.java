@@ -28,6 +28,19 @@ public class RandomTimestampWithTimeZone implements BaseUtil {
         }
     }
 
+    public RandomTimestampWithTimeZone(List<Object> values, int workerId, int totalWorkers) {
+        if (values.isEmpty()) {
+            throw new RuntimeException("Incorrect number of parameters for util function "
+                + this.getClass());
+        }
+
+        this.numberOfTimestamps = ((Number) values.get(0)).intValue();
+
+        if (numberOfTimestamps < 0) {
+            throw new RuntimeException("Please enter a positive number of timestamps");
+        }
+    }
+
     @Override
     public Object run() {
         int offset = rd.nextInt(numberOfTimestamps);
