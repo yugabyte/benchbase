@@ -1,6 +1,6 @@
 # Perf Dataloader
 
-### used to infer the user schema from the database and generate a benchbase interpreted input yaml file which can be used to load the data in to the table.
+### used to infer the table schema from the database and generate a benchbase interpreted input yaml file which can be used to load sample data into the table.
 
 
 build command:
