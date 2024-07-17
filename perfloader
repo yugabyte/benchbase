@@ -93,7 +93,7 @@ fi
 echo "Generating loader file for the table"
 java -jar target/benchbase-yugabyte/benchbase.jar -b perf-dataloader -c "$CONFIG" -p tableName="$TABLE_NAME" -p rows="$ROWS" --load=True
 
-DEFAULT_CONFIG="${TABLE_NAME}_output.yaml"
+DEFAULT_CONFIG="${TABLE_NAME}_loader.yaml"
 
 echo "Loading the data into the database now!"
 java -jar target/benchbase-yugabyte/benchbase.jar -b featurebench -c "$DEFAULT_CONFIG" --load=True

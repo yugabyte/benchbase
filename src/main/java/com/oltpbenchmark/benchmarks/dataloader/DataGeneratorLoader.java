@@ -163,6 +163,7 @@ public class DataGeneratorLoader extends Loader<DataGenerator> {
 
         // create output yaml file
         writeToFile(tableName, rows, root);
+        LOG.info("Generated loader file: {}_loader.yaml", tableName);
         return new ArrayList<>();
     }
     public static List<Column> getTableSchema(String tableName, Connection conn) {

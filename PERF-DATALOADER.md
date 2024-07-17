@@ -23,7 +23,7 @@ Options:
   -h, --help         Display this help message
 
 ```
-- to only generate the loader file(skip the actual load)
+- to only generate the loader file(skip the actual load). This will generate the yaml file <table-name>_loader.yaml which can be used in loading the data.
 ```
 ./perfloader --config <config_file> --table-name <table_name> --rows <rows> --generate-only
 ```
