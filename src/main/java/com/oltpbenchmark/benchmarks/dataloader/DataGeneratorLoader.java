@@ -419,7 +419,6 @@ public class DataGeneratorLoader extends Loader<DataGenerator> {
                 else
                     pm = properties.get(col.getDataType().toLowerCase());
 
-                System.out.println(pm);
                 for (int i = 0; i < pm.params.size(); i++) {
                     Object obj = pm.params.get(i);
                     if (obj instanceof String) {
