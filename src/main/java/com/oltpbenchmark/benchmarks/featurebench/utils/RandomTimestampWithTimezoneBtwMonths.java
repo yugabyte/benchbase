@@ -24,6 +24,19 @@ public class RandomTimestampWithTimezoneBtwMonths implements BaseUtil {
         }
     }
 
+    public RandomTimestampWithTimezoneBtwMonths(List<Object> values, int workerId, int totalWorkers) {
+        if (values.size() != 3) {
+            throw new RuntimeException("Incorrect number of parameters for util function "
+                + this.getClass());
+        }
+        this.year = ((Number) values.get(0)).intValue();
+        this.monthLowerBound = ((Number) values.get(1)).intValue();
+        this.monthUpperBound = ((Number) values.get(2)).intValue();
+        if (monthLowerBound < 1 || monthUpperBound > 12 || monthLowerBound > monthUpperBound) {
+            throw new RuntimeException("Please enter correct values for monthLowerBound and monthUpperBound");
+        }
+    }
+
     public static int createRandomIntBetween(int start, int end) {
         return start + (int) Math.round(Math.random() * (end - start));
     }
