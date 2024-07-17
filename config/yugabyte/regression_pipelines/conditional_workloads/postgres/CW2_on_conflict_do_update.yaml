@@ -50,7 +50,7 @@ microbenchmark:
                         params: [ 1, 6000000, 2 ]
 
         executeRules:
-            - workload: CW1_1_2column_condition_single_upsert
+            - workload: CW2_1_2column_condition_single_upsert
               run:
                   - name: statement1_insert
                     weight: 100
@@ -67,7 +67,7 @@ microbenchmark:
                                   params: [ 1, 1000000, 2 ]
 
 
-            - workload: CW1_2_4column_condition_single_upsert
+            - workload: CW2_2_4column_condition_single_upsert
               run:
                   - name: statement1_insert
                     weight: 100
@@ -83,7 +83,7 @@ microbenchmark:
                               -   util: PrimaryFloatGen
                                   params: [ 1000000, 2000000, 2 ]
 
-            - workload: CW1_3_2column_condition_10_upsert
+            - workload: CW2_3_2column_condition_10_upsert
               run:
                   - name: statement1_insert
                     weight: 100
@@ -100,7 +100,7 @@ microbenchmark:
                               -   util: PrimaryFloatGen
                                   params: [ 2000000, 3000000, 2 ]
 
-            - workload: CW1_4_4column_condition_10_upsert
+            - workload: CW2_4_4column_condition_10_upsert
               run:
                   - name: statement1_insert
                     weight: 100
@@ -117,7 +117,7 @@ microbenchmark:
                               -   util: PrimaryFloatGen
                                   params: [ 3000000, 4000000, 2 ]
 
-            - workload: CW1_5_2column_condition_1_upsert_with_returning
+            - workload: CW2_5_2column_condition_1_upsert_with_returning
               run:
                   - name: statement1_insert
                     weight: 100
@@ -134,7 +134,7 @@ microbenchmark:
                               -   util: PrimaryFloatGen
                                   params: [ 4000000, 5000000, 2 ]
 
-            - workload: CW1_6_4column_condition_1_upsert_with_returning
+            - workload: CW2_6_4column_condition_1_upsert_with_returning
               run:
                   - name: statement1_insert
                     weight: 100
@@ -150,7 +150,7 @@ microbenchmark:
                               -   util: PrimaryFloatGen
                                   params: [ 5000000, 6000000, 2 ]
 
-            - workload: CW1_7_2column_condition_10values_in_1upsert_with_returning
+            - workload: CW2_7_2column_condition_10values_in_1upsert_with_returning
               run:
                   - name: statement1_insert
                     weight: 100
@@ -238,7 +238,7 @@ microbenchmark:
                               -   util: PrimaryFloatGen
                                   params: [ 1, 6000000, 2 ]
 
-            - workload: CW1_8_2column_condition_1_upsert_with_returning
+            - workload: CW2_8_2column_condition_1_upsert_with_returning
               run:
                   - name: statement1_insert
                     weight: 100
@@ -254,7 +254,7 @@ microbenchmark:
                               -   util: PrimaryFloatGen
                                   params: [ 5000000, 6000000, 2 ]
 
-            - workload: CW1_9_2column_condition_10_upsert_with_returning
+            - workload: CW2_9_2column_condition_10_upsert_with_returning
               run:
                   - name: statement1_insert
                     weight: 100
