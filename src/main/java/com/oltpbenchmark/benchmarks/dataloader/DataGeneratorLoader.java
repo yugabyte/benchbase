@@ -154,6 +154,18 @@ public class DataGeneratorLoader extends Loader<DataGenerator> {
             }
         });
         foreignKeys.removeAll(fkToRemove);
+
+        // remove all fks from unique constraints
+        uniqueConstraintColumns.removeAll(fkColNames);
+
+        // remove all fks from primary keys
+        List<PrimaryKey> pkToRemove = new ArrayList<>();
+        primaryKeys.forEach(pk -> {
+            if (fkColNames.contains(pk.getColumnName()))
+                pkToRemove.add(pk);
+        });
+        primaryKeys.removeAll(pkToRemove);
+
         if (foreignKeys.size() > 0) {
             // fetch the distinct values from parent table. This could take some time
             getDistinctValuesFromParentTable(conn, foreignKeys, limit);
