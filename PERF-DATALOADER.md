@@ -50,3 +50,7 @@ tablename: {{tableName}}
 rows: {{rows}}
 
 ```
+
+#### CAVEAT
+- partitioned tables are not yet supported.
+- columns with user defined data types are not yet supported.
