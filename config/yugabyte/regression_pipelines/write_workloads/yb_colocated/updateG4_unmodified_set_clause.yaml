@@ -20,8 +20,8 @@ microbenchmark:
     properties:
         setAutoCommit: false
         create:
-            - DROP TABLE IF EXISTS pkeyBigint1M_1;
-            - DROP TABLE IF EXISTS pkeyBigint1M_child_1;
+            - DROP TABLE IF EXISTS pkeyBigint1M_1 CASCADE;
+            - DROP TABLE IF EXISTS pkeyBigint1M_child_1 CASCADE;
             - CREATE TABLE pkeyBigint1M_1(col_bigint_card1_1 bigint, col_bigint_card2_1 bigint, col_bigint_card3_1 bigint, col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1));
             - CREATE INDEX ON pkeyBigint1M_1(col_bigint_card1_1);
             - CREATE INDEX ON pkeyBigint1M_1(col_bigint_card2_1 ASC) INCLUDE (col_bigint_id_2);
@@ -33,8 +33,8 @@ microbenchmark:
             - CREATE INDEX ON pkeyBigint1M_child_1(col_bigint_card1_1);
 
         cleanup:
-            - DROP TABLE IF EXISTS pkeyBigint1M_1;
-            - DROP TABLE IF EXISTS pkeyBigint1M_child_1;
+            - DROP TABLE IF EXISTS pkeyBigint1M_1 CASCADE;
+            - DROP TABLE IF EXISTS pkeyBigint1M_child_1 CASCADE;
 
         loadRules:
           - table: pkeyBigint1M_
