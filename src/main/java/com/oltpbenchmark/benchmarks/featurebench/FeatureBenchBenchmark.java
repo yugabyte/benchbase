@@ -63,6 +63,7 @@ public class FeatureBenchBenchmark extends BenchmarkModule {
                 workloadName);
             workers.add(worker);
         }
+        System.out.println(workers.size());
         return workers;
     }
 
