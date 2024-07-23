@@ -10,6 +10,7 @@
 type: YUGABYTE
 driver: com.yugabyte.Driver
 url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true&load-balance=false
+createdb: drop database if exists yb_colocated; create database yb_colocated with colocated=true
 username: {{username}}
 password: {{password}}
 batchsize: 128
@@ -17,7 +18,7 @@ isolation: TRANSACTION_REPEATABLE_READ
 loaderthreads: 1
 terminals: 1
 collect_pg_stat_statements: true
-yaml_version: v1.1
+yaml_version: v1.0
 use_dist_in_explain : true
 works:
     work:

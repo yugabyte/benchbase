@@ -7,9 +7,9 @@
 #Orderby clause on hash pkey of bigint datatype
 #Orderby clause on hash secondary indexed column of bigint datatype
 #Orderby clause on range secondary indexed column of bigint datatype
-type: YUGABYTE
-driver: com.yugabyte.Driver
-url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true&load-balance=false
+type: POSTGRES
+driver: org.postgresql.Driver
+url: jdbc:postgresql://{{endpoint}}:5432/postgres?sslmode=require
 username: {{username}}
 password: {{password}}
 batchsize: 128
@@ -18,7 +18,6 @@ loaderthreads: 1
 terminals: 1
 collect_pg_stat_statements: true
 yaml_version: v1.1
-use_dist_in_explain : true
 works:
     work:
         time_secs: 120
