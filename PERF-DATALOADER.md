@@ -30,7 +30,7 @@ Options:
 ```
 - to only generate the loader file(skip the actual load). This will generate the yaml file <table-name>_loader.yaml which can be used in loading the data.
 ```
-./perf-data-loader --config <config_file> --table-name <table_name> --rows <rows> --generate-only
+./perf-data-loader --config <config_file> --table-name <table_name> --rows <rows> --gen-config-only
 ```
 
 - to only load the data(when your loader file is already generate)
