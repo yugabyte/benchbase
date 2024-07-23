@@ -76,6 +76,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
         isInitializeDone.set(false);
         isPGStatResetCalled.set(false);
         isPGStatStatementCollected.set(false);
+        isCleanUpDone.set(false);
         try {
             ybm = (YBMicroBenchmark) Class.forName(workloadClass)
                 .getDeclaredConstructor(HierarchicalConfiguration.class)
@@ -328,6 +329,17 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                 }
                 this.featurebenchAdditionalResults.setJsonResultsList(jsonResultsList);
                 isPGStatStatementCollected.set(true);
+            }
+
+            if (((config.containsKey("execute") && config.getBoolean("execute")) || (executeRules == null || executeRules.isEmpty()) )&& !isCleanUpDone.get()) {
+                try {
+                    ybm.cleanUp(conn);
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+                LOG.info("\n=================Cleanup Phase taking from User=========\n");
+                    isCleanUpDone.set(true);
+
             }
 
             if (!this.configuration.getNewConnectionPerTxn() && this.conn != null) {
