@@ -348,8 +348,6 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
 
         LOG.debug("worker calling teardown");
 
-        System.out.println("Calling tearDown");
-
         tearDown();
     }
 
