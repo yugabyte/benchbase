@@ -123,6 +123,8 @@ public class DataGeneratorLoader extends Loader<DataGenerator> {
         String tableName = workConf.getXmlConfig().getString("tablename");
         int rows = workConf.getXmlConfig().getInt("rows");
 
+        // check if the table exists in the database
+        checkIfTableExists(tableName, conn);
         // get the table schema
         List<Column> tableSchema = getTableSchema(tableName, conn);
 
@@ -182,6 +184,28 @@ public class DataGeneratorLoader extends Loader<DataGenerator> {
         LOG.info("Generated loader file: {}_loader.yaml", tableName);
         return new ArrayList<>();
     }
+
+    public static void checkIfTableExists(String tableName, Connection connection) throws SQLException {
+        boolean exists = false;
+        ResultSet resultSet = null;
+
+        try {
+            DatabaseMetaData metaData = connection.getMetaData();
+            resultSet = metaData.getTables(null, null, tableName, new String[]{"TABLE"});
+            if (resultSet.next()) {
+                exists = true;
+            }
+            if (!exists) {
+                throw new RuntimeException(String.format("Table with name %s does not exist", tableName));
+            }
+        } finally {
+            if (resultSet != null) {
+                resultSet.close();
+            }
+        }
+
+    }
+
     public static List<Column> getTableSchema(String tableName, Connection conn) {
         List<Column> tableSchemaList = new ArrayList<>();
         String query = "SELECT column_name, data_type, character_maximum_length, is_identity " +
@@ -431,6 +455,11 @@ public class DataGeneratorLoader extends Loader<DataGenerator> {
                 else
                     pm = properties.get(col.getDataType().toLowerCase());
 
+                if (pm == null) {
+                    throw new RuntimeException(String.format("Cannot find suitable utility function for column " +
+                        "`%s` of datatype `%s`. Consider asking #perf team to add a utility function for given " +
+                            "data type", col.getColumnName(), col.getDataType()));
+                }
                 for (int i = 0; i < pm.params.size(); i++) {
                     Object obj = pm.params.get(i);
                     if (obj instanceof String) {
@@ -512,7 +541,7 @@ public class DataGeneratorLoader extends Loader<DataGenerator> {
             combinedData.putAll(newData);
 
             // Write combined data to the new output file
-            FileWriter fileWriter = new FileWriter(String.format("%s_loader.yaml", tableName));
+            FileWriter fileWriter = new FileWriter(String.format("%s/%s_loader.yaml", System.getProperty("user.dir"), tableName));
             yaml.dump(combinedData, fileWriter);
             fileWriter.close();
         } catch (IOException e) {
@@ -531,10 +560,41 @@ public class DataGeneratorLoader extends Loader<DataGenerator> {
                 while (rs.next()) {
                     distinctValues.add(rs.getObject(1));
                 }
+                if (distinctValues.isEmpty()) {
+                    List<String> hierarchy = getParentTableHierarchy(foreignKey.getForeignTableName(), conn);
+
+                    StringBuilder loadOrder = new StringBuilder(String.format("There are no entries in the parent " +
+                            "table `%s` for column `%s` to be used as foreign key. Consider loading tables in " +
+                            "following order: ", foreignKey.getForeignTableName(),
+                        foreignKey.getForeignColumnName()));
+                    for (String table: hierarchy) {
+                        loadOrder.append(table).append(" --> ");
+                    }
+                    loadOrder.append(foreignKey.getTableName());
+                    throw new RuntimeException(loadOrder.toString());
+                }
                 foreignKey.setDistinctValues(distinctValues);
             } catch (SQLException e) {
                 e.printStackTrace();
             }
+        }
+    }
+    public static List<String> getParentTableHierarchy(String tableName, Connection conn) {
+        List<String> tableHierarchy = new ArrayList<>();
+        findParentTables(tableName, conn, tableHierarchy);
+        return tableHierarchy;
+    }
+
+    private static void findParentTables(String tableName, Connection conn, List<String> tableHierarchy) {
+        List<ForeignKey> foreignKeys = getForeignKeys(tableName, conn);
+
+        if (foreignKeys.isEmpty()) {
+            tableHierarchy.add(tableName);
+        } else {
+            for (ForeignKey foreignKey : foreignKeys) {
+                findParentTables(foreignKey.getForeignTableName(), conn, tableHierarchy);
+            }
+            tableHierarchy.add(tableName);
         }
     }
 }
