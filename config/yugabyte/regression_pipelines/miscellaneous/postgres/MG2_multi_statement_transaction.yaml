@@ -108,8 +108,8 @@ microbenchmark:
                           bindings:
                               -   util: PrimaryIntGen
                                   params: [ 2000000, 10000000000 ]
-                              -   util: PrimaryDateGen
-                                  params: [ 100000000 ]
+                              -   util: RandomDate
+                                  params: [ 2000, 2024 ]
                               -   util: PrimaryIntGen
                                   params: [ 2000000, 10000000000 ]
                               -   util: RandomNoWithDecimalPoints
