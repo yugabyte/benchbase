@@ -1,65 +1,134 @@
 type: YUGABYTE
 driver: com.yugabyte.Driver
-url: jdbc:yugabytedb://localhost:5433/yugabyte?sslmode=disable&ApplicationName=featurebench&reWriteBatchedInserts=true
+url: jdbc:yugabytedb://localhost:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true&load-balance=false
 username: yugabyte
-password: null
+password: yugabyte
 batchsize: 128
 isolation: TRANSACTION_REPEATABLE_READ
-loaderthreads: 1
-collect_pg_stat_statements: true
-terminals: 1
+loaderThreads: 1
+terminals: 24
+collect_pg_stat_statements: false
+yaml_version: v1.0
 works:
     work:
-        time_secs: 5
-        active_terminals: 1
-        rate: 1000
-        warmup: 0
+        time_secs: 300
+        rate: unlimited
+        warmup: 60
 microbenchmark:
     class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
     properties:
         setAutoCommit: true
         create:
-        - DROP TABLE IF EXISTS demo100col;
-        - CREATE TABLE demo100col (id INT, col1 TEXT, primary key (id ASC)) ;
+            - DROP TABLE IF EXISTS users_1;
+            - DROP TABLE IF EXISTS accounts_1;
+            - DROP TABLE IF EXISTS audit_table_1;
+            - CREATE TABLE IF NOT EXISTS users_1(user_id_1 bigint, user_name_1 varchar(10), addr_1 varchar(50), bal_1 float(2), PRIMARY KEY(user_id_1));
+            - CREATE TABLE IF NOT EXISTS accounts_1(account_id_1 bigint, user_id_1 bigint, addr_1 varchar(50), bal_1 float(2), PRIMARY KEY(account_id_1));
+            - CREATE UNIQUE INDEX user_accounts ON accounts_1( user_id_1, account_id_1);
+            - CREATE TABLE IF NOT EXISTS audit_table_1(account_id_1 bigint, event_id_1 date, user_id_1 bigint, delta_1 float(2), PRIMARY KEY(account_id_1, event_id_1));
+
+        cleanup:
+            - DROP TABLE IF EXISTS users_1;
+            - DROP TABLE IF EXISTS accounts_1;
+            - DROP TABLE IF EXISTS audit_table_1;
+
         loadRules:
-        -   table: demo100col
-            rows: 10
-            columns:
-            -   name: id
-                util: PrimaryIntGen
-                params:
-                - 1
-                - 1000
-            -   name: col1
-                util: RandomStringNumeric
-                params:
-                - 128
+            -   table: users_
+                count: 1
+                rows: 1000000
+                columns:
+                    -   name: user_id_
+                        count: 1
+                        util: PrimaryIntGen
+                        params: [ 1, 1000000 ]
+                    -   name: user_name_
+                        count: 1
+                        util: PrimaryStringGen
+                        params: [ 1, 10 ]
+                    -   name: addr_
+                        count: 1
+                        util: PrimaryStringGen
+                        params: [ 1, 50 ]
+                    -   name: bal_
+                        count: 1
+                        util: RandomNoWithDecimalPoints
+                        params: [ 1, 1000000, 2 ]
+
+            -   table: accounts_
+                count: 1
+                rows: 1000000
+                columns:
+                    -   name: account_id_
+                        count: 1
+                        util: PrimaryIntGen
+                        params: [ 1, 1000000 ]
+                    -   name: user_id_
+                        count: 1
+                        util: PrimaryIntGen
+                        params: [ 1, 1000000 ]
+                    -   name: addr_
+                        count: 1
+                        util: PrimaryStringGen
+                        params: [ 1, 50 ]
+                    -   name: bal_
+                        count: 1
+                        util: RandomNoWithDecimalPoints
+                        params: [ 1, 1000000, 2 ]
+
+            -   table: audit_table_
+                count: 1
+                rows: 1000000
+                columns:
+                    -   name: account_id_
+                        count: 1
+                        util: PrimaryIntGen
+                        params: [ 1, 1000000 ]
+                    -   name: event_id_
+                        count: 1
+                        util: PrimaryDateGen
+                        params: [2000000]
+                    -   name: user_id_
+                        count: 1
+                        util: PrimaryIntGen
+                        params: [ 1, 1000000 ]
+                    -   name: delta_
+                        count: 1
+                        util: RandomNoWithDecimalPoints
+                        params: [ 1, 1000000, 2 ]
+
+
         executeRules:
-        -   workload: RangeScan1
-            run:
-            -   name: ReadQuery1
-                weight: 100
-                queries:
-                -   query: INSERT INTO demo100col VALUES(?,?)
-                    bindings:
-                    -   util: PrimaryIntGen
-                        params:
-                        - 10000
-                        - 100000
-                    -   util: RandomAString
-                        params:
-                        - 5
-                        - 5
-            -   name: WriteQuery2
-                weight: 50
-                queries:
-                -   query: UPDATE demo100col set col1 = ? where id = ?
-                    bindings:
-                    -   util: RandomAString
-                        params:
-                        - 10
-                        - 20
-                    -   util: RandomNumber
-                        params:
-                        - 1
-                        - 1000
+            - workload: MG2_1_multi_statement_transaction_run1
+              customTags: customer=10,schematype=regular,partition=hash,pkey=composite,cardinality=single,projection=all,filtercount=one,filteron=hashpkey,filtertype=pointselect,queryshape=scan
+              run:
+                  - name: statement1_insert
+                    weight: 100
+                    queries:
+                        - query: INSERT INTO audit_table_1(account_id_1, event_id_1, user_id_1, delta_1) VALUES(?,?,?,?)
+                          bindings:
+                              -   util: PrimaryIntGen
+                                  params: [ 2000000, 10000000000 ]
+                              -   util: PrimaryDateGen
+                                  params: [ 100000000 ]
+                              -   util: PrimaryIntGen
+                                  params: [ 2000000, 10000000000 ]
+                              -   util: RandomNoWithDecimalPoints
+                                  params: [ 1, 1000000, 2 ]
+                        - query: UPDATE accounts_1 SET bal_1 = ? WHERE account_id_1 = ? and user_id_1 = ?
+                          bindings:
+                              -   util: RandomNoWithDecimalPoints
+                                  params: [ 1000000, 10000000, 2 ]
+                              -   util: PrimaryIntGen
+                                  params: [ 1, 10000000000 ]
+                              -   util: PrimaryIntGen
+                                  params: [ 1, 10000000000 ]
+                        - query: SELECT bal_1 FROM accounts_1 WHERE account_id_1 = ?
+                          bindings:
+                              -   util: PrimaryIntGen
+                                  params: [ 1, 10000000000 ]
+                        - query: UPDATE users_1 SET bal_1 = bal_1 + ? WHERE user_id_1 = ?
+                          bindings:
+                              -   util: RandomInt
+                                  params: [ 1, 100 ]
+                              -   util: PrimaryIntGen
+                                  params: [ 1, 10000000000 ]
