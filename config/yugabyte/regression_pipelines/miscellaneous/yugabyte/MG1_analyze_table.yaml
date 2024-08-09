@@ -10,6 +10,8 @@ terminals: 1
 collect_pg_stat_statements: true
 yaml_version: v1.0
 disable_explain: true
+enable_flushing: false
+enable_compaction : false
 works:
     work:
         time_secs: 1800
