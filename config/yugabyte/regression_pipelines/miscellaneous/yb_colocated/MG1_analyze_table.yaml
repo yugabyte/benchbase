@@ -187,7 +187,7 @@ microbenchmark:
 
             - table: nets_100g_
               count: 1
-              rows: 100000000
+              rows: 167000000
               columns:
                     - name: op_id_
                       count: 1
@@ -260,7 +260,7 @@ microbenchmark:
 
             - table: nets_250g_
               count: 1
-              rows: 100000000
+              rows: 417000000
               columns:
                     - name: op_id_
                       count: 1
