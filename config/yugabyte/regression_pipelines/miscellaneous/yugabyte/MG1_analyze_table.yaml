@@ -407,6 +407,15 @@ microbenchmark:
                       util: RandomAString
                       params: [ 50, 50 ]
         executeRules:
+            - workload: G1_0_Ingnore_workload
+              time_secs: 300
+              skipReport: true
+              run:
+                  - name: analyze_1
+                    weight: 100
+                    queries:
+                        - query: SELECT pg_sleep(7200);
+
             - workload: G1_1_Analyze_60G_table
               time_secs: 1800
               run:
@@ -439,7 +448,7 @@ microbenchmark:
                     queries:
                         - query: analyze nets_250g_1
 
-            - workload: G1_4_Analyze_100G_range_table
+            - workload: G1_5_Analyze_60G_range_table
               time_secs: 1800
               run:
                   - name: analyze_1
