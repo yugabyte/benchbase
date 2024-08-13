@@ -519,7 +519,7 @@ public class DataGeneratorLoader extends Loader<DataGenerator> {
 
                     StringBuilder loadOrder = new StringBuilder(String.format("There are no entries in the parent " +
                             "table `%s` for column `%s` to be used as foreign key. Consider loading tables in " +
-                            "following order/Levels(tables from 0th level first and so on: ", foreignKey.getForeignTableName(),
+                            "following order/Levels(tables from `Level 0` first, then `Level 1` and so on: ", foreignKey.getForeignTableName(),
                         foreignKey.getForeignColumnName()));
 
                     for (String table : graph.keySet()) {
