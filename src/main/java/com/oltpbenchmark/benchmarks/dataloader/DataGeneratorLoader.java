@@ -284,7 +284,6 @@ public class DataGeneratorLoader extends Loader<DataGenerator> {
     public static void buildDependencyDAGForTable(Map<String, List<Dependency>> graph, List<ForeignKey> foreignKeyList, Connection conn) {
         // Build the adjacency list
         for (ForeignKey fk : foreignKeyList) {
-//            graph.computeIfAbsent(fk.getForeignTableName(), k -> new ArrayList<>()).add(new Dependency(fk.getTableName(), 1));
             graph.computeIfAbsent(fk.getTableName(), k -> new ArrayList<>()).add(new Dependency(fk.getForeignTableName(), -1));
             List<ForeignKey> fkOfFks = getForeignKeys(fk.getForeignTableName(), conn);
             if (!fkOfFks.isEmpty()) {
@@ -528,8 +527,6 @@ public class DataGeneratorLoader extends Loader<DataGenerator> {
                             getOrderOfImport(table, loadOrder, graph, depth, visited);
                         }
                     }
-
-                    loadOrder.append(levelAndTables);
                     throw new RuntimeException(loadOrder.toString());
                 }
                 foreignKey.setDistinctValues(distinctValues);
@@ -650,7 +647,6 @@ public class DataGeneratorLoader extends Loader<DataGenerator> {
             int level = entry.getKey();
             List<String> tablesAtLevel = entry.getValue();
             loadOrder.append("\n").append("Level ").append(level).append(": ").append(String.join(", ", tablesAtLevel));
-//            levelAndTables.put(level, tablesAtLevel.toString());
         }
 
     }
