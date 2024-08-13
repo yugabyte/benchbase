@@ -281,14 +281,14 @@ public class DataGeneratorLoader extends Loader<DataGenerator> {
         return tableHierarchy;
     }
 
-    public static void buildDirectedAcyclicGraphForTable(Map<String, List<Dependency>> graph, List<ForeignKey> foreignKeyList, Connection conn) {
+    public static void buildDependencyDAGForTable(Map<String, List<Dependency>> graph, List<ForeignKey> foreignKeyList, Connection conn) {
         // Build the adjacency list
         for (ForeignKey fk : foreignKeyList) {
-            graph.computeIfAbsent(fk.getForeignTableName(), k -> new ArrayList<>()).add(new Dependency(fk.getTableName(), 1));
+//            graph.computeIfAbsent(fk.getForeignTableName(), k -> new ArrayList<>()).add(new Dependency(fk.getTableName(), 1));
             graph.computeIfAbsent(fk.getTableName(), k -> new ArrayList<>()).add(new Dependency(fk.getForeignTableName(), -1));
             List<ForeignKey> fkOfFks = getForeignKeys(fk.getForeignTableName(), conn);
             if (!fkOfFks.isEmpty()) {
-                buildDirectedAcyclicGraphForTable(graph, fkOfFks, conn);
+                buildDependencyDAGForTable(graph, fkOfFks, conn);
             }
         }
     }
@@ -516,16 +516,16 @@ public class DataGeneratorLoader extends Loader<DataGenerator> {
                     Map<Integer, List<String>> depth = new TreeMap<>();
                     Set<String> visited = new HashSet<>();
 
-                    buildDirectedAcyclicGraphForTable(graph, foreignKeyList, conn);
+                    buildDependencyDAGForTable(graph, foreignKeyList, conn);
 
                     StringBuilder loadOrder = new StringBuilder(String.format("There are no entries in the parent " +
                             "table `%s` for column `%s` to be used as foreign key. Consider loading tables in " +
-                            "following order: ", foreignKey.getForeignTableName(),
+                            "following order/Levels(tables from 0th level first and so on: ", foreignKey.getForeignTableName(),
                         foreignKey.getForeignColumnName()));
 
                     for (String table : graph.keySet()) {
                         if (!visited.contains(table)) {
-                            getOrderOfImport(table, levelAndTables, graph, depth, visited);
+                            getOrderOfImport(table, loadOrder, graph, depth, visited);
                         }
                     }
 
@@ -633,7 +633,7 @@ public class DataGeneratorLoader extends Loader<DataGenerator> {
     }
 
     // Function to print nodes by levels
-    public void getOrderOfImport(String startTable, Map<Integer, String> levelAndTables,
+    public void getOrderOfImport(String startTable, StringBuilder loadOrder,
                               Map<String, List<Dependency>> graph , Map<Integer, List<String>> depth,
                               Set<String> visited) {
         dfs(startTable, 0, graph, depth, visited);
@@ -649,8 +649,8 @@ public class DataGeneratorLoader extends Loader<DataGenerator> {
         for (Map.Entry<Integer, List<String>> entry : adjustedDepth.entrySet()) {
             int level = entry.getKey();
             List<String> tablesAtLevel = entry.getValue();
-            System.out.println("Level " + level + ": " + String.join(", ", tablesAtLevel));
-            levelAndTables.put(level, tablesAtLevel.toString());
+            loadOrder.append("\n").append("Level ").append(level).append(": ").append(String.join(", ", tablesAtLevel));
+//            levelAndTables.put(level, tablesAtLevel.toString());
         }
 
     }
