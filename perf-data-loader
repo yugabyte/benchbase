@@ -11,7 +11,7 @@ JAR_PATH=""
 
 # Function to display help
 function display_help {
-    echo "Usage: $0 --config <config_file> --table-name <table_name> --rows <rows> [--gen-config-only] [--load-only]"
+    echo "Usage: $0 --config <config_file> --table-name <table_name> --rows <rows> [--gen-config-only] [--load-only] [--gen-load-order]"
     echo "Short forms: -c <config_file> -t <table_name> -r <rows>"
     echo "Options:"
     echo "  -c, --config                Configuration file"
