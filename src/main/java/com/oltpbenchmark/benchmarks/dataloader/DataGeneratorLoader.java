@@ -673,7 +673,6 @@ public class DataGeneratorLoader extends Loader<DataGenerator> {
             int level = entry.getKey();
             List<String> tablesAtLevel = entry.getValue();
             levelsAndTables.put(level, tablesAtLevel);
-//            loadOrder.append("\n").append("Level ").append(level).append(": ").append(String.join(", ", tablesAtLevel));
         }
 
         return levelsAndTables;
