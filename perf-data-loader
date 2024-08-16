@@ -133,7 +133,7 @@ if [ "$GEN_LOAD_ORDER" = true ]; then
     echo >> "$TEMP_CONFIG"
     echo "gen-db-load-order: true" >> "$TEMP_CONFIG"
     echo "Generating load order based on the provided config file"
-    java -jar "$JAR_PATH" -b perf-dataloader -c "$TEMP_CONFIG"
+    java -jar "$JAR_PATH" -b perf-dataloader -c "$TEMP_CONFIG" -p tableName="dummy" -p rows="1" --load=True
 
     # Clean up: delete the temporary config file
     rm -f "$TEMP_CONFIG"
