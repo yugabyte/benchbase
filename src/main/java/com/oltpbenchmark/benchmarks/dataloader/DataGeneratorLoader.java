@@ -86,7 +86,7 @@ public class DataGeneratorLoader extends Loader<DataGenerator> {
         return tableSchemaList;
     }
 
-    public static List<PrimaryKey> getPrimaryKeys(String tableName, Connection conn) {
+    public static List<PrimaryKey> getPrimaryKeys(String tableName, String tableSchema, Connection conn) {
         List<PrimaryKey> primaryKeyList = new ArrayList<>();
         String query = "SELECT c.column_name, c.data_type " +
             "FROM information_schema.table_constraints tc " +
@@ -95,11 +95,12 @@ public class DataGeneratorLoader extends Loader<DataGenerator> {
             "AND tc.table_name = c.table_name " +
             "AND ccu.column_name = c.column_name " +
             "WHERE constraint_type = 'PRIMARY KEY' " +
-            "AND tc.table_name = ?";
+            "AND tc.table_name = ? and tc.table_schema = ?";
 
         try (PreparedStatement pstmt = conn.prepareStatement(query)) {
 
             pstmt.setString(1, tableName);
+            pstmt.setString(2, tableSchema);
             ResultSet rs = pstmt.executeQuery();
 
             while (rs.next()) {
@@ -116,17 +117,18 @@ public class DataGeneratorLoader extends Loader<DataGenerator> {
         return primaryKeyList;
     }
 
-    public static List<String> getUniqueConstrains(String tableName, Connection conn) {
+    public static List<String> getUniqueConstrains(String tableName, String tableSchema, Connection conn) {
         List<String> uniques = new ArrayList<>();
         // Query to find unique indexes on 'store' table in 'public' schema
         String query = "SELECT indexdef " +
             "FROM pg_indexes " +
             "WHERE indexdef ILIKE '%UNIQUE%' " +
-            "AND tablename = ?";
+            "AND tablename = ? and schemaname = ?";
 
         try (PreparedStatement pstmt = conn.prepareStatement(query)) {
 
             pstmt.setString(1, tableName);
+            pstmt.setString(2, tableSchema);
             ResultSet rs = pstmt.executeQuery();
 
             while (rs.next()) {
@@ -229,7 +231,7 @@ public class DataGeneratorLoader extends Loader<DataGenerator> {
         return filteredColumns;
     }
 
-    public static List<ForeignKey> getForeignKeys(String tableName, Connection conn) {
+    public static List<ForeignKey> getForeignKeys(String tableName, String tableSchema, Connection conn) {
         List<ForeignKey> foreignKeyList = new ArrayList<>();
         String query = "SELECT " +
             "kcu.table_schema AS schema_name, " +
@@ -250,11 +252,12 @@ public class DataGeneratorLoader extends Loader<DataGenerator> {
             "AND kcu.table_name = col.table_name " +
             "AND kcu.column_name = col.column_name " +
             "WHERE tc.constraint_type = 'FOREIGN KEY' " +
-            "AND kcu.table_name = ?";
+            "AND kcu.table_name = ? AND kcu.table_schema = ?";
 
         try (PreparedStatement pstmt = conn.prepareStatement(query)) {
 
             pstmt.setString(1, tableName);
+            pstmt.setString(2, tableSchema);
             ResultSet rs = pstmt.executeQuery();
 
             while (rs.next()) {
@@ -276,13 +279,14 @@ public class DataGeneratorLoader extends Loader<DataGenerator> {
         return foreignKeyList;
     }
 
-    public static void buildDependencyDAGForTable(Map<String, List<Dependency>> graph, List<ForeignKey> foreignKeyList, Connection conn) {
+    public static void buildDependencyDAGForTable(Map<String, List<Dependency>> graph, List<ForeignKey> foreignKeyList,
+                                                  String tableSchema, Connection conn) {
         // Build the adjacency list
         for (ForeignKey fk : foreignKeyList) {
             graph.computeIfAbsent(fk.getTableName(), k -> new ArrayList<>()).add(new Dependency(fk.getForeignTableName(), -1));
-            List<ForeignKey> fkOfFks = getForeignKeys(fk.getForeignTableName(), conn);
+            List<ForeignKey> fkOfFks = getForeignKeys(fk.getForeignTableName(), tableSchema, conn);
             if (!fkOfFks.isEmpty()) {
-                buildDependencyDAGForTable(graph, fkOfFks, conn);
+                buildDependencyDAGForTable(graph, fkOfFks, tableSchema, conn);
             }
         }
     }
@@ -343,18 +347,16 @@ public class DataGeneratorLoader extends Loader<DataGenerator> {
             List<Column> columnDetails = getTableSchema(tableName, conn, schemaOfTable);
 
             // key primary key details
-            List<PrimaryKey> primaryKeys = getPrimaryKeys(tableName, conn);
+            List<PrimaryKey> primaryKeys = getPrimaryKeys(tableName, schemaOfTable, conn);
 
             // get all unique constraints from the indexes
-            List<String> uniqueConstraintColumns = getUniqueConstrains(tableName, conn);
+            List<String> uniqueConstraintColumns = getUniqueConstrains(tableName, schemaOfTable, conn);
 
             // get all columns with respective user defined ENUM data type
             Map<String, List<Object>> udColumns = getUserDefinedEnumDataTypes(tableName, "public", conn);
 
             // get all foreign keys of the table
-            List<ForeignKey> foreignKeys = getForeignKeys(tableName, conn);
-//        System.out.println(foreignKeys);
-
+            List<ForeignKey> foreignKeys = getForeignKeys(tableName, schemaOfTable, conn);
 
             int limit = Math.min(10000, rows);
             List<String> fkColNames = new ArrayList<>();
@@ -383,7 +385,7 @@ public class DataGeneratorLoader extends Loader<DataGenerator> {
 
             if (!foreignKeys.isEmpty()) {
                 // fetch the distinct values from parent table. This could take some time
-                getDistinctValuesFromParentTable(conn, foreignKeys, limit);
+                getDistinctValuesFromParentTable(conn, foreignKeys, limit, schemaOfTable);
             }
             // create mapping of utility function to the columns in the table
             Map<String, PropertyMapping> columnToUtilsMapping =
@@ -526,7 +528,7 @@ public class DataGeneratorLoader extends Loader<DataGenerator> {
         }
     }
 
-    public void getDistinctValuesFromParentTable(Connection conn, List<ForeignKey> foreignKeyList, int limit) {
+    public void getDistinctValuesFromParentTable(Connection conn, List<ForeignKey> foreignKeyList, int limit, String schemaOfTable) {
         String queryTemplate = "SELECT DISTINCT %s FROM %s LIMIT %d";
         for (ForeignKey foreignKey : foreignKeyList) {
             String query = String.format(queryTemplate, foreignKey.getForeignColumnName(), foreignKey.getForeignTableName(), limit);
@@ -543,7 +545,7 @@ public class DataGeneratorLoader extends Loader<DataGenerator> {
                     Map<Integer, List<String>> depth = new TreeMap<>();
                     Set<String> visited = new HashSet<>();
 
-                    buildDependencyDAGForTable(graph, foreignKeyList, conn);
+                    buildDependencyDAGForTable(graph, foreignKeyList, schemaOfTable, conn);
 
                     StringBuilder loadOrder = new StringBuilder(String.format("There are no entries in the parent " +
                             "table `%s` for column `%s` to be used as foreign key. Consider loading tables in " +

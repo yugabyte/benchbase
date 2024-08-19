@@ -218,7 +218,7 @@ if [ "$GEN_LOAD_ORDER" = true ]; then
     show_progress_bar "$CMD_PID"
     # Check if the command was successful and print the appropriate message
     check_command_status "$CMD_PID" \
-        "Load order generated successfully in file: load_order.json" \
+        "Load order generated successfully in file \`load_order.json\` and is as follows: " \
         "Failed to generate load order for the database." \
         "$LOG_FILE"
     # If successful, print the contents of the load order file
