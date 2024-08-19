@@ -105,7 +105,7 @@ if [ "$LOAD_ONLY" = true ]; then
         display_help
     fi
     echo "Loading the data into the database now!"
-    java -jar "$JAR_PATH" -b featurebench -c "$CONFIG" --load=True
+    java -jar "$JAR_PATH" -b featurebench -c "$CONFIG" --load=True 1>/dev/null
     exit 0
 fi
 
@@ -115,7 +115,11 @@ if [ "$GENERATE_ONLY" = true ]; then
         display_help
     fi
     echo "Generating loader file for the table"
-    java -jar "$JAR_PATH" -b perf-dataloader -c "$CONFIG" -p tableName="$TABLE_NAME" -p rows="$ROWS" --load=True
+    if java -jar "$JAR_PATH" -b perf-dataloader -c "$CONFIG" -p tableName="$TABLE_NAME" -p rows="$ROWS" --load=True 1>/dev/null ; then
+        echo "Loader file generated successfully: ${TABLE_NAME}_loader.yaml"
+    else
+        echo "Failed to generate loader file."
+    fi
     exit 0
 fi
 
@@ -133,7 +137,7 @@ if [ "$GEN_LOAD_ORDER" = true ]; then
     echo >> "$TEMP_CONFIG"
     echo "gen-db-load-order: true" >> "$TEMP_CONFIG"
     echo "Generating load order based on the provided config file"
-    java -jar "$JAR_PATH" -b perf-dataloader -c "$TEMP_CONFIG" -p tableName="dummy" -p rows="1" --load=True
+    java -jar "$JAR_PATH" -b perf-dataloader -c "$TEMP_CONFIG" -p tableName="dummy" -p rows="1" --load=True 1>/dev/null
 
     # Clean up: delete the temporary config file
     rm -f "$TEMP_CONFIG"
@@ -150,7 +154,12 @@ fi
 
 # If no specific option is provided, do both generate and load with default config file location
 echo "Generating loader file for the table"
-java -jar "$JAR_PATH" -b perf-dataloader -c "$CONFIG" -p tableName="$TABLE_NAME" -p rows="$ROWS" --load=True
+if java -jar "$JAR_PATH" -b perf-dataloader -c "$CONFIG" -p tableName="$TABLE_NAME" -p rows="$ROWS" --load=True 1>/dev/null; then
+    echo "Loader file generated successfully: ${TABLE_NAME}_loader.yaml"
+else
+    echo "Failed to generate loader file."
+fi
+
 
 DEFAULT_CONFIG="${TABLE_NAME}_loader.yaml"
 

@@ -39,17 +39,16 @@ public class DataGeneratorLoader extends Loader<DataGenerator> {
         this.pkProperties = pkProperties;
     }
 
-    public static void checkIfTableExists(String tableName, Connection connection) throws SQLException {
-        boolean exists = false;
+    public static String getTableSchemaIfTableExists(String tableName, Connection connection) throws SQLException {
+        String tableSchema = null;
         ResultSet resultSet = null;
 
         try {
             DatabaseMetaData metaData = connection.getMetaData();
             resultSet = metaData.getTables(null, null, tableName, new String[]{"TABLE"});
             if (resultSet.next()) {
-                exists = true;
-            }
-            if (!exists) {
+                tableSchema = resultSet.getString("TABLE_SCHEM");
+            } else {
                 throw new RuntimeException(String.format("Table with name %s does not exist", tableName));
             }
         } finally {
@@ -58,16 +57,17 @@ public class DataGeneratorLoader extends Loader<DataGenerator> {
             }
         }
 
+        return tableSchema;
     }
 
-    public static List<Column> getTableSchema(String tableName, Connection conn) {
+    public static List<Column> getTableSchema(String tableName, Connection conn, String tableSchema) {
         List<Column> tableSchemaList = new ArrayList<>();
         String query = "SELECT column_name, data_type, character_maximum_length, is_identity " +
-            "FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = ?";
+            "FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = ? and table_schema = ?";
 
         try (PreparedStatement pstmt = conn.prepareStatement(query)) {
-
             pstmt.setString(1, tableName);
+            pstmt.setString(2, tableSchema);
             ResultSet rs = pstmt.executeQuery();
 
             while (rs.next()) {
@@ -337,10 +337,10 @@ public class DataGeneratorLoader extends Loader<DataGenerator> {
             String tableName = workConf.getXmlConfig().getString("tablename");
             int rows = workConf.getXmlConfig().getInt("rows");
 
-            // check if the table exists in the database
-            checkIfTableExists(tableName, conn);
+            // check if the table exists in the database and fetch the table schema
+            String schemaOfTable = getTableSchemaIfTableExists(tableName, conn);
             // get the table schema
-            List<Column> tableSchema = getTableSchema(tableName, conn);
+            List<Column> columnDetails = getTableSchema(tableName, conn, schemaOfTable);
 
             // key primary key details
             List<PrimaryKey> primaryKeys = getPrimaryKeys(tableName, conn);
@@ -387,7 +387,7 @@ public class DataGeneratorLoader extends Loader<DataGenerator> {
             }
             // create mapping of utility function to the columns in the table
             Map<String, PropertyMapping> columnToUtilsMapping =
-                utilsMapping(tableSchema, primaryKeys, foreignKeys, limit, rows, uniqueConstraintColumns, udColumns);
+                utilsMapping(columnDetails, primaryKeys, foreignKeys, limit, rows, uniqueConstraintColumns, udColumns);
 
             // generate the mapping object which can be used to create the output yaml file
             Root root = generateMappingObject(tableName, rows, columnToUtilsMapping, fkColNames, udColumns);
