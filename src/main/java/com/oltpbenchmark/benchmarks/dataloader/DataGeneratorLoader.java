@@ -353,7 +353,7 @@ public class DataGeneratorLoader extends Loader<DataGenerator> {
             List<String> uniqueConstraintColumns = getUniqueConstrains(tableName, schemaOfTable, conn);
 
             // get all columns with respective user defined ENUM data type
-            Map<String, List<Object>> udColumns = getUserDefinedEnumDataTypes(tableName, "public", conn);
+            Map<String, List<Object>> udColumns = getUserDefinedEnumDataTypes(tableName, schemaOfTable, conn);
 
             // get all foreign keys of the table
             List<ForeignKey> foreignKeys = getForeignKeys(tableName, schemaOfTable, conn);
