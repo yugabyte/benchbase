@@ -39,6 +39,117 @@ public class DataGeneratorLoader extends Loader<DataGenerator> {
         this.pkProperties = pkProperties;
     }
 
+    @Override
+    public List<LoaderThread> createLoaderThreads() throws SQLException {
+        Connection conn = benchmark.makeConnection();
+        boolean genLoadOrderOnly = workConf.getXmlConfig().getBoolean("gen-db-load-order", false);
+        if (genLoadOrderOnly) {
+            Set<String> processedTables = new HashSet<>();
+            Map<String, List<Dependency>> graph = new HashMap<>();
+            Set<String> visited = new HashSet<>();
+            StringBuilder loadOrder = new StringBuilder();
+            Map<Integer, List<String>> depth = new TreeMap<>();
+            Map<Integer, List<String>> levelAndTables = new LinkedHashMap<>();
+            buildGraph(conn, processedTables, graph);
+
+            List<String> independentTables = new ArrayList<>();
+            List<String> allDbTables = getAllTables(conn);
+            for(String table: allDbTables) {
+                if (!processedTables.contains(table.toLowerCase())) {
+                    independentTables.add(table);
+                }
+            }
+
+            if (!graph.isEmpty()) {
+                String startTable = graph.keySet().iterator().next();
+                levelAndTables.putAll(getOrderOfImport(startTable, loadOrder, graph, depth, visited));
+                levelAndTables.get(0).addAll(independentTables);
+            } else {
+                levelAndTables.put(0, independentTables);
+            }
+
+            int totalTables = 0;
+            for (Map.Entry<Integer, List<String>> entry : levelAndTables.entrySet()) {
+                int level = entry.getKey();
+                List<String> tablesAtLevel = entry.getValue();
+                totalTables += tablesAtLevel.size();
+                System.out.println("Level " + level + ": " + String.join(", ", tablesAtLevel));
+            }
+
+            System.out.println("Total number of tables: " + totalTables);
+            try {
+                FileWriter writer = new FileWriter("load_order.json");
+                writer.write(JSONUtil.format(JSONUtil.toJSONString(levelAndTables)));
+                writer.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+        } else {
+            String tableName = workConf.getXmlConfig().getString("tablename");
+            int rows = workConf.getXmlConfig().getInt("rows");
+
+            // check if the table exists in the database and fetch the table schema
+            String schemaOfTable = getTableSchemaIfTableExists(tableName, conn);
+            // get the table schema
+            List<Column> columnDetails = getTableSchema(tableName, conn, schemaOfTable);
+
+            // key primary key details
+            List<PrimaryKey> primaryKeys = getPrimaryKeys(tableName, schemaOfTable, conn);
+
+            // get all unique constraints from the indexes
+            List<String> uniqueConstraintColumns = getUniqueConstrains(tableName, schemaOfTable, conn);
+
+            // get all columns with respective user defined ENUM data type
+            Map<String, List<Object>> udColumns = getUserDefinedEnumDataTypes(tableName, schemaOfTable, conn);
+
+            // get all foreign keys of the table
+            List<ForeignKey> foreignKeys = getForeignKeys(tableName, schemaOfTable, conn);
+
+            int limit = Math.min(10000, rows);
+            List<String> fkColNames = new ArrayList<>();
+
+            // if in foreign key, parent table is same as current table, don't treat it as foreign key. treat is as normal column
+            List<ForeignKey> fkToRemove = new ArrayList<>();
+            foreignKeys.forEach(fk -> {
+                if (fk.getForeignTableName().equalsIgnoreCase(tableName)) {
+                    fkToRemove.add(fk);
+                } else {
+                    fkColNames.add(fk.getColumnName());
+                }
+            });
+            foreignKeys.removeAll(fkToRemove);
+
+            // remove all fks from unique constraints
+            uniqueConstraintColumns.removeAll(fkColNames);
+
+            // remove all fks from primary keys
+            List<PrimaryKey> pkToRemove = new ArrayList<>();
+            primaryKeys.forEach(pk -> {
+                if (fkColNames.contains(pk.getColumnName()))
+                    pkToRemove.add(pk);
+            });
+            primaryKeys.removeAll(pkToRemove);
+
+            if (!foreignKeys.isEmpty()) {
+                // fetch the distinct values from parent table. This could take some time
+                getDistinctValuesFromParentTable(conn, foreignKeys, limit, schemaOfTable);
+            }
+            // create mapping of utility function to the columns in the table
+            Map<String, PropertyMapping> columnToUtilsMapping =
+                utilsMapping(columnDetails, primaryKeys, foreignKeys, limit, rows, uniqueConstraintColumns, udColumns);
+
+            // generate the mapping object which can be used to create the output yaml file
+            Root root = generateMappingObject(tableName, rows, columnToUtilsMapping, fkColNames, udColumns);
+
+            // create output yaml file
+            writeToFile(tableName, rows, root);
+            LOG.info("Generated loader file: {}_loader.yaml", tableName);
+        }
+
+        return new ArrayList<>();
+    }
+
     public static String getTableSchemaIfTableExists(String tableName, Connection connection) throws SQLException {
         String tableSchema = null;
         ResultSet resultSet = null;
@@ -291,117 +402,6 @@ public class DataGeneratorLoader extends Loader<DataGenerator> {
         }
     }
 
-    @Override
-    public List<LoaderThread> createLoaderThreads() throws SQLException {
-        Connection conn = benchmark.makeConnection();
-        boolean genLoadOrderOnly = workConf.getXmlConfig().getBoolean("gen-db-load-order", false);
-        if (genLoadOrderOnly) {
-            Set<String> processedTables = new HashSet<>();
-            Map<String, List<Dependency>> graph = new HashMap<>();
-            Set<String> visited = new HashSet<>();
-            StringBuilder loadOrder = new StringBuilder();
-            Map<Integer, List<String>> depth = new TreeMap<>();
-            Map<Integer, List<String>> levelAndTables = new LinkedHashMap<>();
-            buildGraph(conn, processedTables, graph);
-
-            List<String> independentTables = new ArrayList<>();
-            List<String> allDbTables = getAllTables(conn);
-            for(String table: allDbTables) {
-                if (!processedTables.contains(table.toLowerCase())) {
-                    independentTables.add(table);
-                }
-            }
-
-            if (!graph.isEmpty()) {
-                String startTable = graph.keySet().iterator().next();
-                levelAndTables.putAll(getOrderOfImport(startTable, loadOrder, graph, depth, visited));
-                levelAndTables.get(0).addAll(independentTables);
-            } else {
-                levelAndTables.put(0, independentTables);
-            }
-
-            int totalTables = 0;
-            for (Map.Entry<Integer, List<String>> entry : levelAndTables.entrySet()) {
-                int level = entry.getKey();
-                List<String> tablesAtLevel = entry.getValue();
-                totalTables += tablesAtLevel.size();
-                System.out.println("Level " + level + ": " + String.join(", ", tablesAtLevel));
-            }
-
-            System.out.println("Total number of tables: " + totalTables);
-            try {
-                FileWriter writer = new FileWriter("load_order.json");
-                writer.write(JSONUtil.format(JSONUtil.toJSONString(levelAndTables)));
-                writer.close();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-
-        } else {
-            String tableName = workConf.getXmlConfig().getString("tablename");
-            int rows = workConf.getXmlConfig().getInt("rows");
-
-            // check if the table exists in the database and fetch the table schema
-            String schemaOfTable = getTableSchemaIfTableExists(tableName, conn);
-            // get the table schema
-            List<Column> columnDetails = getTableSchema(tableName, conn, schemaOfTable);
-
-            // key primary key details
-            List<PrimaryKey> primaryKeys = getPrimaryKeys(tableName, schemaOfTable, conn);
-
-            // get all unique constraints from the indexes
-            List<String> uniqueConstraintColumns = getUniqueConstrains(tableName, schemaOfTable, conn);
-
-            // get all columns with respective user defined ENUM data type
-            Map<String, List<Object>> udColumns = getUserDefinedEnumDataTypes(tableName, schemaOfTable, conn);
-
-            // get all foreign keys of the table
-            List<ForeignKey> foreignKeys = getForeignKeys(tableName, schemaOfTable, conn);
-
-            int limit = Math.min(10000, rows);
-            List<String> fkColNames = new ArrayList<>();
-
-            // if in foreign key, parent table is same as current table, don't treat it as foreign key. treat is as normal column
-            List<ForeignKey> fkToRemove = new ArrayList<>();
-            foreignKeys.forEach(fk -> {
-                if (fk.getForeignTableName().equalsIgnoreCase(tableName)) {
-                    fkToRemove.add(fk);
-                } else {
-                    fkColNames.add(fk.getColumnName());
-                }
-            });
-            foreignKeys.removeAll(fkToRemove);
-
-            // remove all fks from unique constraints
-            uniqueConstraintColumns.removeAll(fkColNames);
-
-            // remove all fks from primary keys
-            List<PrimaryKey> pkToRemove = new ArrayList<>();
-            primaryKeys.forEach(pk -> {
-                if (fkColNames.contains(pk.getColumnName()))
-                    pkToRemove.add(pk);
-            });
-            primaryKeys.removeAll(pkToRemove);
-
-            if (!foreignKeys.isEmpty()) {
-                // fetch the distinct values from parent table. This could take some time
-                getDistinctValuesFromParentTable(conn, foreignKeys, limit, schemaOfTable);
-            }
-            // create mapping of utility function to the columns in the table
-            Map<String, PropertyMapping> columnToUtilsMapping =
-                utilsMapping(columnDetails, primaryKeys, foreignKeys, limit, rows, uniqueConstraintColumns, udColumns);
-
-            // generate the mapping object which can be used to create the output yaml file
-            Root root = generateMappingObject(tableName, rows, columnToUtilsMapping, fkColNames, udColumns);
-
-            // create output yaml file
-            writeToFile(tableName, rows, root);
-            LOG.info("Generated loader file: {}_loader.yaml", tableName);
-        }
-
-        return new ArrayList<>();
-    }
-
     public Map<String, PropertyMapping> utilsMapping(List<Column> tableSchema, List<PrimaryKey> primaryKeys,
                                                      List<ForeignKey> foreignKeys, int limit, int rows,
                                                      List<String> uniqueConstraintColumns,
@@ -429,6 +429,9 @@ public class DataGeneratorLoader extends Loader<DataGenerator> {
         // take care of the rest of the keys
         for (Column col : tableSchema) {
             if (!columnToUtilMapping.containsKey(col.getColumnName())) {
+                // skip the columns having array data types
+                if (col.getDataType().equalsIgnoreCase("array"))
+                    continue;
                 PropertyMapping pm;
                 // if column is one of the unique constraint columns, then use primary key util functions for it
                 if (uniqueConstraintColumns.contains(col.getColumnName()))
