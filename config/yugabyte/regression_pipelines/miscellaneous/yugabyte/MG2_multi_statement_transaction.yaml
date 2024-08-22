@@ -18,7 +18,7 @@ works:
 microbenchmark:
     class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
     properties:
-        setAutoCommit: true
+        setAutoCommit: false
         create:
             - DROP TABLE IF EXISTS users_1;
             - DROP TABLE IF EXISTS accounts_1;
