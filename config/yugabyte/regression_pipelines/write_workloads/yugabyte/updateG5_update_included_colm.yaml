@@ -11,7 +11,7 @@ collect_pg_stat_statements: true
 use_dist_in_explain : true
 works:
     work:
-        time_secs: 60
+        time_secs: 180
         rate: unlimited
         warmup: 30
 microbenchmark:
@@ -25,8 +25,8 @@ microbenchmark:
             - CREATE INDEX ON UG5_cardinality_tbl1_1(col_bigint_card1_1) INCLUDE (col_bigint_id_2) # update all(1M) rows with point select
             - CREATE INDEX ON UG5_cardinality_tbl1_1(col_bigint_id_3) INCLUDE (col_int_id_4) # update single column + 1 row with point select
             - CREATE INDEX ON UG5_cardinality_tbl1_1(col_bigint_id_4) INCLUDE (col_int_id_1, col_int_id_2, col_int_id_3) #update multiple columns + 1 row with point select
-            - CREATE INDEX ON UG5_cardinality_tbl1_1(col_bigint_id_5) INCLUDE (col_int_card1_4) # update single column + 1M row
-            - CREATE INDEX ON UG5_cardinality_tbl1_1(col_bigint_id_6) INCLUDE (col_int_card1_1, col_int_card1_2, col_int_card1_3) #update multiple columns + 1M row with range
+            - CREATE INDEX ON UG5_cardinality_tbl1_1(col_bigint_id_5 ASC) INCLUDE (col_int_card1_4) # update single column + 1M row
+            - CREATE INDEX ON UG5_cardinality_tbl1_1(col_bigint_id_6 ASC) INCLUDE (col_int_card1_1, col_int_card1_2, col_int_card1_3) #update multiple columns + 1M row with range
 
         loadRules:
           - table: UG5_cardinality_tbl1_
