@@ -107,6 +107,7 @@ microbenchmark:
                     weight: 100
                     queries:
                         - query: INSERT INTO accounts_1(account_id_1,user_id_1,addr_1,bal_1) VALUES (?,?,?,?) ON CONFLICT (user_id_1, account_id_1, addr_1, bal_1) DO NOTHING
+                          count: 10
                           bindings:
                               -   util: PrimaryIntGen
                                   params: [ 15000000, 20000000 ]
@@ -140,6 +141,7 @@ microbenchmark:
                     weight: 100
                     queries:
                         - query: INSERT INTO accounts_1(account_id_1,user_id_1,addr_1,bal_1) VALUES (?,?,?,?) ON CONFLICT (user_id_1, account_id_1, addr_1, bal_1) DO NOTHING RETURNING *
+                          count: 10
                           bindings:
                               -   util: PrimaryIntGen
                                   params: [ 25000001, 30000000 ]
