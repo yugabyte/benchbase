@@ -32,8 +32,8 @@ microbenchmark:
             - CREATE TABLE UG6_cardinality_tbl1_child_1(col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_bigint_id_4 bigint, col_bigint_id_5 bigint, col_varchar10_id_1 varchar(10), col_bigint_card1_1 bigint, col_bigint_card2_1 bigint, col_bigint_card3_1 bigint, PRIMARY KEY(col_bigint_id_1));
             - ALTER TABLE UG6_cardinality_tbl1_child_1 ADD CONSTRAINT UG6_cardinality_tbl1_child_id1_fk FOREIGN KEY (col_bigint_id_2) REFERENCES UG6_cardinality_tbl1_1 (col_bigint_id_1) ON UPDATE CASCADE;
             - ALTER TABLE UG6_cardinality_tbl1_child_1 ADD CONSTRAINT UG6_cardinality_tbl1_child_id2_fk FOREIGN KEY (col_bigint_id_3) REFERENCES UG6_cardinality_tbl1_1 (col_bigint_id_2) ON UPDATE CASCADE;
-            - ALTER TABLE UG6_cardinality_tbl1_child_1 ADD CONSTRAINT UG6_cardinality_tbl1_child_id1_fk FOREIGN KEY (col_bigint_id_4) REFERENCES UG6_cardinality_tbl1_1 (col_bigint_id_3) ON UPDATE CASCADE;
-            - ALTER TABLE UG6_cardinality_tbl1_child_1 ADD CONSTRAINT UG6_cardinality_tbl1_child_id2_fk FOREIGN KEY (col_bigint_id_5) REFERENCES UG6_cardinality_tbl1_1 (col_bigint_id_4) ON UPDATE CASCADE;
+            - ALTER TABLE UG6_cardinality_tbl1_child_1 ADD CONSTRAINT UG6_cardinality_tbl1_child_id3_fk FOREIGN KEY (col_bigint_id_4) REFERENCES UG6_cardinality_tbl1_1 (col_bigint_id_3) ON UPDATE CASCADE;
+            - ALTER TABLE UG6_cardinality_tbl1_child_1 ADD CONSTRAINT UG6_cardinality_tbl1_child_id4_fk FOREIGN KEY (col_bigint_id_5) REFERENCES UG6_cardinality_tbl1_1 (col_bigint_id_4) ON UPDATE CASCADE;
             - CREATE INDEX ON UG6_cardinality_tbl1_child_1(col_bigint_id_2) INCLUDE (col_bigint_id_3,col_bigint_id_4,col_bigint_id_5) ; #Update on referenced+included colmn
 
 
