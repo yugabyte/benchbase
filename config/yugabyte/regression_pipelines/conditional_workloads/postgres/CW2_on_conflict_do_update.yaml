@@ -19,16 +19,16 @@ microbenchmark:
     properties:
         setAutoCommit: true
         create:
-            - DROP TABLE IF EXISTS accounts_1;
-            - CREATE TABLE IF NOT EXISTS accounts_1(account_id_1 bigint, user_id_1 bigint, addr_1 varchar(50), bal_1 float(2),PRIMARY KEY(account_id_1));
-            - CREATE UNIQUE INDEX user_accounts_1 ON accounts_1( user_id_1, account_id_1);
-            - CREATE UNIQUE INDEX user_accounts_2 ON accounts_1( user_id_1, account_id_1, addr_1, bal_1);
+            - DROP TABLE IF EXISTS CW2_accounts_1;
+            - CREATE TABLE IF NOT EXISTS CW2_accounts_1(account_id_1 bigint, user_id_1 bigint, addr_1 varchar(50), bal_1 float(2),PRIMARY KEY(account_id_1));
+            - CREATE UNIQUE INDEX user_CW2_accounts_1 ON CW2_accounts_1( user_id_1, account_id_1);
+            - CREATE UNIQUE INDEX user_CW2_accounts_2 ON CW2_accounts_1( user_id_1, account_id_1, addr_1, bal_1);
 
         cleanup:
-            - DROP TABLE IF EXISTS accounts_1;
+            - DROP TABLE IF EXISTS CW2_accounts_1;
 
         loadRules:
-            -   table: accounts_
+            -   table: CW2_accounts_
                 count: 1
                 rows: 6000000
                 columns:
@@ -55,7 +55,7 @@ microbenchmark:
                   - name: statement1_insert
                     weight: 100
                     queries:
-                        - query: INSERT INTO accounts_1(account_id_1,user_id_1,addr_1,bal_1) VALUES (?,?,?,?) ON CONFLICT (user_id_1, account_id_1) DO UPDATE SET (account_id_1,user_id_1,addr_1,bal_1)=(excluded.account_id_1,excluded.user_id_1,excluded.addr_1,excluded.bal_1)
+                        - query: INSERT INTO CW2_accounts_1(account_id_1,user_id_1,addr_1,bal_1) VALUES (?,?,?,?) ON CONFLICT (user_id_1, account_id_1) DO UPDATE SET (account_id_1,user_id_1,addr_1,bal_1)=(excluded.account_id_1,excluded.user_id_1,excluded.addr_1,excluded.bal_1)
                           bindings:
                               -   util: PrimaryIntGen
                                   params: [ 1, 1000000 ]
@@ -72,7 +72,7 @@ microbenchmark:
                   - name: statement1_insert
                     weight: 100
                     queries:
-                        - query: INSERT INTO accounts_1(account_id_1,user_id_1,addr_1,bal_1) VALUES (?,?,?,?) ON CONFLICT (user_id_1, account_id_1, addr_1, bal_1) DO UPDATE SET (account_id_1,user_id_1,addr_1,bal_1)=(excluded.account_id_1,excluded.user_id_1,excluded.addr_1,excluded.bal_1)
+                        - query: INSERT INTO CW2_accounts_1(account_id_1,user_id_1,addr_1,bal_1) VALUES (?,?,?,?) ON CONFLICT (user_id_1, account_id_1, addr_1, bal_1) DO UPDATE SET (account_id_1,user_id_1,addr_1,bal_1)=(excluded.account_id_1,excluded.user_id_1,excluded.addr_1,excluded.bal_1)
                           bindings:
                               -   util: PrimaryIntGen
                                   params: [ 1000000, 2000000 ]
@@ -88,7 +88,7 @@ microbenchmark:
                   - name: statement1_insert
                     weight: 100
                     queries:
-                        - query: INSERT INTO accounts_1(account_id_1,user_id_1,addr_1,bal_1) VALUES (?,?,?,?) ON CONFLICT (user_id_1, account_id_1) DO UPDATE SET (account_id_1,user_id_1,addr_1,bal_1)=(excluded.account_id_1,excluded.user_id_1,excluded.addr_1,excluded.bal_1)
+                        - query: INSERT INTO CW2_accounts_1(account_id_1,user_id_1,addr_1,bal_1) VALUES (?,?,?,?) ON CONFLICT (user_id_1, account_id_1) DO UPDATE SET (account_id_1,user_id_1,addr_1,bal_1)=(excluded.account_id_1,excluded.user_id_1,excluded.addr_1,excluded.bal_1)
                           count: 10
                           bindings:
                               -   util: PrimaryIntGen
@@ -105,7 +105,7 @@ microbenchmark:
                   - name: statement1_insert
                     weight: 100
                     queries:
-                        - query: INSERT INTO accounts_1(account_id_1,user_id_1,addr_1,bal_1) VALUES (?,?,?,?) ON CONFLICT (user_id_1, account_id_1, addr_1, bal_1) DO UPDATE SET (account_id_1,user_id_1,addr_1,bal_1)=(excluded.account_id_1,excluded.user_id_1,excluded.addr_1,excluded.bal_1)
+                        - query: INSERT INTO CW2_accounts_1(account_id_1,user_id_1,addr_1,bal_1) VALUES (?,?,?,?) ON CONFLICT (user_id_1, account_id_1, addr_1, bal_1) DO UPDATE SET (account_id_1,user_id_1,addr_1,bal_1)=(excluded.account_id_1,excluded.user_id_1,excluded.addr_1,excluded.bal_1)
                           count: 10
                           bindings:
                               -   util: PrimaryIntGen
@@ -122,7 +122,7 @@ microbenchmark:
                   - name: statement1_insert
                     weight: 100
                     queries:
-                        - query: INSERT INTO accounts_1(account_id_1,user_id_1,addr_1,bal_1) VALUES (?,?,?,?) ON CONFLICT (user_id_1, account_id_1) DO UPDATE SET (account_id_1,user_id_1,addr_1,bal_1)=(excluded.account_id_1,excluded.user_id_1,excluded.addr_1,excluded.bal_1) RETURNING *
+                        - query: INSERT INTO CW2_accounts_1(account_id_1,user_id_1,addr_1,bal_1) VALUES (?,?,?,?) ON CONFLICT (user_id_1, account_id_1) DO UPDATE SET (account_id_1,user_id_1,addr_1,bal_1)=(excluded.account_id_1,excluded.user_id_1,excluded.addr_1,excluded.bal_1) RETURNING *
                           bindings:
                               -   util: PrimaryIntGen
                                   params: [ 4000000, 5000000 ]
@@ -138,7 +138,7 @@ microbenchmark:
                   - name: statement1_insert
                     weight: 100
                     queries:
-                        - query: INSERT INTO accounts_1(account_id_1,user_id_1,addr_1,bal_1) VALUES (?,?,?,?) ON CONFLICT (user_id_1, account_id_1, addr_1, bal_1) DO UPDATE SET (account_id_1,user_id_1,addr_1,bal_1)=(excluded.account_id_1,excluded.user_id_1,excluded.addr_1,excluded.bal_1) RETURNING *
+                        - query: INSERT INTO CW2_accounts_1(account_id_1,user_id_1,addr_1,bal_1) VALUES (?,?,?,?) ON CONFLICT (user_id_1, account_id_1, addr_1, bal_1) DO UPDATE SET (account_id_1,user_id_1,addr_1,bal_1)=(excluded.account_id_1,excluded.user_id_1,excluded.addr_1,excluded.bal_1) RETURNING *
                           bindings:
                               -   util: PrimaryIntGen
                                   params: [ 5000000, 6000000 ]
@@ -154,7 +154,7 @@ microbenchmark:
                   - name: statement1_insert
                     weight: 100
                     queries:
-                        - query: INSERT INTO accounts_1(account_id_1,user_id_1,addr_1,bal_1) VALUES (?,?,?,?),(?,?,?,?),(?,?,?,?),(?,?,?,?),(?,?,?,?),(?,?,?,?),(?,?,?,?),(?,?,?,?),(?,?,?,?),(?,?,?,?) ON CONFLICT (user_id_1, account_id_1) DO UPDATE SET (account_id_1,user_id_1,addr_1,bal_1)=(excluded.account_id_1,excluded.user_id_1,excluded.addr_1,excluded.bal_1)
+                        - query: INSERT INTO CW2_accounts_1(account_id_1,user_id_1,addr_1,bal_1) VALUES (?,?,?,?),(?,?,?,?),(?,?,?,?),(?,?,?,?),(?,?,?,?),(?,?,?,?),(?,?,?,?),(?,?,?,?),(?,?,?,?),(?,?,?,?) ON CONFLICT (user_id_1, account_id_1) DO UPDATE SET (account_id_1,user_id_1,addr_1,bal_1)=(excluded.account_id_1,excluded.user_id_1,excluded.addr_1,excluded.bal_1)
                           bindings:
                               -   util: PrimaryIntGen
                                   params: [ 1, 6000000 ]
@@ -242,7 +242,7 @@ microbenchmark:
                   - name: statement1_insert
                     weight: 100
                     queries:
-                        - query: INSERT INTO accounts_1(account_id_1,user_id_1,addr_1,bal_1) VALUES (?,?,?,?) ON CONFLICT (user_id_1, account_id_1) DO UPDATE SET bal_1=accounts_1.bal_1+1 RETURNING *
+                        - query: INSERT INTO CW2_accounts_1(account_id_1,user_id_1,addr_1,bal_1) VALUES (?,?,?,?) ON CONFLICT (user_id_1, account_id_1) DO UPDATE SET bal_1=CW2_accounts_1.bal_1+1 RETURNING *
                           bindings:
                               -   util: PrimaryIntGen
                                   params: [ 5000000, 6000000 ]
@@ -258,7 +258,7 @@ microbenchmark:
                   - name: statement1_insert
                     weight: 100
                     queries:
-                        - query: INSERT INTO accounts_1(account_id_1,user_id_1,addr_1,bal_1) VALUES (?,?,?,?) ON CONFLICT (user_id_1, account_id_1) DO UPDATE SET bal_1=accounts_1.bal_1+1 RETURNING *
+                        - query: INSERT INTO CW2_accounts_1(account_id_1,user_id_1,addr_1,bal_1) VALUES (?,?,?,?) ON CONFLICT (user_id_1, account_id_1) DO UPDATE SET bal_1=CW2_accounts_1.bal_1+1 RETURNING *
                           count: 10
                           bindings:
                               -   util: PrimaryIntGen

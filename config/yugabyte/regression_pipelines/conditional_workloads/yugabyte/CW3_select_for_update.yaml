@@ -20,19 +20,19 @@ microbenchmark:
     properties:
         setAutoCommit: true
         create:
-            - DROP TABLE IF EXISTS accounts_1;
-            - CREATE TABLE IF NOT EXISTS accounts_1(account_id_1 bigint, user_id_1 bigint, addr_1 varchar(50), bal_1 float(2),PRIMARY KEY(account_id_1));
-            - CREATE UNIQUE INDEX user_accounts_1 ON accounts_1( user_id_1, account_id_1);
-            - DROP TABLE IF EXISTS accounts_2;
-            - CREATE TABLE IF NOT EXISTS accounts_2(account_id_1 bigint, user_id_1 bigint, addr_1 varchar(50), bal_1 float(2),PRIMARY KEY(account_id_1));
-            - CREATE UNIQUE INDEX user_accounts_2 ON accounts_2( user_id_1, account_id_1);
+            - DROP TABLE IF EXISTS CW3_accounts_1;
+            - CREATE TABLE IF NOT EXISTS CW3_accounts_1(account_id_1 bigint, user_id_1 bigint, addr_1 varchar(50), bal_1 float(2),PRIMARY KEY(account_id_1));
+            - CREATE UNIQUE INDEX user_CW3_accounts_1 ON CW3_accounts_1( user_id_1, account_id_1);
+            - DROP TABLE IF EXISTS CW3_accounts_2;
+            - CREATE TABLE IF NOT EXISTS CW3_accounts_2(account_id_1 bigint, user_id_1 bigint, addr_1 varchar(50), bal_1 float(2),PRIMARY KEY(account_id_1));
+            - CREATE UNIQUE INDEX user_CW3_accounts_2 ON CW3_accounts_2( user_id_1, account_id_1);
 
         cleanup:
-            - DROP TABLE IF EXISTS accounts_1;
-            - DROP TABLE IF EXISTS accounts_2;
+            - DROP TABLE IF EXISTS CW3_accounts_1;
+            - DROP TABLE IF EXISTS CW3_accounts_2;
 
         loadRules:
-            -   table: accounts_
+            -   table: CW3_accounts_
                 count: 2
                 rows: 2000000
                 columns:
@@ -59,7 +59,7 @@ microbenchmark:
                   - name: statement1_insert
                     weight: 100
                     queries:
-                        - query: SELECT bal_1 FROM accounts_1 WHERE account_id_1=ANY(ARRAY[?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?])
+                        - query: SELECT bal_1 FROM CW3_accounts_1 WHERE account_id_1=ANY(ARRAY[?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?])
                           bindings:
                               -   util: RandomNumber
                                   count: 50
@@ -70,7 +70,7 @@ microbenchmark:
                   - name: statement1_insert
                     weight: 100
                     queries:
-                        - query: UPDATE accounts_1 SET bal_1=bal_1+1 WHERE account_id_1=ANY(ARRAY[?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?]) returning bal_1
+                        - query: UPDATE CW3_accounts_1 SET bal_1=bal_1+1 WHERE account_id_1=ANY(ARRAY[?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?]) returning bal_1
                           bindings:
                               -   util: RandomNumber
                                   count: 50
@@ -81,7 +81,7 @@ microbenchmark:
                   - name: statement1_insert
                     weight: 100
                     queries:
-                        - query: SELECT bal_1 FROM accounts_2 WHERE account_id_1=ANY(ARRAY[?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?]) for update
+                        - query: SELECT bal_1 FROM CW3_accounts_2 WHERE account_id_1=ANY(ARRAY[?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?]) for update
                           bindings:
                               -   util: RandomNumber
                                   count: 50
@@ -92,7 +92,7 @@ microbenchmark:
                   - name: statement1_insert
                     weight: 100
                     queries:
-                        - query: SELECT bal_1 FROM accounts_2 WHERE account_id_1=ANY(ARRAY[?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?]) for update NOWAIT
+                        - query: SELECT bal_1 FROM CW3_accounts_2 WHERE account_id_1=ANY(ARRAY[?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?]) for update NOWAIT
                           bindings:
                               -   util: RandomNumber
                                   count: 50
@@ -103,7 +103,7 @@ microbenchmark:
                   - name: statement1_insert
                     weight: 100
                     queries:
-                        - query: SELECT bal_1 FROM accounts_2 WHERE account_id_1=ANY(ARRAY[?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?]) for update SKIP LOCKED
+                        - query: SELECT bal_1 FROM CW3_accounts_2 WHERE account_id_1=ANY(ARRAY[?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?]) for update SKIP LOCKED
                           bindings:
                               -   util: RandomNumber
                                   count: 50
