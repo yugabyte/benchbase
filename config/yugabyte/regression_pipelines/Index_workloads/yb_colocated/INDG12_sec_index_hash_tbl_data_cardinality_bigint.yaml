@@ -103,3 +103,26 @@ microbenchmark:
                     queries:
                         - query: select * from pkeyBigint1M_1 where col_bigint_card3_1 IN (1000080,1000100,1000099,1000580,1000880);
 
+            - workload: INDG12_4_range_index_scan_project_all_col
+              customTags: schematype=regular,partition=hash,pkey=single,cardinality=multiple,projection=all,filtercount=one,filteron=rangeskey,filtertype=pointselect
+              run:
+                  - name: hashtbl_index_scan_using_sec_index
+                    weight: 100
+                    queries:
+                        - query: select * from pkeyBigint1M_1 where col_bigint_card2_1 > 1000500;
+
+            - workload: INDG12_4_range_index_scan_project_few_col
+              customTags: schematype=regular,partition=hash,pkey=single,cardinality=multiple,projection=all,filtercount=one,filteron=rangeskey,filtertype=pointselect
+              run:
+                  - name: hashtbl_index_scan_using_sec_index
+                    weight: 100
+                    queries:
+                        - query: select col_bigint_id_1,col_bigint_card1_1,col_bigint_card2_1 from pkeyBigint1M_1 where col_bigint_card2_1 > 1000500;
+
+            - workload: INDG12_4_range_index_scan_project_only_skey_col
+              customTags: schematype=regular,partition=hash,pkey=single,cardinality=multiple,projection=all,filtercount=one,filteron=rangeskey,filtertype=pointselect
+              run:
+                  - name: hashtbl_index_scan_using_sec_index
+                    weight: 100
+                    queries:
+                        - query: select col_bigint_card2_1 from pkeyBigint1M_1 where col_bigint_card2_1 > 1000500;

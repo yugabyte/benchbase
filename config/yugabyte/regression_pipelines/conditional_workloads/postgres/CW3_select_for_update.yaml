@@ -85,3 +85,25 @@ microbenchmark:
                               -   util: RandomNumber
                                   count: 50
                                   params: [ 1, 2000000 ]
+
+            - workload: CW3_4_select_for_update_nowait
+              run:
+                  - name: statement1_insert
+                    weight: 100
+                    queries:
+                        - query: SELECT bal_1 FROM accounts_2 WHERE account_id_1=ANY(ARRAY[?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?]) for update NOWAIT
+                          bindings:
+                              -   util: RandomNumber
+                                  count: 50
+                                  params: [ 1, 2000000 ]
+
+            - workload: CW3_4_select_for_update_skip_lock
+              run:
+                  - name: statement1_insert
+                    weight: 100
+                    queries:
+                        - query: SELECT bal_1 FROM accounts_2 WHERE account_id_1=ANY(ARRAY[?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?]) for update SKIP LOCKED
+                          bindings:
+                              -   util: RandomNumber
+                                  count: 50
+                                  params: [ 1, 2000000 ]

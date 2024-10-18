@@ -9,7 +9,7 @@ loaderThreads: 1
 terminals: 1
 collect_pg_stat_statements: true
 use_dist_in_explain : true
-yaml_version: v1.0
+yaml_version: v1.1
 works:
     work:
         time_secs: 180
@@ -23,7 +23,7 @@ microbenchmark:
             - DROP TABLE IF EXISTS accounts_1;
             - CREATE TABLE IF NOT EXISTS accounts_1(account_id_1 bigint, user_id_1 bigint, addr_1 varchar(50), bal_1 float(2),PRIMARY KEY(account_id_1));
             - CREATE UNIQUE INDEX user_accounts_1 ON accounts_1( user_id_1, account_id_1);
-            - CREATE UNIQUE INDEX user_accounts_2 ON accounts_1( user_id_1, account_id_1, user_id_1, bal_1);
+            - CREATE UNIQUE INDEX user_accounts_2 ON accounts_1( user_id_1, account_id_1, addr_1, bal_1);
 
         cleanup:
             - DROP TABLE IF EXISTS accounts_1;
@@ -73,7 +73,7 @@ microbenchmark:
                   - name: statement1_insert
                     weight: 100
                     queries:
-                        - query: INSERT INTO accounts_1(account_id_1,user_id_1,addr_1,bal_1) VALUES (?,?,?,?) ON CONFLICT (user_id_1, account_id_1, user_id_1, bal_1) DO NOTHING
+                        - query: INSERT INTO accounts_1(account_id_1,user_id_1,addr_1,bal_1) VALUES (?,?,?,?) ON CONFLICT (user_id_1, account_id_1, addr_1, bal_1) DO NOTHING
                           bindings:
                               -   util: PrimaryIntGen
                                   params: [ 5000001, 10000000 ]
@@ -106,7 +106,7 @@ microbenchmark:
                   - name: statement1_insert
                     weight: 100
                     queries:
-                        - query: INSERT INTO accounts_1(account_id_1,user_id_1,addr_1,bal_1) VALUES (?,?,?,?) ON CONFLICT (user_id_1, account_id_1, user_id_1, bal_1) DO NOTHING
+                        - query: INSERT INTO accounts_1(account_id_1,user_id_1,addr_1,bal_1) VALUES (?,?,?,?) ON CONFLICT (user_id_1, account_id_1, addr_1, bal_1) DO NOTHING
                           bindings:
                               -   util: PrimaryIntGen
                                   params: [ 15000000, 20000000 ]
@@ -139,7 +139,7 @@ microbenchmark:
                   - name: statement1_insert
                     weight: 100
                     queries:
-                        - query: INSERT INTO accounts_1(account_id_1,user_id_1,addr_1,bal_1) VALUES (?,?,?,?) ON CONFLICT (user_id_1, account_id_1, user_id_1, bal_1) DO NOTHING RETURNING *
+                        - query: INSERT INTO accounts_1(account_id_1,user_id_1,addr_1,bal_1) VALUES (?,?,?,?) ON CONFLICT (user_id_1, account_id_1, addr_1, bal_1) DO NOTHING RETURNING *
                           bindings:
                               -   util: PrimaryIntGen
                                   params: [ 25000001, 30000000 ]
