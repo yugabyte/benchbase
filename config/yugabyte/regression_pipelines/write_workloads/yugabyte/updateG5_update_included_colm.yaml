@@ -20,25 +20,25 @@ microbenchmark:
         setAutoCommit: false
         create:
 
+            - DROP TABLE IF EXISTS UG5_cardinality_tbl2_child_1 CASCADE;
             - DROP TABLE IF EXISTS UG5_cardinality_tbl1_1;
             - DROP TABLE IF EXISTS UG5_cardinality_tbl1_2;
-            - DROP TABLE IF EXISTS UG5_cardinality_tbl2_child_1 CASCADE;
             - DROP TABLE IF EXISTS UG5_cardinality_tbl2_1 CASCADE;
 
             - CREATE TABLE UG5_cardinality_tbl1_1(col_bigint_card1_1 bigint, col_bigint_card2_1 bigint, col_bigint_card3_1 bigint, col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_bigint_id_4 bigint, col_bigint_id_5 bigint, col_bigint_id_6 bigint, col_int_id_1 int, col_int_id_2 int, col_int_id_3 int, col_int_id_4 int, col_int_card1_1 int, col_int_card1_2 int,  col_int_card1_3 int, col_int_card1_4 int, col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1));
-            - CREATE INDEX ON UG5_cardinality_tbl1_1(col_bigint_card2_1) INCLUDE (col_bigint_card3_1) # update multiple(1000) rows with point select
-            - CREATE INDEX ON UG5_cardinality_tbl1_1(col_bigint_card1_1) INCLUDE (col_bigint_id_2) # update all(1M) rows with point select
-            - CREATE INDEX ON UG5_cardinality_tbl1_1(col_bigint_id_3) INCLUDE (col_int_id_4) # update single column + 1 row with point select
-            - CREATE INDEX ON UG5_cardinality_tbl1_1(col_bigint_id_5 ASC) INCLUDE (col_int_card1_4) # update single column + 1M row
+            - CREATE INDEX ON UG5_cardinality_tbl1_1(col_bigint_card2_1) INCLUDE (col_bigint_card3_1); # update multiple(1000) rows with point select
+            - CREATE INDEX ON UG5_cardinality_tbl1_1(col_bigint_card1_1) INCLUDE (col_bigint_id_2); # update all(1M) rows with point select
+            - CREATE INDEX ON UG5_cardinality_tbl1_1(col_bigint_id_3) INCLUDE (col_int_id_4); # update single column + 1 row with point select
+            - CREATE INDEX ON UG5_cardinality_tbl1_1(col_bigint_id_5 ASC) INCLUDE (col_int_card1_4); # update single column + 1M row
 
             - CREATE TABLE UG5_cardinality_tbl1_2(col_bigint_card1_1 bigint, col_bigint_card2_1 bigint, col_bigint_card3_1 bigint, col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_bigint_id_4 bigint, col_bigint_id_5 bigint, col_bigint_id_6 bigint, col_int_id_1 int, col_int_id_2 int, col_int_id_3 int, col_int_id_4 int, col_int_card1_1 int, col_int_card1_2 int,  col_int_card1_3 int, col_int_card1_4 int, col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1 ASC));
-            - CREATE INDEX ON UG5_cardinality_tbl1_2(col_bigint_id_5 ASC) INCLUDE (col_int_card1_4) # update single column + 1M row
+            - CREATE INDEX ON UG5_cardinality_tbl1_2(col_bigint_id_5 ASC) INCLUDE (col_int_card1_4); # update single column + 1M row
 
             - CREATE TABLE UG5_cardinality_tbl2_1(col_bigint_card1_1 bigint, col_bigint_card2_1 bigint, col_bigint_card3_1 bigint, col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_bigint_id_4 bigint, col_bigint_id_5 bigint, col_bigint_id_6 bigint, col_int_id_1 int, col_int_id_2 int, col_int_id_3 int, col_int_id_4 int, col_int_card1_1 int, col_int_card1_2 int,  col_int_card1_3 int, col_int_card1_4 int, col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1));
             - CREATE UNIQUE INDEX ON UG5_cardinality_tbl2_1(col_bigint_id_2);
             - CREATE UNIQUE INDEX ON UG5_cardinality_tbl2_1(col_bigint_id_3);
             - CREATE UNIQUE INDEX ON UG5_cardinality_tbl2_1(col_bigint_id_4);
-            - CREATE INDEX ON UG5_cardinality_tbl2_1(col_int_id_1 ASC) INCLUDE (col_bigint_id_2,col_bigint_id_3,col_bigint_id_4); #Index created so that an update on these included columns will should cascade to child table and it's indexes
+            - CREATE INDEX ON UG5_cardinality_tbl2_1(col_int_id_1 ASC) INCLUDE (col_bigint_id_2,col_bigint_id_3,col_bigint_id_4);
             - CREATE TABLE UG5_cardinality_tbl2_child_1(col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_bigint_id_4 bigint, col_bigint_id_5 bigint, col_varchar10_id_1 varchar(10), col_bigint_card1_1 bigint, col_bigint_card2_1 bigint, col_bigint_card3_1 bigint, PRIMARY KEY(col_bigint_id_1));
             - ALTER TABLE UG5_cardinality_tbl2_child_1 ADD CONSTRAINT UG5_cardinality_tbl2_child_id1_fk FOREIGN KEY (col_bigint_id_2) REFERENCES UG5_cardinality_tbl2_1 (col_bigint_id_1) ON UPDATE CASCADE;
             - ALTER TABLE UG5_cardinality_tbl2_child_1 ADD CONSTRAINT UG5_cardinality_tbl2_child_id2_fk FOREIGN KEY (col_bigint_id_3) REFERENCES UG5_cardinality_tbl2_1 (col_bigint_id_2) ON UPDATE CASCADE;
@@ -48,6 +48,12 @@ microbenchmark:
             - CREATE INDEX UG5_cardinality_tbl2_child_1(col_bigint_id_3 ASC);
             - CREATE INDEX UG5_cardinality_tbl2_child_1(col_bigint_id_4 ASC);
             - CREATE INDEX UG5_cardinality_tbl2_child_1(col_bigint_id_5 ASC);
+
+        cleanup:
+            - DROP TABLE IF EXISTS UG5_cardinality_tbl2_child_1 CASCADE;
+            - DROP TABLE IF EXISTS UG5_cardinality_tbl1_1;
+            - DROP TABLE IF EXISTS UG5_cardinality_tbl1_2;
+            - DROP TABLE IF EXISTS UG5_cardinality_tbl2_1 CASCADE;
 
         loadRules:
 

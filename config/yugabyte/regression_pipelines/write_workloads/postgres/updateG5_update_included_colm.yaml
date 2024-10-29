@@ -48,6 +48,12 @@ microbenchmark:
             - CREATE INDEX UG5_cardinality_tbl2_child_1(col_bigint_id_4 ASC);
             - CREATE INDEX UG5_cardinality_tbl2_child_1(col_bigint_id_5 ASC);
 
+        cleanup:
+            - DROP TABLE IF EXISTS UG5_cardinality_tbl2_child_1 CASCADE;
+            - DROP TABLE IF EXISTS UG5_cardinality_tbl1_1;
+            - DROP TABLE IF EXISTS UG5_cardinality_tbl1_2;
+            - DROP TABLE IF EXISTS UG5_cardinality_tbl2_1 CASCADE;
+
         loadRules:
 
           - table: UG5_cardinality_tbl1_
