@@ -143,8 +143,4 @@ microbenchmark:
                   - name: statement1_insert
                     weight: 100
                     queries:
-                        - query: With high_value_transactions As (SELECT * from CW3_transactions_1 where amount_1>49 for update)
-                          bindings:
-                              -   util: RandomNumber
-                                  count: 50
-                                  params: [ 1, 2000000 ]
+                        - query: With high_value_transactions As (SELECT * from CW3_transactions_1 where amount_1>49 for update) UPDATE CW3_transactions_1 set amount_1=amount_1+1 WHERE tran_id_1 IN (Select tran_id_1 from high_value_transactions)
