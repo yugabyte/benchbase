@@ -21,16 +21,18 @@ microbenchmark:
         setAutoCommit: true
         create:
             - DROP TABLE IF EXISTS CW3_accounts_1;
+            - DROP TABLE IF EXISTS CW3_transactions_1;
+            - DROP TABLE IF EXISTS CW3_accounts_2;
+
             - CREATE TABLE IF NOT EXISTS CW3_accounts_1(account_id_1 bigint, user_id_1 bigint, addr_1 varchar(50), bal_1 float(2),PRIMARY KEY(account_id_1));
             - CREATE UNIQUE INDEX user_CW3_accounts_1 ON CW3_accounts_1( user_id_1, account_id_1);
-            - DROP TABLE IF EXISTS CW3_accounts_2;
             - CREATE TABLE IF NOT EXISTS CW3_accounts_2(account_id_1 bigint, user_id_1 bigint, addr_1 varchar(50), bal_1 float(2),PRIMARY KEY(account_id_1));
             - CREATE UNIQUE INDEX user_CW3_accounts_2 ON CW3_accounts_2( user_id_1, account_id_1);
-            - DROP TABLE IF EXISTS CW3_transactions_1;
             - CREATE TABLE IF NOT EXISTS CW3_transactions_1(tran_id_1 bigint PRIMARY KEY, account_id_1 bigint, amount_1 bigint, FOREIGN KEY(account_id_1) REFERENCES CW3_accounts_1(account_id_1) ON DELETE CASCADE ON UPDATE CASCADE)
 
         cleanup:
             - DROP TABLE IF EXISTS CW3_accounts_1;
+            - DROP TABLE IF EXISTS CW3_transactions_1;
             - DROP TABLE IF EXISTS CW3_accounts_2;
 
         loadRules:
