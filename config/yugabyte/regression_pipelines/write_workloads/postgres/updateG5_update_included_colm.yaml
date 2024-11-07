@@ -194,3 +194,10 @@ microbenchmark:
                     weight: 100
                     queries:
                         - query: UPDATE UG5_cardinality_tbl2_1 SET col_bigint_id_2=col_bigint_id_2+1000000, col_bigint_id_3=col_bigint_id_3+1000000, col_bigint_id_4=col_bigint_id_4+1000000 where col_int_id_1 > 999000
+
+            - workload: UG5_6_update_child_tbls_referenced_included_colm_1k_rows
+              run:
+                  - name: update_10_cols
+                    weight: 100
+                    queries:
+                        - query: UPDATE ug5_cardinality_tbl2_child_1 SET col_bigint_id_3=1000000 where col_bigint_id_2<1001
