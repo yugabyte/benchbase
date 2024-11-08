@@ -35,7 +35,7 @@ microbenchmark:
             - DROP TABLE IF EXISTS CW3_accounts_2;
 
         loadRules:
-            -   table: accounts_
+            -   table: CW3_accounts_
                 count: 2
                 rows: 2000000
                 columns:
