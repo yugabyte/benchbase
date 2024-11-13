@@ -27,10 +27,10 @@ microbenchmark:
 
             - DROP TABLE IF EXISTS CW4_accounts_2;
             - CREATE TABLE IF NOT EXISTS CW4_accounts_2(account_id_1 bigint, user_id_1 bigint, addr_1 varchar(50), bal_1 float(2),PRIMARY KEY(account_id_1)) PARTITION BY HASH (account_id_1);
-            - CREATE TABLE IF NOT EXISTS CW4_0_2M_accounts_2 PARTITION OF CW4_accounts_2 FOR VALUES WITH (MODULUS 4, REMAINDER 0);
-            - CREATE TABLE IF NOT EXISTS CW4_0_2M_accounts_2 PARTITION OF CW4_accounts_2 FOR VALUES WITH (MODULUS 4, REMAINDER 1);
+            - CREATE TABLE IF NOT EXISTS CW4_0_2M_accounts_0 PARTITION OF CW4_accounts_2 FOR VALUES WITH (MODULUS 4, REMAINDER 0);
+            - CREATE TABLE IF NOT EXISTS CW4_0_2M_accounts_1 PARTITION OF CW4_accounts_2 FOR VALUES WITH (MODULUS 4, REMAINDER 1);
             - CREATE TABLE IF NOT EXISTS CW4_0_2M_accounts_2 PARTITION OF CW4_accounts_2 FOR VALUES WITH (MODULUS 4, REMAINDER 2);
-            - CREATE TABLE IF NOT EXISTS CW4_0_2M_accounts_2 PARTITION OF CW4_accounts_2 FOR VALUES WITH (MODULUS 4, REMAINDER 3);
+            - CREATE TABLE IF NOT EXISTS CW4_0_2M_accounts_3 PARTITION OF CW4_accounts_2 FOR VALUES WITH (MODULUS 4, REMAINDER 3);
 
 
             - DROP TABLE IF EXISTS CW4_cardinality_tbl1_1
@@ -258,3 +258,5 @@ microbenchmark:
                                   params: [ 1, 50 ]
                               -   util: PrimaryFloatGen
                                   params: [ 1, 8000000, 2 ]
+CW4_on_conflict_do_nothing:
+    yaml:

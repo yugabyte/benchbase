@@ -25,12 +25,12 @@ microbenchmark:
             - CREATE TABLE IF NOT EXISTS CW5_accounts_1(account_id_1 bigint, user_id_1 bigint, addr_1 varchar(50), bal_1 float(2),PRIMARY KEY(account_id_1));
             - CREATE UNIQUE INDEX user_accounts_1 ON CW5_accounts_1(account_id_1, user_id_1);
 
-            - DROP TABLE IF EXISTS CW4_accounts_2;
-            - CREATE TABLE IF NOT EXISTS CW4_accounts_2(account_id_1 bigint, user_id_1 bigint, addr_1 varchar(50), bal_1 float(2),PRIMARY KEY(account_id_1)) PARTITION BY HASH (account_id_1);
-            - CREATE TABLE IF NOT EXISTS CW4_0_2M_accounts_2 PARTITION OF CW4_accounts_2 FOR VALUES WITH (MODULUS 4, REMAINDER 0);
-            - CREATE TABLE IF NOT EXISTS CW4_0_2M_accounts_2 PARTITION OF CW4_accounts_2 FOR VALUES WITH (MODULUS 4, REMAINDER 1);
-            - CREATE TABLE IF NOT EXISTS CW4_0_2M_accounts_2 PARTITION OF CW4_accounts_2 FOR VALUES WITH (MODULUS 4, REMAINDER 2);
-            - CREATE TABLE IF NOT EXISTS CW4_0_2M_accounts_2 PARTITION OF CW4_accounts_2 FOR VALUES WITH (MODULUS 4, REMAINDER 3);
+            - DROP TABLE IF EXISTS CW5_accounts_2;
+            - CREATE TABLE IF NOT EXISTS CW5_accounts_2(account_id_1 bigint, user_id_1 bigint, addr_1 varchar(50), bal_1 float(2),PRIMARY KEY(account_id_1)) PARTITION BY HASH (account_id_1);
+            - CREATE TABLE IF NOT EXISTS CW5_0_2M_accounts_0 PARTITION OF CW5_accounts_2 FOR VALUES WITH (MODULUS 4, REMAINDER 0);
+            - CREATE TABLE IF NOT EXISTS CW5_0_2M_accounts_1 PARTITION OF CW5_accounts_2 FOR VALUES WITH (MODULUS 4, REMAINDER 1);
+            - CREATE TABLE IF NOT EXISTS CW5_0_2M_accounts_2 PARTITION OF CW5_accounts_2 FOR VALUES WITH (MODULUS 4, REMAINDER 2);
+            - CREATE TABLE IF NOT EXISTS CW5_0_2M_accounts_3 PARTITION OF CW5_accounts_2 FOR VALUES WITH (MODULUS 4, REMAINDER 3);
 
         cleanup:
             - DROP TABLE IF EXISTS CW5_accounts_1;
