@@ -23,7 +23,7 @@ microbenchmark:
         create:
             - DROP TABLE IF EXISTS CW6_accounts_1;
             - CREATE TABLE IF NOT EXISTS CW6_accounts_1(account_id_1 bigint, user_id_1 bigint, addr_1 varchar(50), bal_1 float(2),PRIMARY KEY(account_id_1 ASC));
-            - CREATE UNIQUE INDEX user_accounts_1 ON CW6_accounts_1(account_id_1 ASC, user_id_1 ASC);
+            - CREATE UNIQUE INDEX CW6_user_accounts_1 ON CW6_accounts_1(account_id_1 ASC, user_id_1 ASC);
 
             - DROP TABLE IF EXISTS CW6_accounts_2;
             - CREATE TABLE IF NOT EXISTS CW6_accounts_2(account_id_1 bigint, user_id_1 bigint, addr_1 varchar(50), bal_1 float(2),PRIMARY KEY(account_id_1 ASC)) PARTITION BY RANGE (account_id_1);
