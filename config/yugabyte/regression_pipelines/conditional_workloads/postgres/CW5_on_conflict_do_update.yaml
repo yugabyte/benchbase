@@ -57,7 +57,7 @@ microbenchmark:
                         params: [ 1, 8000000, 2 ]
 
         executeRules:
-            - workload: CW4_1_2column_condition_no_conflict_on_pkey_so_single_insert
+            - workload: CW5_1_2column_condition_no_conflict_on_pkey_so_single_insert
               run:
                   - name: statement1_insert
                     weight: 100
@@ -73,7 +73,7 @@ microbenchmark:
                               -   util: PrimaryFloatGen
                                   params: [ 1, 8000000, 2 ]
 
-            - workload: CW4_2_2column_condition_no_conflict_on_pkey_so_1024_insert
+            - workload: CW5_2_2column_condition_no_conflict_on_pkey_so_1024_insert
               run:
                   - name: statement1_insert
                     weight: 100
@@ -90,7 +90,7 @@ microbenchmark:
                               -   util: PrimaryFloatGen
                                   params: [ 1, 8000000, 2 ]
 
-            - workload: CW4_3_no_conflict_on_pkey_so_single_insert_on_partitioned_tbl_by_hash
+            - workload: CW5_3_no_conflict_on_pkey_so_single_insert_on_partitioned_tbl_by_hash
               run:
                   - name: statement1_insert
                     weight: 100
@@ -106,7 +106,7 @@ microbenchmark:
                               -   util: PrimaryFloatGen
                                   params: [ 1, 8000000, 2 ]
 
-            - workload: CW4_4_no_conflict_on_pkey_so_1024_insert_on_partitioned_tbl_by_hash
+            - workload: CW5_4_no_conflict_on_pkey_so_1024_insert_on_partitioned_tbl_by_hash
               run:
                   - name: statement1_insert
                     weight: 100
