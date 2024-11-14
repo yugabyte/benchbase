@@ -57,7 +57,7 @@ microbenchmark:
                   - name: statement1_insert
                     weight: 100
                     queries:
-                        - query: INSERT INTO accounts_1(account_id_1,user_id_1,addr_1,bal_1) VALUES (?,?,?,?) ON CONFLICT (user_id_1, account_id_1) DO NOTHING
+                        - query: INSERT INTO accounts_1(user_id_1,account_id_1,addr_1,bal_1) VALUES (?,?,?,?) ON CONFLICT (user_id_1, account_id_1) DO NOTHING
                           bindings:
                               -   util: PrimaryIntGen
                                   params: [ 1000001, 5000000 ]
@@ -74,7 +74,7 @@ microbenchmark:
                   - name: statement1_insert
                     weight: 100
                     queries:
-                        - query: INSERT INTO accounts_1(account_id_1,user_id_1,addr_1,bal_1) VALUES (?,?,?,?) ON CONFLICT (user_id_1, account_id_1, addr_1, bal_1) DO NOTHING
+                        - query: INSERT INTO accounts_1(user_id_1,account_id_1,addr_1,bal_1) VALUES (?,?,?,?) ON CONFLICT (user_id_1, account_id_1, addr_1, bal_1) DO NOTHING
                           bindings:
                               -   util: PrimaryIntGen
                                   params: [ 5000001, 10000000 ]
@@ -90,7 +90,7 @@ microbenchmark:
                   - name: statement1_insert
                     weight: 100
                     queries:
-                        - query: INSERT INTO accounts_1(account_id_1,user_id_1,addr_1,bal_1) VALUES (?,?,?,?) ON CONFLICT (user_id_1, account_id_1) DO NOTHING
+                        - query: INSERT INTO accounts_1(user_id_1,account_id_1,addr_1,bal_1) VALUES (?,?,?,?) ON CONFLICT (user_id_1, account_id_1) DO NOTHING
                           count: 1024
                           bindings:
                               -   util: PrimaryIntGen
@@ -107,7 +107,7 @@ microbenchmark:
                   - name: statement1_insert
                     weight: 100
                     queries:
-                        - query: INSERT INTO accounts_1(account_id_1,user_id_1,addr_1,bal_1) VALUES (?,?,?,?) ON CONFLICT (user_id_1, account_id_1, addr_1, bal_1) DO NOTHING
+                        - query: INSERT INTO accounts_1(user_id_1,account_id_1,addr_1,bal_1) VALUES (?,?,?,?) ON CONFLICT (user_id_1, account_id_1, addr_1, bal_1) DO NOTHING
                           count: 2048
                           bindings:
                               -   util: PrimaryIntGen
@@ -124,7 +124,7 @@ microbenchmark:
                   - name: statement1_insert
                     weight: 100
                     queries:
-                        - query: INSERT INTO accounts_1(account_id_1,user_id_1,addr_1,bal_1) VALUES (?,?,?,?) ON CONFLICT (user_id_1, account_id_1) DO NOTHING RETURNING *
+                        - query: INSERT INTO accounts_1(user_id_1,account_id_1,addr_1,bal_1) VALUES (?,?,?,?) ON CONFLICT (user_id_1, account_id_1) DO NOTHING RETURNING *
                           count: 10
                           bindings:
                               -   util: PrimaryIntGen
@@ -141,7 +141,7 @@ microbenchmark:
                   - name: statement1_insert
                     weight: 100
                     queries:
-                        - query: INSERT INTO accounts_1(account_id_1,user_id_1,addr_1,bal_1) VALUES (?,?,?,?) ON CONFLICT (user_id_1, account_id_1, addr_1, bal_1) DO NOTHING RETURNING *
+                        - query: INSERT INTO accounts_1(user_id_1,account_id_1,addr_1,bal_1) VALUES (?,?,?,?) ON CONFLICT (user_id_1, account_id_1, addr_1, bal_1) DO NOTHING RETURNING *
                           bindings:
                               -   util: PrimaryIntGen
                                   params: [ 25000001, 30000000 ]
@@ -157,7 +157,7 @@ microbenchmark:
                   - name: statement1_insert
                     weight: 100
                     queries:
-                        - query: INSERT INTO accounts_1(account_id_1,user_id_1,addr_1,bal_1) VALUES (?,?,?,?),(?,?,?,?),(?,?,?,?),(?,?,?,?),(?,?,?,?),(?,?,?,?),(?,?,?,?),(?,?,?,?),(?,?,?,?),(?,?,?,?) ON CONFLICT (user_id_1, account_id_1) DO NOTHING
+                        - query: INSERT INTO accounts_1(user_id_1,account_id_1,addr_1,bal_1) VALUES (?,?,?,?),(?,?,?,?),(?,?,?,?),(?,?,?,?),(?,?,?,?),(?,?,?,?),(?,?,?,?),(?,?,?,?),(?,?,?,?),(?,?,?,?) ON CONFLICT (user_id_1, account_id_1) DO NOTHING
                           bindings:
                               -   util: PrimaryIntGen
                                   params: [ 30000001, 35000000 ]
