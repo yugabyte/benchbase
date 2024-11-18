@@ -331,7 +331,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
 
 //                    System.out.printf("Explain plan RC %s%n", queryToExplainMap.getOrDefault(entry.getKey(), new JSONObject()).get("ExplainPlanRows"));
 //                    System.out.printf("user provided RC %d%n", entry.getValue());
-                    inner.put("explainPlanRcMatch", Integer.parseInt((String) queryToExplainMap.getOrDefault(entry.getKey(), new JSONObject()).get("ExplainPlanRows")) == entry.getValue());
+                    inner.put("explainPlanRcValidationSuccess", Integer.parseInt((String) queryToExplainMap.getOrDefault(entry.getKey(), new JSONObject()).get("ExplainPlanRows")) == entry.getValue());
                     inner.put("explain", queryToExplainMap.getOrDefault(entry.getKey(), new JSONObject()));
                     /*TODO: remove prepared_statements*/
                     inner.put("prepared_statements", pgPreparedStatementOutputs == null ? new JSONObject() : pgPreparedStatementOutputs);
