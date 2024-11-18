@@ -9,7 +9,7 @@ public class Query {
     @JsonProperty("query")
     public String query;
     public int count = 1;
-    public int rcValidateCount = -1;
+    public int explainPlanRCValidateCount = -1;
     public List<UtilToMethod> baseUtils;
     public boolean isSelectQuery = false;
 
@@ -35,12 +35,12 @@ public class Query {
         return count;
     }
 
-    public void setRcValidateCount(int rcValidateCount) {
-        this.rcValidateCount = rcValidateCount;
+    public void setExplainPlanRCValidateCount(int explainPlanRCValidateCount) {
+        this.explainPlanRCValidateCount = explainPlanRCValidateCount;
     }
 
-    public int getRcValidateCount() {
-        return rcValidateCount;
+    public int getExplainPlanRCValidateCount() {
+        return explainPlanRCValidateCount;
     }
 
     public void setQuery(String query) {

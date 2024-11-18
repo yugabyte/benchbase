@@ -105,8 +105,8 @@ public class FeatureBenchBenchmark extends BenchmarkModule {
                     query.setCount(confquery.getInt("count"));
                 }
 
-                if (confquery.containsKey("rc-validation")) {
-                    query.setRcValidateCount(confquery.getInt("rc-validation"));
+                if (confquery.containsKey("explain-plan-rc-validation")) {
+                    query.setExplainPlanRCValidateCount(confquery.getInt("explain-plan-rc-validation"));
                 }
 
                 int query_hint_index = querystmt.indexOf("*/");

@@ -308,7 +308,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                 for (ExecuteRule er : executeRules) {
                     for (int i = 0; i < er.getQueries().size(); i++) {
                         Query q = er.getQueries().get(i);
-                        queryStringsAndRC.put(q.getQuery(), q.rcValidateCount);
+                        queryStringsAndRC.put(q.getQuery(), q.getExplainPlanRCValidateCount());
                     }
                 }
 
