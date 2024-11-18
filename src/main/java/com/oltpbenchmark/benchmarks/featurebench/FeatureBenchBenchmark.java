@@ -105,6 +105,10 @@ public class FeatureBenchBenchmark extends BenchmarkModule {
                     query.setCount(confquery.getInt("count"));
                 }
 
+                if (confquery.containsKey("rc-validation")) {
+                    query.setRcValidateCount(confquery.getInt("rc-validation"));
+                }
+
                 int query_hint_index = querystmt.indexOf("*/");
                 String startWord = querystmt.substring(0, querystmt.indexOf(' ')).trim();
                 String query_type = "";
