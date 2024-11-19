@@ -238,9 +238,9 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                 jsonObject.put("Execution Time(ms)", matcher.group(2));
                 jsonObject.put("Peak Memory Usage(kB)", matcher.group(3));
             }
-            Pattern rowsPattern = Pattern.compile("rows=(.+?) width=");
+            Pattern rowsPattern = Pattern.compile("\\(actual[^)]*rows=(\\d+)\\s+loops=");
             Matcher rowsMatcher = rowsPattern.matcher(data.toString());
-            while (rowsMatcher.find()) {
+            if (rowsMatcher.find()) {
                 jsonObject.put("ExplainPlanRows", rowsMatcher.group(1));
             }
 
