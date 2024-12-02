@@ -300,6 +300,16 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
 
     @Override
     public void tearDown() {
+        if (this.usingHikari) {
+            try {
+                if (this.conn == null || this.conn.isClosed()) {
+                    this.conn = this.getBenchmark().makeConnection();
+                    this.conn.setAutoCommit(true);
+                }
+            } catch (SQLException ex) {
+                throw new RuntimeException("Failed to connect to database", ex);
+            }
+        }
         synchronized (FeatureBenchWorker.class) {
             boolean shouldCollect = this.getWorkloadConfiguration().getXmlConfig().getBoolean("collect_pg_stat_statements", false);
             if (!this.configuration.getNewConnectionPerTxn() && (shouldCollect && !isPGStatStatementCollected.get()) && this.conn != null) {
@@ -359,6 +369,15 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                 } catch (SQLException e) {
                     LOG.error("Connection couldn't be closed.", e);
                 }
+            }
+        }
+        if(usingHikari) {
+            try {
+                if (this.conn != null && !this.conn.isClosed()) {
+                    this.conn.close();
+                }
+            } catch (SQLException ex) {
+                throw new RuntimeException("Failed to connect to database", ex);
             }
         }
     }
