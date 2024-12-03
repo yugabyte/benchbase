@@ -99,6 +99,9 @@ public class FeatureBenchBenchmark extends BenchmarkModule {
             List<Query> queries = new ArrayList<>();
             for (HierarchicalConfiguration<ImmutableNode> confquery : confExecuteRule.configurationsAt("queries")) {
                 Query query = new Query();
+                if (confquery.containsKey("batch")) {
+                    query.setBatch(confquery.getInt("batch"));
+                }
                 String querystmt = confquery.getString("query");
                 query.setQuery(querystmt);
                 if (confquery.containsKey("count")) {
