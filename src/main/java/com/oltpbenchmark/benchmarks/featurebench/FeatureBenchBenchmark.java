@@ -134,7 +134,13 @@ public class FeatureBenchBenchmark extends BenchmarkModule {
                 for (HierarchicalConfiguration<ImmutableNode> bindingsList : confquery.configurationsAt("bindings")) {
                     if (bindingsList.containsKey("count")) {
                         int count = bindingsList.getInt("count");
-                        if (bindingsList.containsKey("split_min_max_for_count") && bindingsList.getList("params").size() == 2) {
+                        for (int i = 0; i < count; i++) {
+                            UtilToMethod obj = new UtilToMethod(bindingsList.getString("util"), bindingsList.getList("params"), workerId, totalWorker);
+                            baseutils.add(obj);
+                        }
+                    } else if (bindingsList.containsKey("split_min_max_for_count")) {
+                        int count = bindingsList.getInt("split_min_max_for_count");
+                        if (bindingsList.getList("params").size() == 2) {
                             List<Object> bindings = bindingsList.getList("params");
                             int min = (int) bindings.get(0);
                             int max = (int) bindings.get(1);
@@ -152,12 +158,6 @@ public class FeatureBenchBenchmark extends BenchmarkModule {
                                 UtilToMethod obj = new UtilToMethod(bindingsList.getString("util"), List.of(currentMin, currentMax), workerId, totalWorker);
                                 baseutils.add(obj);
                                 currentMin = currentMax + 1;
-                            }
-                        }
-                        else {
-                            for (int i = 0; i < count; i++) {
-                                UtilToMethod obj = new UtilToMethod(bindingsList.getString("util"), bindingsList.getList("params"), workerId, totalWorker);
-                                baseutils.add(obj);
                             }
                         }
                     } else {
