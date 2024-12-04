@@ -12,7 +12,7 @@ public class Query {
     public String query;
     public int count = 1;
     public int explainPlanRCValidateCount = -1;
-    public int batch = -1;
+    public int pattern_count = -1;
     public List<UtilToMethod> baseUtils;
     public boolean isSelectQuery = false;
     public boolean isUpdateQuery = false;
@@ -22,14 +22,14 @@ public class Query {
     }
 
     public void setBaseUtils(List<UtilToMethod> baseUtils) {
-        if (this.batch != -1) {
-            this.baseUtils = repeatList(baseUtils, this.batch);
+        if (this.pattern_count != -1) {
+            this.baseUtils = repeatList(baseUtils, this.pattern_count);
         } else {
             this.baseUtils = baseUtils;
         }
     }
 
-    public String getQuery() {  
+    public String getQuery() {
         return query;
     }
 
@@ -69,24 +69,24 @@ public class Query {
         isUpdateQuery = updateQuery;
     }
 
-    public int getBatch() {
-        return batch;
+    public int getPattern_count() {
+        return pattern_count;
     }
 
-    public void setBatch(int batch) {
-        this.batch = batch;
+    public void setPattern_count(int pattern_count) {
+        this.pattern_count = pattern_count;
     }
 
     public String processQuery(String query) {
-        if (this.batch == -1) {
+        if (this.pattern_count == -1) {
             return query;
         }
-        Pattern pattern = Pattern.compile("\\[(.*?)\\]\\[batch]");
+        Pattern pattern = Pattern.compile("\\[(.*?)\\]\\[pattern_count]");
         Matcher matcher = pattern.matcher(query);
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         while (matcher.find()) {
              String placeholderPattern = matcher.group(1);
-            String repeatedPattern = String.join(",", Collections.nCopies(this.batch, placeholderPattern));
+            String repeatedPattern = String.join(",", Collections.nCopies(this.pattern_count, placeholderPattern));
             matcher.appendReplacement(result, repeatedPattern);
         }
         matcher.appendTail(result);

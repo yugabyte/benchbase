@@ -41,8 +41,8 @@ microbenchmark:
                   - name: BatchInsert
                     weight: 100
                     queries:
-                        - query: INSERT INTO demo_batch_insert VALUES [(?,?,?,?)][batch]
-                          batch: 5
+                        - query: INSERT INTO demo_batch_insert VALUES [(?,?,?,?)][pattern_count]
+                          pattern_count: 5
                           bindings:
                               - util: PrimaryIntGen
                                 params:
