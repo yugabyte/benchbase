@@ -79,7 +79,7 @@ microbenchmark:
                     -   name: join_on_pk_of_range_tbl
                         weight: 100
                         queries:
-                            -   query: select col_bigint_id_2 from rangetbl_1 where col_bigint_id_2>0
+                            -   query: select col_bigint_id_2 from INDG13_rangetbl_1 where col_bigint_id_2>0
 
             -   workload: INDG13_3_indexscan_using_skey
                 customTags: schematype=regular,partition=range,pkey=asc,cardinality=single,projection=indexed,queryshape=join,joinon=rangepkey
@@ -87,4 +87,4 @@ microbenchmark:
                     -   name: join_on_pk_of_range_tbl
                         weight: 100
                         queries:
-                            -   query: select col_bigint_id_1 from rangetbl_1 where col_bigint_id_2>0
+                            -   query: select col_bigint_id_1 from INDG13_rangetbl_1 where col_bigint_id_2>0
