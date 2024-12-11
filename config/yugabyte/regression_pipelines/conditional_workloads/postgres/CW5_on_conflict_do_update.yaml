@@ -132,13 +132,13 @@ microbenchmark:
                           pattern_count: 1024
                           bindings:
                               -   util: PrimaryIntGen
-                                  params: [ 4000001, 8000000 ]
+                                  params: [ 1, 8000000 ]
                               -   util: PrimaryIntGen
-                                  params: [ 4000001, 8000000 ]
+                                  params: [ 1, 8000000 ]
                               -   util: PrimaryStringGen
-                                  params: [ 4000001, 50 ]
+                                  params: [ 1, 50 ]
                               -   util: PrimaryFloatGen
-                                  params: [ 4000001, 8000000, 2 ]
+                                  params: [ 1, 8000000, 2 ]
 
 
             - workload: CW5_6_no_conflict_on_pkey_so_1024_insert_on_partitioned_tbl_by_hash
@@ -150,10 +150,10 @@ microbenchmark:
                           pattern_count: 1024
                           bindings:
                               -   util: PrimaryIntGen
-                                  params: [ 4000001, 8000000 ]
+                                  params: [ 1, 8000000 ]
                               -   util: PrimaryIntGen
-                                  params: [ 4000001, 8000000 ]
+                                  params: [ 1, 8000000 ]
                               -   util: PrimaryStringGen
-                                  params: [ 4000001, 50 ]
+                                  params: [ 1, 50 ]
                               -   util: PrimaryFloatGen
-                                  params: [ 4000001, 8000000, 2 ]
+                                  params: [ 1, 8000000, 2 ]
