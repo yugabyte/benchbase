@@ -265,11 +265,9 @@ microbenchmark:
                         - query: INSERT INTO CW4_accounts_1(account_id_1,user_id_1,addr_1,bal_1) VALUES  [(?,?,?,?)][pattern_count] ON CONFLICT (account_id_1) DO NOTHING
                           pattern_count: 1024
                           bindings:
-                              -   split_min_max_for_count: 1024
-                                  util: RandomNumber
+                              -   util: RandomNumber
                                   params: [ 4000001, 8000000 ]
-                              -   split_min_max_for_count: 1024
-                                  util: RandomNumber
+                              -   util: RandomNumber
                                   params: [ 4000001, 8000000 ]
                               -   util: RandomAString
                                   params: [ 50, 50 ]
@@ -284,11 +282,9 @@ microbenchmark:
                         - query: INSERT INTO CW4_accounts_2(account_id_1,user_id_1,addr_1,bal_1) VALUES  [(?,?,?,?)][pattern_count] ON CONFLICT (account_id_1) DO NOTHING
                           pattern_count: 1024
                           bindings:
-                              -   split_min_max_for_count: 1024
-                                  util: RandomNumber
+                              -   util: RandomNumber
                                   params: [ 4000001, 8000000 ]
-                              -   split_min_max_for_count: 1024
-                                  util: RandomNumber
+                              -   util: RandomNumber
                                   params: [ 4000001, 8000000 ]
                               -   util: RandomAString
                                   params: [ 50, 50 ]
