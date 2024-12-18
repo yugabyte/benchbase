@@ -17,7 +17,7 @@ isolation: TRANSACTION_REPEATABLE_READ
 loaderThreads: 1
 terminals: 1
 collect_pg_stat_statements: true
-yaml_version: v1.1
+yaml_version: v2.1
 use_dist_in_explain : true
 works:
     work:
@@ -188,7 +188,16 @@ microbenchmark:
                     queries:
                         - query: select col_bigint_id_1 from Indexed1M_range_1 where col_bigint_id_1>1 order by col_bigint_id_1 DESC
 
+            - workload: ORDG8_4_ordby_bigint_pkey_column_desc
+              customTags: schematype=colocated,partition=hash,cardinality=single,projection=rangepkey,filtercount=one,filteron=rangepkey,filtertype=comparision,queryshape=orderby,orderbyon=rangepkeydesc
+              run:
+                  - name: yb_ordby_bigint_non_indexed_column
+                    weight: 100
+                    queries:
+                        - query: select col_bigint_id_1,col_bigint_id_2 from Indexed1M_range_1 where col_bigint_id_1>1 order by col_bigint_id_1 DESC
+
             - workload: ORDG8_1_perform_update_ordby_bckwrd_ind_scan_pkey_filter
+              time_secs: 7200
               skipReport: true
               customTags: customer=0,schematype=regular,partition=hash,pkey=composite,cardinality=multiple,projection=hashpkey,filtercount=one,filteron=hashpkey,filtertype=comparision,queryshape=orderby,orderbyon=hashpkeydesc
               run:
@@ -201,25 +210,15 @@ microbenchmark:
                                   params: [ 1000001, 1010001 ]
                               -   util: RandomNumber
                                   params: [ 1000001, 1010001 ]
-
-            -   workload: ORDG8_2_perform_update_ordby_bigint_indexed_column_desc
-                skipReport: true
-                customTags: customer=2,schematype=regular,partition=range,skey=desc,columndatatype=bigint,cardinality=single,projection=indexed,queryshape=orderby,orderbyon=rangeskey
-                run:
-                    -   name: ordby_bigint_indexed_column_desc
-                        weight: 100
-                        queries:
+                  - name: ordby_bigint_indexed_column_desc
+                    weight: 100
+                    queries:
                             -   query: update indexedBigint1M_1 set col_bigint_id_3=? where col_bigint_id_3=?
                                 bindings:
                                   -   util: RandomNumber
                                       params: [ 1, 1000000 ]
                                   -   util: RandomNumber
                                       params: [ 1, 1000000 ]
-
-            - workload: ORDG8_3_perform_update_ordby_bigint_pkey_column_desc
-              skipReport: true
-              customTags: schematype=colocated,partition=hash,cardinality=single,projection=rangepkey,filtercount=one,filteron=rangepkey,filtertype=comparision,queryshape=orderby,orderbyon=rangepkeydesc
-              run:
                   - name: yb_ordby_bigint_non_indexed_column
                     weight: 100
                     queries:
@@ -230,15 +229,44 @@ microbenchmark:
                               -   util: RandomNumber
                                   params: [ 1, 1000000 ]
 
-            - workload: ORDG8_1_post_update_ordby_bckwrd_ind_scan_pkey_filter
+#
+#            -   workload: ORDG8_2_perform_update_ordby_bigint_indexed_column_desc
+#                skipReport: true
+#                customTags: customer=2,schematype=regular,partition=range,skey=desc,columndatatype=bigint,cardinality=single,projection=indexed,queryshape=orderby,orderbyon=rangeskey
+#                run:
+#                    -   name: ordby_bigint_indexed_column_desc
+#                        weight: 100
+#                        queries:
+#                            -   query: update indexedBigint1M_1 set col_bigint_id_3=? where col_bigint_id_3=?
+#                                bindings:
+#                                  -   util: RandomNumber
+#                                      params: [ 1, 1000000 ]
+#                                  -   util: RandomNumber
+#                                      params: [ 1, 1000000 ]
+#
+#            - workload: ORDG8_3_perform_update_ordby_bigint_pkey_column_desc
+#              skipReport: true
+#              customTags: schematype=colocated,partition=hash,cardinality=single,projection=rangepkey,filtercount=one,filteron=rangepkey,filtertype=comparision,queryshape=orderby,orderbyon=rangepkeydesc
+#              run:
+#                  - name: yb_ordby_bigint_non_indexed_column
+#                    weight: 100
+#                    queries:
+#                        - query: update Indexed1M_range_1 set col_bigint_id_2 = ? where col_bigint_id_2 = ?
+#                          bindings:
+#                              -   util: RandomNumber
+#                                  params: [ 1, 1000000 ]
+#                              -   util: RandomNumber
+#                                  params: [ 1, 1000000 ]
+
+            - workload: ORDG8_1_post_update1_ordby_bckwrd_ind_scan_pkey_filter
               customTags: customer=0,schematype=regular,partition=hash,pkey=composite,cardinality=multiple,projection=hashpkey,filtercount=one,filteron=hashpkey,filtertype=comparision,queryshape=orderby,orderbyon=hashpkeydesc
               run:
                   - name: ordby_bckwrd_ind_scan_pkey_filter
                     weight: 100
                     queries:
-                        - query: select col_bigint_id_1,col_bigint_id_2,col_bigint_card2_1,col_bigint_card3_1 from Indexed1M_1 where col_bigint_card1_1=1000000 and col_bigint_card2_1<1000100 order by col_bigint_car2_1 DESC
+                        - query: select col_bigint_id_1,col_bigint_id_2,col_bigint_card2_1,col_bigint_card3_1 from Indexed1M_1 where col_bigint_card1_1=1000000 and col_bigint_card2_1<1000100 order by col_bigint_card2_1 DESC
 
-            -   workload: ORDG8_2_post_update_ordby_bigint_indexed_column_desc
+            -   workload: ORDG8_2_post_update1_ordby_bigint_indexed_column_desc
                 customTags: customer=2,schematype=regular,partition=range,skey=desc,columndatatype=bigint,cardinality=single,projection=indexed,queryshape=orderby,orderbyon=rangeskey
                 run:
                     -   name: ordby_bigint_indexed_column_desc
@@ -246,10 +274,83 @@ microbenchmark:
                         queries:
                             -   query: select col_bigint_id_2 from indexedBigint1M_1 order by col_bigint_id_2
 
-            - workload: ORDG8_3_post_update_ordby_bigint_pkey_column_desc
+            - workload: ORDG8_3_post_update1_ordby_bigint_pkey_column_desc
               customTags: schematype=colocated,partition=hash,cardinality=single,projection=rangepkey,filtercount=one,filteron=rangepkey,filtertype=comparision,queryshape=orderby,orderbyon=rangepkeydesc
               run:
                   - name: yb_ordby_bigint_non_indexed_column
                     weight: 100
                     queries:
                         - query: select col_bigint_id_1 from Indexed1M_range_1 where col_bigint_id_1>1 order by col_bigint_id_1 DESC
+
+            - workload: ORDG8_4_post_update1_ordby_bigint_pkey_column_desc
+              customTags: schematype=colocated,partition=hash,cardinality=single,projection=rangepkey,filtercount=one,filteron=rangepkey,filtertype=comparision,queryshape=orderby,orderbyon=rangepkeydesc
+              run:
+                  - name: yb_ordby_bigint_non_indexed_column
+                    weight: 100
+                    queries:
+                        - query: select col_bigint_id_1,col_bigint_id_2 from Indexed1M_range_1 where col_bigint_id_1>1 order by col_bigint_id_1 DESC
+
+            - workload: ORDG8_2_perform_update_ordby_bckwrd_ind_scan_pkey_filter
+              time_secs: 10800
+              skipReport: true
+              customTags: customer=0,schematype=regular,partition=hash,pkey=composite,cardinality=multiple,projection=hashpkey,filtercount=one,filteron=hashpkey,filtertype=comparision,queryshape=orderby,orderbyon=hashpkeydesc
+              run:
+                  - name: ordby_bckwrd_ind_scan_pkey_filter
+                    weight: 100
+                    queries:
+                        - query: update Indexed1M_1 set col_bigint_card3_1=? where col_bigint_card3_1=?
+                          bindings:
+                              -   util: RandomNumber
+                                  params: [ 1000001, 1010001 ]
+                              -   util: RandomNumber
+                                  params: [ 1000001, 1010001 ]
+                  - name: ordby_bigint_indexed_column_desc
+                    weight: 100
+                    queries:
+                            -   query: update indexedBigint1M_1 set col_bigint_id_3=? where col_bigint_id_3=?
+                                bindings:
+                                  -   util: RandomNumber
+                                      params: [ 1, 1000000 ]
+                                  -   util: RandomNumber
+                                      params: [ 1, 1000000 ]
+                  - name: yb_ordby_bigint_non_indexed_column
+                    weight: 100
+                    queries:
+                        - query: update Indexed1M_range_1 set col_bigint_id_2 = ? where col_bigint_id_2 = ?
+                          bindings:
+                              -   util: RandomNumber
+                                  params: [ 1, 1000000 ]
+                              -   util: RandomNumber
+                                  params: [ 1, 1000000 ]
+
+            - workload: ORDG8_1_post_update2_ordby_bckwrd_ind_scan_pkey_filter
+              customTags: customer=0,schematype=regular,partition=hash,pkey=composite,cardinality=multiple,projection=hashpkey,filtercount=one,filteron=hashpkey,filtertype=comparision,queryshape=orderby,orderbyon=hashpkeydesc
+              run:
+                  - name: ordby_bckwrd_ind_scan_pkey_filter
+                    weight: 100
+                    queries:
+                        - query: select col_bigint_id_1,col_bigint_id_2,col_bigint_card2_1,col_bigint_card3_1 from Indexed1M_1 where col_bigint_card1_1=1000000 and col_bigint_card2_1<1000100 order by col_bigint_card2_1 DESC
+
+            -   workload: ORDG8_2_post_update2_ordby_bigint_indexed_column_desc
+                customTags: customer=2,schematype=regular,partition=range,skey=desc,columndatatype=bigint,cardinality=single,projection=indexed,queryshape=orderby,orderbyon=rangeskey
+                run:
+                    -   name: ordby_bigint_indexed_column_desc
+                        weight: 100
+                        queries:
+                            -   query: select col_bigint_id_2 from indexedBigint1M_1 order by col_bigint_id_2
+
+            - workload: ORDG8_3_post_update2_ordby_bigint_pkey_column_desc
+              customTags: schematype=colocated,partition=hash,cardinality=single,projection=rangepkey,filtercount=one,filteron=rangepkey,filtertype=comparision,queryshape=orderby,orderbyon=rangepkeydesc
+              run:
+                  - name: yb_ordby_bigint_non_indexed_column
+                    weight: 100
+                    queries:
+                        - query: select col_bigint_id_1 from Indexed1M_range_1 where col_bigint_id_1>1 order by col_bigint_id_1 DESC
+
+            - workload: ORDG8_4_post_update2_ordby_bigint_pkey_column_desc
+              customTags: schematype=colocated,partition=hash,cardinality=single,projection=rangepkey,filtercount=one,filteron=rangepkey,filtertype=comparision,queryshape=orderby,orderbyon=rangepkeydesc
+              run:
+                  - name: yb_ordby_bigint_non_indexed_column
+                    weight: 100
+                    queries:
+                        - query: select col_bigint_id_1,col_bigint_id_2 from Indexed1M_range_1 where col_bigint_id_1>1 order by col_bigint_id_1 DESC
