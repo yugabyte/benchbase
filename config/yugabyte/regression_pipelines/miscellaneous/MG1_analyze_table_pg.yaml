@@ -39,8 +39,6 @@ microbenchmark:
             - drop table IF EXISTS nets_50M_1;
             - drop table IF EXISTS nets_100M_1;
             - drop table IF EXISTS nets_200M_1;
-            - drop table IF EXISTS nets_500G_1;
-            - drop table IF EXISTS nets_1TB_1;
 
         loadRules:
 
