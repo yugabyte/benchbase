@@ -31,12 +31,12 @@ microbenchmark:
 
             - table: nets_1TB_
               count: 1
-              rows: 698000000
+              rows: 693607040
               columns:
                     - name: op_id_
                       count: 1
                       util: PrimaryStringGen
-                      params: [ 965000000, 50 ]
+                      params: [ 970392960, 50 ]
                     - name: work_type_
                       count: 1
                       util: RandomAString
