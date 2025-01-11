@@ -36,7 +36,7 @@ microbenchmark:
                     - name: op_id_
                       count: 1
                       util: PrimaryStringGen
-                      params: [ 698000000, 50 ]
+                      params: [ 965000000, 50 ]
                     - name: work_type_
                       count: 1
                       util: RandomAString
