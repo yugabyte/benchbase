@@ -17,10 +17,8 @@ Return type : (String):- 03-01-2023
 */
 public class RandomDate implements BaseUtil {
     private final int numberofDays;
-    LocalDate startDate =  LocalDate.of(2023, 1, 1);
-
+    LocalDate startDate;
     private final Random rd = new Random((int) System.nanoTime());
-
 
     public RandomDate(List<Object> values) {
         if (values.isEmpty()) {
@@ -28,14 +26,18 @@ public class RandomDate implements BaseUtil {
                 + this.getClass());
         }
 
-        this.numberofDays = ((Number) values.get(0)).intValue();
-        if(values.size() == 2){
-            int offSet = ((Number) values.get(1)).intValue();
-           this.startDate = this.startDate.plusDays(offSet);
-        }
-        if (numberofDays <0)
-            throw new RuntimeException("Please enter positive number of days");
+        int start=(int)values.get(0),end=start+15;
 
+        this.startDate=LocalDate.of(start, 1, 1);
+        if(values.size()==2)
+        {
+            end=(int)values.get(1);
+            if(start>end)
+            throw new RuntimeException("End Date must be greater than Start Date "
+                + this.getClass());
+        }
+
+        this.numberofDays = (end-start+1)*365;
     }
 
     public RandomDate(List<Object> values, int workerId, int totalWorkers) {
