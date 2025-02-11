@@ -1,0 +1,209 @@
+type: YUGABYTE
+driver: com.yugabyte.Driver
+url: jdbc:postgresql://127.0.0.1:5433/yugabyte
+username: "yugabyte"
+password: "yugabyte"
+
+batchsize: 128
+isolation: TRANSACTION_REPEATABLE_READ
+loaderThreads: 1
+terminals: 1
+collect_pg_stat_statements: true
+use_dist_in_explain : true
+yaml_version: v1.0
+works:
+    work:
+        time_secs: 60
+        active_terminals: 1
+        rate: unlimited
+        warmup: 30
+microbenchmark:
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
+    properties:
+        setAutoCommit: false
+        create:
+            - DROP TABLE IF EXISTS employees_with_fk;
+            - DROP TABLE IF EXISTS projects_with_ref;
+            - DROP TABLE IF EXISTS projects_without_ref;
+            - create table projects_with_ref(id int primary key, uid int unique not null, name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2));
+            - create table projects_without_ref(id int primary key, uid int unique not null, name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2));
+            - create table employees_with_fk(id int primary key,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(8,2), project_id int not null);
+        cleanup:
+            - DROP TABLE IF EXISTS employees_with_fk;
+            - DROP TABLE IF EXISTS projects_with_ref;
+            - DROP TABLE IF EXISTS projects_without_ref;
+        loadRules:
+            - table: projects_with_ref
+              rows: 100
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 100]
+                  - name: uid
+                    util: PrimaryIntGen
+                    params: [1, 100]
+                  - name: name
+                    util: RandomAString
+                    params: [1, 20]
+                  - name: start_date
+                    util: RandomDateBtwYears
+                    params: [2000, 2025]
+                  - name: end_date
+                    util: RandomDateBtwYears
+                    params: [2000, 2025]
+                  - name: budget
+                    util: RandomNoWithDecimalPoints
+                    params: [1, 1000000, 2]
+
+            - table: projects_without_ref
+              rows: 100
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 100]
+                  - name: uid
+                    util: PrimaryIntGen
+                    params: [1, 100]
+                  - name: name
+                    util: RandomAString
+                    params: [1, 20]
+                  - name: start_date
+                    util: RandomDateBtwYears
+                    params: [2000, 2025]
+                  - name: end_date
+                    util: RandomDateBtwYears
+                    params: [2000, 2025]
+                  - name: budget
+                    util: RandomNoWithDecimalPoints
+                    params: [1, 1000000, 2]
+              
+            - table: employees_with_fk
+              rows: 1000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 1000]
+                  - name: name
+                    util: RandomAString
+                    params: [1, 20]
+                  - name: email
+                    util: RandomAString
+                    params: [1, 100]
+                  - name: phone
+                    util: RandomNstring
+                    params: [10, 15]
+                  - name: position
+                    util: RandomAString
+                    params: [1, 10]
+                  - name: salary
+                    util: RandomNoWithDecimalPoints
+                    params: [1, 1000000, 2]
+                  - name: project_id
+                    util: RandomInt
+                    params: [1,100]
+
+        afterLoad:
+            - ALTER TABLE employees_with_fk add CONSTRAINT fk_project FOREIGN KEY (project_id) REFERENCES projects_with_ref(uid) ON DELETE CASCADE ON UPDATE CASCADE;
+            
+        executeRules:
+            - workload: select_with_ref
+              run:
+                  - name: select_with_ref
+                    weight: 100
+                    queries:
+                        - query: SELECT * FROM projects_with_ref where id=?;
+                          bindings:
+                              util: RandomNumber
+                              params: [1, 100]
+
+            - workload: insert_with_ref
+              run:
+                  - name: insert_with_ref
+                    weight: 100
+                    queries:
+                        - query: insert into projects_with_ref values(?,?,?,?,?,?);
+                          bindings:
+                              - count: 2
+                                util: RandomInt
+                                params: [101, 900]
+                              - util: RandomAString
+                                params: [1, 20]
+                              - util: RandomDateBtwYears
+                                params: [2000, 2025]
+                              - util: RandomDateBtwYears
+                                params: [2000, 2025]
+                              - util: RandomNoWithDecimalPoints
+                                params: [1, 1000000, 2]
+
+            - workload: update_with_ref
+              run:
+                  - name: update_with_ref
+                    weight: 100
+                    queries:
+                        - query: update projects_with_ref set uid=? where id=?;
+                          bindings:
+                            - util: RandomInt
+                              params: [100, 200]
+                            - util: RandomInt
+                              params: [1, 100]
+
+            - workload: delete_with_ref
+              run:
+                  - name: delete_with_ref
+                    weight: 100
+                    queries:
+                        - query: delete from projects_with_ref where id=?
+                          bindings:
+                            - util: RandomInt
+                              params: [1, 100]
+
+            - workload: select_without_ref
+              run:
+                  - name: select_without_ref
+                    weight: 100
+                    queries:
+                        - query: SELECT * FROM projects_without_ref where id=?;
+                          bindings:
+                              util: RandomNumber
+                              params: [1, 100]
+
+            - workload: insert_without_ref
+              run:
+                  - name: insert_without_ref
+                    weight: 100
+                    queries:
+                        - query: insert into projects_without_ref values(?,?,?,?,?,?);
+                          bindings:
+                              - count: 2
+                                util: RandomInt
+                                params: [101, 900]
+                              - util: RandomAString
+                                params: [1, 20]
+                              - util: RandomDateBtwYears
+                                params: [2000, 2025]
+                              - util: RandomDateBtwYears
+                                params: [2000, 2025]
+                              - util: RandomNoWithDecimalPoints
+                                params: [1, 1000000, 2]
+
+            - workload: update_without_ref
+              run:
+                  - name: update_without_ref
+                    weight: 100
+                    queries:
+                        - query: update projects_without_ref set uid=? where id=?;
+                          bindings:
+                            - util: RandomInt
+                              params: [100, 200]
+                            - util: RandomInt
+                              params: [1, 100]
+
+            - workload: delete_without_ref
+              run:
+                  - name: delete_without_ref
+                    weight: 100
+                    queries:
+                        - query: delete from projects_without_ref where id=?
+                          bindings:
+                            - util: RandomInt
+                              params: [1, 100]
