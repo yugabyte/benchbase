@@ -42,7 +42,7 @@ microbenchmark:
                     params: [1, 10000]
                   - name: uid
                     util: PrimaryIntGen
-                    params: [1, 100]
+                    params: [1, 10000]
                   - name: name
                     util: RandomAString
                     params: [1, 20]
