@@ -34,14 +34,14 @@ microbenchmark:
             - DROP TABLE IF EXISTS projects_without_ref;
         loadRules:
             - table: projects_with_ref
-              rows: 100
+              rows: 10000
               columns:
                   - name: id
                     util: PrimaryIntGen
-                    params: [1, 100]
+                    params: [1, 10000]
                   - name: uid
                     util: PrimaryIntGen
-                    params: [1, 100]
+                    params: [1, 10000]
                   - name: name
                     util: RandomAString
                     params: [1, 20]
@@ -56,14 +56,14 @@ microbenchmark:
                     params: [1, 1000000, 2]
 
             - table: projects_without_ref
-              rows: 100
+              rows: 10000
               columns:
                   - name: id
                     util: PrimaryIntGen
-                    params: [1, 100]
+                    params: [1, 10000]
                   - name: uid
                     util: PrimaryIntGen
-                    params: [1, 100]
+                    params: [1, 10000]
                   - name: name
                     util: RandomAString
                     params: [1, 20]
@@ -78,11 +78,11 @@ microbenchmark:
                     params: [1, 1000000, 2]
               
             - table: employees_with_fk
-              rows: 1000
+              rows: 100000
               columns:
                   - name: id
                     util: PrimaryIntGen
-                    params: [1, 1000]
+                    params: [1, 100000]
                   - name: name
                     util: RandomAString
                     params: [1, 20]
@@ -100,7 +100,7 @@ microbenchmark:
                     params: [1, 1000000, 2]
                   - name: project_id
                     util: RandomInt
-                    params: [1,100]
+                    params: [1,10000]
 
         afterLoad:
             - ALTER TABLE employees_with_fk add CONSTRAINT fk_project FOREIGN KEY (project_id) REFERENCES projects_with_ref(uid) ON DELETE CASCADE ON UPDATE CASCADE;
@@ -114,7 +114,7 @@ microbenchmark:
                         - query: SELECT * FROM projects_with_ref where id=?;
                           bindings:
                               util: RandomNumber
-                              params: [1, 100]
+                              params: [1, 10000]
 
             - workload: insert_with_ref
               run:
@@ -124,8 +124,8 @@ microbenchmark:
                         - query: insert into projects_with_ref values(?,?,?,?,?,?);
                           bindings:
                               - count: 2
-                                util: RandomInt
-                                params: [101, 900]
+                                util: PrimaryIntGen
+                                params: [10001, 900000]
                               - util: RandomAString
                                 params: [1, 20]
                               - util: RandomDateBtwYears
@@ -142,10 +142,10 @@ microbenchmark:
                     queries:
                         - query: update projects_with_ref set uid=? where id=?;
                           bindings:
+                            - util: PrimaryIntGen
+                              params: [10000, 900000]
                             - util: RandomInt
-                              params: [100, 200]
-                            - util: RandomInt
-                              params: [1, 100]
+                              params: [1, 10000]
 
             - workload: delete_with_ref
               run:
@@ -155,7 +155,7 @@ microbenchmark:
                         - query: delete from projects_with_ref where id=?
                           bindings:
                             - util: RandomInt
-                              params: [1, 100]
+                              params: [1, 10000]
 
             - workload: select_without_ref
               run:
@@ -165,7 +165,7 @@ microbenchmark:
                         - query: SELECT * FROM projects_without_ref where id=?;
                           bindings:
                               util: RandomNumber
-                              params: [1, 100]
+                              params: [1, 10000]
 
             - workload: insert_without_ref
               run:
@@ -175,8 +175,8 @@ microbenchmark:
                         - query: insert into projects_without_ref values(?,?,?,?,?,?);
                           bindings:
                               - count: 2
-                                util: RandomInt
-                                params: [101, 900]
+                                util: PrimaryIntGen
+                                params: [10001, 900000]
                               - util: RandomAString
                                 params: [1, 20]
                               - util: RandomDateBtwYears
@@ -193,10 +193,10 @@ microbenchmark:
                     queries:
                         - query: update projects_without_ref set uid=? where id=?;
                           bindings:
+                            - util: PrimaryIntGen
+                              params: [10000, 900000]
                             - util: RandomInt
-                              params: [100, 200]
-                            - util: RandomInt
-                              params: [1, 100]
+                              params: [1, 10000]
 
             - workload: delete_without_ref
               run:
@@ -206,4 +206,4 @@ microbenchmark:
                         - query: delete from projects_without_ref where id=?
                           bindings:
                             - util: RandomInt
-                              params: [1, 100]
+                              params: [1, 10000]
