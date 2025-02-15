@@ -143,9 +143,9 @@ microbenchmark:
                         - query: update projects_with_ref set uid=? where id=?;
                           bindings:
                             - util: PrimaryIntGen
-                              params: [10000, 900000]
-                            - util: RandomInt
-                              params: [1, 10000]
+                              params: [1, 900000]
+                            - util: PrimaryIntGen
+                              params: [1, 900000]
 
             - workload: delete_with_ref
               run:
@@ -154,8 +154,8 @@ microbenchmark:
                     queries:
                         - query: delete from projects_with_ref where id=?
                           bindings:
-                            - util: RandomInt
-                              params: [1, 10000]
+                            - util: PrimaryIntGen
+                              params: [1, 900000]
 
             - workload: select_without_ref
               run:
@@ -194,9 +194,9 @@ microbenchmark:
                         - query: update projects_without_ref set uid=? where id=?;
                           bindings:
                             - util: PrimaryIntGen
-                              params: [10000, 900000]
-                            - util: RandomInt
-                              params: [1, 10000]
+                              params: [1, 900000]
+                            - util: PrimaryIntGen
+                              params: [1, 900000]
 
             - workload: delete_without_ref
               run:
@@ -205,5 +205,5 @@ microbenchmark:
                     queries:
                         - query: delete from projects_without_ref where id=?
                           bindings:
-                            - util: RandomInt
-                              params: [1, 10000]
+                            - util: PrimaryIntGen
+                              params: [1, 900000]
