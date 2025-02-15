@@ -37,9 +37,12 @@ microbenchmark:
             - create table employees_without_indx(id int primary key,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(8,2), dept_id int not null);
             - create index dept_index on dept_with_indx(uid);
         cleanup:
-            - DROP TABLE IF EXISTS employees;
-            - DROP TABLE IF EXISTS dept;
-            - DROP TABLE IF EXISTS projects;
+            - DROP TABLE IF EXISTS employees_with_indx;
+            - DROP TABLE IF EXISTS projects_with_indx;
+            - DROP TABLE IF EXISTS dept_with_indx;
+            - DROP TABLE IF EXISTS employees_without_indx;
+            - DROP TABLE IF EXISTS projects_without_indx;
+            - DROP TABLE IF EXISTS dept_without_indx;
         loadRules:
             - table: projects_with_indx
               rows: 100000
