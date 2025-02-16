@@ -197,7 +197,7 @@ microbenchmark:
                   - name: update_with_2_fk
                     weight: 100
                     queries:
-                        - query: update employees_with_2_fk set project_id=? and project_uid=? where id=?;
+                        - query: update employees_with_2_fk set project_id=?, project_uid=? where id=?;
                           bindings:
                             - util: RandomInt
                               params: [1, 10000]
