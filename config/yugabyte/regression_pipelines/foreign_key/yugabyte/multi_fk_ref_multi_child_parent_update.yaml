@@ -31,9 +31,9 @@ microbenchmark:
 
             - create table dept_without_indx(id int primary key, uid int unique, name varchar(20) not null);
             - create table dept_with_indx(id int primary key, uid int unique, name varchar(20) not null);
-            - create table projects_with_indx(id int primary key, uid int unique not null, name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2), dept_id int not null);
+            - create table projects_with_indx(id int primary key, name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2), dept_id int not null);
             - create table employees_with_indx(id int primary key,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(8,2), dept_id int not null);
-            - create table projects_without_indx(id int primary key, uid int unique not null, name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2), dept_id int not null);
+            - create table projects_without_indx(id int primary key, name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2), dept_id int not null);
             - create table employees_without_indx(id int primary key,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(8,2), dept_id int not null);
             - create index dept_index on dept_with_indx(uid);
         cleanup:
@@ -49,10 +49,7 @@ microbenchmark:
               columns:
                   - name: id
                     util: PrimaryIntGen
-                    params: [1, 10000]
-                  - name: uid
-                    util: PrimaryIntGen
-                    params: [1, 10000]
+                    params: [1, 100000]
                   - name: name
                     util: RandomAString
                     params: [1, 20]
@@ -74,10 +71,7 @@ microbenchmark:
               columns:
                   - name: id
                     util: PrimaryIntGen
-                    params: [1, 10000]
-                  - name: uid
-                    util: PrimaryIntGen
-                    params: [1, 10000]
+                    params: [1, 100000]
                   - name: name
                     util: RandomAString
                     params: [1, 20]
