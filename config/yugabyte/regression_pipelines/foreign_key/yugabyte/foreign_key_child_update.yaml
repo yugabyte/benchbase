@@ -124,7 +124,7 @@ microbenchmark:
                         - query: insert into employees_with_fk values(?,?,?,?,?,?,?);
                           bindings:
                               - util: PrimaryIntGen
-                                params: [100001, 910000]
+                                params: [100001, 900000]
                               - util: RandomAString
                                 params: [1, 20]
                               - util: RandomAString
