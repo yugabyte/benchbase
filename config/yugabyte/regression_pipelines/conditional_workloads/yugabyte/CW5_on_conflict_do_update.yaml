@@ -38,7 +38,7 @@ microbenchmark:
         loadRules:
             -   table: CW5_accounts_
                 count: 2
-                rows: 8000000
+                rows: 80000001
                 columns:
                     -   name: account_id_
                         count: 1
