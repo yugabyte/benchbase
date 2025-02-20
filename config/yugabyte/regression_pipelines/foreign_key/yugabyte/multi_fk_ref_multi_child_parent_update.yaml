@@ -145,7 +145,7 @@ microbenchmark:
                     queries:
                         - query: update dept_with_ref set uid=? where id=?;
                           bindings:
-                            - util: PrimaryIntGen
+                            - util: RandomInt
                               params: [1, 900000]
                             - util: PrimaryIntGen
                               params: [1, 900000]
@@ -190,7 +190,7 @@ microbenchmark:
                     queries:
                         - query: update dept_without_ref set uid=? where id=?;
                           bindings:
-                            - util: PrimaryIntGen
+                            - util: RandomInt
                               params: [1, 900000]
                             - util: PrimaryIntGen
                               params: [1, 900000]
