@@ -25,9 +25,9 @@ microbenchmark:
             - DROP TABLE IF EXISTS employees_with_fk;
             - DROP TABLE IF EXISTS employees_without_fk;
             - DROP TABLE IF EXISTS projects;
-            - create table projects(id int, uid int unique, name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2), primary key(id));
-            - create table employees_with_fk(id int,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(8,2), project_id int not null, primary key(id));
-            - create table employees_without_fk(id int,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(8,2), project_id int not null, primary key(id));
+            - create table projects(id int, uid int unique, name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2), primary key(id ASC));
+            - create table employees_with_fk(id int,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(8,2), project_id int not null, primary key(id ASC));
+            - create table employees_without_fk(id int,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(8,2), project_id int not null, primary key(id ASC));
             - create index projects_index on projects(uid);
         cleanup:
             - DROP TABLE IF EXISTS employees_with_fk;

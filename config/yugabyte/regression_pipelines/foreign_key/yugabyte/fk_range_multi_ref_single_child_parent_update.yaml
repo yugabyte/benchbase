@@ -25,9 +25,9 @@ microbenchmark:
             - DROP TABLE IF EXISTS employees_with_2_fk;
             - DROP TABLE IF EXISTS projects_with_ref;
             - DROP TABLE IF EXISTS projects_without_ref;
-            - create table projects_with_ref(id int, uid1 int unique, uid2 int unique, name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2), primary key(id));
-            - create table projects_without_ref(id int, uid1 int unique, uid2 int unique, name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2), primary key(id));
-            - create table employees_with_2_fk(id int,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(8,2), project_uid1 int not null, project_uid2 int not null, primary key(id));
+            - create table projects_with_ref(id int, uid1 int unique, uid2 int unique, name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2), primary key(id ASC));
+            - create table projects_without_ref(id int, uid1 int unique, uid2 int unique, name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2), primary key(id ASC));
+            - create table employees_with_2_fk(id int,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(8,2), project_uid1 int not null, project_uid2 int not null, primary key(id ASC));
         cleanup:
             - DROP TABLE IF EXISTS employees_with_2_fk;
             - DROP TABLE IF EXISTS projects_with_ref;
