@@ -1,0 +1,207 @@
+type: YUGABYTE
+driver: com.yugabyte.Driver
+url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
+createdb: drop database if exists yb_colocated; create database yb_colocated with colocated=true
+username: {{username}}
+password: {{password}}
+
+batchsize: 128
+isolation: TRANSACTION_REPEATABLE_READ
+loaderThreads: 1
+terminals: 1
+collect_pg_stat_statements: true
+use_dist_in_explain : true
+yaml_version: v1.0
+works:
+    work:
+        time_secs: 60
+        active_terminals: 1
+        rate: unlimited
+        warmup: 30
+microbenchmark:
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
+    properties:
+        setAutoCommit: false
+        create:
+            - DROP TABLE IF EXISTS employees_without_fk;
+            - DROP TABLE IF EXISTS employees_with_2_fk;
+            - DROP TABLE IF EXISTS projects;
+            - create table projects(id int, uid int unique, name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2), primary key(id ASC));
+            - create table employees_without_fk(id int,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(8,2), project_id int not null, primary key(id ASC));
+            - create table employees_with_2_fk(id int,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(8,2), project_id int not null, project_uid int not null, primary key(id ASC));
+        cleanup:
+            - DROP TABLE IF EXISTS employees_without_fk;
+            - DROP TABLE IF EXISTS employees_with_2_fk;
+            - DROP TABLE IF EXISTS projects;
+        loadRules:
+            - table: projects
+              rows: 10000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 10000]
+                  - name: uid
+                    util: PrimaryIntGen
+                    params: [1, 10000]
+                  - name: name
+                    util: RandomAString
+                    params: [1, 20]
+                  - name: start_date
+                    util: RandomDateBtwYears
+                    params: [2000, 2025]
+                  - name: end_date
+                    util: RandomDateBtwYears
+                    params: [2000, 2025]
+                  - name: budget
+                    util: RandomNoWithDecimalPoints
+                    params: [1, 1000000, 2]
+
+            - table: employees_with_2_fk
+              rows: 100000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 100000]
+                  - name: name
+                    util: RandomAString
+                    params: [1, 20]
+                  - name: email
+                    util: RandomAString
+                    params: [1, 100]
+                  - name: phone
+                    util: RandomNstring
+                    params: [10, 15]
+                  - name: position
+                    util: RandomAString
+                    params: [1, 10]
+                  - name: salary
+                    util: RandomNoWithDecimalPoints
+                    params: [1, 1000000, 2]
+                  - name: project_id
+                    util: RandomInt
+                    params: [1,10000]
+                  - name: project_uid
+                    util: RandomInt
+                    params: [1,10000]
+              
+            - table: employees_without_fk
+              rows: 100000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 100000]
+                  - name: name
+                    util: RandomAString
+                    params: [1, 20]
+                  - name: email
+                    util: RandomAString
+                    params: [1, 100]
+                  - name: phone
+                    util: RandomNstring
+                    params: [10, 15]
+                  - name: position
+                    util: RandomAString
+                    params: [1, 10]
+                  - name: salary
+                    util: RandomNoWithDecimalPoints
+                    params: [1, 1000000, 2]
+                  - name: project_id
+                    util: RandomInt
+                    params: [1,10000]
+
+        afterLoad:
+            - ALTER TABLE employees_with_2_fk add CONSTRAINT fk_project FOREIGN KEY (project_id) REFERENCES projects(id);
+            - ALTER TABLE employees_with_2_fk add CONSTRAINT fk_project2 FOREIGN KEY (project_uid) REFERENCES projects(uid);
+            
+        executeRules:
+            - workload: select_without_fk
+              run:
+                  - name: select_without_fk
+                    weight: 100
+                    queries:
+                        - query: SELECT * FROM employees_without_fk where project_id=?;
+                          bindings:
+                              util: RandomNumber
+                              params: [1, 10000]
+                              
+            - workload: insert_without_fk
+              run:
+                  - name: insert_without_fk
+                    weight: 100
+                    queries:
+                        - query: insert into employees_without_fk values(?,?,?,?,?,?,?);
+                          bindings:
+                              - util: PrimaryIntGen
+                                params: [100001, 900000]
+                              - util: RandomAString
+                                params: [1, 20]
+                              - util: RandomAString
+                                params: [1, 100]
+                              - util: RandomNstring
+                                params: [10, 15]
+                              - util: RandomAString
+                                params: [1, 10]
+                              - util: RandomNoWithDecimalPoints
+                                params: [1, 1000000, 2]
+                              - util: RandomNumber
+                                params: [1,10000]
+
+            - workload: update_without_fk
+              run:
+                  - name: update_without_fk
+                    weight: 100
+                    queries:
+                        - query: update employees_without_fk set project_id=? where id=?;
+                          bindings:
+                            - util: RandomInt
+                              params: [1, 10000]
+                            - util: PrimaryIntGen
+                              params: [1, 900000]
+
+            - workload: select_with_2_fk
+              run:
+                  - name: select_with_2_fk
+                    weight: 100
+                    queries:
+                        - query: SELECT * FROM employees_with_2_fk where project_id=? or project_uid=?;
+                          bindings:
+                            - count: 2
+                              util: RandomNumber
+                              params: [1, 10000]
+
+            - workload: insert_with_2_fk
+              run:
+                  - name: insert_with_2_fk
+                    weight: 100
+                    queries:
+                        - query: insert into employees_with_2_fk values(?,?,?,?,?,?,?,?);
+                          bindings:
+                              - util: PrimaryIntGen
+                                params: [100001, 900000]
+                              - util: RandomAString
+                                params: [1, 20]
+                              - util: RandomAString
+                                params: [1, 100]
+                              - util: RandomNstring
+                                params: [10, 15]
+                              - util: RandomAString
+                                params: [1, 10]
+                              - util: RandomNoWithDecimalPoints
+                                params: [1, 1000000, 2]
+                              - util: RandomInt
+                                params: [1,10000]
+                              - util: RandomInt
+                                params: [1,10000]
+            - workload: update_with_2_fk
+              run:
+                  - name: update_with_2_fk
+                    weight: 100
+                    queries:
+                        - query: update employees_with_2_fk set project_id=?, project_uid=? where id=?;
+                          bindings:
+                            - util: RandomInt
+                              params: [1, 10000]
+                            - util: RandomInt
+                              params: [1, 10000]
+                            - util: PrimaryIntGen
+                              params: [1, 900000]
