@@ -27,8 +27,8 @@ microbenchmark:
             - DROP TABLE IF EXISTS dept_with_ref;
             - DROP TABLE IF EXISTS dept_without_ref;
 
-            - create table dept_without_ref(id int primary key, uid int unique, name varchar(20) not null);
-            - create table dept_with_ref(id int primary key, uid int unique, name varchar(20) not null);
+            - create table dept_with_ref(id int primary key, uid1 int unique, uid2 int unique, name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2));
+            - create table dept_without_ref(id int primary key, uid1 int unique, uid2 int unique, name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2));
             - create table projects_with_fk(id int primary key, name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2), dept_id int not null);
             - create table employees_with_fk(id int primary key,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(8,2), dept_id int not null);
         cleanup:
@@ -65,12 +65,24 @@ microbenchmark:
                   - name: id
                     util: PrimaryIntGen
                     params: [1, 10000]
-                  - name: uid
+                  - name: uid1
+                    util: PrimaryIntGen
+                    params: [1, 10000]
+                  - name: uid2
                     util: PrimaryIntGen
                     params: [1, 10000]
                   - name: name
                     util: RandomAString
                     params: [1, 20]
+                  - name: start_date
+                    util: RandomDateBtwYears
+                    params: [2000, 2025]
+                  - name: end_date
+                    util: RandomDateBtwYears
+                    params: [2000, 2025]
+                  - name: budget
+                    util: RandomNoWithDecimalPoints
+                    params: [1, 1000000, 2]
 
             - table: dept_without_ref
               rows: 10000
@@ -78,12 +90,24 @@ microbenchmark:
                   - name: id
                     util: PrimaryIntGen
                     params: [1, 10000]
-                  - name: uid
+                  - name: uid1
+                    util: PrimaryIntGen
+                    params: [1, 10000]
+                  - name: uid2
                     util: PrimaryIntGen
                     params: [1, 10000]
                   - name: name
                     util: RandomAString
                     params: [1, 20]
+                  - name: start_date
+                    util: RandomDateBtwYears
+                    params: [2000, 2025]
+                  - name: end_date
+                    util: RandomDateBtwYears
+                    params: [2000, 2025]
+                  - name: budget
+                    util: RandomNoWithDecimalPoints
+                    params: [1, 1000000, 2]
               
             - table: employees_with_fk
               rows: 100000
@@ -111,8 +135,8 @@ microbenchmark:
                     params: [1, 10000]
 
         afterLoad:
-            - ALTER TABLE projects_with_fk add CONSTRAINT fk_dept FOREIGN KEY (dept_id) REFERENCES dept_with_ref(uid) on delete cascade on update cascade;
-            - ALTER TABLE employees_with_fk add CONSTRAINT fk_dept FOREIGN KEY (dept_id) REFERENCES dept_with_ref(uid) on delete cascade on update cascade;
+            - ALTER TABLE projects_with_fk add CONSTRAINT fk_dept FOREIGN KEY (dept_id) REFERENCES dept_with_ref(uid1) on delete cascade on update cascade;
+            - ALTER TABLE employees_with_fk add CONSTRAINT fk_dept FOREIGN KEY (dept_id) REFERENCES dept_with_ref(uid2) on delete cascade on update cascade;
             
         executeRules:
             - workload: select_with_ref
@@ -120,8 +144,9 @@ microbenchmark:
                   - name: select_with_ref
                     weight: 100
                     queries:
-                        - query: SELECT * FROM dept_with_ref where uid=?;
+                        - query: SELECT * FROM dept_with_ref where uid1=? or uid2=?;
                           bindings:
+                            - count: 2
                               util: RandomNumber
                               params: [1, 10000]
 
@@ -130,22 +155,29 @@ microbenchmark:
                   - name: insert_with_ref
                     weight: 100
                     queries:
-                        - query: insert into dept_with_ref values(?,?,?);
+                        - query: insert into dept_with_ref values(?,?,?,?,?,?,?);
                           bindings:
-                              - count: 2
+                              - count: 3
                                 util: PrimaryIntGen
                                 params: [10001, 900000]
                               - util: RandomAString
                                 params: [1, 20]
+                              - util: RandomDateBtwYears
+                                params: [2000, 2025]
+                              - util: RandomDateBtwYears
+                                params: [2000, 2025]
+                              - util: RandomNoWithDecimalPoints
+                                params: [1, 1000000, 2]
 
             - workload: update_with_ref
               run:
                   - name: update_with_ref
                     weight: 100
                     queries:
-                        - query: update dept_with_ref set uid=? where id=?;
+                        - query: update dept_with_ref set uid1=?, uid2=? where id=?;
                           bindings:
-                            - util: RandomInt
+                            - count: 2
+                              util: RandomInt
                               params: [1, 900000]
                             - util: PrimaryIntGen
                               params: [1, 900000]
@@ -155,7 +187,7 @@ microbenchmark:
                   - name: delete_with_ref
                     weight: 100
                     queries:
-                        - query: delete from dept_with_ref where uid=?
+                        - query: delete from dept_with_ref where id=?
                           bindings:
                             - util: PrimaryIntGen
                               params: [1, 900000]
@@ -165,8 +197,9 @@ microbenchmark:
                   - name: select_without_ref
                     weight: 100
                     queries:
-                        - query: SELECT * FROM dept_without_ref where uid=?;
+                        - query: SELECT * FROM dept_without_ref where uid1=? or uid2=?;
                           bindings:
+                            - count: 2
                               util: RandomNumber
                               params: [1, 10000]
 
@@ -175,22 +208,29 @@ microbenchmark:
                   - name: insert_without_ref
                     weight: 100
                     queries:
-                        - query: insert into dept_without_ref values(?,?,?);
+                        - query: insert into dept_without_ref values(?,?,?,?,?,?,?);
                           bindings:
-                              - count: 2
+                              - count: 3
                                 util: PrimaryIntGen
                                 params: [10001, 900000]
                               - util: RandomAString
                                 params: [1, 20]
+                              - util: RandomDateBtwYears
+                                params: [2000, 2025]
+                              - util: RandomDateBtwYears
+                                params: [2000, 2025]
+                              - util: RandomNoWithDecimalPoints
+                                params: [1, 1000000, 2]
 
             - workload: update_without_ref
               run:
                   - name: update_without_ref
                     weight: 100
                     queries:
-                        - query: update dept_without_ref set uid=? where id=?;
+                        - query: update dept_without_ref set uid1=?, uid2=? where id=?;
                           bindings:
-                            - util: RandomInt
+                            - count: 2
+                              util: RandomInt
                               params: [1, 900000]
                             - util: PrimaryIntGen
                               params: [1, 900000]
@@ -200,7 +240,7 @@ microbenchmark:
                   - name: delete_without_ref
                     weight: 100
                     queries:
-                        - query: delete from dept_without_ref where uid=?
+                        - query: delete from dept_without_ref where id=?
                           bindings:
                             - util: PrimaryIntGen
                               params: [1, 900000]
