@@ -155,9 +155,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                         if (query.isSelectQuery() || query.isUpdateQuery()) {
                             String querystmt = query.getQuery();
                             try {
-
-                                PreparedStatement stmt = conn.prepareStatement((query.isSelectQuery() ? explainSelect : explainUpdate) + querystmt);
-                                stmt = conn.prepareStatement((query.isSelectQuery() ? explainSelect : query.isUpdateQuery() ? explainUpdate : explainOthers) + querystmt);
+                                PreparedStatement stmt = conn.prepareStatement((query.isSelectQuery() ? explainSelect : query.isUpdateQuery() ? explainUpdate : explainOthers) + querystmt);
                                 List<UtilToMethod> baseUtils = query.getBaseUtils();
                                 for (int j = 0; j < baseUtils.size(); j++) {
                                     try {
