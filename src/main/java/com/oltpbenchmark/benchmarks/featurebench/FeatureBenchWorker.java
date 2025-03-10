@@ -135,7 +135,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
 
             String explainSelect = "explain (analyze,verbose,costs,buffers) ";
             String explainUpdate = "explain (analyze) ";
-            String explainOthers = "explain ";
+            String explainOthers = "explain (debug, verbose, costs)";
 
             if (this.getWorkloadConfiguration().getXmlConfig().containsKey("use_dist_in_explain")
                 && this.getWorkloadConfiguration().getXmlConfig().getBoolean("use_dist_in_explain")) {
