@@ -135,6 +135,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
 
             String explainSelect = "explain (analyze,verbose,costs,buffers) ";
             String explainUpdate = "explain (analyze) ";
+            String explainOthers = "explain ";
 
             if (this.getWorkloadConfiguration().getXmlConfig().containsKey("use_dist_in_explain")
                 && this.getWorkloadConfiguration().getXmlConfig().getBoolean("use_dist_in_explain")) {
@@ -156,6 +157,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                             try {
 
                                 PreparedStatement stmt = conn.prepareStatement((query.isSelectQuery() ? explainSelect : explainUpdate) + querystmt);
+                                stmt = conn.prepareStatement((query.isSelectQuery() ? explainSelect : (query.isUpdateQuery() ? explainUpdate : explainOthers)) + querystmt);
                                 List<UtilToMethod> baseUtils = query.getBaseUtils();
                                 for (int j = 0; j < baseUtils.size(); j++) {
                                     try {
