@@ -135,13 +135,17 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
 
             String explainSelect = "explain (analyze,verbose,costs,buffers) ";
             String explainUpdate = "explain (analyze) ";
-            String explainOthers = "explain (debug, verbose, costs)";
+            String explainOthers = "explain ";
 
+            if (this.getWorkloadConfiguration().getXmlConfig().getBoolean("force_capture_explain_analyze", false)) {
+                explainOthers = "explain (analyze,verbose,costs,buffers) ";
+            }
             if (this.getWorkloadConfiguration().getXmlConfig().containsKey("use_dist_in_explain")
                 && this.getWorkloadConfiguration().getXmlConfig().getBoolean("use_dist_in_explain")) {
                 if (this.getWorkloadConfiguration().getXmlConfig().getString("type").equalsIgnoreCase("YUGABYTE")) {
-                    explainSelect = "explain (analyze,dist,verbose,costs,buffers,debug) ";
-                    explainUpdate = "explain (analyze, dist, debug) ";
+                    explainSelect = explainSelect.replace(") ", ",debug,dist) ");
+                    explainUpdate = explainUpdate.replace(") ", ",debug,dist) ");
+                    explainOthers = explainOthers.replace(") ", ",debug,dist) ");
                 } else {
                     throw new RuntimeException("dist and debug option for explain not supported by this database type, Please remove key!");
                 }
