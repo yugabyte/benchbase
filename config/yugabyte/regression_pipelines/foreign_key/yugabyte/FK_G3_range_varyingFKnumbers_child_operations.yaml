@@ -1,0 +1,393 @@
+type: YUGABYTE
+driver: com.yugabyte.Driver
+url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
+username: {{username}}
+password: {{password}}
+
+batchsize: 128
+isolation: TRANSACTION_REPEATABLE_READ
+loaderThreads: 1
+terminals: 1
+collect_pg_stat_statements: true
+use_dist_in_explain : true
+yaml_version: v1.0
+works:
+    work:
+        time_secs: 60
+        active_terminals: 1
+        rate: unlimited
+        warmup: 30
+microbenchmark:
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
+    properties:
+        setAutoCommit: false
+        create:
+            - DROP TABLE IF EXISTS employees_with_1_fk;
+            - DROP TABLE IF EXISTS employees_with_2_fk_1_parent;
+            - DROP TABLE IF EXISTS employees_with_2_fk_2_parent;
+            - DROP TABLE IF EXISTS employees_without_fk;
+
+            - DROP TABLE IF EXISTS projects_with_1_fk;
+            - DROP TABLE IF EXISTS projects_with_2_fk_1_parent;
+            - DROP TABLE IF EXISTS projects1_with_2_fk_2_parent;
+            - DROP TABLE IF EXISTS projects2_with_2_fk_2_parent;
+
+            - create table projects_with_1_fk(id int, name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2), primary key(id asc));
+            - create table projects_with_2_fk_1_parent(id int, uid int unique, name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2), primary key(id asc));
+            - create table projects1_with_2_fk_2_parent(id int, name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2), primary key(id asc));
+            - create table projects2_with_2_fk_2_parent(id int, name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2), primary key(id asc));
+
+            - create table employees_with_1_fk(id int,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(8,2), project_id int not null, primary key(id asc));
+            - create table employees_with_2_fk_1_parent(id int,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(8,2), project_id1 int not null, project_id2 int not null, primary key(id asc));
+            - create table employees_with_2_fk_2_parent(id int,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(8,2), project_id1 int not null, project_id2 int not null, primary key(id asc));
+            - create table employees_without_fk(id int,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(8,2), project_id int not null, primary key(id asc));
+        cleanup:
+            - DROP TABLE IF EXISTS employees_with_1_fk;
+            - DROP TABLE IF EXISTS employees_with_2_fk_1_parent;
+            - DROP TABLE IF EXISTS employees_with_2_fk_2_parent;
+            - DROP TABLE IF EXISTS employees_without_fk;
+
+            - DROP TABLE IF EXISTS projects_with_1_fk;
+            - DROP TABLE IF EXISTS projects_with_2_fk_1_parent;
+            - DROP TABLE IF EXISTS projects1_with_2_fk_2_parent;
+            - DROP TABLE IF EXISTS projects2_with_2_fk_2_parent;
+        loadRules:
+            - table: projects_with_1_fk
+              rows: 10000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 10000]
+                  - name: name
+                    util: RandomAString
+                    params: [1, 20]
+                  - name: start_date
+                    util: RandomDateBtwYears
+                    params: [2000, 2025]
+                  - name: end_date
+                    util: RandomDateBtwYears
+                    params: [2000, 2025]
+                  - name: budget
+                    util: RandomNoWithDecimalPoints
+                    params: [1, 1000000, 2]
+
+            - table: projects_with_2_fk_1_parent
+              rows: 10000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 10000]
+                  - name: uid
+                    util: PrimaryIntGen
+                    params: [1, 10000]
+                  - name: name
+                    util: RandomAString
+                    params: [1, 20]
+                  - name: start_date
+                    util: RandomDateBtwYears
+                    params: [2000, 2025]
+                  - name: end_date
+                    util: RandomDateBtwYears
+                    params: [2000, 2025]
+                  - name: budget
+                    util: RandomNoWithDecimalPoints
+                    params: [1, 1000000, 2]
+
+            - table: projects1_with_2_fk_2_parent
+              rows: 10000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 10000]
+                  - name: name
+                    util: RandomAString
+                    params: [1, 20]
+                  - name: start_date
+                    util: RandomDateBtwYears
+                    params: [2000, 2025]
+                  - name: end_date
+                    util: RandomDateBtwYears
+                    params: [2000, 2025]
+                  - name: budget
+                    util: RandomNoWithDecimalPoints
+                    params: [1, 1000000, 2]
+                    
+            - table: projects2_with_2_fk_2_parent
+              rows: 10000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 10000]
+                  - name: name
+                    util: RandomAString
+                    params: [1, 20]
+                  - name: start_date
+                    util: RandomDateBtwYears
+                    params: [2000, 2025]
+                  - name: end_date
+                    util: RandomDateBtwYears
+                    params: [2000, 2025]
+                  - name: budget
+                    util: RandomNoWithDecimalPoints
+                    params: [1, 1000000, 2]
+
+            - table: employees_without_fk
+              rows: 100000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 100000]
+                  - name: name
+                    util: RandomAString
+                    params: [1, 20]
+                  - name: email
+                    util: RandomAString
+                    params: [1, 100]
+                  - name: phone
+                    util: RandomNstring
+                    params: [10, 15]
+                  - name: position
+                    util: RandomAString
+                    params: [1, 10]
+                  - name: salary
+                    util: RandomNoWithDecimalPoints
+                    params: [1, 1000000, 2]
+                  - name: project_id
+                    util: RandomInt
+                    params: [1,10000]
+              
+            - table: employees_with_1_fk
+              rows: 100000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 100000]
+                  - name: name
+                    util: RandomAString
+                    params: [1, 20]
+                  - name: email
+                    util: RandomAString
+                    params: [1, 100]
+                  - name: phone
+                    util: RandomNstring
+                    params: [10, 15]
+                  - name: position
+                    util: RandomAString
+                    params: [1, 10]
+                  - name: salary
+                    util: RandomNoWithDecimalPoints
+                    params: [1, 1000000, 2]
+                  - name: project_id
+                    util: RandomInt
+                    params: [1,10000]
+
+            - table: employees_with_2_fk_1_parent
+              rows: 100000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 100000]
+                  - name: name
+                    util: RandomAString
+                    params: [1, 20]
+                  - name: email
+                    util: RandomAString
+                    params: [1, 100]
+                  - name: phone
+                    util: RandomNstring
+                    params: [10, 15]
+                  - name: position
+                    util: RandomAString
+                    params: [1, 10]
+                  - name: salary
+                    util: RandomNoWithDecimalPoints
+                    params: [1, 1000000, 2]
+                  - name: project_id1
+                    util: RandomInt
+                    params: [1,10000]
+                  - name: project_id2
+                    util: RandomInt
+                    params: [1,10000]
+
+            - table: employees_with_2_fk_2_parent
+              rows: 100000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 100000]
+                  - name: name
+                    util: RandomAString
+                    params: [1, 20]
+                  - name: email
+                    util: RandomAString
+                    params: [1, 100]
+                  - name: phone
+                    util: RandomNstring
+                    params: [10, 15]
+                  - name: position
+                    util: RandomAString
+                    params: [1, 10]
+                  - name: salary
+                    util: RandomNoWithDecimalPoints
+                    params: [1, 1000000, 2]
+                  - name: project_id1
+                    util: RandomInt
+                    params: [1,10000]
+                  - name: project_id2
+                    util: RandomInt
+                    params: [1,10000]
+
+        afterLoad:
+            - ALTER TABLE employees_with_1_fk add CONSTRAINT fk_project FOREIGN KEY (project_id) REFERENCES projects_with_1_fk(id);
+
+            - ALTER TABLE employees_with_2_fk_1_parent add CONSTRAINT fk_project1 FOREIGN KEY (project_id1) REFERENCES projects_with_2_fk_1_parent(id);
+            - ALTER TABLE employees_with_2_fk_1_parent add CONSTRAINT fk_project2 FOREIGN KEY (project_id2) REFERENCES projects_with_2_fk_1_parent(uid);
+            
+            - ALTER TABLE employees_with_2_fk_2_parent add CONSTRAINT fk_project1 FOREIGN KEY (project_id1) REFERENCES projects1_with_2_fk_2_parent(id);
+            - ALTER TABLE employees_with_2_fk_2_parent add CONSTRAINT fk_project2 FOREIGN KEY (project_id2) REFERENCES projects2_with_2_fk_2_parent(id);
+            
+        executeRules:
+
+            - workload: FK_G3_no-fk_insert
+              run:
+                  - name: FK_G3_no-fk_insert
+                    weight: 100
+                    queries:
+                        - query: insert into employees_without_fk values(?,?,?,?,?,?,?);
+                          bindings:
+                              - util: PrimaryIntGen
+                                params: [100001, 900000]
+                              - util: RandomAString
+                                params: [1, 20]
+                              - util: RandomAString
+                                params: [1, 100]
+                              - util: RandomNstring
+                                params: [10, 15]
+                              - util: RandomAString
+                                params: [1, 10]
+                              - util: RandomNoWithDecimalPoints
+                                params: [1, 1000000, 2]
+                              - util: RandomInt
+                                params: [1,10000]
+                                
+            - workload: FK_G3_no-fk_update
+              run:
+                  - name: FK_G3_no-fk_update
+                    weight: 100
+                    queries:
+                        - query: update employees_without_fk set project_id=? where id=?;
+                          bindings:
+                            - util: RandomInt
+                              params: [1, 10000]
+                            - util: PrimaryIntGen
+                              params: [1, 100000]
+                              
+            - workload: FK_G3_1-fk_insert
+              run:
+                  - name: FK_G3_1-fk_insert
+                    weight: 100
+                    queries:
+                        - query: insert into employees_with_1_fk values(?,?,?,?,?,?,?);
+                          bindings:
+                              - util: PrimaryIntGen
+                                params: [100001, 900000]
+                              - util: RandomAString
+                                params: [1, 20]
+                              - util: RandomAString
+                                params: [1, 100]
+                              - util: RandomNstring
+                                params: [10, 15]
+                              - util: RandomAString
+                                params: [1, 10]
+                              - util: RandomNoWithDecimalPoints
+                                params: [1, 1000000, 2]
+                              - util: RandomNumber
+                                params: [1,10000]
+
+            - workload: FK_G3_1-fk_update
+              run:
+                  - name: FK_G3_1-fk_update
+                    weight: 100
+                    queries:
+                        - query: update employees_with_1_fk set project_id=? where id=?;
+                          bindings:
+                            - util: RandomInt
+                              params: [1, 10000]
+                            - util: PrimaryIntGen
+                              params: [1, 100000]
+
+            - workload: FK_G3_2-fk_1-parent_insert
+              run:
+                  - name: FK_G3_2-fk_1-parent_insert
+                    weight: 100
+                    queries:
+                        - query: insert into employees_with_2_fk_1_parent values(?,?,?,?,?,?,?,?);
+                          bindings:
+                              - util: PrimaryIntGen
+                                params: [100001, 900000]
+                              - util: RandomAString
+                                params: [1, 20]
+                              - util: RandomAString
+                                params: [1, 100]
+                              - util: RandomNstring
+                                params: [10, 15]
+                              - util: RandomAString
+                                params: [1, 10]
+                              - util: RandomNoWithDecimalPoints
+                                params: [1, 1000000, 2]
+                              - util: RandomInt
+                                params: [1,10000]
+                              - util: RandomInt
+                                params: [1,10000]
+
+            - workload: FK_G3_2-fk_1-parent_update
+              run:
+                  - name: FK_G3_2-fk_1-parent_update
+                    weight: 100
+                    queries:
+                        - query: update employees_with_2_fk_1_parent set project_id1=?, project_id2=? where id=?;
+                          bindings:
+                            - util: RandomInt
+                              params: [1, 10000]
+                            - util: RandomInt
+                              params: [1, 10000]
+                            - util: PrimaryIntGen
+                              params: [1, 100000]
+
+            - workload: FK_G3_2-fk_2-parent_insert
+              run:
+                  - name: FK_G3_2-fk_2-parent_insert
+                    weight: 100
+                    queries:
+                        - query: insert into employees_with_2_fk_2_parent values(?,?,?,?,?,?,?,?);
+                          bindings:
+                              - util: PrimaryIntGen
+                                params: [100001, 900000]
+                              - util: RandomAString
+                                params: [1, 20]
+                              - util: RandomAString
+                                params: [1, 100]
+                              - util: RandomNstring
+                                params: [10, 15]
+                              - util: RandomAString
+                                params: [1, 10]
+                              - util: RandomNoWithDecimalPoints
+                                params: [1, 1000000, 2]
+                              - util: RandomInt
+                                params: [1,10000]
+                              - util: RandomInt
+                                params: [1,10000]
+
+            - workload: FK_G3_2-fk_2-parent_update
+              run:
+                  - name: FK_G3_2-fk_2-parent_update
+                    weight: 100
+                    queries:
+                        - query: update employees_with_2_fk_2_parent set project_id1=?, project_id2=? where id=?;
+                          bindings:
+                            - util: RandomInt
+                              params: [1, 10000]
+                            - util: RandomInt
+                              params: [1, 10000]
+                            - util: PrimaryIntGen
+                              params: [1, 100000]
