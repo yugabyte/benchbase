@@ -162,9 +162,9 @@ microbenchmark:
             
         executeRules:
 
-            - workload: FK_G1_fk-on-pk_insert
+            - workload: FK_G1_1_fk-on-pk_insert
               run:
-                  - name: FK_G1_fk-on-pk_insert
+                  - name: FK_G1_1_fk-on-pk_insert
                     weight: 100
                     queries:
                         - query: insert into employees_with_fk_on_pk values(?,?,?,?,?,?,?);
@@ -184,9 +184,9 @@ microbenchmark:
                               - util: RandomNumber
                                 params: [1,10000]
 
-            - workload: FK_G1_fk-on-pk_update
+            - workload: FK_G1_2_fk-on-pk_update
               run:
-                  - name: FK_G1_fk-on-pk_update
+                  - name: FK_G1_2_fk-on-pk_update
                     weight: 100
                     queries:
                         - query: update employees_with_fk_on_pk set project_id=? where id=?;
@@ -196,9 +196,9 @@ microbenchmark:
                             - util: PrimaryIntGen
                               params: [1, 100000]
 
-            - workload: FK_G1_fk-on-uniqueCol_insert
+            - workload: FK_G1_3_fk-on-uniqueCol_insert
               run:
-                  - name: FK_G1_fk-on-uniqueCol_insert
+                  - name: FK_G1_3_fk-on-uniqueCol_insert
                     weight: 100
                     queries:
                         - query: insert into employees_with_fk_on_uniqueCol values(?,?,?,?,?,?,?);
@@ -218,21 +218,21 @@ microbenchmark:
                               - util: RandomNumber
                                 params: [1,10000]
 
-            - workload: FK_G1_fk-on-uniqueCol_update
+            - workload: FK_G1_4_fk-on-uniqueCol_update
               run:
-                  - name: FK_G1_fk-on-uniqueCol_update
+                  - name: FK_G1_4_fk-on-uniqueCol_update
                     weight: 100
                     queries:
                         - query: update employees_with_fk_on_uniqueCol set project_id=? where id=?;
                           bindings:
                             - util: RandomInt
                               params: [1, 10000]
-                            - util: RandomInt
+                            - util: PrimaryIntGen
                               params: [1, 100000]
 
-            - workload: FK_G1_no-fk_insert
+            - workload: FK_G1_5_no-fk_insert
               run:
-                  - name: FK_G1_no-fk_insert
+                  - name: FK_G1_5_no-fk_insert
                     weight: 100
                     queries:
                         - query: insert into employees_without_fk values(?,?,?,?,?,?,?);
@@ -252,9 +252,9 @@ microbenchmark:
                               - util: RandomInt
                                 params: [1,10000]
 
-            - workload: FK_G1_no-fk_update
+            - workload: FK_G1_6_no-fk_update
               run:
-                  - name: FK_G1_no-fk_update
+                  - name: FK_G1_6_no-fk_update
                     weight: 100
                     queries:
                         - query: update employees_without_fk set project_id=? where id=?;

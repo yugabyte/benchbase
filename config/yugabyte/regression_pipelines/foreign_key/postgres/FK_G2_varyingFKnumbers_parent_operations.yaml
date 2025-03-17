@@ -257,9 +257,9 @@ microbenchmark:
             
         executeRules:
 
-            - workload: FK_G2_parent_no-fk_update
+            - workload: FK_G2_1_parent_no-fk_update
               run:
-                  - name: FK_G2_parent_no-fk_update
+                  - name: FK_G2_1_parent_no-fk_update
                     weight: 100
                     queries:
                         - query: update projects_without_ref set uid=? where id=?;
@@ -269,9 +269,9 @@ microbenchmark:
                             - util: PrimaryIntGen
                               params: [1, 900000]
 
-            - workload: FK_G2_parent_no-fk_delete
+            - workload: FK_G2_2_parent_no-fk_delete
               run:
-                  - name: FK_G2_parent_no-fk_delete
+                  - name: FK_G2_2_parent_no-fk_delete
                     weight: 100
                     queries:
                         - query: delete from projects_without_ref where id=?
@@ -279,9 +279,9 @@ microbenchmark:
                             - util: PrimaryIntGen
                               params: [1, 900000]
 
-            - workload: FK_G2_parent_1-fk_update
+            - workload: FK_G2_3_parent_1-fk_update
               run:
-                  - name: FK_G2_parent_1-fk_update
+                  - name: FK_G2_3_parent_1-fk_update
                     weight: 100
                     queries:
                         - query: update projects_with_1_ref set uid=? where id=?;
@@ -291,9 +291,9 @@ microbenchmark:
                             - util: PrimaryIntGen
                               params: [1, 900000]
 
-            - workload: FK_G2_parent_1-fk_delete
+            - workload: FK_G2_4_parent_1-fk_delete
               run:
-                  - name: FK_G2_parent_1-fk_delete
+                  - name: FK_G2_4_parent_1-fk_delete
                     weight: 100
                     queries:
                         - query: delete from projects_with_1_ref where id=?
@@ -301,9 +301,9 @@ microbenchmark:
                             - util: PrimaryIntGen
                               params: [1, 900000]
 
-            - workload: FK_G2_parent_2-fk_1-child_update
+            - workload: FK_G2_5_parent_2-fk_1-child_update
               run:
-                  - name: FK_G2_parent_2-fk_1-child_update
+                  - name: FK_G2_5_parent_2-fk_1-child_update
                     weight: 100
                     queries:
                         - query: update projects_with_2_ref_1_child set uid1=?, uid2=? where id=?;
@@ -314,9 +314,9 @@ microbenchmark:
                             - util: PrimaryIntGen
                               params: [1, 900000]
 
-            - workload: FK_G2_parent_2-fk_1-child_delete
+            - workload: FK_G2_6_parent_2-fk_1-child_delete
               run:
-                  - name: FK_G2_parent_2-fk_1-child_delete
+                  - name: FK_G2_6_parent_2-fk_1-child_delete
                     weight: 100
                     queries:
                         - query: delete from projects_with_2_ref_1_child where id=?;
@@ -324,9 +324,9 @@ microbenchmark:
                             - util: PrimaryIntGen
                               params: [1, 900000]
 
-            - workload: FK_G2_parent_2-fk_2-child_update
+            - workload: FK_G2_7_parent_2-fk_2-child_update
               run:
-                  - name: FK_G2_parent_2-fk_2-child_update
+                  - name: FK_G2_7_parent_2-fk_2-child_update
                     weight: 100
                     queries:
                         - query: update projects_with_2_ref_2_child set uid1=?, uid2=? where id=?;
@@ -337,9 +337,9 @@ microbenchmark:
                             - util: PrimaryIntGen
                               params: [1, 900000]
 
-            - workload: FK_G2_parent_2-fk_2-child_delete
+            - workload: FK_G2_8_parent_2-fk_2-child_delete
               run:
-                  - name: FK_G2_parent_2-fk_2-child_delete
+                  - name: FK_G2_8_parent_2-fk_2-child_delete
                     weight: 100
                     queries:
                         - query: delete from projects_with_2_ref_2_child where id=?
