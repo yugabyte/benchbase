@@ -257,16 +257,6 @@ microbenchmark:
             
         executeRules:
 
-            - workload: FK_G2_parent_no-fk_select
-              run:
-                  - name: FK_G2_parent_no-fk_select
-                    weight: 100
-                    queries:
-                        - query: SELECT * FROM projects_without_ref where id=?;
-                          bindings:
-                              util: RandomNumber
-                              params: [1, 10000]
-
             - workload: FK_G2_parent_no-fk_update
               run:
                   - name: FK_G2_parent_no-fk_update
