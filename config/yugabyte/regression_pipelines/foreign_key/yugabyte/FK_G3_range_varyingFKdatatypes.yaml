@@ -33,11 +33,11 @@ microbenchmark:
 
             - create table projects_with_int_pk(id int, name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2), primary key(id asc));
             - create table projects_with_bigint_pk(id bigint, name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2), primary key(id asc));
-            - create table projects_with_varchar_pk(id varchar(5), name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2), primary key(id asc));
+            - create table projects_with_varchar_pk(id varchar(6), name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2), primary key(id asc));
 
             - create table employees_with_int_fk(id int,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(8,2), project_id int not null, primary key(id asc));
             - create table employees_with_bigint_fk(id int,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(8,2), project_id bigint not null, primary key(id asc));
-            - create table employees_with_varchar_fk(id int,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(8,2), project_id varchar(5) not null, primary key(id asc));
+            - create table employees_with_varchar_fk(id int,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(8,2), project_id varchar(6) not null, primary key(id asc));
             - create table employees_without_fk(id int,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(8,2), project_id int not null, primary key(id asc));
         cleanup:
             - DROP TABLE IF EXISTS employees_with_int_fk;
@@ -50,11 +50,11 @@ microbenchmark:
             - DROP TABLE IF EXISTS projects_with_varchar_pk;
         loadRules:
             - table: projects_with_int_pk
-              rows: 10000
+              rows: 100000
               columns:
                   - name: id
                     util: PrimaryIntGen
-                    params: [1, 10000]
+                    params: [1, 100000]
                   - name: name
                     util: RandomAString
                     params: [1, 20]
@@ -69,11 +69,11 @@ microbenchmark:
                     params: [1, 1000000, 2]
 
             - table: projects_with_bigint_pk
-              rows: 10000
+              rows: 100000
               columns:
                   - name: id
                     util: PrimaryIntGen
-                    params: [1, 10000]
+                    params: [1, 100000]
                   - name: name
                     util: RandomAString
                     params: [1, 20]
@@ -88,11 +88,11 @@ microbenchmark:
                     params: [1, 1000000, 2]
 
             - table: projects_with_varchar_pk
-              rows: 10000
+              rows: 100000
               columns:
                   - name: id
                     util: PrimaryStringGen
-                    params: [1, 5]
+                    params: [1, 6]
                   - name: name
                     util: RandomAString
                     params: [1, 20]
@@ -107,11 +107,11 @@ microbenchmark:
                     params: [1, 1000000, 2]
 
             - table: employees_without_fk
-              rows: 100000
+              rows: 1000000
               columns:
                   - name: id
                     util: PrimaryIntGen
-                    params: [1, 100000]
+                    params: [1, 1000000]
                   - name: name
                     util: RandomAString
                     params: [1, 20]
@@ -129,14 +129,14 @@ microbenchmark:
                     params: [1, 1000000, 2]
                   - name: project_id
                     util: RandomInt
-                    params: [1,10000]
+                    params: [1,100000]
               
             - table: employees_with_int_fk
-              rows: 100000
+              rows: 1000000
               columns:
                   - name: id
                     util: PrimaryIntGen
-                    params: [1, 100000]
+                    params: [1, 1000000]
                   - name: name
                     util: RandomAString
                     params: [1, 20]
@@ -154,14 +154,14 @@ microbenchmark:
                     params: [1, 1000000, 2]
                   - name: project_id
                     util: RandomInt
-                    params: [1,10000]
+                    params: [1,100000]
             
             - table: employees_with_bigint_fk
-              rows: 100000
+              rows: 1000000
               columns:
                   - name: id
                     util: PrimaryIntGen
-                    params: [1, 100000]
+                    params: [1, 1000000]
                   - name: name
                     util: RandomAString
                     params: [1, 20]
@@ -179,14 +179,14 @@ microbenchmark:
                     params: [1, 1000000, 2]
                   - name: project_id
                     util: RandomInt
-                    params: [1,10000]
+                    params: [1,100000]
 
             - table: employees_with_varchar_fk
-              rows: 100000
+              rows: 1000000
               columns:
                   - name: id
                     util: PrimaryIntGen
-                    params: [1, 100000]
+                    params: [1, 1000000]
                   - name: name
                     util: RandomAString
                     params: [1, 20]
@@ -204,7 +204,7 @@ microbenchmark:
                     params: [1, 1000000, 2]
                   - name: project_id
                     util: RandomPKString
-                    params: [1,10000,5]
+                    params: [1,100000,6]
 
         afterLoad:
             - ALTER TABLE employees_with_int_fk add CONSTRAINT fk_project FOREIGN KEY (project_id) REFERENCES projects_with_int_pk(id);
@@ -213,15 +213,15 @@ microbenchmark:
             
         executeRules:
 
-            - workload: FK_G4_1_varchar_insert
+            - workload: FK_G3_1_varchar_insert
               run:
-                  - name: FK_G4_1_varchar_insert
+                  - name: FK_G3_1_varchar_insert
                     weight: 100
                     queries:
                         - query: insert into employees_with_varchar_fk values(?,?,?,?,?,?,?);
                           bindings:
                               - util: PrimaryIntGen
-                                params: [100001, 900000]
+                                params: [1000001, 9000000]
                               - util: RandomAString
                                 params: [1, 20]
                               - util: RandomAString
@@ -233,29 +233,29 @@ microbenchmark:
                               - util: RandomNoWithDecimalPoints
                                 params: [1, 1000000, 2]
                               - util: RandomPKString
-                                params: [1,10000,5]
+                                params: [1,100000,6]
 
-            - workload: FK_G4_2_varchar_update
+            - workload: FK_G3_2_varchar_update
               run:
-                  - name: FK_G4_2_varchar_update
+                  - name: FK_G3_2_varchar_update
                     weight: 100
                     queries:
                         - query: update employees_with_varchar_fk set project_id=? where id=?;
                           bindings:
                             - util: RandomPKString
-                              params: [1,10000,5]
+                              params: [1,100000,6]
                             - util: PrimaryIntGen
-                              params: [1,100000]
+                              params: [1,1000000]
 
-            - workload: FK_G4_3_bigint_insert
+            - workload: FK_G3_3_bigint_insert
               run:
-                  - name: FK_G4_3_bigint_insert
+                  - name: FK_G3_3_bigint_insert
                     weight: 100
                     queries:
                         - query: insert into employees_with_bigint_fk values(?,?,?,?,?,?,?);
                           bindings:
                               - util: PrimaryIntGen
-                                params: [100001, 900000]
+                                params: [1000001, 9000000]
                               - util: RandomAString
                                 params: [1, 20]
                               - util: RandomAString
@@ -267,29 +267,29 @@ microbenchmark:
                               - util: RandomNoWithDecimalPoints
                                 params: [1, 1000000, 2]
                               - util: RandomNumber
-                                params: [1,10000]
+                                params: [1,100000]
 
-            - workload: FK_G4_4_bigint_update
+            - workload: FK_G3_4_bigint_update
               run:
-                  - name: FK_G4_4_bigint_update
+                  - name: FK_G3_4_bigint_update
                     weight: 100
                     queries:
                         - query: update employees_with_bigint_fk set project_id=? where id=?;
                           bindings:
                             - util: RandomInt
-                              params: [1, 10000]
-                            - util: PrimaryIntGen
                               params: [1, 100000]
+                            - util: PrimaryIntGen
+                              params: [1, 1000000]
                               
-            - workload: FK_G4_5_int_insert
+            - workload: FK_G3_5_int_insert
               run:
-                  - name: FK_G4_5_int_insert
+                  - name: FK_G3_5_int_insert
                     weight: 100
                     queries:
                         - query: insert into employees_with_int_fk values(?,?,?,?,?,?,?);
                           bindings:
                               - util: PrimaryIntGen
-                                params: [100001, 900000]
+                                params: [1000001, 9000000]
                               - util: RandomAString
                                 params: [1, 20]
                               - util: RandomAString
@@ -301,29 +301,29 @@ microbenchmark:
                               - util: RandomNoWithDecimalPoints
                                 params: [1, 1000000, 2]
                               - util: RandomNumber
-                                params: [1,10000]
+                                params: [1,100000]
 
-            - workload: FK_G4_6_int_update
+            - workload: FK_G3_6_int_update
               run:
-                  - name: FK_G4_6_int_update
+                  - name: FK_G3_6_int_update
                     weight: 100
                     queries:
                         - query: update employees_with_int_fk set project_id=? where id=?;
                           bindings:
                             - util: RandomInt
-                              params: [1, 10000]
-                            - util: PrimaryIntGen
                               params: [1, 100000]
+                            - util: PrimaryIntGen
+                              params: [1, 1000000]
 
-            - workload: FK_G4_7_no_fk_insert
+            - workload: FK_G3_7_no_fk_insert
               run:
-                  - name: FK_G4_7_no_fk_insert
+                  - name: FK_G3_7_no_fk_insert
                     weight: 100
                     queries:
                         - query: insert into employees_without_fk values(?,?,?,?,?,?,?);
                           bindings:
                               - util: PrimaryIntGen
-                                params: [100001, 900000]
+                                params: [1000001, 9000000]
                               - util: RandomAString
                                 params: [1, 20]
                               - util: RandomAString
@@ -335,16 +335,16 @@ microbenchmark:
                               - util: RandomNoWithDecimalPoints
                                 params: [1, 1000000, 2]
                               - util: RandomInt
-                                params: [1,10000]
+                                params: [1,100000]
 
-            - workload: FK_G4_8_no_fk_update
+            - workload: FK_G3_8_no_fk_update
               run:
-                  - name: FK_G4_8_no_fk_update
+                  - name: FK_G3_8_no_fk_update
                     weight: 100
                     queries:
                         - query: update employees_without_fk set project_id=? where id=?;
                           bindings:
                             - util: RandomInt
-                              params: [1, 10000]
-                            - util: PrimaryIntGen
                               params: [1, 100000]
+                            - util: PrimaryIntGen
+                              params: [1, 1000000]
