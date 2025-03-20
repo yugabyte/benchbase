@@ -34,8 +34,8 @@ microbenchmark:
             - create table projects_with_2_ref_1_child(id int, uid1 int unique, uid2 int unique, name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2), primary key(id asc));
             - create table projects_without_ref(id int, uid int unique not null, name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2), primary key(id asc));
 
-            - create table employees_with_1_fk(id int,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(8,2), project_id int not null, primary key(id asc));
-            - create table employees_with_2_fk_1_parent(id int,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(8,2), project_uid1 int not null, project_uid2 int not null, primary key(id asc));
+            - create table employees_with_1_fk(id int,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(10,2), project_id int not null, primary key(id asc));
+            - create table employees_with_2_fk_1_parent(id int,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(10,2), project_uid1 int not null, project_uid2 int not null, primary key(id asc));
         cleanup:
             - DROP TABLE IF EXISTS employees_with_1_fk;
             - DROP TABLE IF EXISTS employees_with_2_fk_1_parent;
