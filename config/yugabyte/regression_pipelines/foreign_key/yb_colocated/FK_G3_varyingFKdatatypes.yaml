@@ -11,6 +11,7 @@ loaderThreads: 1
 terminals: 1
 collect_pg_stat_statements: true
 use_dist_in_explain : true
+analyze_on_all_tables: true
 yaml_version: v1.0
 works:
     work:
