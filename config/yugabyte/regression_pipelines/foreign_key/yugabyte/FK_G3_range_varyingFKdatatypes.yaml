@@ -35,9 +35,9 @@ microbenchmark:
             - create table projects_with_bigint_pk(id bigint, name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2), primary key(id asc));
             - create table projects_with_varchar_pk(id varchar(6), name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2), primary key(id asc));
 
-            - create table employees_with_int_fk(id int,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(8,2), project_id int not null, primary key(id asc));
-            - create table employees_with_bigint_fk(id int,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(8,2), project_id bigint not null, primary key(id asc));
-            - create table employees_with_varchar_fk(id int,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(8,2), project_id varchar(6) not null, primary key(id asc));
+            - create table employees_with_int_fk(id int,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(10,2), project_id int not null, primary key(id asc));
+            - create table employees_with_bigint_fk(id int,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(10,2), project_id bigint not null, primary key(id asc));
+            - create table employees_with_varchar_fk(id int,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(10,2), project_id varchar(6) not null, primary key(id asc));
         cleanup:
             - DROP TABLE IF EXISTS employees_with_int_fk;
             - DROP TABLE IF EXISTS employees_with_bigint_fk;

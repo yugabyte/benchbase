@@ -36,10 +36,10 @@ microbenchmark:
             - create table projects_with_uniqueCol(id int primary key, uid int unique, name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2));
             - create table projects_with_2_fk(id int primary key, uid int unique, name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2));
 
-            - create table employees_with_fk_on_pk(id int primary key,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(8,2), project_id int not null);
-            - create table employees_with_fk_on_uniqueCol(id int primary key,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(8,2), project_id int not null);
-            - create table employees_with_2_fk_1_parent(id int primary key,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(8,2), project_id1 int not null, project_id2 int not null);
-            - create table employees_without_fk(id int primary key,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(8,2), project_id int not null);
+            - create table employees_with_fk_on_pk(id int primary key,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(10,2), project_id int not null);
+            - create table employees_with_fk_on_uniqueCol(id int primary key,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(10,2), project_id int not null);
+            - create table employees_with_2_fk_1_parent(id int primary key,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(10,2), project_id1 int not null, project_id2 int not null);
+            - create table employees_without_fk(id int primary key,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(10,2), project_id int not null);
 
         cleanup:
             - DROP TABLE IF EXISTS employees_with_fk_on_pk;
