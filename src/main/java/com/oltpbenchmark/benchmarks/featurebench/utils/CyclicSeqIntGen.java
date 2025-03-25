@@ -5,14 +5,15 @@ import java.util.List;
 
 
 /*
-Description :- Integer Primary key generator between a range.
+Description :- Cyclic Sequential Integer Generator between a range.
 Params :
-1.int: lowerRange (values[0]) :- Lower Range for Integer Primary key.
-2.int: upperRange (values[1]) :- Upper Range for Integer Primary key.
+1.int: lowerRange (values[0]) :- Lower Range.
+2.int: upperRange (values[1]) :- Upper Range.
 
 Eg:-
-lowerRange:- 10, upperRange: 20
-Return type (Integer) :- Any value between 10 and 20 including these bounds.
+lowerRange:- 1, upperRange: 10
+Return type (Integer) :- All values between 1 and 10 including these bounds and repeats the sequence in cyclic way.
+Sample output : 1 2 3 4 5 6 7 8 9 10 1 2 3 4 ...
 */
 
 public class CyclicSeqIntGen implements BaseUtil {
@@ -51,8 +52,11 @@ public class CyclicSeqIntGen implements BaseUtil {
 
     private int findNextHigherValue() {
         currentValue++;
+        //The current value reinitializes to lowerRange once it reaches upperRange
         if(currentValue>upperRange)
-        currentValue=lowerRange;
+        {
+            currentValue=lowerRange;
+        }
         return currentValue;
     }
 
