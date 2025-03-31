@@ -15,6 +15,7 @@ import java.sql.Statement;
 
 public class Goal1 extends YBMicroBenchmark {
     private static final Logger LOG = LoggerFactory.getLogger(Goal1.class);
+    String workload;
     String tableName;
     int numOfColumns;
     int numOfRows;
@@ -28,6 +29,7 @@ public class Goal1 extends YBMicroBenchmark {
         super(config);
         this.executeOnceImplemented = true;
         this.loadOnceImplemented = true;
+        this.workload = config.getString("/workload");
         this.tableName = config.getString("/tableName");
         this.numOfColumns = config.getInt("/columns");
         this.numOfRows = config.getInt("/rows");
@@ -48,7 +50,7 @@ public class Goal1 extends YBMicroBenchmark {
             LOG.info("Using existing CSV file.");
         else {
             LOG.info("Create CSV file with data");
-            BulkloadUtils.createCSV(this.filePath, this.numOfRows, this.numOfColumns, this.stringLength);
+            BulkloadUtils.createCSV(this.workload, this.filePath, this.numOfRows, this.numOfColumns, this.stringLength);
         }
     }
 
