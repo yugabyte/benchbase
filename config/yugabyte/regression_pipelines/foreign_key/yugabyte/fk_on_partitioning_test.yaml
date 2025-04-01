@@ -1,6 +1,8 @@
 type: YUGABYTE
 driver: com.yugabyte.Driver
-url: jdbc:postgresql://127.0.0.1:5433/yugabyte?user=yugabyte&password=yugabyte
+url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
+username: {{username}}
+password: {{password}}
 
 batchsize: 128
 isolation: TRANSACTION_REPEATABLE_READ
@@ -42,7 +44,7 @@ microbenchmark:
 
             - CREATE TABLE orders_with_part (id int PRIMARY KEY,user_id int,order_date DATE NOT NULL,amount DECIMAL(10,2) NOT NULL);
             - CREATE TABLE orders_without_part (id int PRIMARY KEY,user_id int,order_date DATE NOT NULL,amount DECIMAL(10,2) NOT NULL);
-            
+
             - create index user_id_index_with_part on orders_with_part(user_id);
             - create index user_id_index_without_part on orders_without_part(user_id);
         cleanup:
