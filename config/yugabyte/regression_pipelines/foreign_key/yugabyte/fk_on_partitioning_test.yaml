@@ -124,8 +124,8 @@ microbenchmark:
                     params: [1, 1000000, 2]
 
         afterLoad:
-            - alter table orders_with_part add constraint fk foreign key(user_id) references users_with_part(id);
-            - alter table orders_without_part add constraint fk foreign key(user_id) references users_without_part(id);
+            - alter table orders_with_part add constraint fk foreign key(user_id) references users_with_part(id) on update cascade on delete cascade;
+            - alter table orders_without_part add constraint fk foreign key(user_id) references users_without_part(id) on update cascade on delete cascade;
 
         executeRules:
             
