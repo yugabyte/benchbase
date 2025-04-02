@@ -51,7 +51,7 @@ microbenchmark:
               columns:
                   - name: id
                     util: PrimaryIntGen
-                    params: [1, 4000]
+                    params: [1, 10000]
                   - name: name
                     util: RandomAString
                     params: [1, 20]
@@ -67,7 +67,7 @@ microbenchmark:
               columns:
                   - name: id
                     util: PrimaryIntGen
-                    params: [1, 4000]
+                    params: [1, 10000]
                   - name: name
                     util: RandomAString
                     params: [1, 20]
