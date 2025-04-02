@@ -178,9 +178,9 @@ microbenchmark:
             
         executeRules:
 
-            - workload: FK_G4_1_parent_no-fk_update
+            - workload: FK_G2_1_parent_no-fk_update
               run:
-                  - name: FK_G4_1_parent_no-fk_update
+                  - name: FK_G2_1_parent_no-fk_update
                     weight: 100
                     queries:
                         - query: update projects_without_ref set uid=uid+100000 where id=?;
@@ -188,9 +188,9 @@ microbenchmark:
                             - util: PrimaryIntGen
                               params: [1, 100000]
 
-            - workload: FK_G4_2_parent_no-fk_delete
+            - workload: FK_G2_2_parent_no-fk_delete
               run:
-                  - name: FK_G4_2_parent_no-fk_delete
+                  - name: FK_G2_2_parent_no-fk_delete
                     weight: 100
                     queries:
                         - query: delete from projects_without_ref where id=?;
@@ -198,9 +198,9 @@ microbenchmark:
                             - util: PrimaryIntGen
                               params: [1, 100000]
 
-            - workload: FK_G4_3_parent_1-fk_update
+            - workload: FK_G2_3_parent_1-fk_update
               run:
-                  - name: FK_G4_3_parent_1-fk_update
+                  - name: FK_G2_3_parent_1-fk_update
                     weight: 100
                     queries:
                         - query: update projects_with_1_ref set uid=uid+100000 where id=?;
@@ -208,9 +208,9 @@ microbenchmark:
                             - util: PrimaryIntGen
                               params: [1, 100000]
 
-            - workload: FK_G4_4_parent_1-fk_delete
+            - workload: FK_G2_4_parent_1-fk_delete
               run:
-                  - name: FK_G4_4_parent_1-fk_delete
+                  - name: FK_G2_4_parent_1-fk_delete
                     weight: 100
                     queries:
                         - query: delete from projects_with_1_ref where id=?;
@@ -218,9 +218,9 @@ microbenchmark:
                             - util: PrimaryIntGen
                               params: [1, 100000]
 
-            - workload: FK_G4_5_parent_2-fk_1-child_update
+            - workload: FK_G2_5_parent_2-fk_1-child_update
               run:
-                  - name: FK_G4_5_parent_2-fk_1-child_update
+                  - name: FK_G2_5_parent_2-fk_1-child_update
                     weight: 100
                     queries:
                         - query: update projects_with_2_ref_1_child set uid1=uid1+100000, uid2=uid2+100000 where id=?;
@@ -228,9 +228,9 @@ microbenchmark:
                             - util: PrimaryIntGen
                               params: [1, 100000]
 
-            - workload: FK_G4_6_parent_2-fk_1-child_delete
+            - workload: FK_G2_6_parent_2-fk_1-child_delete
               run:
-                  - name: FK_G4_6_parent_2-fk_1-child_delete
+                  - name: FK_G2_6_parent_2-fk_1-child_delete
                     weight: 100
                     queries:
                         - query: delete from projects_with_2_ref_1_child where id=?;
