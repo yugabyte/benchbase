@@ -1,8 +1,6 @@
 type: YUGABYTE
 driver: com.yugabyte.Driver
-url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
-username: {{username}}
-password: {{password}}
+url: jdbc:postgresql://127.0.0.1:5433/yugabyte?user=yugabyte&password=yugabyte
 
 batchsize: 128
 isolation: TRANSACTION_REPEATABLE_READ

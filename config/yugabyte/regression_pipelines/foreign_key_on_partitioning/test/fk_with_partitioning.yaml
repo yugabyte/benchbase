@@ -1,0 +1,216 @@
+type: YUGABYTE
+driver: com.yugabyte.Driver
+url: jdbc:postgresql://127.0.0.1:5433/yugabyte?user=yugabyte&password=yugabyte
+
+batchsize: 128
+isolation: TRANSACTION_REPEATABLE_READ
+loaderThreads: 1
+terminals: 1
+collect_pg_stat_statements: true
+use_dist_in_explain : true
+yaml_version: v1.0
+works:
+    work:
+        time_secs: 60
+        active_terminals: 1
+        rate: unlimited
+        warmup: 30
+microbenchmark:
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
+    properties:
+        setAutoCommit: false
+        create:
+            - DROP TABLE IF EXISTS orders_with_part;
+            - DROP TABLE IF EXISTS orders_without_part;
+            - DROP TABLE IF EXISTS users_with_part;
+            - DROP TABLE IF EXISTS users_without_part;
+
+            - DROP TABLE IF EXISTS users_2000_2005;
+            - DROP TABLE IF EXISTS users_2005_2010;
+            - DROP TABLE IF EXISTS users_2010_2015;
+            - DROP TABLE IF EXISTS users_2015_2020;
+            - DROP TABLE IF EXISTS users_2020_2025;
+            - DROP TABLE IF EXISTS users_default;
+
+            - create table users_with_part (id int, name varchar(20) NOT NULL,phone varchar(15) NOT NULL,created_at date,PRIMARY KEY (id, created_at)) PARTITION BY RANGE (created_at);
+            - CREATE TABLE users_2000_2005 PARTITION OF users_with_part FOR VALUES FROM ('2000-01-01') TO ('2005-12-31');
+            - CREATE TABLE users_2005_2010 PARTITION OF users_with_part FOR VALUES FROM ('2006-01-01') TO ('2010-12-31');
+            - CREATE TABLE users_2010_2015 PARTITION OF users_with_part FOR VALUES FROM ('2011-01-01') TO ('2015-12-31');
+            - CREATE TABLE users_2015_2020 PARTITION OF users_with_part FOR VALUES FROM ('2016-01-01') TO ('2020-12-31');
+            - CREATE TABLE users_2020_2025 PARTITION OF users_with_part FOR VALUES FROM ('2021-01-01') TO ('2025-12-31');
+            - CREATE TABLE users_default PARTITION OF users_with_part default;
+
+            - create table users_without_part (id int, name varchar(20) NOT NULL,phone varchar(15) NOT NULL,created_at date,PRIMARY KEY (id, created_at));
+
+            - CREATE TABLE orders_with_part (id int PRIMARY KEY, user_id int, created_date date,order_date DATE NOT NULL,amount DECIMAL(10,2) NOT NULL);
+            - CREATE TABLE orders_without_part (id int PRIMARY KEY, user_id int, created_date date,order_date DATE NOT NULL,amount DECIMAL(10,2) NOT NULL);
+        cleanup:
+            - DROP TABLE IF EXISTS orders_with_part;
+            - DROP TABLE IF EXISTS orders_without_part;
+            - DROP TABLE IF EXISTS users_with_part;
+            - DROP TABLE IF EXISTS users_without_part;
+
+            - DROP TABLE IF EXISTS users_2000_2005;
+            - DROP TABLE IF EXISTS users_2005_2010;
+            - DROP TABLE IF EXISTS users_2010_2015;
+            - DROP TABLE IF EXISTS users_2015_2020;
+            - DROP TABLE IF EXISTS users_2020_2025;
+            - DROP TABLE IF EXISTS users_default;
+        loadRules:
+            - table: users_with_part
+              rows: 4000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 4000]
+                  - name: name
+                    util: RandomAString
+                    params: [1, 20]
+                  - name: phone
+                    util: RandomNstring
+                    params: [10, 15]
+                  - name: created_at
+                    util: RandomDateBtwYears
+                    params: [2000, 2025]
+
+            - table: users_without_part
+              rows: 4000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 4000]
+                  - name: name
+                    util: RandomAString
+                    params: [1, 20]
+                  - name: phone
+                    util: RandomNstring
+                    params: [10, 15]
+                  - name: created_at
+                    util: RandomDateBtwYears
+                    params: [2000, 2025]
+
+            - table: orders_with_part
+              rows: 4000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 4000]
+                  - name: user_id
+                    util: PrimaryIntGen
+                    params: [1,4000]
+                  - name: created_date
+                    util: RandomDateBtwYears
+                    params: [2000, 2025]
+                  - name: order_date
+                    util: RandomDateBtwYears
+                    params: [2000, 2025]
+                  - name: amount
+                    util: RandomNoWithDecimalPoints
+                    params: [1, 1000000, 2]
+
+            - table: orders_without_part
+              rows: 4000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 4000]
+                  - name: user_id
+                    util: PrimaryIntGen
+                    params: [1,4000]
+                  - name: order_date
+                    util: RandomDateBtwYears
+                    params: [2020, 2023]
+                  - name: amount
+                    util: RandomNoWithDecimalPoints
+                    params: [1, 1000000, 2]
+
+        # afterLoad:
+        #     - ALTER TABLE employees_with_fk add CONSTRAINT fk_project FOREIGN KEY (project_id) REFERENCES projects(id);
+            
+        executeRules:
+            - workload: select_with_fk
+              run:
+                  - name: select_with_fk
+                    weight: 100
+                    queries:
+                        - query: SELECT * FROM employees_with_fk where project_id=?;
+                          bindings:
+                              util: RandomNumber
+                              params: [1, 100000]
+                              
+            - workload: insert_with_fk
+              run:
+                  - name: insert_with_fk
+                    weight: 100
+                    queries:
+                        - query: insert into employees_with_fk values(?,?,?,?,?,?,?);
+                          bindings:
+                              - util: PrimaryIntGen
+                                params: [100001, 900000]
+                              - util: RandomAString
+                                params: [1, 20]
+                              - util: RandomAString
+                                params: [1, 100]
+                              - util: RandomNstring
+                                params: [10, 15]
+                              - util: RandomAString
+                                params: [1, 10]
+                              - util: RandomNoWithDecimalPoints
+                                params: [1, 1000000, 2]
+                              - util: RandomNumber
+                                params: [1,10000]
+
+            - workload: update_with_fk
+              run:
+                  - name: update_with_fk
+                    weight: 100
+                    queries:
+                        - query: update employees_with_fk set project_id=? where id=?;
+                          bindings:
+                            - util: RandomInt
+                              params: [1, 10000]
+                            - util: RandomInt
+                              params: [1, 100000]
+
+            - workload: select_without_fk
+              run:
+                  - name: select_without_fk
+                    weight: 100
+                    queries:
+                        - query: SELECT * FROM employees_without_fk where project_id=?;
+                          bindings:
+                              util: RandomNumber
+                              params: [1, 100000]
+
+            - workload: insert_without_fk
+              run:
+                  - name: insert_without_fk
+                    weight: 100
+                    queries:
+                        - query: insert into employees_without_fk values(?,?,?,?,?,?,?);
+                          bindings:
+                              - util: PrimaryIntGen
+                                params: [100001, 900000]
+                              - util: RandomAString
+                                params: [1, 20]
+                              - util: RandomAString
+                                params: [1, 100]
+                              - util: RandomNstring
+                                params: [10, 15]
+                              - util: RandomAString
+                                params: [1, 10]
+                              - util: RandomNoWithDecimalPoints
+                                params: [1, 1000000, 2]
+                              - util: RandomInt
+                                params: [1,10000]
+            - workload: update_without_fk
+              run:
+                  - name: update_without_fk
+                    weight: 100
+                    queries:
+                        - query: update employees_without_fk set project_id=? where id=?;
+                          bindings:
+                            - util: RandomInt
+                              params: [1, 10000]
+                            - util: RandomInt
+                              params: [1, 100000]
