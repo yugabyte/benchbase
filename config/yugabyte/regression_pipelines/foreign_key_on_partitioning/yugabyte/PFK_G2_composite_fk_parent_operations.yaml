@@ -84,11 +84,11 @@ microbenchmark:
             - DROP TABLE IF EXISTS projects_default2;
         loadRules:
             - table: projects_with_part_with_fk
-              rows: 100
+              rows: 100000
               columns:
                   - name: id
                     util: PrimaryIntGen
-                    params: [1, 100]
+                    params: [1, 100000]
                   - name: name
                     util: RandomAString
                     params: [1, 20]
@@ -100,11 +100,11 @@ microbenchmark:
                     params: [2000,2025]
 
             - table: projects_with_part_without_fk
-              rows: 100
+              rows: 100000
               columns:
                   - name: id
                     util: PrimaryIntGen
-                    params: [1, 100]
+                    params: [1, 100000]
                   - name: name
                     util: RandomAString
                     params: [1, 20]
@@ -116,11 +116,11 @@ microbenchmark:
                     params: [2000,2025]
 
             - table: projects_without_part_with_fk
-              rows: 100
+              rows: 100000
               columns:
                   - name: id
                     util: PrimaryIntGen
-                    params: [1, 100]
+                    params: [1, 100000]
                   - name: name
                     util: RandomAString
                     params: [1, 20]
@@ -132,11 +132,11 @@ microbenchmark:
                     params: [2000,2025]
 
             - table: projects_without_part_without_fk
-              rows: 100
+              rows: 100000
               columns:
                   - name: id
                     util: PrimaryIntGen
-                    params: [1, 100]
+                    params: [1, 100000]
                   - name: name
                     util: RandomAString
                     params: [1, 20]
@@ -148,17 +148,17 @@ microbenchmark:
                     params: [2000,2025]
 
             - table: employees_with_part
-              rows: 1000
+              rows: 1000000
               columns:
                   - name: id
                     util: PrimaryIntGen
-                    params: [1, 1000]
+                    params: [1, 1000000]
                   - name: name
                     util: RandomAString
                     params: [1, 20]
                   - name: project_id
                     util: CyclicSeqIntGen
-                    params: [1,100]
+                    params: [1,100000]
                   - name: project_dept
                     util: SeqStringGenFromArray
                     params: [['Sales','Engineering','HR','Anonymous']]
@@ -167,17 +167,17 @@ microbenchmark:
                     params: [2000,2025]
 
             - table: employees_without_part
-              rows: 1000
+              rows: 1000000
               columns:
                   - name: id
                     util: PrimaryIntGen
-                    params: [1, 1000]
+                    params: [1, 1000000]
                   - name: name
                     util: RandomAString
                     params: [1, 20]
                   - name: project_id
                     util: CyclicSeqIntGen
-                    params: [1,100]
+                    params: [1,100000]
                   - name: project_dept
                     util: SeqStringGenFromArray
                     params: [['Sales','Engineering','HR','Anonymous']]
