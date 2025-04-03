@@ -134,7 +134,7 @@ microbenchmark:
                   - name: insert_with_part
                     weight: 100
                     queries:
-                        - query: insert into employees_with_part values(?,?,?,?);
+                        - query: insert into employees_with_part values(?,?,?,?,?);
                           bindings:
                               - util: PrimaryIntGen
                                 params: [1000001, 5000000]
@@ -152,7 +152,7 @@ microbenchmark:
                   - name: insert_without_part
                     weight: 100
                     queries:
-                        - query: insert into employees_without_part values(?,?,?,?);
+                        - query: insert into employees_without_part values(?,?,?,?,?);
                           bindings:
                               - util: PrimaryIntGen
                                 params: [1000001, 5000000]
