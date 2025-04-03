@@ -158,6 +158,8 @@ microbenchmark:
                                 params: [1000001, 5000000]
                               - util: RandomAString
                                 params: [1, 20]
+                              - util: CyclicSeqIntGen
+                                params: [1,100000]
                               - util: SeqStringGenFromArray
                                 params: [['Sales','Engineering','HR','Anonymous']]
                               - util: RandomDateBtwYears
