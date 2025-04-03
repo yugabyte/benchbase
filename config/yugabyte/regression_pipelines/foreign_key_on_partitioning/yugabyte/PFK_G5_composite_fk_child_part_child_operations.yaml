@@ -44,7 +44,7 @@ microbenchmark:
             - CREATE TABLE employees_default PARTITION OF employees_with_part DEFAULT;
 
             - create table employees_without_part (id int, name varchar(50) not null, project_id int, project_dept varchar(15), hired_at date,  UNIQUE(id, project_id,project_dept));
-            - create table employees_without_fk (id int, name varchar(50) not null, project_id int, project_dept varchar(15), hired_at dat, UNIQUE(id, project_id,project_dept));
+            - create table employees_without_fk (id int, name varchar(50) not null, project_id int, project_dept varchar(15), hired_at date, UNIQUE(id, project_id,project_dept));
             
         cleanup:
             - DROP TABLE IF EXISTS employees_with_part;
