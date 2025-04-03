@@ -156,6 +156,7 @@ microbenchmark:
 
         afterLoad:
             - ALTER TABLE employees_with_part add CONSTRAINT fk_project foreign key (project_id, project_dept) references projects_with_part_with_fk(id, dept) on delete cascade on update cascade;
+            - ALTER TABLE employees_without_part add CONSTRAINT fk_project foreign key (project_id, project_dept) references projects_without_part_with_fk(id, dept) on delete cascade on update cascade;
             
         executeRules:
 
