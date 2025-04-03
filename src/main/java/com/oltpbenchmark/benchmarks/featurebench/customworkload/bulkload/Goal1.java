@@ -46,11 +46,9 @@ public class Goal1 extends YBMicroBenchmark {
 
         if(!this.recreateCsvIfExists && (new File(this.filePath).exists())) {
             LOG.info("Using existing CSV file.");
-            System.out.printf("Using existing CSV file. %s%n", this.filePath);
         }
         else {
             LOG.info("Create CSV file with data");
-            System.out.println("Create CSV file with data");
             BulkloadUtils.createCSV(this.filePath, this.numOfRows, this.numOfColumns, this.stringLength);
         }
     }
