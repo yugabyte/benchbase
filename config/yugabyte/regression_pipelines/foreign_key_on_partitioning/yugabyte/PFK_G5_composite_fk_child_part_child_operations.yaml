@@ -1,0 +1,254 @@
+type: YUGABYTE
+driver: com.yugabyte.Driver
+url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
+username: {{username}}
+password: {{password}}
+
+batchsize: 128
+isolation: TRANSACTION_REPEATABLE_READ
+loaderThreads: 1
+terminals: 1
+collect_pg_stat_statements: true
+use_dist_in_explain : true
+yaml_version: v1.0
+works:
+    work:
+        time_secs: 60
+        active_terminals: 1
+        rate: unlimited
+        warmup: 30
+microbenchmark:
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
+    properties:
+        setAutoCommit: false
+        create:
+            - DROP TABLE IF EXISTS employees_with_part;
+            - DROP TABLE IF EXISTS employees_without_part;
+            - DROP TABLE IF EXISTS employees_without_fk;
+
+            - DROP TABLE IF EXISTS employees_sales;
+            - DROP TABLE IF EXISTS employees_eng;
+            - DROP TABLE IF EXISTS employees_hr;
+            - DROP TABLE IF EXISTS employees_default;
+
+            - DROP TABLE IF EXISTS projects_with_part;
+            - DROP TABLE IF EXISTS projects_without_part;
+
+            - create table projects_with_part (id int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, dept));
+            - create table projects_without_part (id int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, dept));
+
+            - create table employees_with_part (id int, name varchar(50) not null, project_id int, project_dept varchar(15), hired_at date, UNIQUE(id, project_id,project_dept))  PARTITION BY LIST (project_dept);
+            - CREATE TABLE employees_sales PARTITION OF employees_with_part FOR VALUES IN ('Sales');
+            - CREATE TABLE employees_eng PARTITION OF employees_with_part FOR VALUES IN ('Engineering');
+            - CREATE TABLE employees_hr PARTITION OF employees_with_part FOR VALUES IN ('HR');
+            - CREATE TABLE employees_default PARTITION OF employees_with_part DEFAULT;
+
+            - create table employees_without_part (id int, name varchar(50) not null, project_id int, project_dept varchar(15), hired_at date,  UNIQUE(id, project_id,project_dept));
+            - create table employees_without_fk (id int, name varchar(50) not null, project_id int, project_dept varchar(15), hired_at dat, UNIQUE(id, project_id,project_dept));
+            
+        cleanup:
+            - DROP TABLE IF EXISTS employees_with_part;
+            - DROP TABLE IF EXISTS employees_without_part;
+            - DROP TABLE IF EXISTS employees_without_fk;
+
+            - DROP TABLE IF EXISTS employees_sales;
+            - DROP TABLE IF EXISTS employees_eng;
+            - DROP TABLE IF EXISTS employees_hr;
+            - DROP TABLE IF EXISTS employees_default;
+
+            - DROP INDEX IF EXISTS fk_index1;
+            - DROP INDEX IF EXISTS fk_index2;
+
+            - DROP TABLE IF EXISTS projects_with_part;
+            - DROP TABLE IF EXISTS projects_without_part;
+        loadRules:
+            - table: projects_with_part
+              rows: 100000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 100000]
+                  - name: name
+                    util: RandomAString
+                    params: [1, 20]
+                  - name: dept
+                    util: SeqStringGenFromArray
+                    params: [['Sales','Engineering','HR','Anonymous']]
+                  - name: created_at
+                    util: RandomDateBtwYears
+                    params: [2000,2025]
+
+            - table: projects_without_part
+              rows: 100000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 100000]
+                  - name: name
+                    util: RandomAString
+                    params: [1, 20]
+                  - name: dept
+                    util: SeqStringGenFromArray
+                    params: [['Sales','Engineering','HR','Anonymous']]
+                  - name: created_at
+                    util: RandomDateBtwYears
+                    params: [2000,2025]
+
+            - table: employees_with_part
+              rows: 1000000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 1000000]
+                  - name: name
+                    util: RandomAString
+                    params: [1, 20]
+                  - name: project_id
+                    util: CyclicSeqIntGen
+                    params: [1,100000]
+                  - name: project_dept
+                    util: SeqStringGenFromArray
+                    params: [['Sales','Engineering','HR','Anonymous']]
+                  - name: hired_at
+                    util: RandomDateBtwYears
+                    params: [2000,2025]
+
+            - table: employees_without_part
+              rows: 1000000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 1000000]
+                  - name: name
+                    util: RandomAString
+                    params: [1, 20]
+                  - name: project_id
+                    util: CyclicSeqIntGen
+                    params: [1,100000]
+                  - name: project_dept
+                    util: SeqStringGenFromArray
+                    params: [['Sales','Engineering','HR','Anonymous']]
+                  - name: hired_at
+                    util: RandomDateBtwYears
+                    params: [2000,2025]
+
+            - table: employees_without_fk
+              rows: 1000000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 1000000]
+                  - name: name
+                    util: RandomAString
+                    params: [1, 20]
+                  - name: project_id
+                    util: CyclicSeqIntGen
+                    params: [1,100000]
+                  - name: project_dept
+                    util: SeqStringGenFromArray
+                    params: [['Sales','Engineering','HR','Anonymous']]
+                  - name: hired_at
+                    util: RandomDateBtwYears
+                    params: [2000,2025]
+
+        afterLoad:
+            - ALTER TABLE employees_with_part add CONSTRAINT fk_project foreign key (project_id, project_dept) references projects_with_part(id, dept) on delete cascade on update cascade;
+            - ALTER TABLE employees_without_part add CONSTRAINT fk_project foreign key (project_id, project_dept) references projects_without_part(id, dept) on delete cascade on update cascade;
+            
+        executeRules:
+
+            - workload: insert_with_part
+              run:
+                  - name: insert_with_part
+                    weight: 100
+                    queries:
+                        - query: insert into employees_with_part values(?,?,?,?,?);
+                          bindings:
+                              - util: PrimaryIntGen
+                                params: [1000001, 5000000]
+                              - util: RandomAString
+                                params: [1, 20]
+                              - util: CyclicSeqIntGen
+                                params: [1,100000]
+                              - util: SeqStringGenFromArray
+                                params: [['Sales','Engineering','HR','Anonymous']]
+                              - util: RandomDateBtwYears
+                                params: [2000,2025]
+            
+            - workload: insert_without_part
+              run:
+                  - name: insert_without_part
+                    weight: 100
+                    queries:
+                        - query: insert into employees_without_part values(?,?,?,?,?);
+                          bindings:
+                              - util: PrimaryIntGen
+                                params: [1000001, 5000000]
+                              - util: RandomAString
+                                params: [1, 20]
+                              - util: CyclicSeqIntGen
+                                params: [1,100000]
+                              - util: SeqStringGenFromArray
+                                params: [['Sales','Engineering','HR','Anonymous']]
+                              - util: RandomDateBtwYears
+                                params: [2000,2025]
+
+            - workload: insert_without_fk
+              run:
+                  - name: insert_without_fk
+                    weight: 100
+                    queries:
+                        - query: insert into employees_without_fk values(?,?,?,?,?);
+                          bindings:
+                              - util: PrimaryIntGen
+                                params: [1000001, 5000000]
+                              - util: RandomAString
+                                params: [1, 20]
+                              - util: CyclicSeqIntGen
+                                params: [1,100000]
+                              - util: SeqStringGenFromArray
+                                params: [['Sales','Engineering','HR','Anonymous']]
+                              - util: RandomDateBtwYears
+                                params: [2000,2025]
+
+            - workload: update_with_part
+              run:
+                  - name: update_with_part
+                    weight: 100
+                    queries:
+                        - query: update employees_with_part set project_id=?, project_dept=? where id=?;
+                          bindings:
+                            - util: PrimaryIntGen
+                              params: [1, 100000]
+                            - util: SeqStringGenFromArray
+                              params: [['Sales','Engineering','HR','Anonymous']]
+                            - util: RandomInt
+                              params: [1, 1000000]
+
+            - workload: update_without_part
+              run:
+                  - name: update_without_part
+                    weight: 100
+                    queries:
+                        - query: update employees_without_part set project_id=?, project_dept=? where id=?;
+                          bindings:
+                            - util: PrimaryIntGen
+                              params: [1, 100000]
+                            - util: SeqStringGenFromArray
+                              params: [['Sales','Engineering','HR','Anonymous']]
+                            - util: RandomInt
+                              params: [1, 1000000]
+
+            - workload: update_without_fk
+              run:
+                  - name: update_without_fk
+                    weight: 100
+                    queries:
+                        - query: update employees_without_fk set project_id=?, project_dept=? where id=?;
+                          bindings:
+                            - util: PrimaryIntGen
+                              params: [1, 100000]
+                            - util: SeqStringGenFromArray
+                              params: [['Sales','Engineering','HR','Anonymous']]
+                            - util: RandomInt
+                              params: [1, 1000000]
