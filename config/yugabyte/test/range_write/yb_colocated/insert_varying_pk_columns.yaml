@@ -15,6 +15,7 @@ yaml_version: v1.0
 works:
     work:
         time_secs: 60
+        active_terminals: 24
         rate: unlimited
         warmup: 30
 microbenchmark:
