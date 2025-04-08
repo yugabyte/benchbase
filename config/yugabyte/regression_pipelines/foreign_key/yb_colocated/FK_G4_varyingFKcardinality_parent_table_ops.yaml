@@ -1,0 +1,342 @@
+type: YUGABYTE
+driver: com.yugabyte.Driver
+url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
+createdb: drop database if exists yb_colocated; create database yb_colocated with colocated=true
+username: {{username}}
+password: {{password}}
+batchsize: 128
+isolation: TRANSACTION_REPEATABLE_READ
+loaderThreads: 1
+terminals: 1
+collect_pg_stat_statements: true
+use_dist_in_explain : true
+analyze_on_all_tables: true
+yaml_version: v1.0
+works:
+    work:
+        time_secs: 60
+        active_terminals: 1
+        rate: unlimited
+        warmup: 30
+microbenchmark:
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
+    properties:
+        setAutoCommit: false
+        create:
+            - DROP TABLE IF EXISTS employees_with_1_fk_1_1_card;
+            - DROP TABLE IF EXISTS projects_with_1_ref_1_1_card;
+
+            - DROP TABLE IF EXISTS employees_with_1_fk_1_10_card;
+            - DROP TABLE IF EXISTS projects_with_1_ref_1_10_card;
+
+            - DROP TABLE IF EXISTS employees_with_1_fk_1_100_card;
+            - DROP TABLE IF EXISTS projects_with_1_ref_1_100_card;
+
+            - DROP TABLE IF EXISTS employees_with_1_fk_1_1000_card;
+            - DROP TABLE IF EXISTS projects_with_1_ref_1_1000_card;
+
+            - create table projects_with_1_ref_1_1_card(id int, uid int unique not null, name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2), primary key(id asc));
+            - create table employees_with_1_fk_1_1_card(id int,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(10,2), project_id int not null, primary key(id asc));
+
+            - create table projects_with_1_ref_1_10_card(id int, uid int unique not null, name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2), primary key(id asc));
+            - create table employees_with_1_fk_1_10_card(id int,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(10,2), project_id int not null, primary key(id asc));
+
+            - create table projects_with_1_ref_1_100_card(id int, uid int unique not null, name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2), primary key(id asc));
+            - create table employees_with_1_fk_1_100_card(id int,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(10,2), project_id int not null, primary key(id asc));
+
+            - create table projects_with_1_ref_1_1000_card(id int, uid int unique not null, name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2), primary key(id asc));
+            - create table employees_with_1_fk_1_1000_card(id int,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(10,2), project_id int not null, primary key(id asc));
+
+            - CREATE INDEX project_uid_index_1_1_card ON employees_with_1_fk_1_1_card (project_id);
+            - CREATE INDEX project_uid_index_1_10_card ON employees_with_1_fk_1_10_card (project_id);
+            - CREATE INDEX project_uid_index_1_100_card ON employees_with_1_fk_1_100_card (project_id);
+            - CREATE INDEX project_uid_index_1_1000_card ON employees_with_1_fk_1_1000_card (project_id);
+            
+        cleanup:
+            - DROP TABLE IF EXISTS employees_with_1_fk_1_1_card;
+            - DROP TABLE IF EXISTS projects_with_1_ref_1_1_card;
+
+            - DROP TABLE IF EXISTS employees_with_1_fk_1_10_card;
+            - DROP TABLE IF EXISTS projects_with_1_ref_1_10_card;
+
+            - DROP TABLE IF EXISTS employees_with_1_fk_1_100_card;
+            - DROP TABLE IF EXISTS projects_with_1_ref_1_100_card;
+
+            - DROP TABLE IF EXISTS employees_with_1_fk_1_1000_card;
+            - DROP TABLE IF EXISTS projects_with_1_ref_1_1000_card;
+        loadRules:
+            - table: projects_with_1_ref_1_1_card
+              rows: 100000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 100000]
+                  - name: uid
+                    util: PrimaryIntGen
+                    params: [1, 100000]
+                  - name: name
+                    util: RandomAString
+                    params: [1, 20]
+                  - name: start_date
+                    util: RandomDateBtwYears
+                    params: [2000, 2025]
+                  - name: end_date
+                    util: RandomDateBtwYears
+                    params: [2000, 2025]
+                  - name: budget
+                    util: RandomNoWithDecimalPoints
+                    params: [1, 1000000, 2]
+
+            - table: employees_with_1_fk_1_1_card
+              rows: 100000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 100000]
+                  - name: name
+                    util: RandomAString
+                    params: [1, 20]
+                  - name: email
+                    util: RandomAString
+                    params: [1, 100]
+                  - name: phone
+                    util: RandomNstring
+                    params: [10, 15]
+                  - name: position
+                    util: RandomAString
+                    params: [1, 10]
+                  - name: salary
+                    util: RandomNoWithDecimalPoints
+                    params: [1, 1000000, 2]
+                  - name: project_id
+                    util: CyclicSeqIntGen
+                    params: [1,100000]
+
+            - table: projects_with_1_ref_1_10_card
+              rows: 100000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 100000]
+                  - name: uid
+                    util: PrimaryIntGen
+                    params: [1, 100000]
+                  - name: name
+                    util: RandomAString
+                    params: [1, 20]
+                  - name: start_date
+                    util: RandomDateBtwYears
+                    params: [2000, 2025]
+                  - name: end_date
+                    util: RandomDateBtwYears
+                    params: [2000, 2025]
+                  - name: budget
+                    util: RandomNoWithDecimalPoints
+                    params: [1, 1000000, 2]
+
+            - table: employees_with_1_fk_1_10_card
+              rows: 1000000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 1000000]
+                  - name: name
+                    util: RandomAString
+                    params: [1, 20]
+                  - name: email
+                    util: RandomAString
+                    params: [1, 100]
+                  - name: phone
+                    util: RandomNstring
+                    params: [10, 15]
+                  - name: position
+                    util: RandomAString
+                    params: [1, 10]
+                  - name: salary
+                    util: RandomNoWithDecimalPoints
+                    params: [1, 1000000, 2]
+                  - name: project_id
+                    util: CyclicSeqIntGen
+                    params: [1,100000]
+
+            - table: projects_with_1_ref_1_100_card
+              rows: 100000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 100000]
+                  - name: uid
+                    util: PrimaryIntGen
+                    params: [1, 100000]
+                  - name: name
+                    util: RandomAString
+                    params: [1, 20]
+                  - name: start_date
+                    util: RandomDateBtwYears
+                    params: [2000, 2025]
+                  - name: end_date
+                    util: RandomDateBtwYears
+                    params: [2000, 2025]
+                  - name: budget
+                    util: RandomNoWithDecimalPoints
+                    params: [1, 1000000, 2]
+
+            - table: employees_with_1_fk_1_100_card
+              rows: 10000000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 10000000]
+                  - name: name
+                    util: RandomAString
+                    params: [1, 20]
+                  - name: email
+                    util: RandomAString
+                    params: [1, 100]
+                  - name: phone
+                    util: RandomNstring
+                    params: [10, 15]
+                  - name: position
+                    util: RandomAString
+                    params: [1, 10]
+                  - name: salary
+                    util: RandomNoWithDecimalPoints
+                    params: [1, 1000000, 2]
+                  - name: project_id
+                    util: CyclicSeqIntGen
+                    params: [1,100000]
+
+            - table: projects_with_1_ref_1_1000_card
+              rows: 100000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 100000]
+                  - name: uid
+                    util: PrimaryIntGen
+                    params: [1, 100000]
+                  - name: name
+                    util: RandomAString
+                    params: [1, 20]
+                  - name: start_date
+                    util: RandomDateBtwYears
+                    params: [2000, 2025]
+                  - name: end_date
+                    util: RandomDateBtwYears
+                    params: [2000, 2025]
+                  - name: budget
+                    util: RandomNoWithDecimalPoints
+                    params: [1, 1000000, 2]
+
+            - table: employees_with_1_fk_1_1000_card
+              rows: 100000000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 100000000]
+                  - name: name
+                    util: RandomAString
+                    params: [1, 20]
+                  - name: email
+                    util: RandomAString
+                    params: [1, 100]
+                  - name: phone
+                    util: RandomNstring
+                    params: [10, 15]
+                  - name: position
+                    util: RandomAString
+                    params: [1, 10]
+                  - name: salary
+                    util: RandomNoWithDecimalPoints
+                    params: [1, 1000000, 2]
+                  - name: project_id
+                    util: CyclicSeqIntGen
+                    params: [1,100000]
+
+        afterLoad:
+            - ALTER TABLE employees_with_1_fk_1_1_card add CONSTRAINT fk_project FOREIGN KEY (project_id) REFERENCES projects_with_1_ref_1_1_card(uid) ON DELETE CASCADE ON UPDATE CASCADE;
+            - ALTER TABLE employees_with_1_fk_1_10_card add CONSTRAINT fk_project FOREIGN KEY (project_id) REFERENCES projects_with_1_ref_1_10_card(uid) ON DELETE CASCADE ON UPDATE CASCADE;
+            - ALTER TABLE employees_with_1_fk_1_100_card add CONSTRAINT fk_project FOREIGN KEY (project_id) REFERENCES projects_with_1_ref_1_100_card(uid) ON DELETE CASCADE ON UPDATE CASCADE;
+            - ALTER TABLE employees_with_1_fk_1_1000_card add CONSTRAINT fk_project FOREIGN KEY (project_id) REFERENCES projects_with_1_ref_1_1000_card(uid) ON DELETE CASCADE ON UPDATE CASCADE;
+            
+        executeRules:
+
+            - workload: FK_G4_1_update_1_1_card
+              run:
+                  - name: FK_G4_1_update_1_1_card
+                    weight: 100
+                    queries:
+                        - query: update projects_with_1_ref_1_1_card set uid=uid+100000 where id=?;
+                          bindings:
+                            - util: PrimaryIntGen
+                              params: [1, 100000]
+
+            - workload: FK_G4_2_delete_1_1_card
+              run:
+                  - name: FK_G4_2_delete_1_1_card
+                    weight: 100
+                    queries:
+                        - query: delete from projects_with_1_ref_1_1_card where id=?;
+                          bindings:
+                            - util: PrimaryIntGen
+                              params: [1, 100000]
+
+            - workload: FK_G4_3_update_1_10_card
+              run:
+                  - name: FK_G4_3_update_1_10_card
+                    weight: 100
+                    queries:
+                        - query: update projects_with_1_ref_1_10_card set uid=uid+100000 where id=?;
+                          bindings:
+                            - util: PrimaryIntGen
+                              params: [1, 100000]
+
+            - workload: FK_G4_4_delete_1_10_card
+              run:
+                  - name: FK_G4_4_delete_1_10_card
+                    weight: 100
+                    queries:
+                        - query: delete from projects_with_1_ref_1_10_card where id=?;
+                          bindings:
+                            - util: PrimaryIntGen
+                              params: [1, 100000]
+
+            - workload: FK_G4_5_update_1_100_card
+              run:
+                  - name: FK_G4_5_update_1_100_card
+                    weight: 100
+                    queries:
+                        - query: update projects_with_1_ref_1_100_card set uid=uid+100000 where id=?;
+                          bindings:
+                            - util: PrimaryIntGen
+                              params: [1, 100000]
+
+            - workload: FK_G4_6_delete_1_100_card
+              run:
+                  - name: FK_G4_6_delete_1_100_card
+                    weight: 100
+                    queries:
+                        - query: delete from projects_with_1_ref_1_100_card where id=?;
+                          bindings:
+                            - util: PrimaryIntGen
+                              params: [1, 100000]
+
+            - workload: FK_G4_7_update_1_1000_card
+              run:
+                  - name: FK_G4_7_update_1_1000_card
+                    weight: 100
+                    queries:
+                        - query: update projects_with_1_ref_1_1000_card set uid=uid+100000 where id=?;
+                          bindings:
+                            - util: PrimaryIntGen
+                              params: [1, 100000]
+
+            - workload: FK_G4_8_delete_1_1000_card
+              run:
+                  - name: FK_G4_8_delete_1_1000_card
+                    weight: 100
+                    queries:
+                        - query: delete from projects_with_1_ref_1_1000_card where id=?;
+                          bindings:
+                            - util: PrimaryIntGen
+                              params: [1, 100000]
