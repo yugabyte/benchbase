@@ -14,9 +14,9 @@ use_dist_in_explain : true
 yaml_version: v1.0
 works:
     work:
-        time_secs: 60
+        time_secs: 300
         rate: unlimited
-        warmup: 30
+        warmup: 60
 microbenchmark:
     class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
     properties:
@@ -58,7 +58,7 @@ microbenchmark:
                                 bindings:
                                     -   util: PrimaryIntGen
                                         count: 7
-                                        params: [ 1000001, 9000000 ]
+                                        params: [ 1000001, 100000000 ]
             -   workload: 2_range_column_test
                 run:
                     -   name: Insert_2_range_column_test
@@ -69,7 +69,7 @@ microbenchmark:
                                 bindings:
                                     -   util: PrimaryIntGen
                                         count: 7
-                                        params: [ 1000001, 9000000 ]
+                                        params: [ 1000001, 100000000 ]
             -   workload: 3_range_column_test
                 run:
                     -   name: Insert_3_range_column_test
@@ -80,7 +80,7 @@ microbenchmark:
                                 bindings:
                                     -   util: PrimaryIntGen
                                         count: 7
-                                        params: [ 1000001, 9000000 ]
+                                        params: [ 1000001, 100000000 ]
             -   workload: 5_range_column_test
                 run:
                     -   name: Insert_5_range_column_test
@@ -91,4 +91,4 @@ microbenchmark:
                                 bindings:
                                     -   util: PrimaryIntGen
                                         count: 7
-                                        params: [ 1000001, 9000000 ]
+                                        params: [ 1000001, 100000000 ]

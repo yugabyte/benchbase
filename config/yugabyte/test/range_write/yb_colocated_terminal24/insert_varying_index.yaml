@@ -14,9 +14,9 @@ use_dist_in_explain : true
 yaml_version: v1.0
 works:
     work:
-        time_secs: 60
+        time_secs: 300
         rate: unlimited
-        warmup: 30
+        warmup: 60
 microbenchmark:
     class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
     properties:
@@ -90,10 +90,10 @@ microbenchmark:
                                 count: 10
                                 bindings:
                                     -   util: PrimaryIntGen
-                                        params: [ 1000001, 9000000 ]
+                                        params: [ 1000001, 100000000 ]
                                     -   util: RandomNumber
                                         count: 10
-                                        params: [ 1000001, 9000000 ]
+                                        params: [ 1000001, 100000000 ]
                                     -   util: RandomAString
                                         count: 4
                                         params: [ 20, 20 ]
@@ -107,10 +107,10 @@ microbenchmark:
                                 count: 10
                                 bindings:
                                     -   util: PrimaryIntGen
-                                        params: [ 1000001, 9000000 ]
+                                        params: [ 1000001, 100000000 ]
                                     -   util: RandomNumber
                                         count: 10
-                                        params: [ 1000001, 9000000 ]
+                                        params: [ 1000001, 100000000 ]
                                     -   util: RandomAString
                                         count: 4
                                         params: [ 20, 20 ]
@@ -124,10 +124,10 @@ microbenchmark:
                                 count: 10
                                 bindings:
                                     -   util: PrimaryIntGen
-                                        params: [ 1000001, 9000000 ]
+                                        params: [ 1000001, 100000000 ]
                                     -   util: RandomNumber
                                         count: 10
-                                        params: [ 1000001, 9000000 ]
+                                        params: [ 1000001, 100000000 ]
                                     -   util: RandomAString
                                         count: 4
                                         params: [ 20, 20 ]
@@ -141,10 +141,10 @@ microbenchmark:
                                 count: 10
                                 bindings:
                                     -   util: PrimaryIntGen
-                                        params: [ 1000001, 9000000 ]
+                                        params: [ 1000001, 100000000 ]
                                     -   util: RandomNumber
                                         count: 10
-                                        params: [ 1000001, 9000000 ]
+                                        params: [ 1000001, 100000000 ]
                                     -   util: RandomAString
                                         count: 4
                                         params: [ 20, 20 ]
