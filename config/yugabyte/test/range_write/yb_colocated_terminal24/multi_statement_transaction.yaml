@@ -7,7 +7,7 @@ password: {{password}}
 batchsize: 128
 isolation: TRANSACTION_REPEATABLE_READ
 loaderthreads: 4
-terminals: 128
+terminals: 24
 collect_pg_stat_statements: true
 use_dist_in_explain : true
 yaml_version: v1.0
@@ -37,12 +37,12 @@ microbenchmark:
         loadRules:
             -   table: users_
                 count: 1
-                rows: 5000000
+                rows: 3000000
                 columns:
                     -   name: user_id_
                         count: 2
                         util: PrimaryIntGen
-                        params: [ 1, 5000000 ]
+                        params: [ 1, 3000000 ]
                     -   name: user_name_
                         count: 1
                         util: PrimaryStringGen
@@ -58,16 +58,16 @@ microbenchmark:
 
             -   table: accounts_
                 count: 1
-                rows: 5000000
+                rows: 3000000
                 columns:
                     -   name: account_id_
                         count: 2
                         util: PrimaryIntGen
-                        params: [ 1, 5000000 ]
+                        params: [ 1, 3000000 ]
                     -   name: user_id_
                         count: 2
                         util: PrimaryIntGen
-                        params: [ 1, 5000000 ]
+                        params: [ 1, 3000000 ]
                     -   name: addr_
                         count: 1
                         util: PrimaryStringGen
@@ -79,12 +79,12 @@ microbenchmark:
 
             -   table: audit_table_
                 count: 1
-                rows: 5000000
+                rows: 3000000
                 columns:
                     -   name: account_id_
                         count: 2
                         util: PrimaryIntGen
-                        params: [ 1, 5000000 ]
+                        params: [ 1, 3000000 ]
                     -   name: event_id_
                         count: 1
                         util: PrimaryDateGen
@@ -92,7 +92,7 @@ microbenchmark:
                     -   name: user_id_
                         count: 2
                         util: PrimaryIntGen
-                        params: [ 1, 5000000 ]
+                        params: [ 1, 3000000 ]
                     -   name: delta_
                         count: 1
                         util: RandomNoWithDecimalPoints
@@ -124,19 +124,19 @@ microbenchmark:
                                   params: [ 1000000, 10000000, 2 ]
                               -   util: RandomInt
                                   count: 2
-                                  params: [ 1, 5000000 ]
+                                  params: [ 1, 3000000 ]
                               -   util: RandomInt
                                   count: 2
-                                  params: [ 1, 5000000 ]
+                                  params: [ 1, 3000000 ]
                         - query: SELECT bal_1 FROM accounts_1 WHERE account_id_1 = ? and account_id_2 = ?
                           bindings:
                               -   util: RandomInt
                                   count: 2
-                                  params: [ 1, 5000000 ]
+                                  params: [ 1, 3000000 ]
                         - query: UPDATE users_1 SET bal_1 = bal_1 + ? WHERE user_id_1 = ? and user_id_2 = ?
                           bindings:
                               -   util: RandomInt
                                   params: [ 1, 100 ]
                               -   util: RandomInt
                                   count: 2
-                                  params: [ 1, 5000000 ]
+                                  params: [ 1, 3000000 ]
