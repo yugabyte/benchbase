@@ -15,7 +15,7 @@ works:
     work:
         time_secs: 300
         rate: unlimited
-        warmup: 60
+        warmup: 30
 microbenchmark:
     class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
     properties:
@@ -25,10 +25,14 @@ microbenchmark:
             - DROP TABLE IF EXISTS accounts_1;
             - DROP TABLE IF EXISTS audit_table_1;
             - CREATE TABLE IF NOT EXISTS users_1(user_id_1 bigint, user_id_2 bigint, user_name_1 varchar(10), addr_1 varchar(50), bal_1 float(2), PRIMARY KEY(user_id_1 ASC, user_id_2 ASC));
+            - CREATE INDEX users_1_index_user_name ON users_1(user_name_1 ASC, addr_1 ASC);
+            - CREATE INDEX users_1_index_addr ON users_1(addr_1 ASC, user_name_1 ASC);
             - CREATE TABLE IF NOT EXISTS accounts_1(account_id_1 bigint, account_id_2 bigint, user_id_1 bigint, user_id_2 bigint, addr_1 varchar(50), bal_1 float(2), PRIMARY KEY(account_id_1 ASC, account_id_2 ASC));
-            - CREATE UNIQUE INDEX user_accounts ON accounts_1( user_id_1 ASC, user_id_2 ASC, account_id_1 ASC, account_id_2 ASC);
+            - CREATE INDEX user_accounts_addr1 ON accounts_1( user_id_1 ASC, user_id_2 ASC, addr_1 ASC);
+            - CREATE INDEX user_accounts_addr2 ON accounts_1( addr_1 ASC, user_id_1 ASC, user_id_2 ASC);
             - CREATE TABLE IF NOT EXISTS audit_table_1(account_id_1 bigint, account_id_2 bigint, event_id_1 date, user_id_1 bigint, user_id_2 bigint, delta_1 float(2), PRIMARY KEY(account_id_1 ASC, account_id_2 ASC, event_id_1 ASC));
-
+            - CREATE INDEX audit_table_1_index1 ON audit_table_1(user_id_1 ASC, user_id_2 ASC, event_id_1 ASC);
+            - CREATE INDEX audit_table_1_index2 ON audit_table_1(event_id_1 ASC, user_id_1 ASC, user_id_2 ASC);
         cleanup:
             - DROP TABLE IF EXISTS users_1;
             - DROP TABLE IF EXISTS accounts_1;
@@ -107,6 +111,7 @@ microbenchmark:
                     weight: 100
                     queries:
                         - query: INSERT INTO audit_table_1(account_id_1, account_id_2, event_id_1, user_id_1, user_id_2, delta_1) VALUES(?,?,?,?,?,?)
+                          count: 10
                           bindings:
                               -   util: PrimaryIntGen
                                   count: 2
@@ -118,25 +123,22 @@ microbenchmark:
                                   params: [ 10000000, 10000000000 ]
                               -   util: RandomNoWithDecimalPoints
                                   params: [ 1, 1000000, 2 ]
-                        - query: UPDATE accounts_1 SET bal_1 = ? WHERE account_id_1 = ? and account_id_2 = ? and user_id_1 = ? and user_id_2 = ?
+                        - query: UPDATE accounts_1 SET addr_1 = ? WHERE account_id_1 = ? and account_id_2 = ? and user_id_1 = ? and user_id_2 = ?
                           bindings:
-                              -   util: RandomNoWithDecimalPoints
-                                  params: [ 1000000, 10000000, 2 ]
+                              -   util: PrimaryStringGen
+                                  params: [ 1, 50 ]
                               -   util: RandomInt
                                   count: 2
                                   params: [ 1, 3000000 ]
                               -   util: RandomInt
                                   count: 2
                                   params: [ 1, 3000000 ]
-                        - query: SELECT bal_1 FROM accounts_1 WHERE account_id_1 = ? and account_id_2 = ?
+                        - query: UPDATE users_1 SET user_name_1 = ?, addr_1 = ? WHERE user_id_1 = ? and user_id_2 = ?
                           bindings:
-                              -   util: RandomInt
-                                  count: 2
-                                  params: [ 1, 3000000 ]
-                        - query: UPDATE users_1 SET bal_1 = bal_1 + ? WHERE user_id_1 = ? and user_id_2 = ?
-                          bindings:
-                              -   util: RandomInt
-                                  params: [ 1, 100 ]
+                              -   util: PrimaryStringGen
+                                  params: [ 1, 10 ]
+                              -   util: PrimaryStringGen
+                                  params: [ 1, 50 ]
                               -   util: RandomInt
                                   count: 2
                                   params: [ 1, 3000000 ]
