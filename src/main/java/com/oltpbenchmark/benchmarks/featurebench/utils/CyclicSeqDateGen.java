@@ -21,7 +21,7 @@ public class CyclicSeqDateGen implements BaseUtil {
         if (yearLowerBound > yearUpperBound) {
             throw new RuntimeException("Please enter correct values for yearLowerBound and yearUpperBound");
         }
-        this.currentDate =  LocalDate.of(yearLowerBound, 1, 1);
+        this.currentDate =  LocalDate.of(yearLowerBound, 1, 1).minusDays(1);
     }
 
     public CyclicSeqDateGen(List<Object> values,int workerId,int totalWorkers) {
