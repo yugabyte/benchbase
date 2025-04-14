@@ -1,0 +1,289 @@
+type: YUGABYTE
+driver: com.yugabyte.Driver
+url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
+username: {{username}}
+password: {{password}}
+
+batchsize: 128
+isolation: TRANSACTION_REPEATABLE_READ
+loaderThreads: 1
+terminals: 1
+collect_pg_stat_statements: true
+use_dist_in_explain : true
+yaml_version: v1.0
+works:
+    work:
+        time_secs: 60
+        active_terminals: 1
+        rate: unlimited
+        warmup: 30
+microbenchmark:
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
+    properties:
+        setAutoCommit: false
+        create:
+            - DROP TABLE IF EXISTS employees_with_part;
+            - DROP TABLE IF EXISTS employees_without_part;
+
+            - DROP TABLE IF EXISTS projects_with_part_with_fk;
+            - DROP TABLE IF EXISTS projects_with_part_without_fk;
+            - DROP TABLE IF EXISTS projects_without_part_with_fk;
+            - DROP TABLE IF EXISTS projects_without_part_without_fk;
+
+            - DROP TABLE IF EXISTS projects_2000_2005_1;
+            - DROP TABLE IF EXISTS projects_2005_2010_1;
+            - DROP TABLE IF EXISTS projects_2010_2015_1;
+            - DROP TABLE IF EXISTS projects_2015_2020_1;
+            - DROP TABLE IF EXISTS projects_default_1;
+
+            - DROP TABLE IF EXISTS projects_2000_2005_2;
+            - DROP TABLE IF EXISTS projects_2005_2010_2;
+            - DROP TABLE IF EXISTS projects_2010_2015_2;
+            - DROP TABLE IF EXISTS projects_2015_2020_2;
+            - DROP TABLE IF EXISTS projects_default_2;
+
+            - DROP INDEX IF EXISTS fk_index1;
+            - DROP INDEX IF EXISTS fk_index2;
+
+            - create table projects_with_part_with_fk (id int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, created_at)) PARTITION BY RANGE (created_at);
+            - CREATE TABLE projects_2000_2005_1 PARTITION OF projects_with_part FOR VALUES FROM ('2001-01-01') TO ('2005-12-31');
+            - CREATE TABLE projects_2005_2010_1 PARTITION OF projects_with_part FOR VALUES FROM ('2006-01-01') TO ('2010-12-31');
+            - CREATE TABLE projects_2010_2015_1 PARTITION OF projects_with_part FOR VALUES FROM ('2011-01-01') TO ('2015-12-31');
+            - CREATE TABLE projects_2015_2020_1 PARTITION OF projects_with_part FOR VALUES FROM ('2016-01-01') TO ('2020-12-31');
+            - CREATE TABLE projects_default_1 PARTITION OF projects_with_part DEFAULT;
+
+            - create table projects_with_part_without_fk (id int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, created_at)) PARTITION BY RANGE (created_at);
+            - CREATE TABLE projects_2000_2005_2 PARTITION OF projects_with_part FOR VALUES FROM ('2001-01-01') TO ('2005-12-31');
+            - CREATE TABLE projects_2005_2010_2 PARTITION OF projects_with_part FOR VALUES FROM ('2006-01-01') TO ('2010-12-31');
+            - CREATE TABLE projects_2010_2015_2 PARTITION OF projects_with_part FOR VALUES FROM ('2011-01-01') TO ('2015-12-31');
+            - CREATE TABLE projects_2015_2020_2 PARTITION OF projects_with_part FOR VALUES FROM ('2016-01-01') TO ('2020-12-31');
+            - CREATE TABLE projects_default_2 PARTITION OF projects_with_part DEFAULT;
+
+            - create table projects_without_part_with_fk (id int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, created_at));
+            - create table projects_without_part_without_fk (id int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, created_at));
+
+            - create table employees_with_part (id int primary key, name varchar(50) not null, project_id int, project_creation_date date, hired_at date);
+            - create table employees_without_part (id int primary key, name varchar(50) not null, project_id int, project_creation_date date, hired_at date);
+
+            - create index fk_index1 on employees_with_part(project_id,project_creation_date);
+            - create index fk_index2 on employees_without_part(project_id,project_creation_date);
+            
+        cleanup:
+            - DROP TABLE IF EXISTS employees_with_part;
+            - DROP TABLE IF EXISTS employees_without_part;
+
+            - DROP TABLE IF EXISTS projects_with_part_with_fk;
+            - DROP TABLE IF EXISTS projects_with_part_without_fk;
+            - DROP TABLE IF EXISTS projects_without_part_with_fk;
+            - DROP TABLE IF EXISTS projects_without_part_without_fk;
+
+            - DROP TABLE IF EXISTS projects_2000_2005_1;
+            - DROP TABLE IF EXISTS projects_2005_2010_1;
+            - DROP TABLE IF EXISTS projects_2010_2015_1;
+            - DROP TABLE IF EXISTS projects_2015_2020_1;
+            - DROP TABLE IF EXISTS projects_default_1;
+
+            - DROP TABLE IF EXISTS projects_2000_2005_2;
+            - DROP TABLE IF EXISTS projects_2005_2010_2;
+            - DROP TABLE IF EXISTS projects_2010_2015_2;
+            - DROP TABLE IF EXISTS projects_2015_2020_2;
+            - DROP TABLE IF EXISTS projects_default_2;
+
+            - DROP INDEX IF EXISTS fk_index1;
+            - DROP INDEX IF EXISTS fk_index2;
+        loadRules:
+            - table: projects_with_part_with_fk
+              rows: 100000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 100000]
+                  - name: name
+                    util: RandomAString
+                    params: [1, 20]
+                  - name: dept
+                    util: SeqStringGenFromArray
+                    params: ['Sales','Engineering','HR','Anonymous']
+                  - name: created_at
+                    util: CyclicSeqDateGen
+                    params: [2001,2025]
+
+            - table: projects_with_part_without_fk
+              rows: 100000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 100000]
+                  - name: name
+                    util: RandomAString
+                    params: [1, 20]
+                  - name: dept
+                    util: SeqStringGenFromArray
+                    params: ['Sales','Engineering','HR','Anonymous']
+                  - name: created_at
+                    util: CyclicSeqDateGen
+                    params: [2001,2025]
+
+            - table: projects_without_part_with_fk
+              rows: 100000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 100000]
+                  - name: name
+                    util: RandomAString
+                    params: [1, 20]
+                  - name: dept
+                    util: SeqStringGenFromArray
+                    params: ['Sales','Engineering','HR','Anonymous']
+                  - name: created_at
+                    util: CyclicSeqDateGen
+                    params: [2001,2025]
+
+            - table: projects_without_part_without_fk
+              rows: 100000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 100000]
+                  - name: name
+                    util: RandomAString
+                    params: [1, 20]
+                  - name: dept
+                    util: SeqStringGenFromArray
+                    params: ['Sales','Engineering','HR','Anonymous']
+                  - name: created_at
+                    util: CyclicSeqDateGen
+                    params: [2001,2025]
+
+            - table: employees_with_part
+              rows: 1000000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 1000000]
+                  - name: name
+                    util: RandomAString
+                    params: [1, 20]
+                  - name: project_id
+                    util: CyclicSeqIntGen
+                    params: [1,100000]
+                  - name: project_dept
+                    util: SeqStringGenFromArray
+                    params: [['Sales','Engineering','HR','Anonymous']]
+                  - name: hired_at
+                    util: CyclicSeqDateGenWithRep
+                    params: [2001,2025,100000]
+
+            - table: employees_without_part
+              rows: 1000000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 1000000]
+                  - name: name
+                    util: RandomAString
+                    params: [1, 20]
+                  - name: project_id
+                    util: CyclicSeqIntGen
+                    params: [1,100000]
+                  - name: project_dept
+                    util: SeqStringGenFromArray
+                    params: [['Sales','Engineering','HR','Anonymous']]
+                  - name: hired_at
+                    util: CyclicSeqDateGenWithRep
+                    params: [2001,2025,100000]
+
+        afterLoad:
+            - ALTER TABLE employees_with_part add CONSTRAINT fk_project foreign key (project_id,project_creation_date) references projects_with_part_with_fk(id, created_at) on delete cascade on update cascade;
+            - ALTER TABLE employees_without_part add CONSTRAINT fk_project foreign key (project_id,project_creation_date) references projects_without_part_with_fk(id, created_at) on delete cascade on update cascade;
+            
+        executeRules:
+
+            - workload: update_with_part_with_fk
+              run:
+                  - name: update_with_part_with_fk
+                    weight: 100
+                    queries:
+                        - query: update projects_with_part_with_fk set created_at=? where id=?;
+                          bindings:
+                            - util: RandomDateBtwYears
+                              params: [2001,2025]
+                            - util: PrimaryIntGen
+                              params: [1, 100000]
+
+            - workload: update_with_part_without_fk
+              run:
+                  - name: update_with_part_without_fk
+                    weight: 100
+                    queries:
+                        - query: update projects_with_part_without_fk set created_at=? where id=?;
+                          bindings:
+                            - util: RandomDateBtwYears
+                              params: [2001,2025]
+                            - util: PrimaryIntGen
+                              params: [1, 100000]
+            
+            - workload: update_without_part_with_fk
+              run:
+                  - name: update_without_part_with_fk
+                    weight: 100
+                    queries:
+                        - query: update projects_without_part_with_fk set created_at=? where id=?;
+                          bindings:
+                            - util: RandomDateBtwYears
+                              params: [2001,2025]
+                            - util: PrimaryIntGen
+                              params: [1, 100000]
+
+            - workload: update_without_part_without_fk
+              run:
+                  - name: update_without_part_without_fk
+                    weight: 100
+                    queries:
+                        - query: update projects_without_part_without_fk set created_at=? where id=?;
+                          bindings:
+                            - util: RandomDateBtwYears
+                              params: [2001,2025]
+                            - util: PrimaryIntGen
+                              params: [1, 100000]
+
+            - workload: delete_with_part_with_fk
+              run:
+                  - name: delete_with_part_with_fk
+                    weight: 100
+                    queries:
+                        - query: delete from projects_with_part_with_fk where id=?;
+                          bindings:
+                            - util: PrimaryIntGen
+                              params: [1, 100000]
+
+            - workload: delete_with_part_without_fk
+              run:
+                  - name: delete_with_part_without_fk
+                    weight: 100
+                    queries:
+                        - query: delete from projects_with_part_without_fk where id=?;
+                          bindings:
+                            - util: PrimaryIntGen
+                              params: [1, 100000]
+                            
+            - workload: delete_without_part_with_fk
+              run:
+                  - name: delete_without_part_with_fk
+                    weight: 100
+                    queries:
+                        - query: delete from projects_without_part_with_fk where id=?;
+                          bindings:
+                            - util: PrimaryIntGen
+                              params: [1, 100000]
+
+            - workload: delete_without_part_without_fk
+              run:
+                  - name: delete_without_part_without_fk
+                    weight: 100
+                    queries:
+                        - query: delete from projects_without_part_without_fk where id=?;
+                          bindings:
+                            - util: PrimaryIntGen
+                              params: [1, 100000]
