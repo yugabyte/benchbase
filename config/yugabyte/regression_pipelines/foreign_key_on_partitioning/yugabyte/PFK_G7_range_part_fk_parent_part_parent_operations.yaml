@@ -46,18 +46,18 @@ microbenchmark:
             - DROP INDEX IF EXISTS fk_index2;
 
             - create table projects_with_part_with_fk (id int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, created_at)) PARTITION BY RANGE (created_at);
-            - CREATE TABLE projects_2000_2005_1 PARTITION OF projects_with_part FOR VALUES FROM ('2001-01-01') TO ('2005-12-31');
-            - CREATE TABLE projects_2005_2010_1 PARTITION OF projects_with_part FOR VALUES FROM ('2006-01-01') TO ('2010-12-31');
-            - CREATE TABLE projects_2010_2015_1 PARTITION OF projects_with_part FOR VALUES FROM ('2011-01-01') TO ('2015-12-31');
-            - CREATE TABLE projects_2015_2020_1 PARTITION OF projects_with_part FOR VALUES FROM ('2016-01-01') TO ('2020-12-31');
-            - CREATE TABLE projects_default_1 PARTITION OF projects_with_part DEFAULT;
+            - CREATE TABLE projects_2000_2005_1 PARTITION OF projects_with_part_with_fk FOR VALUES FROM ('2001-01-01') TO ('2005-12-31');
+            - CREATE TABLE projects_2005_2010_1 PARTITION OF projects_with_part_with_fk FOR VALUES FROM ('2006-01-01') TO ('2010-12-31');
+            - CREATE TABLE projects_2010_2015_1 PARTITION OF projects_with_part_with_fk FOR VALUES FROM ('2011-01-01') TO ('2015-12-31');
+            - CREATE TABLE projects_2015_2020_1 PARTITION OF projects_with_part_with_fk FOR VALUES FROM ('2016-01-01') TO ('2020-12-31');
+            - CREATE TABLE projects_default_1 PARTITION OF projects_with_part_with_fk DEFAULT;
 
             - create table projects_with_part_without_fk (id int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, created_at)) PARTITION BY RANGE (created_at);
-            - CREATE TABLE projects_2000_2005_2 PARTITION OF projects_with_part FOR VALUES FROM ('2001-01-01') TO ('2005-12-31');
-            - CREATE TABLE projects_2005_2010_2 PARTITION OF projects_with_part FOR VALUES FROM ('2006-01-01') TO ('2010-12-31');
-            - CREATE TABLE projects_2010_2015_2 PARTITION OF projects_with_part FOR VALUES FROM ('2011-01-01') TO ('2015-12-31');
-            - CREATE TABLE projects_2015_2020_2 PARTITION OF projects_with_part FOR VALUES FROM ('2016-01-01') TO ('2020-12-31');
-            - CREATE TABLE projects_default_2 PARTITION OF projects_with_part DEFAULT;
+            - CREATE TABLE projects_2000_2005_2 PARTITION OF projects_with_part_without_fk FOR VALUES FROM ('2001-01-01') TO ('2005-12-31');
+            - CREATE TABLE projects_2005_2010_2 PARTITION OF projects_with_part_without_fk FOR VALUES FROM ('2006-01-01') TO ('2010-12-31');
+            - CREATE TABLE projects_2010_2015_2 PARTITION OF projects_with_part_without_fk FOR VALUES FROM ('2011-01-01') TO ('2015-12-31');
+            - CREATE TABLE projects_2015_2020_2 PARTITION OF projects_with_part_without_fk FOR VALUES FROM ('2016-01-01') TO ('2020-12-31');
+            - CREATE TABLE projects_default_2 PARTITION OF projects_with_part_without_fk DEFAULT;
 
             - create table projects_without_part_with_fk (id int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, created_at));
             - create table projects_without_part_without_fk (id int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, created_at));
@@ -168,12 +168,12 @@ microbenchmark:
                   - name: project_id
                     util: CyclicSeqIntGen
                     params: [1,100000]
-                  - name: project_dept
-                    util: SeqStringGenFromArray
-                    params: [['Sales','Engineering','HR','Anonymous']]
-                  - name: hired_at
+                  - name: project_creation_date
                     util: CyclicSeqDateGenWithRep
                     params: [2001,2025,100000]
+                  - name: hired_at
+                    util: RandomDateBtwYears
+                    params: [2001,2025]
 
             - table: employees_without_part
               rows: 1000000
@@ -187,12 +187,12 @@ microbenchmark:
                   - name: project_id
                     util: CyclicSeqIntGen
                     params: [1,100000]
-                  - name: project_dept
-                    util: SeqStringGenFromArray
-                    params: [['Sales','Engineering','HR','Anonymous']]
-                  - name: hired_at
+                  - name: project_creation_date
                     util: CyclicSeqDateGenWithRep
                     params: [2001,2025,100000]
+                  - name: hired_at
+                    util: RandomDateBtwYears
+                    params: [2001,2025]
 
         afterLoad:
             - ALTER TABLE employees_with_part add CONSTRAINT fk_project foreign key (project_id,project_creation_date) references projects_with_part_with_fk(id, created_at) on delete cascade on update cascade;
