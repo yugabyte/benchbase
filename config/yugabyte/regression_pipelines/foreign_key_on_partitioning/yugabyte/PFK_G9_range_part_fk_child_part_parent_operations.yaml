@@ -168,7 +168,7 @@ microbenchmark:
                   - name: update_with_part_with_fk
                     weight: 100
                     queries:
-                        - query: update projects_with_part_with_fk set dept=? where id=?;
+                        - query: update projects_with_part_with_fk set created_at=? where id=?;
                           bindings:
                             - util: RandomDateBtwYears
                               params: [2001,2025]
@@ -180,7 +180,7 @@ microbenchmark:
                   - name: update_without_part_with_fk
                     weight: 100
                     queries:
-                        - query: update projects_without_part_with_fk set dept=? where id=?;
+                        - query: update projects_without_part_with_fk set created_at=? where id=?;
                           bindings:
                             - util: RandomDateBtwYears
                               params: [2001,2025]
@@ -192,7 +192,7 @@ microbenchmark:
                   - name: update_without_fk
                     weight: 100
                     queries:
-                        - query: update projects_without_fk set dept=? where id=?;
+                        - query: update projects_without_fk set created_at=? where id=?;
                           bindings:
                             - util: RandomDateBtwYears
                               params: [2001,2025]
