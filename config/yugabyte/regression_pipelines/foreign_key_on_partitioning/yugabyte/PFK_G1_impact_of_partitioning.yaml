@@ -59,8 +59,8 @@ microbenchmark:
                     util: OneStringFromArray
                     params: ['Sales','Engineering','HR','Anonymous']
                   - name: created_at
-                    util: RandomDateBtwYears
-                    params: [2000,2025]
+                    util: CyclicSeqDateGen
+                    params: [2001,2025]
 
             - table: projects_without_part
               rows: 100000
@@ -75,8 +75,8 @@ microbenchmark:
                     util: OneStringFromArray
                     params: ['Sales','Engineering','HR','Anonymous']
                   - name: created_at
-                    util: RandomDateBtwYears
-                    params: [2000,2025]
+                    util: CyclicSeqDateGen
+                    params: [2001,2025]
 
         # afterLoad:
         #     - ALTER TABLE employees_with_fk add CONSTRAINT fk_project FOREIGN KEY (project_id) REFERENCES projects(id);
@@ -87,20 +87,20 @@ microbenchmark:
                   - name: select_with_part
                     weight: 100
                     queries:
-                        - query: SELECT * FROM projects_with_part where dept=?;
+                        - query: SELECT * FROM projects_with_part where id=?;
                           bindings:
-                              util: OneStringFromArray
-                              params: ['Sales','Engineering','HR','Anonymous']
+                              - util: RandomInt
+                                params: [1, 100000]
 
             - workload: select_without_part
               run:
                   - name: select_without_part
                     weight: 100
                     queries:
-                        - query: SELECT * FROM projects_without_part where dept=?;
+                        - query: SELECT * FROM projects_without_part where id=?;
                           bindings:
-                              util: OneStringFromArray
-                              params: ['Sales','Engineering','HR','Anonymous']
+                              - util: RandomInt
+                                params: [1, 100000]
                               
             - workload: insert_with_part
               run:
@@ -110,13 +110,13 @@ microbenchmark:
                         - query: insert into projects_with_part values(?,?,?,?);
                           bindings:
                               - util: PrimaryIntGen
-                                params: [10001, 500000]
+                                params: [100001, 500000]
                               - util: RandomAString
                                 params: [1, 20]
                               - util: OneStringFromArray
                                 params: ['Sales','Engineering','HR','Anonymous']
-                              - util: RandomDateBtwYears
-                                params: [2000,2025]
+                              - util: CyclicSeqDateGen
+                                params: [2001,2025]
             
             - workload: insert_without_part
               run:
@@ -126,13 +126,13 @@ microbenchmark:
                         - query: insert into projects_without_part values(?,?,?,?);
                           bindings:
                               - util: PrimaryIntGen
-                                params: [10001, 500000]
+                                params: [100001, 500000]
                               - util: RandomAString
                                 params: [1, 20]
                               - util: OneStringFromArray
                                 params: ['Sales','Engineering','HR','Anonymous']
-                              - util: RandomDateBtwYears
-                                params: [2000,2025]
+                              - util: CyclicSeqDateGen
+                                params: [2001,2025]
 
             - workload: update_with_part
               run:
@@ -144,7 +144,7 @@ microbenchmark:
                             - util: OneStringFromArray
                               params: ['Sales','Engineering','HR','Anonymous']
                             - util: RandomInt
-                              params: [1, 10000]
+                              params: [1, 100000]
 
             - workload: update_without_part
               run:
@@ -156,7 +156,7 @@ microbenchmark:
                             - util: OneStringFromArray
                               params: ['Sales','Engineering','HR','Anonymous']
                             - util: RandomInt
-                              params: [1, 10000]
+                              params: [1, 100000]
 
             - workload: delete_with_part
               run:
@@ -166,7 +166,7 @@ microbenchmark:
                         - query: delete from projects_with_part where id=?;
                           bindings:
                             - util: RandomInt
-                              params: [1, 10000]
+                              params: [1, 100000]
 
             - workload: delete_without_part
               run:
@@ -176,4 +176,4 @@ microbenchmark:
                         - query: delete from projects_without_part where id=?;
                           bindings:
                             - util: RandomInt
-                              params: [1, 10000]
+                              params: [1, 100000]
