@@ -460,9 +460,9 @@ microbenchmark:
                             - util: PrimaryIntGen
                               params: [1, 1000000]
 
-            - workload: FK_7_2fk_insert
+            - workload: FK_5_2fk_insert
               run:
-                  - name: FK_7_2fk_insert
+                  - name: FK_5_2fk_insert
                     weight: 100
                     queries:
                         - query: insert into employees_with_2fk values(?,?,?,?,?,?,?,?);
@@ -484,9 +484,9 @@ microbenchmark:
                               - util: RandomInt
                                 params: [1,100000]
 
-            - workload: FK_8_2fk_update
+            - workload: FK_6_2fk_update
               run:
-                  - name: FK_8_2fk_update
+                  - name: FK_6_2fk_update
                     weight: 100
                     queries:
                         - query: update employees_with_2fk set project_id1=?, project_id2=? where id=?;
@@ -498,9 +498,9 @@ microbenchmark:
                             - util: PrimaryIntGen
                               params: [1, 1000000]
 
-            - workload: FK_9_3fk_insert
+            - workload: FK_7_3fk_insert
               run:
-                  - name: FK_9_3fk_insert
+                  - name: FK_7_3fk_insert
                     weight: 100
                     queries:
                         - query: insert into employees_with_3fk values(?,?,?,?,?,?,?,?,?);
@@ -524,9 +524,9 @@ microbenchmark:
                               - util: RandomInt
                                 params: [1,100000]
 
-            - workload: FK_10_3fk_update
+            - workload: FK_8_3fk_update
               run:
-                  - name: FK_10_3fk_update
+                  - name: FK_8_3fk_update
                     weight: 100
                     queries:
                         - query: update employees_with_3fk set project_id1=?, project_id2=?, project_id3=? where id=?;
@@ -541,9 +541,9 @@ microbenchmark:
                               params: [1, 1000000]
 
               
-            - workload: FK_11_4fk_insert
+            - workload: FK_9_4fk_insert
               run:
-                  - name: FK_11_4fk_insert
+                  - name: FK_9_4fk_insert
                     weight: 100
                     queries:
                         - query: insert into employees_with_4fk values(?,?,?,?,?,?,?,?,?,?);
@@ -569,9 +569,9 @@ microbenchmark:
                               - util: RandomInt
                                 params: [1,100000]
 
-            - workload: FK_12_4fk_update
+            - workload: FK_10_4fk_update
               run:
-                  - name: FK_12_4fk_update
+                  - name: FK_10_4fk_update
                     weight: 100
                     queries:
                         - query: update employees_with_4fk set project_id1=?, project_id2=?, project_id3=?, project_id4=? where id=?;
@@ -587,9 +587,9 @@ microbenchmark:
                             - util: PrimaryIntGen
                               params: [1, 1000000]
             
-            - workload: FK_13_5fk_insert
+            - workload: FK_11_5fk_insert
               run:
-                  - name: FK_13_5fk_insert
+                  - name: FK_11_5fk_insert
                     weight: 100
                     queries:
                         - query: insert into employees_with_5fk values(?,?,?,?,?,?,?,?,?,?,?);
@@ -617,9 +617,9 @@ microbenchmark:
                               - util: RandomInt
                                 params: [1,100000]
 
-            - workload: FK_14_5fk_update
+            - workload: FK_12_5fk_update
               run:
-                  - name: FK_14_5fk_update
+                  - name: FK_12_5fk_update
                     weight: 100
                     queries:
                         - query: update employees_with_5fk set project_id1=?, project_id2=?, project_id3=?, project_id4=?, project_id5=? where id=?;
