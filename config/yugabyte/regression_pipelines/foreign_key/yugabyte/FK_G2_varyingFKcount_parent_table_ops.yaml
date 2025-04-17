@@ -332,7 +332,7 @@ microbenchmark:
                   - name: FK_G2_5_2-fk_update
                     weight: 100
                     queries:
-                        - query: update projects_with_2_ref_1_child_no_idx set uid1=uid1+100000, uid2=uid2+100000 where id=?;
+                        - query: update projects_with_2_ref_1_child set uid1=uid1+100000, uid2=uid2+100000 where id=?;
                           bindings:
                             - util: PrimaryIntGen
                               params: [1, 100000]
@@ -352,7 +352,7 @@ microbenchmark:
                   - name: FK_G2_5_2-fk_update
                     weight: 100
                     queries:
-                        - query: update projects_with_2_ref_1_child set uid1=uid1+100000, uid2=uid2+100000 where id=?;
+                        - query: update projects_with_2_ref_1_child_no_idx set uid1=uid1+100000, uid2=uid2+100000 where id=?;
                           bindings:
                             - util: PrimaryIntGen
                               params: [1, 100000]
