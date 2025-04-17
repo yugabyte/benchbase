@@ -56,7 +56,7 @@ microbenchmark:
                     util: RandomAString
                     params: [1, 20]
                   - name: dept
-                    util: OneStringFromArray
+                    util: SeqStringGenFromArray
                     params: ['Sales','Engineering','HR','Anonymous']
                   - name: created_at
                     util: CyclicSeqDateGen
@@ -72,7 +72,7 @@ microbenchmark:
                     util: RandomAString
                     params: [1, 20]
                   - name: dept
-                    util: OneStringFromArray
+                    util: SeqStringGenFromArray
                     params: ['Sales','Engineering','HR','Anonymous']
                   - name: created_at
                     util: CyclicSeqDateGen
@@ -113,7 +113,7 @@ microbenchmark:
                                 params: [100001, 500000]
                               - util: RandomAString
                                 params: [1, 20]
-                              - util: OneStringFromArray
+                              - util: SeqStringGenFromArray
                                 params: ['Sales','Engineering','HR','Anonymous']
                               - util: CyclicSeqDateGen
                                 params: [2001,2025]
@@ -129,7 +129,7 @@ microbenchmark:
                                 params: [100001, 500000]
                               - util: RandomAString
                                 params: [1, 20]
-                              - util: OneStringFromArray
+                              - util: SeqStringGenFromArray
                                 params: ['Sales','Engineering','HR','Anonymous']
                               - util: CyclicSeqDateGen
                                 params: [2001,2025]
