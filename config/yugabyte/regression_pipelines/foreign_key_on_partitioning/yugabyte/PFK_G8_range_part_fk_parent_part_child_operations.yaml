@@ -110,7 +110,7 @@ microbenchmark:
                     util: CyclicSeqDateGenWithRep
                     params: [2001,2025,100000]
                   - name: hired_at
-                    util: CyclicSeqDateGenWithRep
+                    util: CyclicSeqDateGen
                     params: [2001,2025]
 
             - table: employees_without_part
@@ -129,7 +129,7 @@ microbenchmark:
                     util: CyclicSeqDateGenWithRep
                     params: [2001,2025,100000]
                   - name: hired_at
-                    util: CyclicSeqDateGenWithRep
+                    util: CyclicSeqDateGen
                     params: [2001,2025]
 
             - table: employees_without_fk
@@ -148,7 +148,7 @@ microbenchmark:
                     util: CyclicSeqDateGenWithRep
                     params: [2001,2025,100000]
                   - name: hired_at
-                    util: CyclicSeqDateGenWithRep
+                    util: CyclicSeqDateGen
                     params: [2001,2025]
 
         afterLoad:
@@ -170,10 +170,10 @@ microbenchmark:
                                 params: [1, 20]
                               - util: CyclicSeqIntGen
                                 params: [1,100000]
-                              - util: SeqStringGenFromArray
-                                params: [['Sales','Engineering','HR','Anonymous']]
                               - util: CyclicSeqDateGenWithRep
                                 params: [2001,2025,100000]
+                              - util: CyclicSeqDateGen
+                                params: [2001,2025]
             
             - workload: insert_without_part
               run:
@@ -188,10 +188,10 @@ microbenchmark:
                                 params: [1, 20]
                               - util: CyclicSeqIntGen
                                 params: [1,100000]
-                              - util: SeqStringGenFromArray
-                                params: [['Sales','Engineering','HR','Anonymous']]
                               - util: CyclicSeqDateGenWithRep
                                 params: [2001,2025,100000]
+                              - util: CyclicSeqDateGen
+                                params: [2001,2025]
 
             - workload: insert_without_fk
               run:
@@ -206,10 +206,10 @@ microbenchmark:
                                 params: [1, 20]
                               - util: CyclicSeqIntGen
                                 params: [1,100000]
-                              - util: SeqStringGenFromArray
-                                params: [['Sales','Engineering','HR','Anonymous']]
                               - util: CyclicSeqDateGenWithRep
                                 params: [2001,2025,100000]
+                              - util: CyclicSeqDateGen
+                                params: [2001,2025]
 
             - workload: update_with_part
               run:
