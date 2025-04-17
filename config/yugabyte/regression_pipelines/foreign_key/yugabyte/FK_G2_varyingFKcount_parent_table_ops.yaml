@@ -302,6 +302,8 @@ microbenchmark:
             - ALTER TABLE employees_with_3_fk_1_parent add CONSTRAINT fk_project1 FOREIGN KEY (project_uid1) REFERENCES projects_with_3_ref_1_child(uid1) ON DELETE CASCADE ON UPDATE CASCADE;
             - ALTER TABLE employees_with_3_fk_1_parent add CONSTRAINT fk_project2 FOREIGN KEY (project_uid2) REFERENCES projects_with_3_ref_1_child(uid2) ON DELETE CASCADE ON UPDATE CASCADE;
             - ALTER TABLE employees_with_3_fk_1_parent add CONSTRAINT fk_project3 FOREIGN KEY (project_uid3) REFERENCES projects_with_3_ref_1_child(uid3) ON DELETE CASCADE ON UPDATE CASCADE;
+            - ALTER TABLE employees_with_2_fk_1_parent_no_idx add CONSTRAINT fk_project1 FOREIGN KEY (project_uid1) REFERENCES projects_with_2_ref_1_child_no_idx(uid1) ON DELETE CASCADE ON UPDATE CASCADE;
+            - ALTER TABLE employees_with_2_fk_1_parent_no_idx add CONSTRAINT fk_project2 FOREIGN KEY (project_uid2) REFERENCES projects_with_2_ref_1_child_no_idx(uid2) ON DELETE CASCADE ON UPDATE CASCADE;
 
         executeRules:
 
