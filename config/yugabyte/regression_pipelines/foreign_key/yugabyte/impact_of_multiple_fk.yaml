@@ -457,8 +457,6 @@ microbenchmark:
                                 params: [1000001, 9000000]
                               - util: RandomAString
                                 params: [1, 20]
-                              - util: RandomAString
-                                params: [1, 100]
                               - util: RandomNstring
                                 params: [10, 15]
                               - util: RandomAString
@@ -507,8 +505,6 @@ microbenchmark:
                                 params: [1000001, 9000000]
                               - util: RandomAString
                                 params: [1, 20]
-                              - util: RandomAString
-                                params: [1, 100]
                               - util: RandomNstring
                                 params: [10, 15]
                               - util: RandomAString
@@ -557,8 +553,6 @@ microbenchmark:
                                 params: [1000001, 9000000]
                               - util: RandomAString
                                 params: [1, 20]
-                              - util: RandomAString
-                                params: [1, 100]
                               - util: RandomNstring
                                 params: [10, 15]
                               - util: RandomAString
@@ -607,8 +601,6 @@ microbenchmark:
                                 params: [1000001, 9000000]
                               - util: RandomAString
                                 params: [1, 20]
-                              - util: RandomAString
-                                params: [1, 100]
                               - util: RandomNstring
                                 params: [10, 15]
                               - util: RandomAString
@@ -658,8 +650,6 @@ microbenchmark:
                                 params: [1000001, 9000000]
                               - util: RandomAString
                                 params: [1, 20]
-                              - util: RandomAString
-                                params: [1, 100]
                               - util: RandomNstring
                                 params: [10, 15]
                               - util: RandomAString
@@ -708,8 +698,6 @@ microbenchmark:
                                 params: [1000001, 9000000]
                               - util: RandomAString
                                 params: [1, 20]
-                              - util: RandomAString
-                                params: [1, 100]
                               - util: RandomNstring
                                 params: [10, 15]
                               - util: RandomAString
