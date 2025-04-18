@@ -692,7 +692,7 @@ microbenchmark:
                   - name: FK_11_5fk_insert
                     weight: 100
                     queries:
-                        - query: insert into employees_with_5fk values(?,?,?,?,?,?,?,?,?,?,?);
+                        - query: insert into employees_with_5fk values(?,?,?,?,?,?,?,?,?,?);
                           bindings:
                               - util: PrimaryIntGen
                                 params: [1000001, 9000000]
