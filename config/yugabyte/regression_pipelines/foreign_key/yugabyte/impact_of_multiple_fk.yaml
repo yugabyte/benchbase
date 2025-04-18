@@ -36,18 +36,18 @@ microbenchmark:
             - DROP TABLE IF EXISTS projects_with_4_fk;
             - DROP TABLE IF EXISTS projects_with_5_fk;
 
-            - create table projects_with_1_fk(id int primary key, name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2));
-            - create table projects_with_2_fk(id int primary key, uid int unique, name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2));
-            - create table projects_with_3_fk(id int primary key, uid1 int unique, uid2 int unique, name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2));
-            - create table projects_with_4_fk(id int primary key, uid1 int unique, uid2 int unique, uid3 int unique, name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2));
+            - create table projects_with_1_fk(id int primary key, uid1 int unique, uid2 int unique, uid3 int unique, uid4 int unique, name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2));
+            - create table projects_with_2_fk(id int primary key, uid1 int unique, uid2 int unique, uid3 int unique, uid4 int unique, name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2));
+            - create table projects_with_3_fk(id int primary key, uid1 int unique, uid2 int unique, uid3 int unique, uid4 int unique, name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2));
+            - create table projects_with_4_fk(id int primary key, uid1 int unique, uid2 int unique, uid3 int unique, uid4 int unique, name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2));
             - create table projects_with_5_fk(id int primary key, uid1 int unique, uid2 int unique, uid3 int unique, uid4 int unique, name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2));
 
-            - create table employees_with_1fk(id int primary key,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(10,2), project_id int not null);
-            - create table employees_with_2fk(id int primary key,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(10,2), project_id1 int not null, project_id2 int not null);
-            - create table employees_with_3fk(id int primary key,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(10,2), project_id1 int not null, project_id2 int not null, project_id3 int not null);
-            - create table employees_with_4fk(id int primary key,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(10,2), project_id1 int not null, project_id2 int not null, project_id3 int not null, project_id4 int not null);
-            - create table employees_with_5fk(id int primary key,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(10,2), project_id1 int not null, project_id2 int not null, project_id3 int not null, project_id4 int not null, project_id5 int not null);
-            - create table employees_without_fk(id int primary key,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(10,2), project_id int not null);
+            - create table employees_with_1fk(id int primary key,name varchar(20) not null, phone varchar(15), position varchar(10), salary decimal(10,2), project_id1 int not null, project_id2 int not null, project_id3 int not null, project_id4 int not null, project_id5 int not null);
+            - create table employees_with_2fk(id int primary key,name varchar(20) not null, phone varchar(15), position varchar(10), salary decimal(10,2), project_id1 int not null, project_id2 int not null, project_id3 int not null, project_id4 int not null, project_id5 int not null);
+            - create table employees_with_3fk(id int primary key,name varchar(20) not null, phone varchar(15), position varchar(10), salary decimal(10,2), project_id1 int not null, project_id2 int not null, project_id3 int not null, project_id4 int not null, project_id5 int not null);
+            - create table employees_with_4fk(id int primary key,name varchar(20) not null, phone varchar(15), position varchar(10), salary decimal(10,2), project_id1 int not null, project_id2 int not null, project_id3 int not null, project_id4 int not null, project_id5 int not null);
+            - create table employees_with_5fk(id int primary key,name varchar(20) not null, phone varchar(15), position varchar(10), salary decimal(10,2), project_id1 int not null, project_id2 int not null, project_id3 int not null, project_id4 int not null, project_id5 int not null);
+            - create table employees_without_fk(id int primary key,name varchar(20) not null, phone varchar(15), position varchar(10), salary decimal(10,2), project_id1 int not null, project_id2 int not null, project_id3 int not null, project_id4 int not null, project_id5 int not null);
 
         cleanup:
             - DROP TABLE IF EXISTS employees_with_1fk;
@@ -70,6 +70,18 @@ microbenchmark:
                   - name: id
                     util: PrimaryIntGen
                     params: [1, 100000]
+                  - name: uid1
+                    util: PrimaryIntGen
+                    params: [1, 100000]
+                  - name: uid2
+                    util: PrimaryIntGen
+                    params: [1, 100000]
+                  - name: uid3
+                    util: PrimaryIntGen
+                    params: [1, 100000]
+                  - name: uid4
+                    util: PrimaryIntGen
+                    params: [1, 100000]
                   - name: name
                     util: RandomAString
                     params: [1, 20]
@@ -89,7 +101,16 @@ microbenchmark:
                   - name: id
                     util: PrimaryIntGen
                     params: [1, 100000]
-                  - name: uid
+                  - name: uid1
+                    util: PrimaryIntGen
+                    params: [1, 100000]
+                  - name: uid2
+                    util: PrimaryIntGen
+                    params: [1, 100000]
+                  - name: uid3
+                    util: PrimaryIntGen
+                    params: [1, 100000]
+                  - name: uid4
                     util: PrimaryIntGen
                     params: [1, 100000]
                   - name: name
@@ -115,6 +136,12 @@ microbenchmark:
                     util: PrimaryIntGen
                     params: [1, 100000]
                   - name: uid2
+                    util: PrimaryIntGen
+                    params: [1, 100000]
+                  - name: uid3
+                    util: PrimaryIntGen
+                    params: [1, 100000]
+                  - name: uid4
                     util: PrimaryIntGen
                     params: [1, 100000]
                   - name: name
@@ -143,6 +170,9 @@ microbenchmark:
                     util: PrimaryIntGen
                     params: [1, 100000]
                   - name: uid3
+                    util: PrimaryIntGen
+                    params: [1, 100000]
+                  - name: uid4
                     util: PrimaryIntGen
                     params: [1, 100000]
                   - name: name
@@ -198,118 +228,6 @@ microbenchmark:
                   - name: name
                     util: RandomAString
                     params: [1, 20]
-                  - name: email
-                    util: RandomAString
-                    params: [1, 100]
-                  - name: phone
-                    util: RandomNstring
-                    params: [10, 15]
-                  - name: position
-                    util: RandomAString
-                    params: [1, 10]
-                  - name: salary
-                    util: RandomNoWithDecimalPoints
-                    params: [1, 1000000, 2]
-                  - name: project_id
-                    util: RandomInt
-                    params: [1,100000]
-              
-            - table: employees_with_1fk
-              rows: 1000000
-              columns:
-                  - name: id
-                    util: PrimaryIntGen
-                    params: [1, 1000000]
-                  - name: name
-                    util: RandomAString
-                    params: [1, 20]
-                  - name: email
-                    util: RandomAString
-                    params: [1, 100]
-                  - name: phone
-                    util: RandomNstring
-                    params: [10, 15]
-                  - name: position
-                    util: RandomAString
-                    params: [1, 10]
-                  - name: salary
-                    util: RandomNoWithDecimalPoints
-                    params: [1, 1000000, 2]
-                  - name: project_id
-                    util: RandomInt
-                    params: [1,100000]
-
-            - table: employees_with_2fk
-              rows: 1000000
-              columns:
-                  - name: id
-                    util: PrimaryIntGen
-                    params: [1, 1000000]
-                  - name: name
-                    util: RandomAString
-                    params: [1, 20]
-                  - name: email
-                    util: RandomAString
-                    params: [1, 100]
-                  - name: phone
-                    util: RandomNstring
-                    params: [10, 15]
-                  - name: position
-                    util: RandomAString
-                    params: [1, 10]
-                  - name: salary
-                    util: RandomNoWithDecimalPoints
-                    params: [1, 1000000, 2]
-                  - name: project_id1
-                    util: RandomInt
-                    params: [1,100000]
-                  - name: project_id2
-                    util: RandomInt
-                    params: [1,100000]
-
-            - table: employees_with_3fk
-              rows: 1000000
-              columns:
-                  - name: id
-                    util: PrimaryIntGen
-                    params: [1, 1000000]
-                  - name: name
-                    util: RandomAString
-                    params: [1, 20]
-                  - name: email
-                    util: RandomAString
-                    params: [1, 100]
-                  - name: phone
-                    util: RandomNstring
-                    params: [10, 15]
-                  - name: position
-                    util: RandomAString
-                    params: [1, 10]
-                  - name: salary
-                    util: RandomNoWithDecimalPoints
-                    params: [1, 1000000, 2]
-                  - name: project_id1
-                    util: RandomInt
-                    params: [1,100000]
-                  - name: project_id2
-                    util: RandomInt
-                    params: [1,100000]
-                  - name: project_id3
-                    util: RandomInt
-                    params: [1,100000]
-
-            - table: employees_with_4fk
-              rows: 1000000
-              columns:
-                  - name: id
-                    util: PrimaryIntGen
-                    params: [1, 1000000]
-                  - name: name
-                    util: RandomAString
-                    params: [1, 20]
-                  - name: email
-                    util: RandomAString
-                    params: [1, 100]
                   - name: phone
                     util: RandomNstring
                     params: [10, 15]
@@ -331,6 +249,145 @@ microbenchmark:
                   - name: project_id4
                     util: RandomInt
                     params: [1,100000]
+                  - name: project_id5
+                    util: RandomInt
+                    params: [1,100000]
+              
+            - table: employees_with_1fk
+              rows: 1000000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 1000000]
+                  - name: name
+                    util: RandomAString
+                    params: [1, 20]
+                  - name: phone
+                    util: RandomNstring
+                    params: [10, 15]
+                  - name: position
+                    util: RandomAString
+                    params: [1, 10]
+                  - name: salary
+                    util: RandomNoWithDecimalPoints
+                    params: [1, 1000000, 2]
+                  - name: project_id1
+                    util: RandomInt
+                    params: [1,100000]
+                  - name: project_id2
+                    util: RandomInt
+                    params: [1,100000]
+                  - name: project_id3
+                    util: RandomInt
+                    params: [1,100000]
+                  - name: project_id4
+                    util: RandomInt
+                    params: [1,100000]
+                  - name: project_id5
+                    util: RandomInt
+                    params: [1,100000]
+
+            - table: employees_with_2fk
+              rows: 1000000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 1000000]
+                  - name: name
+                    util: RandomAString
+                    params: [1, 20]
+                  - name: phone
+                    util: RandomNstring
+                    params: [10, 15]
+                  - name: position
+                    util: RandomAString
+                    params: [1, 10]
+                  - name: salary
+                    util: RandomNoWithDecimalPoints
+                    params: [1, 1000000, 2]
+                  - name: project_id1
+                    util: RandomInt
+                    params: [1,100000]
+                  - name: project_id2
+                    util: RandomInt
+                    params: [1,100000]
+                  - name: project_id3
+                    util: RandomInt
+                    params: [1,100000]
+                  - name: project_id4
+                    util: RandomInt
+                    params: [1,100000]
+                  - name: project_id5
+                    util: RandomInt
+                    params: [1,100000]
+
+            - table: employees_with_3fk
+              rows: 1000000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 1000000]
+                  - name: name
+                    util: RandomAString
+                    params: [1, 20]
+                  - name: phone
+                    util: RandomNstring
+                    params: [10, 15]
+                  - name: position
+                    util: RandomAString
+                    params: [1, 10]
+                  - name: salary
+                    util: RandomNoWithDecimalPoints
+                    params: [1, 1000000, 2]
+                  - name: project_id1
+                    util: RandomInt
+                    params: [1,100000]
+                  - name: project_id2
+                    util: RandomInt
+                    params: [1,100000]
+                  - name: project_id3
+                    util: RandomInt
+                    params: [1,100000]
+                  - name: project_id4
+                    util: RandomInt
+                    params: [1,100000]
+                  - name: project_id5
+                    util: RandomInt
+                    params: [1,100000]
+
+            - table: employees_with_4fk
+              rows: 1000000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 1000000]
+                  - name: name
+                    util: RandomAString
+                    params: [1, 20]
+                  - name: phone
+                    util: RandomNstring
+                    params: [10, 15]
+                  - name: position
+                    util: RandomAString
+                    params: [1, 10]
+                  - name: salary
+                    util: RandomNoWithDecimalPoints
+                    params: [1, 1000000, 2]
+                  - name: project_id1
+                    util: RandomInt
+                    params: [1,100000]
+                  - name: project_id2
+                    util: RandomInt
+                    params: [1,100000]
+                  - name: project_id3
+                    util: RandomInt
+                    params: [1,100000]
+                  - name: project_id4
+                    util: RandomInt
+                    params: [1,100000]
+                  - name: project_id5
+                    util: RandomInt
+                    params: [1,100000]
 
             - table: employees_with_5fk
               rows: 1000000
@@ -341,9 +398,6 @@ microbenchmark:
                   - name: name
                     util: RandomAString
                     params: [1, 20]
-                  - name: email
-                    util: RandomAString
-                    params: [1, 100]
                   - name: phone
                     util: RandomNstring
                     params: [10, 15]
@@ -370,10 +424,10 @@ microbenchmark:
                     params: [1,100000]
 
         afterLoad:
-            - ALTER TABLE employees_with_1fk add CONSTRAINT fk_project FOREIGN KEY (project_id) REFERENCES projects_with_1_fk(id);
+            - ALTER TABLE employees_with_1fk add CONSTRAINT fk_project FOREIGN KEY (project_id1) REFERENCES projects_with_1_fk(id);
 
             - ALTER TABLE employees_with_2fk add CONSTRAINT fk_project1 FOREIGN KEY (project_id1) REFERENCES projects_with_2_fk(id);
-            - ALTER TABLE employees_with_2fk add CONSTRAINT fk_project2 FOREIGN KEY (project_id2) REFERENCES projects_with_2_fk(uid);
+            - ALTER TABLE employees_with_2fk add CONSTRAINT fk_project2 FOREIGN KEY (project_id2) REFERENCES projects_with_2_fk(uid1);
 
             - ALTER TABLE employees_with_3fk add CONSTRAINT fk_project1 FOREIGN KEY (project_id1) REFERENCES projects_with_3_fk(id);
             - ALTER TABLE employees_with_3fk add CONSTRAINT fk_project2 FOREIGN KEY (project_id2) REFERENCES projects_with_3_fk(uid1);
@@ -397,7 +451,7 @@ microbenchmark:
                   - name: FK_1_no-fk_insert
                     weight: 100
                     queries:
-                        - query: insert into employees_without_fk values(?,?,?,?,?,?,?);
+                        - query: insert into employees_without_fk values(?,?,?,?,?,?,?,?,?,?);
                           bindings:
                               - util: PrimaryIntGen
                                 params: [1000001, 9000000]
@@ -413,14 +467,30 @@ microbenchmark:
                                 params: [1, 1000000, 2]
                               - util: RandomInt
                                 params: [1,100000]
+                              - util: RandomInt
+                                params: [1,100000]
+                              - util: RandomInt
+                                params: [1,100000]
+                              - util: RandomInt
+                                params: [1,100000]
+                              - util: RandomInt
+                                params: [1,100000]
 
             - workload: FK_2_no-fk_update
               run:
                   - name: FK_2_no-fk_update
                     weight: 100
                     queries:
-                        - query: update employees_without_fk set project_id=? where id=?;
+                        - query: update employees_without_fk set project_id1=?, project_id2=?, project_id3=?, project_id4=?, project_id5=? where id=?;
                           bindings:
+                            - util: RandomInt
+                              params: [1, 100000]
+                            - util: RandomInt
+                              params: [1, 100000]
+                            - util: RandomInt
+                              params: [1, 100000]
+                            - util: RandomInt
+                              params: [1, 100000]
                             - util: RandomInt
                               params: [1, 100000]
                             - util: PrimaryIntGen
@@ -431,7 +501,7 @@ microbenchmark:
                   - name: FK_3_1fk_insert
                     weight: 100
                     queries:
-                        - query: insert into employees_with_1fk values(?,?,?,?,?,?,?);
+                        - query: insert into employees_with_1fk values(?,?,?,?,?,?,?,?,?,?);
                           bindings:
                               - util: PrimaryIntGen
                                 params: [1000001, 9000000]
@@ -447,14 +517,30 @@ microbenchmark:
                                 params: [1, 1000000, 2]
                               - util: RandomInt
                                 params: [1,100000]
+                              - util: RandomInt
+                                params: [1,100000]
+                              - util: RandomInt
+                                params: [1,100000]
+                              - util: RandomInt
+                                params: [1,100000]
+                              - util: RandomInt
+                                params: [1,100000]
 
             - workload: FK_4_1fk_update
               run:
                   - name: FK_4_1fk_update
                     weight: 100
                     queries:
-                        - query: update employees_with_1fk set project_id=? where id=?;
+                        - query: update employees_with_1fk set project_id1=?, project_id2=?, project_id3=?, project_id4=?, project_id5=? where id=?;
                           bindings:
+                            - util: RandomInt
+                              params: [1, 100000]
+                            - util: RandomInt
+                              params: [1, 100000]
+                            - util: RandomInt
+                              params: [1, 100000]
+                            - util: RandomInt
+                              params: [1, 100000]
                             - util: RandomInt
                               params: [1, 100000]
                             - util: PrimaryIntGen
@@ -465,7 +551,7 @@ microbenchmark:
                   - name: FK_5_2fk_insert
                     weight: 100
                     queries:
-                        - query: insert into employees_with_2fk values(?,?,?,?,?,?,?,?);
+                        - query: insert into employees_with_2fk values(?,?,?,?,?,?,?,?,?,?);
                           bindings:
                               - util: PrimaryIntGen
                                 params: [1000001, 9000000]
@@ -483,14 +569,26 @@ microbenchmark:
                                 params: [1,100000]
                               - util: RandomInt
                                 params: [1,100000]
+                              - util: RandomInt
+                                params: [1,100000]
+                              - util: RandomInt
+                                params: [1,100000]
+                              - util: RandomInt
+                                params: [1,100000]
 
             - workload: FK_6_2fk_update
               run:
                   - name: FK_6_2fk_update
                     weight: 100
                     queries:
-                        - query: update employees_with_2fk set project_id1=?, project_id2=? where id=?;
+                        - query: update employees_with_2fk set project_id1=?, project_id2=?, project_id3=?, project_id4=?, project_id5=? where id=?;
                           bindings:
+                            - util: RandomInt
+                              params: [1, 100000]
+                            - util: RandomInt
+                              params: [1, 100000]
+                            - util: RandomInt
+                              params: [1, 100000]
                             - util: RandomInt
                               params: [1, 100000]
                             - util: RandomInt
@@ -503,7 +601,7 @@ microbenchmark:
                   - name: FK_7_3fk_insert
                     weight: 100
                     queries:
-                        - query: insert into employees_with_3fk values(?,?,?,?,?,?,?,?,?);
+                        - query: insert into employees_with_3fk values(?,?,?,?,?,?,?,?,?,?);
                           bindings:
                               - util: PrimaryIntGen
                                 params: [1000001, 9000000]
@@ -523,14 +621,22 @@ microbenchmark:
                                 params: [1,100000]
                               - util: RandomInt
                                 params: [1,100000]
+                              - util: RandomInt
+                                params: [1,100000]
+                              - util: RandomInt
+                                params: [1,100000]
 
             - workload: FK_8_3fk_update
               run:
                   - name: FK_8_3fk_update
                     weight: 100
                     queries:
-                        - query: update employees_with_3fk set project_id1=?, project_id2=?, project_id3=? where id=?;
+                        - query: update employees_with_3fk set project_id1=?, project_id2=?, project_id3=?, project_id4=?, project_id5=? where id=?;
                           bindings:
+                            - util: RandomInt
+                              params: [1, 100000]
+                            - util: RandomInt
+                              params: [1, 100000]
                             - util: RandomInt
                               params: [1, 100000]
                             - util: RandomInt
@@ -568,14 +674,18 @@ microbenchmark:
                                 params: [1,100000]
                               - util: RandomInt
                                 params: [1,100000]
+                              - util: RandomInt
+                                params: [1,100000]
 
             - workload: FK_10_4fk_update
               run:
                   - name: FK_10_4fk_update
                     weight: 100
                     queries:
-                        - query: update employees_with_4fk set project_id1=?, project_id2=?, project_id3=?, project_id4=? where id=?;
+                        - query: update employees_with_4fk set project_id1=?, project_id2=?, project_id3=?, project_id4=?, project_id5=? where id=?;
                           bindings:
+                            - util: RandomInt
+                              params: [1, 100000]
                             - util: RandomInt
                               params: [1, 100000]
                             - util: RandomInt
