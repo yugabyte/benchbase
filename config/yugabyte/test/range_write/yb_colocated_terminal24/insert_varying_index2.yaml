@@ -98,7 +98,7 @@ microbenchmark:
                     -   name: Insert_with_1_index_test
                         weight: 100
                         queries:
-                            -   query: INSERT INTO index_test_2 (id, col_int_1, col_int_2, col_int_3, col_int_4, col_int_5, col_int_6, col_int_7, col_int_8, col_int_9, col_int_10, col_varchar_1, col_boolean) values (?, ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                            -   query: INSERT INTO index_test_2 (id, col_int_1, col_int_2, col_int_3, col_int_4, col_int_5, col_int_6, col_int_7, col_int_8, col_int_9, col_int_10, col_varchar_1, col_boolean) values (?, ?,?,?,?,?,?,?,?,?,?,?,?)
                                 count: 10
                                 bindings:
                                     -   util: PrimaryIntGen
