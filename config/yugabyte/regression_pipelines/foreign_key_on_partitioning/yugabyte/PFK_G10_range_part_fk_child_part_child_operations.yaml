@@ -22,15 +22,22 @@ microbenchmark:
     properties:
         setAutoCommit: false
         create:
-            - DROP TABLE IF EXISTS employees_with_part;
-            - DROP TABLE IF EXISTS employees_without_part;
-            - DROP TABLE IF EXISTS employees_without_fk;
+            - DROP TABLE IF EXISTS employees_with_part_with_fk;
+            - DROP TABLE IF EXISTS employees_without_part_with_fk;
+            - DROP TABLE IF EXISTS employees_with_part_without_fk;
+            - DROP TABLE IF EXISTS employees_without_part_without_fk;
 
-            - DROP TABLE IF EXISTS projects_2000_2005;
-            - DROP TABLE IF EXISTS projects_2005_2010;
-            - DROP TABLE IF EXISTS projects_2010_2015;
-            - DROP TABLE IF EXISTS projects_2015_2020;
-            - DROP TABLE IF EXISTS projects_default;
+            - DROP TABLE IF EXISTS projects_2000_2005_1;
+            - DROP TABLE IF EXISTS projects_2005_2010_1;
+            - DROP TABLE IF EXISTS projects_2010_2015_1;
+            - DROP TABLE IF EXISTS projects_2015_2020_1;
+            - DROP TABLE IF EXISTS projects_default_1;
+
+            - DROP TABLE IF EXISTS projects_2000_2005_2;
+            - DROP TABLE IF EXISTS projects_2005_2010_2;
+            - DROP TABLE IF EXISTS projects_2010_2015_2;
+            - DROP TABLE IF EXISTS projects_2015_2020_2;
+            - DROP TABLE IF EXISTS projects_default_2;
 
             - DROP TABLE IF EXISTS projects_with_part;
             - DROP TABLE IF EXISTS projects_without_part;
@@ -38,25 +45,39 @@ microbenchmark:
             - create table projects_with_part (id int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, created_at));
             - create table projects_without_part (id int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, created_at));
 
-            - create table employees_with_part (id int, name varchar(50) not null, project_id int, project_creation_date date, hired_at date, UNIQUE(id, project_id,project_creation_date))  PARTITION BY RANGE (project_creation_date);
-            - CREATE TABLE projects_2000_2005 PARTITION OF employees_with_part FOR VALUES FROM ('2001-01-01') TO ('2005-12-31');
-            - CREATE TABLE projects_2005_2010 PARTITION OF employees_with_part FOR VALUES FROM ('2006-01-01') TO ('2010-12-31');
-            - CREATE TABLE projects_2010_2015 PARTITION OF employees_with_part FOR VALUES FROM ('2011-01-01') TO ('2015-12-31');
-            - CREATE TABLE projects_2015_2020 PARTITION OF employees_with_part FOR VALUES FROM ('2016-01-01') TO ('2020-12-31');
-            - CREATE TABLE projects_default PARTITION OF employees_with_part DEFAULT;
+            - create table employees_with_part_with_fk (id int, name varchar(50) not null, project_id int, project_creation_date date, hired_at date, UNIQUE(id, project_id,project_creation_date))  PARTITION BY RANGE (project_creation_date);
+            - CREATE TABLE projects_2000_2005_1 PARTITION OF employees_with_part_with_fk FOR VALUES FROM ('2001-01-01') TO ('2005-12-31');
+            - CREATE TABLE projects_2005_2010_1 PARTITION OF employees_with_part_with_fk FOR VALUES FROM ('2006-01-01') TO ('2010-12-31');
+            - CREATE TABLE projects_2010_2015_1 PARTITION OF employees_with_part_with_fk FOR VALUES FROM ('2011-01-01') TO ('2015-12-31');
+            - CREATE TABLE projects_2015_2020_1 PARTITION OF employees_with_part_with_fk FOR VALUES FROM ('2016-01-01') TO ('2020-12-31');
+            - CREATE TABLE projects_default_1 PARTITION OF employees_with_part_with_fk DEFAULT;
 
-            - create table employees_without_part (id int, name varchar(50) not null, project_id int, project_creation_date date, hired_at date, UNIQUE(id, project_id,project_creation_date));
-            - create table employees_without_fk (id int, name varchar(50) not null, project_id int, project_creation_date date, hired_at date, UNIQUE(id, project_id,project_creation_date));
+            - create table employees_with_part_without_fk (id int, name varchar(50) not null, project_id int, project_creation_date date, hired_at date, UNIQUE(id, project_id,project_creation_date))  PARTITION BY RANGE (project_creation_date);
+            - CREATE TABLE projects_2000_2005_2 PARTITION OF employees_with_part_without_fk FOR VALUES FROM ('2001-01-01') TO ('2005-12-31');
+            - CREATE TABLE projects_2005_2010_2 PARTITION OF employees_with_part_without_fk FOR VALUES FROM ('2006-01-01') TO ('2010-12-31');
+            - CREATE TABLE projects_2010_2015_2 PARTITION OF employees_with_part_without_fk FOR VALUES FROM ('2011-01-01') TO ('2015-12-31');
+            - CREATE TABLE projects_2015_2020_2 PARTITION OF employees_with_part_without_fk FOR VALUES FROM ('2016-01-01') TO ('2020-12-31');
+            - CREATE TABLE projects_default_2 PARTITION OF employees_with_part_without_fk DEFAULT;
+
+            - create table employees_without_part_with_fk (id int, name varchar(50) not null, project_id int, project_creation_date date, hired_at date, UNIQUE(id, project_id,project_creation_date));
+            - create table employees_without_part_without_fk (id int, name varchar(50) not null, project_id int, project_creation_date date, hired_at date, UNIQUE(id, project_id,project_creation_date));
         cleanup:
-            - DROP TABLE IF EXISTS employees_with_part;
-            - DROP TABLE IF EXISTS employees_without_part;
-            - DROP TABLE IF EXISTS employees_without_fk;
+            - DROP TABLE IF EXISTS employees_with_part_with_fk;
+            - DROP TABLE IF EXISTS employees_without_part_with_fk;
+            - DROP TABLE IF EXISTS employees_with_part_without_fk;
+            - DROP TABLE IF EXISTS employees_without_part_without_fk;
 
-            - DROP TABLE IF EXISTS projects_2000_2005;
-            - DROP TABLE IF EXISTS projects_2005_2010;
-            - DROP TABLE IF EXISTS projects_2010_2015;
-            - DROP TABLE IF EXISTS projects_2015_2020;
-            - DROP TABLE IF EXISTS projects_default;
+            - DROP TABLE IF EXISTS projects_2000_2005_1;
+            - DROP TABLE IF EXISTS projects_2005_2010_1;
+            - DROP TABLE IF EXISTS projects_2010_2015_1;
+            - DROP TABLE IF EXISTS projects_2015_2020_1;
+            - DROP TABLE IF EXISTS projects_default_1;
+
+            - DROP TABLE IF EXISTS projects_2000_2005_2;
+            - DROP TABLE IF EXISTS projects_2005_2010_2;
+            - DROP TABLE IF EXISTS projects_2010_2015_2;
+            - DROP TABLE IF EXISTS projects_2015_2020_2;
+            - DROP TABLE IF EXISTS projects_default_2;
 
             - DROP TABLE IF EXISTS projects_with_part;
             - DROP TABLE IF EXISTS projects_without_part;
@@ -93,7 +114,7 @@ microbenchmark:
                     util: CyclicSeqDateGen
                     params: [2001,2025]
 
-            - table: employees_with_part
+            - table: employees_with_part_with_fk
               rows: 1000000
               columns:
                   - name: id
@@ -112,7 +133,26 @@ microbenchmark:
                     util: RandomDateBtwYears
                     params: [2001,2025]
 
-            - table: employees_without_part
+            - table: employees_without_part_with_fk
+              rows: 1000000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 1000000]
+                  - name: name
+                    util: RandomAString
+                    params: [1, 20]
+                  - name: project_id
+                    util: CyclicSeqIntGen
+                    params: [1,100000]
+                  - name: project_creation_date
+                    util: CyclicSeqDateGenWithRep
+                    params: [2001,2025,100000]
+                  - name: hired_at
+                    util: RandomDateBtwYears
+                    params: [2001,2025]
+
+            - table: employees_with_part_without_fk
               rows: 1000000
               columns:
                   - name: id
@@ -131,7 +171,7 @@ microbenchmark:
                     util: RandomDateBtwYears
                     params: [2001,2025]
             
-            - table: employees_without_fk
+            - table: employees_without_part_without_fk
               rows: 1000000
               columns:
                   - name: id
@@ -151,17 +191,17 @@ microbenchmark:
                     params: [2001,2025]
 
         afterLoad:
-            - ALTER TABLE employees_with_part add CONSTRAINT fk_project foreign key (project_id,project_creation_date) references projects_with_part(id, created_at) on delete cascade on update cascade;
-            - ALTER TABLE employees_without_part add CONSTRAINT fk_project foreign key (project_id,project_creation_date) references projects_without_part(id, created_at) on delete cascade on update cascade;
+            - ALTER TABLE employees_with_part_with_fk add CONSTRAINT fk_project foreign key (project_id,project_creation_date) references projects_with_part(id, created_at) on delete cascade on update cascade;
+            - ALTER TABLE employees_without_part_with_fk add CONSTRAINT fk_project foreign key (project_id,project_creation_date) references projects_without_part(id, created_at) on delete cascade on update cascade;
 
         executeRules:
 
-            - workload: insert_with_part
+            - workload: insert_with_part_with_fk
               run:
-                  - name: insert_with_part
+                  - name: insert_with_part_with_fk
                     weight: 100
                     queries:
-                        - query: insert into employees_with_part values(?,?,?,?,?);
+                        - query: insert into employees_with_part_with_fk values(?,?,?,?,?);
                           bindings:
                               - util: PrimaryIntGen
                                 params: [1000001, 5000000]
@@ -174,12 +214,12 @@ microbenchmark:
                               - util: CyclicSeqDateGenWithRep
                                 params: [2001,2025,100000]
             
-            - workload: insert_without_part
+            - workload: insert_without_part_with_fk
               run:
-                  - name: insert_without_part
+                  - name: insert_without_part_with_fk
                     weight: 100
                     queries:
-                        - query: insert into employees_without_part values(?,?,?,?,?);
+                        - query: insert into employees_without_part_with_fk values(?,?,?,?,?);
                           bindings:
                               - util: PrimaryIntGen
                                 params: [1000001, 5000000]
@@ -192,12 +232,12 @@ microbenchmark:
                               - util: CyclicSeqDateGenWithRep
                                 params: [2001,2025,100000]
 
-            - workload: insert_without_fk
+            - workload: insert_with_part_without_fk
               run:
-                  - name: insert_without_fk
+                  - name: insert_with_part_without_fk
                     weight: 100
                     queries:
-                        - query: insert into employees_without_fk values(?,?,?,?,?);
+                        - query: insert into employees_with_part_without_fk values(?,?,?,?,?);
                           bindings:
                               - util: PrimaryIntGen
                                 params: [1000001, 5000000]
@@ -210,12 +250,30 @@ microbenchmark:
                               - util: CyclicSeqDateGenWithRep
                                 params: [2001,2025,100000]
 
-            - workload: update_with_part
+            - workload: insert_without_part_without_fk
               run:
-                  - name: update_with_part
+                  - name: insert_without_part_without_fk
                     weight: 100
                     queries:
-                        - query: update employees_with_part set project_id=?, project_creation_date=? where id=?;
+                        - query: insert into employees_without_part_without_fk values(?,?,?,?,?);
+                          bindings:
+                              - util: PrimaryIntGen
+                                params: [1000001, 5000000]
+                              - util: RandomAString
+                                params: [1, 20]
+                              - util: CyclicSeqIntGen
+                                params: [1,100000]
+                              - util: SeqStringGenFromArray
+                                params: [['Sales','Engineering','HR','Anonymous']]
+                              - util: CyclicSeqDateGenWithRep
+                                params: [2001,2025,100000]
+
+            - workload: update_with_part_with_fk
+              run:
+                  - name: update_with_part_with_fk
+                    weight: 100
+                    queries:
+                        - query: update employees_with_part_with_fk set project_id=?, project_creation_date=? where id=?;
                           bindings:
                             - util: PrimaryIntGen
                               params: [1, 100000]
@@ -224,12 +282,26 @@ microbenchmark:
                             - util: RandomInt
                               params: [1, 1000000]
 
-            - workload: update_without_part
+            - workload: update_without_part_with_fk
               run:
-                  - name: update_without_part
+                  - name: update_without_part_with_fk
                     weight: 100
                     queries:
-                        - query: update employees_without_part set project_id=?, project_creation_date=? where id=?;
+                        - query: update employees_without_part_with_fk set project_id=?, project_creation_date=? where id=?;
+                          bindings:
+                            - util: PrimaryIntGen
+                              params: [1, 100000]
+                            - util: CyclicSeqDateGenWithRep
+                              params: [2001,2025,100000]
+                            - util: RandomInt
+                              params: [1, 1000000]
+            
+            - workload: update_with_part_without_fk
+              run:
+                  - name: update_with_part_without_fk
+                    weight: 100
+                    queries:
+                        - query: update employees_with_part_without_fk set project_id=?, project_creation_date=? where id=?;
                           bindings:
                             - util: PrimaryIntGen
                               params: [1, 100000]
@@ -238,12 +310,12 @@ microbenchmark:
                             - util: RandomInt
                               params: [1, 1000000]
 
-            - workload: update_without_fk
+            - workload: update_without_part_without_fk
               run:
-                  - name: update_without_fk
+                  - name: update_without_part_without_fk
                     weight: 100
                     queries:
-                        - query: update employees_without_fk set project_id=?, project_creation_date=? where id=?;
+                        - query: update employees_without_part_without_fk set project_id=?, project_creation_date=? where id=?;
                           bindings:
                             - util: PrimaryIntGen
                               params: [1, 100000]

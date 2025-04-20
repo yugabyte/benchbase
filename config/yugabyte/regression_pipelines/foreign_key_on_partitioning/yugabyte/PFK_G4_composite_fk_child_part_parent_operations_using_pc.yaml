@@ -165,7 +165,7 @@ microbenchmark:
                   - name: update_with_part_with_fk
                     weight: 100
                     queries:
-                        - query: update projects_with_part_with_fk set dept=? set id=id+100000 where dept=?;
+                        - query: update projects_with_part_with_fk set id=id+100000 where dept=?;
                           bindings:
                             - util: OneStringFromArray
                               params: [['Sales','Engineering','HR','Anonymous']]
@@ -175,7 +175,7 @@ microbenchmark:
                   - name: update_without_part_with_fk
                     weight: 100
                     queries:
-                        - query: update projects_without_part_with_fk set dept=? set id=id+100000 where dept=?;
+                        - query: update projects_without_part_with_fk set id=id+100000 where dept=?;
                           bindings:
                             - util: OneStringFromArray
                               params: [['Sales','Engineering','HR','Anonymous']]
