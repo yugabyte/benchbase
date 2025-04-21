@@ -23,49 +23,49 @@ microbenchmark:
     properties:
         setAutoCommit: false
         create:
-            - DROP TABLE IF EXISTS employees_with_1_fk_1_1_card;
-            - DROP TABLE IF EXISTS projects_with_1_ref_1_1_card;
+            - DROP TABLE IF EXISTS employees_with_1_fk_1_to_1_cardinality;
+            - DROP TABLE IF EXISTS projects_with_1_ref_1_to_1_cardinality;
 
-            - DROP TABLE IF EXISTS employees_with_1_fk_1_10_card;
-            - DROP TABLE IF EXISTS projects_with_1_ref_1_10_card;
+            - DROP TABLE IF EXISTS employees_with_1_fk_1_to_10_cardinality;
+            - DROP TABLE IF EXISTS projects_with_1_ref_1_to_10_cardinality;
 
-            - DROP TABLE IF EXISTS employees_with_1_fk_1_100_card;
-            - DROP TABLE IF EXISTS projects_with_1_ref_1_100_card;
+            - DROP TABLE IF EXISTS employees_with_1_fk_1_to_100_cardinality;
+            - DROP TABLE IF EXISTS projects_with_1_ref_1_to_100_cardinality;
 
-            - DROP TABLE IF EXISTS employees_with_1_fk_1_1000_card;
-            - DROP TABLE IF EXISTS projects_with_1_ref_1_1000_card;
+            - DROP TABLE IF EXISTS employees_with_1_fk_1_to_1000_cardinality;
+            - DROP TABLE IF EXISTS projects_with_1_ref_1_to_1000_cardinality;
 
-            - create table projects_with_1_ref_1_1_card(id int, uid int unique not null, name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2), primary key(id asc));
-            - create table employees_with_1_fk_1_1_card(id int,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(10,2), project_id int not null, primary key(id asc));
+            - create table projects_with_1_ref_1_to_1_cardinality(id int, uid int unique not null, name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2), primary key(id asc));
+            - create table employees_with_1_fk_1_to_1_cardinality(id int,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(10,2), project_id int not null, primary key(id asc));
 
-            - create table projects_with_1_ref_1_10_card(id int, uid int unique not null, name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2), primary key(id asc));
-            - create table employees_with_1_fk_1_10_card(id int,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(10,2), project_id int not null, primary key(id asc));
+            - create table projects_with_1_ref_1_to_10_cardinality(id int, uid int unique not null, name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2), primary key(id asc));
+            - create table employees_with_1_fk_1_to_10_cardinality(id int,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(10,2), project_id int not null, primary key(id asc));
 
-            - create table projects_with_1_ref_1_100_card(id int, uid int unique not null, name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2), primary key(id asc));
-            - create table employees_with_1_fk_1_100_card(id int,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(10,2), project_id int not null, primary key(id asc));
+            - create table projects_with_1_ref_1_to_100_cardinality(id int, uid int unique not null, name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2), primary key(id asc));
+            - create table employees_with_1_fk_1_to_100_cardinality(id int,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(10,2), project_id int not null, primary key(id asc));
 
-            - create table projects_with_1_ref_1_1000_card(id int, uid int unique not null, name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2), primary key(id asc));
-            - create table employees_with_1_fk_1_1000_card(id int,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(10,2), project_id int not null, primary key(id asc));
+            - create table projects_with_1_ref_1_to_1000_cardinality(id int, uid int unique not null, name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2), primary key(id asc));
+            - create table employees_with_1_fk_1_to_1000_cardinality(id int,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(10,2), project_id int not null, primary key(id asc));
 
-            - CREATE INDEX project_uid_index_1_1_card ON employees_with_1_fk_1_1_card (project_id);
-            - CREATE INDEX project_uid_index_1_10_card ON employees_with_1_fk_1_10_card (project_id);
-            - CREATE INDEX project_uid_index_1_100_card ON employees_with_1_fk_1_100_card (project_id);
-            - CREATE INDEX project_uid_index_1_1000_card ON employees_with_1_fk_1_1000_card (project_id);
+            - CREATE INDEX project_uid_index_1_to_1_cardinality ON employees_with_1_fk_1_to_1_cardinality (project_id);
+            - CREATE INDEX project_uid_index_1_to_10_cardinality ON employees_with_1_fk_1_to_10_cardinality (project_id);
+            - CREATE INDEX project_uid_index_1_to_100_cardinality ON employees_with_1_fk_1_to_100_cardinality (project_id);
+            - CREATE INDEX project_uid_index_1_to_1000_cardinality ON employees_with_1_fk_1_to_1000_cardinality (project_id);
             
         cleanup:
-            - DROP TABLE IF EXISTS employees_with_1_fk_1_1_card;
-            - DROP TABLE IF EXISTS projects_with_1_ref_1_1_card;
+            - DROP TABLE IF EXISTS employees_with_1_fk_1_to_1_cardinality;
+            - DROP TABLE IF EXISTS projects_with_1_ref_1_to_1_cardinality;
 
-            - DROP TABLE IF EXISTS employees_with_1_fk_1_10_card;
-            - DROP TABLE IF EXISTS projects_with_1_ref_1_10_card;
+            - DROP TABLE IF EXISTS employees_with_1_fk_1_to_10_cardinality;
+            - DROP TABLE IF EXISTS projects_with_1_ref_1_to_10_cardinality;
 
-            - DROP TABLE IF EXISTS employees_with_1_fk_1_100_card;
-            - DROP TABLE IF EXISTS projects_with_1_ref_1_100_card;
+            - DROP TABLE IF EXISTS employees_with_1_fk_1_to_100_cardinality;
+            - DROP TABLE IF EXISTS projects_with_1_ref_1_to_100_cardinality;
 
-            - DROP TABLE IF EXISTS employees_with_1_fk_1_1000_card;
-            - DROP TABLE IF EXISTS projects_with_1_ref_1_1000_card;
+            - DROP TABLE IF EXISTS employees_with_1_fk_1_to_1000_cardinality;
+            - DROP TABLE IF EXISTS projects_with_1_ref_1_to_1000_cardinality;
         loadRules:
-            - table: projects_with_1_ref_1_1_card
+            - table: projects_with_1_ref_1_to_1_cardinality
               rows: 100000
               columns:
                   - name: id
@@ -87,7 +87,7 @@ microbenchmark:
                     util: RandomNoWithDecimalPoints
                     params: [1, 1000000, 2]
 
-            - table: employees_with_1_fk_1_1_card
+            - table: employees_with_1_fk_1_to_1_cardinality
               rows: 100000
               columns:
                   - name: id
@@ -112,7 +112,7 @@ microbenchmark:
                     util: CyclicSeqIntGen
                     params: [1,100000]
 
-            - table: projects_with_1_ref_1_10_card
+            - table: projects_with_1_ref_1_to_10_cardinality
               rows: 100000
               columns:
                   - name: id
@@ -134,7 +134,7 @@ microbenchmark:
                     util: RandomNoWithDecimalPoints
                     params: [1, 1000000, 2]
 
-            - table: employees_with_1_fk_1_10_card
+            - table: employees_with_1_fk_1_to_10_cardinality
               rows: 1000000
               columns:
                   - name: id
@@ -159,7 +159,7 @@ microbenchmark:
                     util: CyclicSeqIntGen
                     params: [1,100000]
 
-            - table: projects_with_1_ref_1_100_card
+            - table: projects_with_1_ref_1_to_100_cardinality
               rows: 100000
               columns:
                   - name: id
@@ -181,7 +181,7 @@ microbenchmark:
                     util: RandomNoWithDecimalPoints
                     params: [1, 1000000, 2]
 
-            - table: employees_with_1_fk_1_100_card
+            - table: employees_with_1_fk_1_to_100_cardinality
               rows: 10000000
               columns:
                   - name: id
@@ -206,7 +206,7 @@ microbenchmark:
                     util: CyclicSeqIntGen
                     params: [1,100000]
 
-            - table: projects_with_1_ref_1_1000_card
+            - table: projects_with_1_ref_1_to_1000_cardinality
               rows: 100000
               columns:
                   - name: id
@@ -228,7 +228,7 @@ microbenchmark:
                     util: RandomNoWithDecimalPoints
                     params: [1, 1000000, 2]
 
-            - table: employees_with_1_fk_1_1000_card
+            - table: employees_with_1_fk_1_to_1000_cardinality
               rows: 100000000
               columns:
                   - name: id
@@ -254,89 +254,89 @@ microbenchmark:
                     params: [1,100000]
 
         afterLoad:
-            - ALTER TABLE employees_with_1_fk_1_1_card add CONSTRAINT fk_project FOREIGN KEY (project_id) REFERENCES projects_with_1_ref_1_1_card(uid) ON DELETE CASCADE ON UPDATE CASCADE;
-            - ALTER TABLE employees_with_1_fk_1_10_card add CONSTRAINT fk_project FOREIGN KEY (project_id) REFERENCES projects_with_1_ref_1_10_card(uid) ON DELETE CASCADE ON UPDATE CASCADE;
-            - ALTER TABLE employees_with_1_fk_1_100_card add CONSTRAINT fk_project FOREIGN KEY (project_id) REFERENCES projects_with_1_ref_1_100_card(uid) ON DELETE CASCADE ON UPDATE CASCADE;
-            - ALTER TABLE employees_with_1_fk_1_1000_card add CONSTRAINT fk_project FOREIGN KEY (project_id) REFERENCES projects_with_1_ref_1_1000_card(uid) ON DELETE CASCADE ON UPDATE CASCADE;
+            - ALTER TABLE employees_with_1_fk_1_to_1_cardinality add CONSTRAINT fk_project FOREIGN KEY (project_id) REFERENCES projects_with_1_ref_1_to_1_cardinality(uid) ON DELETE CASCADE ON UPDATE CASCADE;
+            - ALTER TABLE employees_with_1_fk_1_to_10_cardinality add CONSTRAINT fk_project FOREIGN KEY (project_id) REFERENCES projects_with_1_ref_1_to_10_cardinality(uid) ON DELETE CASCADE ON UPDATE CASCADE;
+            - ALTER TABLE employees_with_1_fk_1_to_100_cardinality add CONSTRAINT fk_project FOREIGN KEY (project_id) REFERENCES projects_with_1_ref_1_to_100_cardinality(uid) ON DELETE CASCADE ON UPDATE CASCADE;
+            - ALTER TABLE employees_with_1_fk_1_to_1000_cardinality add CONSTRAINT fk_project FOREIGN KEY (project_id) REFERENCES projects_with_1_ref_1_to_1000_cardinality(uid) ON DELETE CASCADE ON UPDATE CASCADE;
             
         executeRules:
 
-            - workload: FK_G4_1_update_1_1_card
+            - workload: FK_G4_1_update_1_to_1_cardinality
               run:
-                  - name: FK_G4_1_update_1_1_card
+                  - name: FK_G4_1_update_1_to_1_cardinality
                     weight: 100
                     queries:
-                        - query: update projects_with_1_ref_1_1_card set uid=uid+100000 where id=?;
+                        - query: update projects_with_1_ref_1_to_1_cardinality set uid=uid+100000 where id=?;
                           bindings:
                             - util: PrimaryIntGen
                               params: [1, 100000]
 
-            - workload: FK_G4_2_delete_1_1_card
+            - workload: FK_G4_2_delete_1_to_1_cardinality
               run:
-                  - name: FK_G4_2_delete_1_1_card
+                  - name: FK_G4_2_delete_1_to_1_cardinality
                     weight: 100
                     queries:
-                        - query: delete from projects_with_1_ref_1_1_card where id=?;
+                        - query: delete from projects_with_1_ref_1_to_1_cardinality where id=?;
                           bindings:
                             - util: PrimaryIntGen
                               params: [1, 100000]
 
-            - workload: FK_G4_3_update_1_10_card
+            - workload: FK_G4_3_update_1_to_10_cardinality
               run:
-                  - name: FK_G4_3_update_1_10_card
+                  - name: FK_G4_3_update_1_to_10_cardinality
                     weight: 100
                     queries:
-                        - query: update projects_with_1_ref_1_10_card set uid=uid+100000 where id=?;
+                        - query: update projects_with_1_ref_1_to_10_cardinality set uid=uid+100000 where id=?;
                           bindings:
                             - util: PrimaryIntGen
                               params: [1, 100000]
 
-            - workload: FK_G4_4_delete_1_10_card
+            - workload: FK_G4_4_delete_1_to_10_cardinality
               run:
-                  - name: FK_G4_4_delete_1_10_card
+                  - name: FK_G4_4_delete_1_to_10_cardinality
                     weight: 100
                     queries:
-                        - query: delete from projects_with_1_ref_1_10_card where id=?;
+                        - query: delete from projects_with_1_ref_1_to_10_cardinality where id=?;
                           bindings:
                             - util: PrimaryIntGen
                               params: [1, 100000]
 
-            - workload: FK_G4_5_update_1_100_card
+            - workload: FK_G4_5_update_1_to_100_cardinality
               run:
-                  - name: FK_G4_5_update_1_100_card
+                  - name: FK_G4_5_update_1_to_100_cardinality
                     weight: 100
                     queries:
-                        - query: update projects_with_1_ref_1_100_card set uid=uid+100000 where id=?;
+                        - query: update projects_with_1_ref_1_to_100_cardinality set uid=uid+100000 where id=?;
                           bindings:
                             - util: PrimaryIntGen
                               params: [1, 100000]
 
-            - workload: FK_G4_6_delete_1_100_card
+            - workload: FK_G4_6_delete_1_to_100_cardinality
               run:
-                  - name: FK_G4_6_delete_1_100_card
+                  - name: FK_G4_6_delete_1_to_100_cardinality
                     weight: 100
                     queries:
-                        - query: delete from projects_with_1_ref_1_100_card where id=?;
+                        - query: delete from projects_with_1_ref_1_to_100_cardinality where id=?;
                           bindings:
                             - util: PrimaryIntGen
                               params: [1, 100000]
 
-            - workload: FK_G4_7_update_1_1000_card
+            - workload: FK_G4_7_update_1_to_1000_cardinality
               run:
-                  - name: FK_G4_7_update_1_1000_card
+                  - name: FK_G4_7_update_1_to_1000_cardinality
                     weight: 100
                     queries:
-                        - query: update projects_with_1_ref_1_1000_card set uid=uid+100000 where id=?;
+                        - query: update projects_with_1_ref_1_to_1000_cardinality set uid=uid+100000 where id=?;
                           bindings:
                             - util: PrimaryIntGen
                               params: [1, 100000]
 
-            - workload: FK_G4_8_delete_1_1000_card
+            - workload: FK_G4_8_delete_1_to_1000_cardinality
               run:
-                  - name: FK_G4_8_delete_1_1000_card
+                  - name: FK_G4_8_delete_1_to_1000_cardinality
                     weight: 100
                     queries:
-                        - query: delete from projects_with_1_ref_1_1000_card where id=?;
+                        - query: delete from projects_with_1_ref_1_to_1000_cardinality where id=?;
                           bindings:
                             - util: PrimaryIntGen
                               params: [1, 100000]
