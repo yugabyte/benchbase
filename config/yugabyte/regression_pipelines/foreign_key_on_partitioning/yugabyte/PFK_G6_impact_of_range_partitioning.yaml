@@ -139,10 +139,10 @@ microbenchmark:
                   - name: update_with_part
                     weight: 100
                     queries:
-                        - query: update projects_with_part set dept=? where id=?;
+                        - query: update projects_with_part set created_at=? where id=?;
                           bindings:
-                            - util: OneStringFromArray
-                              params: ['Sales','Engineering','HR','Anonymous']
+                            - util: RandomDateBtwYears
+                              params: [2001,2025]
                             - util: RandomInt
                               params: [1, 100000]
 
@@ -151,10 +151,10 @@ microbenchmark:
                   - name: update_without_part
                     weight: 100
                     queries:
-                        - query: update projects_without_part set dept=? where id=?;
+                        - query: update projects_without_part set created_at=? where id=?;
                           bindings:
-                            - util: OneStringFromArray
-                              params: ['Sales','Engineering','HR','Anonymous']
+                            - util: RandomDateBtwYears
+                              params: [2001,2025]
                             - util: RandomInt
                               params: [1, 100000]
 

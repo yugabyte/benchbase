@@ -14,7 +14,7 @@ analyze_on_all_tables: true
 yaml_version: v1.0
 works:
     work:
-        time_secs: 60
+        time_secs: 300
         active_terminals: 1
         rate: unlimited
         warmup: 30
