@@ -113,8 +113,10 @@ microbenchmark:
                   - name: insert_with_part
                     weight: 100
                     queries:
-                        - query: insert into projects_with_part values(?,?,?,?);
+                        - query: insert into projects_with_part values(?,?,?,?,?);
                           bindings:
+                              - util: PrimaryIntGen
+                                params: [100001, 500000]
                               - util: PrimaryIntGen
                                 params: [100001, 500000]
                               - util: RandomAString
@@ -129,8 +131,10 @@ microbenchmark:
                   - name: insert_without_part
                     weight: 100
                     queries:
-                        - query: insert into projects_without_part values(?,?,?,?);
+                        - query: insert into projects_without_part values(?,?,?,?,?);
                           bindings:
+                              - util: PrimaryIntGen
+                                params: [100001, 500000]
                               - util: PrimaryIntGen
                                 params: [100001, 500000]
                               - util: RandomAString
