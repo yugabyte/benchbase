@@ -37,9 +37,9 @@ microbenchmark:
             - DROP TABLE IF EXISTS projects_without_part_with_fk;
             - DROP TABLE IF EXISTS projects_without_fk;
 
-            - create table projects_with_part_with_fk (id int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, dept));
-            - create table projects_without_part_with_fk (id int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, dept));
-            - create table projects_without_fk (id int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, dept));
+            - create table projects_with_part_with_fk (id int, uid int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, dept));
+            - create table projects_without_part_with_fk (id int, uid int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, dept));
+            - create table projects_without_fk (id int, uid int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, dept));
 
             - create table employees_with_part (id int, name varchar(50) not null, project_id int, project_dept varchar(15), hired_at date, UNIQUE(id, project_id,project_dept))  PARTITION BY LIST (project_dept);
             - CREATE TABLE employees_sales PARTITION OF employees_with_part FOR VALUES IN ('Sales');
@@ -74,6 +74,9 @@ microbenchmark:
                   - name: id
                     util: PrimaryIntGen
                     params: [1, 100000]
+                  - name: uid
+                    util: PrimaryIntGen
+                    params: [1, 100000]
                   - name: name
                     util: RandomAString
                     params: [1, 20]
@@ -90,6 +93,9 @@ microbenchmark:
                   - name: id
                     util: PrimaryIntGen
                     params: [1, 100000]
+                  - name: uid
+                    util: PrimaryIntGen
+                    params: [1, 100000]
                   - name: name
                     util: RandomAString
                     params: [1, 20]
@@ -104,6 +110,9 @@ microbenchmark:
               rows: 100000
               columns:
                   - name: id
+                    util: PrimaryIntGen
+                    params: [1, 100000]
+                  - name: uid
                     util: PrimaryIntGen
                     params: [1, 100000]
                   - name: name
@@ -165,7 +174,7 @@ microbenchmark:
                   - name: update_with_part_with_fk
                     weight: 100
                     queries:
-                        - query: update projects_with_part_with_fk set id=id+100000 where dept=?;
+                        - query: update projects_with_part_with_fk set uid=uid+1 where dept=?;
                           bindings:
                             - util: OneStringFromArray
                               params: [['Sales','Engineering','HR','Anonymous']]
@@ -175,7 +184,7 @@ microbenchmark:
                   - name: update_without_part_with_fk
                     weight: 100
                     queries:
-                        - query: update projects_without_part_with_fk set id=id+100000 where dept=?;
+                        - query: update projects_without_part_with_fk set uid=uid+1 where dept=?;
                           bindings:
                             - util: OneStringFromArray
                               params: [['Sales','Engineering','HR','Anonymous']]
@@ -185,7 +194,7 @@ microbenchmark:
                   - name: update_without_fk
                     weight: 100
                     queries:
-                        - query: update projects_without_fk set id=id+100000 where dept=?;
+                        - query: update projects_without_fk set uid=uid+1 where dept=?;
                           bindings:
                             - util: OneStringFromArray
                               params: [['Sales','Engineering','HR','Anonymous']]

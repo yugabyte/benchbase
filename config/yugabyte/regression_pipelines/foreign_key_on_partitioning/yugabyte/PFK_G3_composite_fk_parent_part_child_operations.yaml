@@ -33,13 +33,13 @@ microbenchmark:
             - DROP TABLE IF EXISTS projects_hr;
             - DROP TABLE IF EXISTS projects_default;
 
-            - create table projects_with_part (id int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, dept)) PARTITION BY LIST (dept);
+            - create table projects_with_part (id int, uid int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, dept)) PARTITION BY LIST (dept);
             - CREATE TABLE projects_sales PARTITION OF projects_with_part FOR VALUES IN ('Sales');
             - CREATE TABLE projects_eng PARTITION OF projects_with_part FOR VALUES IN ('Engineering');
             - CREATE TABLE projects_hr PARTITION OF projects_with_part FOR VALUES IN ('HR');
             - CREATE TABLE projects_default PARTITION OF projects_with_part DEFAULT;
 
-            - create table projects_without_part (id int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, dept));
+            - create table projects_without_part (id int, uid int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, dept));
 
             - create table employees_with_part (id int primary key, name varchar(50) not null, project_id int, project_dept varchar(15), hired_at date);
             - create table employees_without_part (id int primary key, name varchar(50) not null, project_id int, project_dept varchar(15), hired_at date);
@@ -62,6 +62,9 @@ microbenchmark:
                   - name: id
                     util: PrimaryIntGen
                     params: [1, 100000]
+                  - name: uid
+                    util: PrimaryIntGen
+                    params: [1, 100000]
                   - name: name
                     util: RandomAString
                     params: [1, 20]
@@ -76,6 +79,9 @@ microbenchmark:
               rows: 100000
               columns:
                   - name: id
+                    util: PrimaryIntGen
+                    params: [1, 100000]
+                  - name: uid
                     util: PrimaryIntGen
                     params: [1, 100000]
                   - name: name

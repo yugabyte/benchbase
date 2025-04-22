@@ -35,14 +35,14 @@ microbenchmark:
             - DROP TABLE IF EXISTS projects_2015_2020_1;
             - DROP TABLE IF EXISTS projects_default_1;
 
-            - create table projects_with_part (id int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, created_at)) PARTITION BY RANGE (created_at);
+            - create table projects_with_part (id int, uid int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, created_at)) PARTITION BY RANGE (created_at);
             - CREATE TABLE projects_2000_2005_1 PARTITION OF projects_with_part FOR VALUES FROM ('2001-01-01') TO ('2005-12-31');
             - CREATE TABLE projects_2005_2010_1 PARTITION OF projects_with_part FOR VALUES FROM ('2006-01-01') TO ('2010-12-31');
             - CREATE TABLE projects_2010_2015_1 PARTITION OF projects_with_part FOR VALUES FROM ('2011-01-01') TO ('2015-12-31');
             - CREATE TABLE projects_2015_2020_1 PARTITION OF projects_with_part FOR VALUES FROM ('2016-01-01') TO ('2020-12-31');
             - CREATE TABLE projects_default_1 PARTITION OF projects_with_part DEFAULT;
 
-            - create table projects_without_part (id int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, created_at));
+            - create table projects_without_part (id int, uid int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, created_at));
 
             - create table employees_with_part (id int primary key, name varchar(50) not null, project_id int, project_creation_date date, hired_at date);
             - create table employees_without_part (id int primary key, name varchar(50) not null, project_id int, project_creation_date date, hired_at date);
@@ -68,6 +68,9 @@ microbenchmark:
                   - name: id
                     util: PrimaryIntGen
                     params: [1, 100000]
+                  - name: uid
+                    util: PrimaryIntGen
+                    params: [1, 100000]
                   - name: name
                     util: RandomAString
                     params: [1, 20]
@@ -82,6 +85,9 @@ microbenchmark:
               rows: 100000
               columns:
                   - name: id
+                    util: PrimaryIntGen
+                    params: [1, 100000]
+                  - name: uid
                     util: PrimaryIntGen
                     params: [1, 100000]
                   - name: name

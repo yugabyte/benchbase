@@ -1,8 +1,6 @@
 type: YUGABYTE
 driver: com.yugabyte.Driver
-url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
-username: {{username}}
-password: {{password}}
+url: jdbc:postgresql://127.0.0.1:5433/yugabyte?user=yugabyte&password=yugabyte      
 
 batchsize: 128
 isolation: TRANSACTION_REPEATABLE_READ
@@ -30,13 +28,13 @@ microbenchmark:
             - DROP TABLE IF EXISTS projects_hr;
             - DROP TABLE IF EXISTS projects_default;
 
-            - create table projects_with_part (id int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, dept)) PARTITION BY LIST (dept);
+            - create table projects_with_part (id int, uid int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, dept)) PARTITION BY LIST (dept);
             - CREATE TABLE projects_sales PARTITION OF projects_with_part FOR VALUES IN ('Sales');
             - CREATE TABLE projects_eng PARTITION OF projects_with_part FOR VALUES IN ('Engineering');
             - CREATE TABLE projects_hr PARTITION OF projects_with_part FOR VALUES IN ('HR');
             - CREATE TABLE projects_default PARTITION OF projects_with_part DEFAULT;
 
-            - create table projects_without_part (id int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, dept));
+            - create table projects_without_part (id int, uid int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, dept));
         cleanup:
             - DROP TABLE IF EXISTS projects_with_part;
             - DROP TABLE IF EXISTS projects_without_part;
@@ -50,6 +48,9 @@ microbenchmark:
               rows: 100000
               columns:
                   - name: id
+                    util: PrimaryIntGen
+                    params: [1, 100000]
+                  - name: uid
                     util: PrimaryIntGen
                     params: [1, 100000]
                   - name: name
@@ -66,6 +67,9 @@ microbenchmark:
               rows: 100000
               columns:
                   - name: id
+                    util: PrimaryIntGen
+                    params: [1, 100000]
+                  - name: uid
                     util: PrimaryIntGen
                     params: [1, 100000]
                   - name: name
@@ -139,7 +143,7 @@ microbenchmark:
                   - name: update_with_part
                     weight: 100
                     queries:
-                        - query: update projects_with_part set id=id+100000 where dept=?;
+                        - query: update projects_with_part set uid=uid+1 where dept=?;
                           bindings:
                             - util: OneStringFromArray
                               params: [['Sales','Engineering','HR','Anonymous']]
@@ -149,7 +153,7 @@ microbenchmark:
                   - name: update_without_part
                     weight: 100
                     queries:
-                        - query: update projects_without_part set id=id+100000 where dept=?;
+                        - query: update projects_without_part set uid=uid+1 where dept=?;
                           bindings:
                             - util: OneStringFromArray
                               params: [['Sales','Engineering','HR','Anonymous']]

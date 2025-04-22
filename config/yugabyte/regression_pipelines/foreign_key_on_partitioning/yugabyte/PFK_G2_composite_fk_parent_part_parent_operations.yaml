@@ -43,20 +43,20 @@ microbenchmark:
             - DROP INDEX IF EXISTS fk_index1;
             - DROP INDEX IF EXISTS fk_index2;
 
-            - create table projects_with_part_with_fk (id int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, dept)) PARTITION BY LIST (dept);
+            - create table projects_with_part_with_fk (id int, uid int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, dept)) PARTITION BY LIST (dept);
             - CREATE TABLE projects_sales1 PARTITION OF projects_with_part_with_fk FOR VALUES IN ('Sales');
             - CREATE TABLE projects_eng1 PARTITION OF projects_with_part_with_fk FOR VALUES IN ('Engineering');
             - CREATE TABLE projects_hr1 PARTITION OF projects_with_part_with_fk FOR VALUES IN ('HR');
             - CREATE TABLE projects_default1 PARTITION OF projects_with_part_with_fk DEFAULT;
 
-            - create table projects_with_part_without_fk (id int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, dept)) PARTITION BY LIST (dept);
+            - create table projects_with_part_without_fk (id int, uid int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, dept)) PARTITION BY LIST (dept);
             - CREATE TABLE projects_sales2 PARTITION OF projects_with_part_without_fk FOR VALUES IN ('Sales');
             - CREATE TABLE projects_eng2 PARTITION OF projects_with_part_without_fk FOR VALUES IN ('Engineering');
             - CREATE TABLE projects_hr2 PARTITION OF projects_with_part_without_fk FOR VALUES IN ('HR');
             - CREATE TABLE projects_default2 PARTITION OF projects_with_part_without_fk DEFAULT;
 
-            - create table projects_without_part_with_fk (id int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, dept));
-            - create table projects_without_part_without_fk (id int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, dept));
+            - create table projects_without_part_with_fk (id int, uid int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, dept));
+            - create table projects_without_part_without_fk (id int, uid int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, dept));
 
             - create table employees_with_part (id int primary key, name varchar(50) not null, project_id int, project_dept varchar(15), hired_at date);
             - create table employees_without_part (id int primary key, name varchar(50) not null, project_id int, project_dept varchar(15), hired_at date);
@@ -89,6 +89,9 @@ microbenchmark:
                   - name: id
                     util: PrimaryIntGen
                     params: [1, 100000]
+                  - name: uid
+                    util: PrimaryIntGen
+                    params: [1, 100000]
                   - name: name
                     util: RandomAString
                     params: [1, 20]
@@ -103,6 +106,9 @@ microbenchmark:
               rows: 100000
               columns:
                   - name: id
+                    util: PrimaryIntGen
+                    params: [1, 100000]
+                  - name: uid
                     util: PrimaryIntGen
                     params: [1, 100000]
                   - name: name
@@ -121,6 +127,9 @@ microbenchmark:
                   - name: id
                     util: PrimaryIntGen
                     params: [1, 100000]
+                  - name: uid
+                    util: PrimaryIntGen
+                    params: [1, 100000]
                   - name: name
                     util: RandomAString
                     params: [1, 20]
@@ -135,6 +144,9 @@ microbenchmark:
               rows: 100000
               columns:
                   - name: id
+                    util: PrimaryIntGen
+                    params: [1, 100000]
+                  - name: uid
                     util: PrimaryIntGen
                     params: [1, 100000]
                   - name: name
@@ -196,10 +208,8 @@ microbenchmark:
                   - name: update_with_part_with_fk
                     weight: 100
                     queries:
-                        - query: update projects_with_part_with_fk set dept=? where id=?;
+                        - query: update projects_with_part_with_fk set uid=uid+1 where id=?;
                           bindings:
-                            - util: OneStringFromArray
-                              params: [['Sales','Engineering','HR','Anonymous']]
                             - util: PrimaryIntGen
                               params: [1, 100000]
 
@@ -208,10 +218,8 @@ microbenchmark:
                   - name: update_with_part_without_fk
                     weight: 100
                     queries:
-                        - query: update projects_with_part_without_fk set dept=? where id=?;
+                        - query: update projects_with_part_without_fk set uid=uid+1 where id=?;
                           bindings:
-                            - util: OneStringFromArray
-                              params: [['Sales','Engineering','HR','Anonymous']]
                             - util: PrimaryIntGen
                               params: [1, 100000]
             
@@ -220,10 +228,8 @@ microbenchmark:
                   - name: update_without_part_with_fk
                     weight: 100
                     queries:
-                        - query: update projects_without_part_with_fk set dept=? where id=?;
+                        - query: update projects_without_part_with_fk set uid=uid+1 where id=?;
                           bindings:
-                            - util: OneStringFromArray
-                              params: [['Sales','Engineering','HR','Anonymous']]
                             - util: PrimaryIntGen
                               params: [1, 100000]
 
@@ -232,10 +238,8 @@ microbenchmark:
                   - name: update_without_part_without_fk
                     weight: 100
                     queries:
-                        - query: update projects_without_part_without_fk set dept=? where id=?;
+                        - query: update projects_without_part_without_fk set uid=uid+1 where id=?;
                           bindings:
-                            - util: OneStringFromArray
-                              params: [['Sales','Engineering','HR','Anonymous']]
                             - util: PrimaryIntGen
                               params: [1, 100000]
 
