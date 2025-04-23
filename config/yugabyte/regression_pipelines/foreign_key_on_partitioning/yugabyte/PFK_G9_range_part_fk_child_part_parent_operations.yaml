@@ -38,9 +38,9 @@ microbenchmark:
             - DROP TABLE IF EXISTS projects_without_part_with_fk;
             - DROP TABLE IF EXISTS projects_without_fk;
 
-            - create table projects_with_part_with_fk (id int, uid int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, created_at));
-            - create table projects_without_part_with_fk (id int, uid int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, created_at));
-            - create table projects_without_fk (id int, uid int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, created_at));
+            - create table projects_with_part_with_fk (id int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, created_at));
+            - create table projects_without_part_with_fk (id int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, created_at));
+            - create table projects_without_fk (id int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, created_at));
 
             - create table employees_with_part (id int, name varchar(50) not null, project_id int, project_creation_date date, hired_at date, UNIQUE(id, project_id,project_creation_date))  PARTITION BY RANGE (project_creation_date);
             - CREATE TABLE projects_2000_2005 PARTITION OF employees_with_part FOR VALUES FROM ('2001-01-01') TO ('2005-12-31');
@@ -77,9 +77,6 @@ microbenchmark:
                   - name: id
                     util: PrimaryIntGen
                     params: [1, 100000]
-                  - name: uid
-                    util: PrimaryIntGen
-                    params: [1, 100000]
                   - name: name
                     util: RandomAString
                     params: [1, 20]
@@ -96,9 +93,6 @@ microbenchmark:
                   - name: id
                     util: PrimaryIntGen
                     params: [1, 100000]
-                  - name: uid
-                    util: PrimaryIntGen
-                    params: [1, 100000]
                   - name: name
                     util: RandomAString
                     params: [1, 20]
@@ -113,9 +107,6 @@ microbenchmark:
               rows: 100000
               columns:
                   - name: id
-                    util: PrimaryIntGen
-                    params: [1, 100000]
-                  - name: uid
                     util: PrimaryIntGen
                     params: [1, 100000]
                   - name: name
@@ -177,8 +168,10 @@ microbenchmark:
                   - name: update_with_part_with_fk
                     weight: 100
                     queries:
-                        - query: update projects_with_part_with_fk set uid=uid+1 where id=?;
+                        - query: update projects_with_part_with_fk set created_at=? where id=?;
                           bindings:
+                            - util: RandomDateBtwYears
+                              params: [2001,2025]
                             - util: PrimaryIntGen
                               params: [1, 100000]
             
@@ -187,8 +180,10 @@ microbenchmark:
                   - name: update_without_part_with_fk
                     weight: 100
                     queries:
-                        - query: update projects_without_part_with_fk set uid=uid+1 where id=?;
+                        - query: update projects_without_part_with_fk set created_at=? where id=?;
                           bindings:
+                            - util: RandomDateBtwYears
+                              params: [2001,2025]
                             - util: PrimaryIntGen
                               params: [1, 100000]
 
@@ -197,8 +192,10 @@ microbenchmark:
                   - name: update_without_fk
                     weight: 100
                     queries:
-                        - query: update projects_without_fk set uid=uid+1 where id=?;
+                        - query: update projects_without_fk set created_at=? where id=?;
                           bindings:
+                            - util: RandomDateBtwYears
+                              params: [2001,2025]
                             - util: PrimaryIntGen
                               params: [1, 100000]
 
