@@ -3,21 +3,19 @@ driver: com.yugabyte.Driver
 url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
 username: {{username}}
 password: {{password}}
-
 createdb: drop database if exists yb_colocated; create database yb_colocated with colocated=true
 batchsize: 128
 isolation: TRANSACTION_REPEATABLE_READ
 loaderthreads: 4
-terminals: 1
+terminals: 24
 collect_pg_stat_statements: true
 use_dist_in_explain : true
 yaml_version: v1.0
 works:
     work:
-        time_secs: 60
-        active_terminals: 1
+        time_secs: 300
         rate: unlimited
-        warmup: 30
+        warmup: 60
 microbenchmark:
     class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
     properties:
@@ -49,47 +47,43 @@ microbenchmark:
                             - 1
                             - 1000000
         executeRules:
-            -   workload: 1_range_column_test
+            -   workload: RW_G3_1_range_column_test
                 run:
                     -   name: Insert_1_range_column_test
                         weight: 100
                         queries:
                             -   query: INSERT INTO table_test_1 (col_int_1, col_int_2, col_int_3, col_int_4, col_int_5, col_int_6, col_int_7) values (?, ?,?,?,?,?,?)
-                                count: 10
                                 bindings:
                                     -   util: PrimaryIntGen
                                         count: 7
-                                        params: [ 1000001, 9000000 ]
-            -   workload: 2_range_column_test
+                                        params: [ 1000001, 100000000 ]
+            -   workload: RW_G3_2_range_column_test
                 run:
                     -   name: Insert_2_range_column_test
                         weight: 100
                         queries:
                             -   query: INSERT INTO table_test_2 (col_int_1, col_int_2, col_int_3, col_int_4, col_int_5, col_int_6, col_int_7) values (?,?, ?,?,?,?,?)
-                                count: 10
                                 bindings:
                                     -   util: PrimaryIntGen
                                         count: 7
-                                        params: [ 1000001, 9000000 ]
-            -   workload: 3_range_column_test
+                                        params: [ 1000001, 100000000 ]
+            -   workload: RW_G3_3_range_column_test
                 run:
                     -   name: Insert_3_range_column_test
                         weight: 100
                         queries:
                             -   query: INSERT INTO table_test_3 (col_int_1, col_int_2, col_int_3, col_int_4, col_int_5, col_int_6, col_int_7) values (?,?,?, ?,?,?,?)
-                                count: 10
                                 bindings:
                                     -   util: PrimaryIntGen
                                         count: 7
-                                        params: [ 1000001, 9000000 ]
-            -   workload: 5_range_column_test
+                                        params: [ 1000001, 100000000 ]
+            -   workload: RW_G3_5_range_column_test
                 run:
                     -   name: Insert_5_range_column_test
                         weight: 100
                         queries:
                             -   query: INSERT INTO table_test_4 (col_int_1, col_int_2, col_int_3, col_int_4, col_int_5, col_int_6, col_int_7) values (?,?,?,?,?, ?,?)
-                                count: 10
                                 bindings:
                                     -   util: PrimaryIntGen
                                         count: 7
-                                        params: [ 1000001, 9000000 ]
+                                        params: [ 1000001, 100000000 ]

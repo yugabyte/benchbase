@@ -1,23 +1,21 @@
 type: YUGABYTE
 driver: com.yugabyte.Driver
-url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
+url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true&load-balance=false
 username: {{username}}
 password: {{password}}
-
 createdb: drop database if exists yb_colocated; create database yb_colocated with colocated=true
 batchsize: 128
 isolation: TRANSACTION_REPEATABLE_READ
 loaderthreads: 4
-terminals: 1
+terminals: 24
 collect_pg_stat_statements: true
 use_dist_in_explain : true
 yaml_version: v1.0
 works:
     work:
-        time_secs: 60
-        active_terminals: 1
+        time_secs: 300
         rate: unlimited
-        warmup: 30
+        warmup: 60
 microbenchmark:
     class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
     properties:
@@ -55,19 +53,19 @@ microbenchmark:
         loadRules:
             -   table: index_test_
                 count: 4
-                rows: 1000000
+                rows: 2000000
                 columns:
                     -   name: id
                         util: PrimaryIntGen
                         params:
                             - 1
-                            - 1000000
+                            - 2000000
                     -   name: col_int_
                         count: 10
                         util: RandomNumber
                         params:
                             - 1
-                            - 1000000
+                            - 2000000
                     -   name: col_varchar_
                         count: 3
                         util: RandomAString
@@ -82,72 +80,54 @@ microbenchmark:
                     -   name: col_boolean
                         util: RandomBoolean
         executeRules:
-            -   workload: no_index
+            -   workload: RW_G6_no_index
                 run:
-                    -   name: Insert_without_index_test
+                    -   name: Update_without_index_test
                         weight: 100
                         queries:
-                            -   query: INSERT INTO index_test_1 (id, col_int_1, col_int_2, col_int_3, col_int_4, col_int_5, col_int_6, col_int_7, col_int_8, col_int_9, col_int_10, col_varchar_1, col_varchar_2, col_varchar_3, col_date, col_boolean) values (?, ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-                                count: 10
+                            -   query: UPDATE index_test_1 SET col_int_1 = ? where id = ?
+                                count: 1
                                 bindings:
-                                    -   util: PrimaryIntGen
-                                        params: [ 1000001, 9000000 ]
                                     -   util: RandomNumber
-                                        count: 10
-                                        params: [ 1000001, 9000000 ]
-                                    -   util: RandomAString
-                                        count: 4
-                                        params: [ 20, 20 ]
-                                    -   util: RandomBoolean
-            -   workload: 1_index_test
+                                        params: [ 1, 2000000 ]
+                                    -   util: RandomNumber
+                                        params: [ 1, 2000000 ]
+            -   workload: RW_G6_1_index_test
                 run:
-                    -   name: Insert_with_1_index_test
+                    -   name: Update_with_1_index_test
                         weight: 100
                         queries:
-                            -   query: INSERT INTO index_test_2 (id, col_int_1, col_int_2, col_int_3, col_int_4, col_int_5, col_int_6, col_int_7, col_int_8, col_int_9, col_int_10, col_varchar_1, col_varchar_2, col_varchar_3, col_date, col_boolean) values (?, ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-                                count: 10
+                            -   query: UPDATE index_test_2 SET col_int_1 = ? where id = ?
+                                count: 1
                                 bindings:
-                                    -   util: PrimaryIntGen
-                                        params: [ 1000001, 9000000 ]
                                     -   util: RandomNumber
-                                        count: 10
-                                        params: [ 1000001, 9000000 ]
-                                    -   util: RandomAString
-                                        count: 4
-                                        params: [ 20, 20 ]
-                                    -   util: RandomBoolean
-            -   workload: 5_index_test
+                                        params: [ 1, 2000000 ]
+                                    -   util: RandomNumber
+                                        params: [ 1, 2000000 ]
+            -   workload: RW_G6_5_index_test
                 run:
-                    -   name: Insert_with_5_index_test
+                    -   name: Update_with_5_index_test
                         weight: 100
                         queries:
-                            -   query: INSERT INTO index_test_3 (id, col_int_1, col_int_2, col_int_3, col_int_4, col_int_5, col_int_6, col_int_7, col_int_8, col_int_9, col_int_10, col_varchar_1, col_varchar_2, col_varchar_3, col_date, col_boolean) values (?, ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-                                count: 10
+                            -   query: UPDATE index_test_3 SET col_int_1 = ?, col_int_2 = ?, col_int_3 = ?, col_int_4 = ?, col_int_5 = ? where id = ?
+                                count: 1
                                 bindings:
-                                    -   util: PrimaryIntGen
-                                        params: [ 1000001, 9000000 ]
                                     -   util: RandomNumber
-                                        count: 10
-                                        params: [ 1000001, 9000000 ]
-                                    -   util: RandomAString
-                                        count: 4
-                                        params: [ 20, 20 ]
-                                    -   util: RandomBoolean
-            -   workload: 10_index_test
+                                        count: 5
+                                        params: [ 1, 2000000 ]
+                                    -   util: RandomNumber
+                                        params: [ 1, 2000000 ]
+            -   workload: RW_G6_10_index_test
                 run:
-                    -   name: Insert_with_10_index_test
+                    -   name: Update_with_10_index_test
                         weight: 100
                         queries:
-                            -   query: INSERT INTO index_test_4 (id, col_int_1, col_int_2, col_int_3, col_int_4, col_int_5, col_int_6, col_int_7, col_int_8, col_int_9, col_int_10, col_varchar_1, col_varchar_2, col_varchar_3, col_date, col_boolean) values (?, ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-                                count: 10
+                            -   query: UPDATE index_test_4 SET col_int_1 = ?, col_int_2 = ?, col_int_3 = ?, col_int_4 = ?, col_int_5 = ?, col_int_6 = ?, col_int_7 = ?, col_int_8 = ?, col_int_9 = ?, col_int_10 = ? where id = ?
+                                count: 1
                                 bindings:
-                                    -   util: PrimaryIntGen
-                                        params: [ 1000001, 9000000 ]
                                     -   util: RandomNumber
                                         count: 10
-                                        params: [ 1000001, 9000000 ]
-                                    -   util: RandomAString
-                                        count: 4
-                                        params: [ 20, 20 ]
-                                    -   util: RandomBoolean
+                                        params: [ 1, 2000000 ]
+                                    -   util: RandomNumber
+                                        params: [ 1, 2000000 ]
 
