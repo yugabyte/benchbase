@@ -209,10 +209,10 @@ microbenchmark:
                                 params: [1, 20]
                               - util: CyclicSeqIntGen
                                 params: [1,100000]
-                              - util: SeqStringGenFromArray
-                                params: [['Sales','Engineering','HR','Anonymous']]
                               - util: CyclicSeqDateGenWithRep
                                 params: [2001,2025,100000]
+                              - util: RandomDateBtwYears
+                                params: [2001,2025]
             
             - workload: insert_without_part_with_fk
               run:
@@ -227,10 +227,10 @@ microbenchmark:
                                 params: [1, 20]
                               - util: CyclicSeqIntGen
                                 params: [1,100000]
-                              - util: SeqStringGenFromArray
-                                params: [['Sales','Engineering','HR','Anonymous']]
                               - util: CyclicSeqDateGenWithRep
                                 params: [2001,2025,100000]
+                              - util: RandomDateBtwYears
+                                params: [2001,2025]
 
             - workload: insert_with_part_without_fk
               run:
@@ -245,10 +245,10 @@ microbenchmark:
                                 params: [1, 20]
                               - util: CyclicSeqIntGen
                                 params: [1,100000]
-                              - util: SeqStringGenFromArray
-                                params: [['Sales','Engineering','HR','Anonymous']]
                               - util: CyclicSeqDateGenWithRep
                                 params: [2001,2025,100000]
+                              - util: RandomDateBtwYears
+                                params: [2001,2025]
 
             - workload: insert_without_part_without_fk
               run:
@@ -263,10 +263,10 @@ microbenchmark:
                                 params: [1, 20]
                               - util: CyclicSeqIntGen
                                 params: [1,100000]
-                              - util: SeqStringGenFromArray
-                                params: [['Sales','Engineering','HR','Anonymous']]
                               - util: CyclicSeqDateGenWithRep
                                 params: [2001,2025,100000]
+                              - util: RandomDateBtwYears
+                                params: [2001,2025]
 
             - workload: update_with_part_with_fk
               run:
