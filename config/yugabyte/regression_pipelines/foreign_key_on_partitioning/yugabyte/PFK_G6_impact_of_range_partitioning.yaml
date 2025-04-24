@@ -89,7 +89,7 @@ microbenchmark:
                     queries:
                         - query: SELECT * FROM projects_with_part where id=?;
                           bindings:
-                              util: RandomInt
+                              util: PrimaryIntGen
                               params: [1,100000]
 
             - workload: select_without_part
@@ -99,7 +99,7 @@ microbenchmark:
                     queries:
                         - query: SELECT * FROM projects_without_part where id=?;
                           bindings:
-                              util: RandomInt
+                              util: PrimaryIntGen
                               params: [1,100000]
                               
             - workload: insert_with_part
@@ -143,7 +143,7 @@ microbenchmark:
                           bindings:
                             - util: RandomDateBtwYears
                               params: [2001,2025]
-                            - util: RandomInt
+                            - util: PrimaryIntGen
                               params: [1, 100000]
 
             - workload: update_without_part
@@ -155,7 +155,7 @@ microbenchmark:
                           bindings:
                             - util: RandomDateBtwYears
                               params: [2001,2025]
-                            - util: RandomInt
+                            - util: PrimaryIntGen
                               params: [1, 100000]
 
             - workload: delete_with_part
@@ -165,7 +165,7 @@ microbenchmark:
                     queries:
                         - query: delete from projects_with_part where id=?;
                           bindings:
-                            - util: RandomInt
+                            - util: PrimaryIntGen
                               params: [1, 100000]
 
             - workload: delete_without_part
@@ -175,5 +175,5 @@ microbenchmark:
                     queries:
                         - query: delete from projects_without_part where id=?;
                           bindings:
-                            - util: RandomInt
+                            - util: PrimaryIntGen
                               params: [1, 100000]

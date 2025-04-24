@@ -89,10 +89,10 @@ microbenchmark:
                     queries:
                         - query: SELECT * FROM projects_with_part where created_at=? or created_at=?;
                           bindings:
-                              - util: RandomDateBtwYears
+                              - util: CyclicSeqDateGen
                                 params: [2001,2012]
-                              - util: RandomDateBtwYears
-                                params: [2012,2025]
+                              - util: CyclicSeqDateGen
+                                params: [2013,2025]
 
             - workload: select_without_part
               run:
@@ -101,10 +101,10 @@ microbenchmark:
                     queries:
                         - query: SELECT * FROM projects_without_part where created_at=? or created_at=?;
                           bindings:
-                              - util: RandomDateBtwYears
+                              - util: CyclicSeqDateGen
                                 params: [2001,2012]
-                              - util: RandomDateBtwYears
-                                params: [2012,2025]
+                              - util: CyclicSeqDateGen
+                                params: [2013,2025]
                               
             - workload: insert_with_part
               run:
@@ -145,10 +145,10 @@ microbenchmark:
                     queries:
                         - query: update projects_with_part set id=id+100000 where created_at=? or created_at=?;
                           bindings:
-                              - util: RandomDateBtwYears
+                              - util: CyclicSeqDateGen
                                 params: [2001,2012]
-                              - util: RandomDateBtwYears
-                                params: [2012,2025]
+                              - util: CyclicSeqDateGen
+                                params: [2013,2025]
 
             - workload: update_without_part
               run:
@@ -157,10 +157,10 @@ microbenchmark:
                     queries:
                         - query: update projects_without_part set id=id+100000 where created_at=? or created_at=?;
                           bindings:
-                              - util: RandomDateBtwYears
+                              - util: CyclicSeqDateGen
                                 params: [2001,2012]
-                              - util: RandomDateBtwYears
-                                params: [2012,2025]
+                              - util: CyclicSeqDateGen
+                                params: [2013,2025]
 
             - workload: delete_with_part
               run:
@@ -169,10 +169,10 @@ microbenchmark:
                     queries:
                         - query: delete from projects_with_part where created_at=? or created_at=?;
                           bindings:
-                              - util: RandomDateBtwYears
+                              - util: CyclicSeqDateGen
                                 params: [2001,2012]
-                              - util: RandomDateBtwYears
-                                params: [2012,2025]
+                              - util: CyclicSeqDateGen
+                                params: [2013,2025]
 
             - workload: delete_without_part
               run:
@@ -181,7 +181,7 @@ microbenchmark:
                     queries:
                         - query: delete from projects_without_part where created_at=? or created_at=?;
                           bindings:
-                              - util: RandomDateBtwYears
+                              - util: CyclicSeqDateGen
                                 params: [2001,2012]
-                              - util: RandomDateBtwYears
-                                params: [2012,2025]
+                              - util: CyclicSeqDateGen
+                                params: [2013,2025]

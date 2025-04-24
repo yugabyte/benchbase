@@ -28,12 +28,14 @@ microbenchmark:
             - DROP TABLE IF EXISTS projects_sales;
             - DROP TABLE IF EXISTS projects_eng;
             - DROP TABLE IF EXISTS projects_hr;
+            - DROP TABLE IF EXISTS projects_fin;
             - DROP TABLE IF EXISTS projects_default;
 
             - create table projects_with_part (id int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, dept)) PARTITION BY LIST (dept);
             - CREATE TABLE projects_sales PARTITION OF projects_with_part FOR VALUES IN ('Sales');
             - CREATE TABLE projects_eng PARTITION OF projects_with_part FOR VALUES IN ('Engineering');
             - CREATE TABLE projects_hr PARTITION OF projects_with_part FOR VALUES IN ('HR');
+            - CREATE TABLE projects_fin PARTITION OF projects_with_part FOR VALUES IN ('Finance');
             - CREATE TABLE projects_default PARTITION OF projects_with_part DEFAULT;
 
             - create table projects_without_part (id int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, dept));
@@ -44,6 +46,7 @@ microbenchmark:
             - DROP TABLE IF EXISTS projects_sales;
             - DROP TABLE IF EXISTS projects_eng;
             - DROP TABLE IF EXISTS projects_hr;
+            - DROP TABLE IF EXISTS projects_fin;
             - DROP TABLE IF EXISTS projects_default;
         loadRules:
             - table: projects_with_part
@@ -57,7 +60,7 @@ microbenchmark:
                     params: [1, 20]
                   - name: dept
                     util: SeqStringGenFromArray
-                    params: ['Sales','Engineering','HR','Anonymous']
+                    params: ['Sales','Engineering','HR','Finance','Anonymous']
                   - name: created_at
                     util: CyclicSeqDateGen
                     params: [2001,2025]
@@ -73,7 +76,7 @@ microbenchmark:
                     params: [1, 20]
                   - name: dept
                     util: SeqStringGenFromArray
-                    params: ['Sales','Engineering','HR','Anonymous']
+                    params: ['Sales','Engineering','HR','Finance','Anonymous']
                   - name: created_at
                     util: CyclicSeqDateGen
                     params: [2001,2025]
@@ -89,7 +92,7 @@ microbenchmark:
                     queries:
                         - query: SELECT * FROM projects_with_part where id=?;
                           bindings:
-                              - util: RandomInt
+                              - util: PrimaryIntGen
                                 params: [1, 100000]
 
             - workload: select_without_part
@@ -99,7 +102,7 @@ microbenchmark:
                     queries:
                         - query: SELECT * FROM projects_without_part where id=?;
                           bindings:
-                              - util: RandomInt
+                              - util: PrimaryIntGen
                                 params: [1, 100000]
                               
             - workload: insert_with_part
@@ -114,7 +117,7 @@ microbenchmark:
                               - util: RandomAString
                                 params: [1, 20]
                               - util: SeqStringGenFromArray
-                                params: ['Sales','Engineering','HR','Anonymous']
+                                params: ['Sales','Engineering','HR','Finance','Anonymous']
                               - util: CyclicSeqDateGen
                                 params: [2001,2025]
             
@@ -130,7 +133,7 @@ microbenchmark:
                               - util: RandomAString
                                 params: [1, 20]
                               - util: SeqStringGenFromArray
-                                params: ['Sales','Engineering','HR','Anonymous']
+                                params: ['Sales','Engineering','HR','Finance','Anonymous']
                               - util: CyclicSeqDateGen
                                 params: [2001,2025]
 
@@ -142,8 +145,8 @@ microbenchmark:
                         - query: update projects_with_part set dept=? where id=?;
                           bindings:
                             - util: OneStringFromArray
-                              params: ['Sales','Engineering','HR','Anonymous']
-                            - util: RandomInt
+                              params: ['Sales','Engineering','HR','Finance','Anonymous']
+                            - util: PrimaryIntGen
                               params: [1, 100000]
 
             - workload: update_without_part
@@ -154,8 +157,8 @@ microbenchmark:
                         - query: update projects_without_part set dept=? where id=?;
                           bindings:
                             - util: OneStringFromArray
-                              params: ['Sales','Engineering','HR','Anonymous']
-                            - util: RandomInt
+                              params: ['Sales','Engineering','HR','Finance','Anonymous']
+                            - util: PrimaryIntGen
                               params: [1, 100000]
 
             - workload: delete_with_part
@@ -165,7 +168,7 @@ microbenchmark:
                     queries:
                         - query: delete from projects_with_part where id=?; 
                           bindings:
-                            - util: RandomInt
+                            - util: PrimaryIntGen
                               params: [1, 100000]
 
             - workload: delete_without_part
@@ -175,5 +178,5 @@ microbenchmark:
                     queries:
                         - query: delete from projects_without_part where id=?;
                           bindings:
-                            - util: RandomInt
+                            - util: PrimaryIntGen
                               params: [1, 100000]

@@ -89,7 +89,7 @@ microbenchmark:
                     queries:
                         - query: SELECT * FROM projects_with_part where created_at=?;
                           bindings:
-                              util: RandomDateBtwYears
+                              util: CyclicSeqDateGen
                               params: [2001,2025]
 
             - workload: select_without_part
@@ -99,7 +99,7 @@ microbenchmark:
                     queries:
                         - query: SELECT * FROM projects_without_part where created_at=?;
                           bindings:
-                              util: RandomDateBtwYears
+                              util: CyclicSeqDateGen
                               params: [2001,2025]
                               
             - workload: insert_with_part
@@ -141,7 +141,7 @@ microbenchmark:
                     queries:
                         - query: update projects_with_part set id=id+100000 where created_at=?;
                           bindings:
-                            - util: RandomDateBtwYears
+                            - util: CyclicSeqDateGen
                               params: [2001,2025]
 
             - workload: update_without_part
@@ -151,7 +151,7 @@ microbenchmark:
                     queries:
                         - query: update projects_without_part set id=id+100000 where created_at=?;
                           bindings:
-                            - util: RandomDateBtwYears
+                            - util: CyclicSeqDateGen
                               params: [2001,2025]
 
             - workload: delete_with_part
@@ -161,7 +161,7 @@ microbenchmark:
                     queries:
                         - query: delete from projects_with_part where created_at=?;
                           bindings:
-                            - util: RandomDateBtwYears
+                            - util: CyclicSeqDateGen
                               params: [2001,2025]
 
             - workload: delete_without_part
@@ -171,5 +171,5 @@ microbenchmark:
                     queries:
                         - query: delete from projects_without_part where created_at=?;
                           bindings:
-                            - util: RandomDateBtwYears
+                            - util: CyclicSeqDateGen
                               params: [2001,2025]

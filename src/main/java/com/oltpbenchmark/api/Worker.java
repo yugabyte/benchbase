@@ -462,7 +462,7 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
 
                         retryCount++;
                     } else {
-                        LOG.debug(String.format("SQLException occurred during [%s] and will not be retried... sql state [%s], error code [%d], Message: %s.", transactionType, ex.getSQLState(), ex.getErrorCode(), ex.getMessage()));
+                        LOG.info(String.format("SQLException occurred during [%s] and will not be retried... sql state [%s], error code [%d], Message: %s.", transactionType, ex.getSQLState(), ex.getErrorCode(), ex.getMessage()));
 
                         status = TransactionStatus.ERROR;
 
