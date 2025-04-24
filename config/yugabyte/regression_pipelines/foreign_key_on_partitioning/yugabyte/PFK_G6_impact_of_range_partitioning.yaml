@@ -89,7 +89,7 @@ microbenchmark:
                     queries:
                         - query: SELECT * FROM projects_with_part where id=?;
                           bindings:
-                              util: PrimaryIntGen
+                              util: RandomInt
                               params: [1,100000]
 
             - workload: select_without_part
@@ -99,7 +99,7 @@ microbenchmark:
                     queries:
                         - query: SELECT * FROM projects_without_part where id=?;
                           bindings:
-                              util: PrimaryIntGen
+                              util: RandomInt
                               params: [1,100000]
                               
             - workload: insert_with_part

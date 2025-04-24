@@ -207,7 +207,7 @@ microbenchmark:
                     queries:
                         - query: update projects_with_part_with_fk set id=id+100000 where created_at=?
                           bindings:
-                            - util: RandomDateBtwYears
+                            - util: CyclicSeqDateGen
                               params: [2001,2025]
 
             - workload: update_with_part_without_fk
@@ -217,7 +217,7 @@ microbenchmark:
                     queries:
                         - query: update projects_with_part_without_fk set id=id+100000 where created_at=?
                           bindings:
-                            - util: RandomDateBtwYears
+                            - util: CyclicSeqDateGen
                               params: [2001,2025]
             
             - workload: update_without_part_with_fk
@@ -227,7 +227,7 @@ microbenchmark:
                     queries:
                         - query: update projects_without_part_with_fk set id=id+100000 where created_at=?
                           bindings:
-                            - util: RandomDateBtwYears
+                            - util: CyclicSeqDateGen
                               params: [2001,2025]
 
             - workload: update_without_part_without_fk
@@ -237,7 +237,7 @@ microbenchmark:
                     queries:
                         - query: update projects_without_part_without_fk set id=id+100000 where created_at=?
                           bindings:
-                            - util: RandomDateBtwYears
+                            - util: CyclicSeqDateGen
                               params: [2001,2025]
 
             - workload: delete_with_part_with_fk
@@ -247,7 +247,7 @@ microbenchmark:
                     queries:
                         - query: delete from projects_with_part_with_fk where created_at=?
                           bindings:
-                            - util: RandomDateBtwYears
+                            - util: CyclicSeqDateGen
                               params: [2001,2025]
 
             - workload: delete_with_part_without_fk
@@ -257,7 +257,7 @@ microbenchmark:
                     queries:
                         - query: delete from projects_with_part_without_fk where created_at=?
                           bindings:
-                            - util: RandomDateBtwYears
+                            - util: CyclicSeqDateGen
                               params: [2001,2025]
                             
             - workload: delete_without_part_with_fk
@@ -267,7 +267,7 @@ microbenchmark:
                     queries:
                         - query: delete from projects_without_part_with_fk where created_at=?
                           bindings:
-                            - util: RandomDateBtwYears
+                            - util: CyclicSeqDateGen
                               params: [2001,2025]
 
             - workload: delete_without_part_without_fk
@@ -277,5 +277,5 @@ microbenchmark:
                     queries:
                         - query: delete from projects_without_part_without_fk where created_at=?
                           bindings:
-                            - util: RandomDateBtwYears
+                            - util: CyclicSeqDateGen
                               params: [2001,2025]
