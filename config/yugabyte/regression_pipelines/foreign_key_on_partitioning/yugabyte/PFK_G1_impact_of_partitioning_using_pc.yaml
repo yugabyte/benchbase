@@ -1,8 +1,6 @@
 type: YUGABYTE
 driver: com.yugabyte.Driver
-url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
-username: {{username}}
-password: {{password}}
+url: jdbc:postgresql://127.0.0.1:5433/yugabyte?user=yugabyte&password=yugabyte  
 
 batchsize: 128
 isolation: TRANSACTION_REPEATABLE_READ
@@ -142,7 +140,7 @@ microbenchmark:
                         - query: update projects_with_part set id=id+100000 where dept=?;
                           bindings:
                             - util: OneStringFromArray
-                              params: [['Sales','Engineering','HR','Anonymous']]
+                              params: ['Sales','Engineering','HR','Anonymous']
 
             - workload: update_without_part
               run:
@@ -152,7 +150,7 @@ microbenchmark:
                         - query: update projects_without_part set id=id+100000 where dept=?;
                           bindings:
                             - util: OneStringFromArray
-                              params: [['Sales','Engineering','HR','Anonymous']]
+                              params: ['Sales','Engineering','HR','Anonymous']
 
             - workload: delete_with_part
               run:
@@ -162,7 +160,7 @@ microbenchmark:
                         - query: delete from projects_with_part where dept=?;
                           bindings:
                             - util: OneStringFromArray
-                              params: [['Sales','Engineering','HR','Anonymous']]
+                              params: ['Sales','Engineering','HR','Anonymous']
 
             - workload: delete_without_part
               run:
@@ -172,4 +170,4 @@ microbenchmark:
                         - query: delete from projects_without_part where dept=?;
                           bindings:
                             - util: OneStringFromArray
-                              params: [['Sales','Engineering','HR','Anonymous']]
+                              params: ['Sales','Engineering','HR','Anonymous']
