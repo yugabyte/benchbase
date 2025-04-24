@@ -28,6 +28,7 @@ microbenchmark:
             - DROP TABLE IF EXISTS employees_sales;
             - DROP TABLE IF EXISTS employees_eng;
             - DROP TABLE IF EXISTS employees_hr;
+            - DROP TABLE IF EXISTS employees_fin;
             - DROP TABLE IF EXISTS employees_default;
 
             - DROP INDEX IF EXISTS fk_index1;
@@ -45,6 +46,7 @@ microbenchmark:
             - CREATE TABLE employees_sales PARTITION OF employees_with_part FOR VALUES IN ('Sales');
             - CREATE TABLE employees_eng PARTITION OF employees_with_part FOR VALUES IN ('Engineering');
             - CREATE TABLE employees_hr PARTITION OF employees_with_part FOR VALUES IN ('HR');
+            - CREATE TABLE employees_fin PARTITION OF employees_with_part FOR VALUES IN ('Finance');
             - CREATE TABLE employees_default PARTITION OF employees_with_part DEFAULT;
 
             - create table employees_without_part (id int, name varchar(50) not null, project_id int, project_dept varchar(15), hired_at date,  UNIQUE(id, project_id,project_dept));
@@ -59,6 +61,7 @@ microbenchmark:
             - DROP TABLE IF EXISTS employees_sales;
             - DROP TABLE IF EXISTS employees_eng;
             - DROP TABLE IF EXISTS employees_hr;
+            - DROP TABLE IF EXISTS employees_fin;
             - DROP TABLE IF EXISTS employees_default;
 
             - DROP INDEX IF EXISTS fk_index1;
@@ -79,7 +82,7 @@ microbenchmark:
                     params: [1, 20]
                   - name: dept
                     util: SeqStringGenFromArray
-                    params: [['Sales','Engineering','HR','Anonymous']]
+                    params: ['Sales','Engineering','HR','Finance','Anonymous']
                   - name: created_at
                     util: RandomDateBtwYears
                     params: [2000,2025]
@@ -95,7 +98,7 @@ microbenchmark:
                     params: [1, 20]
                   - name: dept
                     util: SeqStringGenFromArray
-                    params: [['Sales','Engineering','HR','Anonymous']]
+                    params: ['Sales','Engineering','HR','Finance','Anonymous']
                   - name: created_at
                     util: RandomDateBtwYears
                     params: [2000,2025]
@@ -111,7 +114,7 @@ microbenchmark:
                     params: [1, 20]
                   - name: dept
                     util: SeqStringGenFromArray
-                    params: [['Sales','Engineering','HR','Anonymous']]
+                    params: ['Sales','Engineering','HR','Finance','Anonymous']
                   - name: created_at
                     util: RandomDateBtwYears
                     params: [2000,2025]
@@ -130,7 +133,7 @@ microbenchmark:
                     params: [1,100000]
                   - name: project_dept
                     util: SeqStringGenFromArray
-                    params: [['Sales','Engineering','HR','Anonymous']]
+                    params: ['Sales','Engineering','HR','Finance','Anonymous']
                   - name: hired_at
                     util: RandomDateBtwYears
                     params: [2000,2025]
@@ -149,7 +152,7 @@ microbenchmark:
                     params: [1,100000]
                   - name: project_dept
                     util: SeqStringGenFromArray
-                    params: [['Sales','Engineering','HR','Anonymous']]
+                    params: ['Sales','Engineering','HR','Finance','Anonymous']
                   - name: hired_at
                     util: RandomDateBtwYears
                     params: [2000,2025]
@@ -168,7 +171,7 @@ microbenchmark:
                         - query: update projects_with_part_with_fk set dept=? set id=id+100000 where dept=?;
                           bindings:
                             - util: OneStringFromArray
-                              params: [['Sales','Engineering','HR','Anonymous']]
+                              params: ['Sales','Engineering','HR','Finance','Anonymous']
             
             - workload: update_without_part_with_fk
               run:
@@ -178,7 +181,7 @@ microbenchmark:
                         - query: update projects_without_part_with_fk set dept=? set id=id+100000 where dept=?;
                           bindings:
                             - util: OneStringFromArray
-                              params: [['Sales','Engineering','HR','Anonymous']]
+                              params: ['Sales','Engineering','HR','Finance','Anonymous']
 
             - workload: update_without_fk
               run:
@@ -188,7 +191,7 @@ microbenchmark:
                         - query: update projects_without_fk set id=id+100000 where dept=?;
                           bindings:
                             - util: OneStringFromArray
-                              params: [['Sales','Engineering','HR','Anonymous']]
+                              params: ['Sales','Engineering','HR','Finance','Anonymous']
 
             - workload: delete_with_part_with_fk
               run:
@@ -198,7 +201,7 @@ microbenchmark:
                         - query: delete from projects_with_part_with_fk where dept=?;
                           bindings:
                             - util: OneStringFromArray
-                              params: [['Sales','Engineering','HR','Anonymous']]
+                              params: ['Sales','Engineering','HR','Finance','Anonymous']
                             
             - workload: delete_without_part_with_fk
               run:
@@ -208,7 +211,7 @@ microbenchmark:
                         - query: delete from projects_without_part_with_fk where dept=?;
                           bindings:
                             - util: OneStringFromArray
-                              params: [['Sales','Engineering','HR','Anonymous']]
+                              params: ['Sales','Engineering','HR','Finance','Anonymous']
 
             - workload: delete_without_fk
               run:
@@ -218,4 +221,4 @@ microbenchmark:
                         - query: delete from projects_without_fk where dept=?;
                           bindings:
                             - util: OneStringFromArray
-                              params: [['Sales','Engineering','HR','Anonymous']]
+                              params: ['Sales','Engineering','HR','Finance','Anonymous']

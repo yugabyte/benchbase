@@ -33,11 +33,13 @@ microbenchmark:
             - DROP TABLE IF EXISTS projects_sales1;
             - DROP TABLE IF EXISTS projects_eng1;
             - DROP TABLE IF EXISTS projects_hr1;
+            - DROP TABLE IF EXISTS projects_fin1;
             - DROP TABLE IF EXISTS projects_default1;
 
             - DROP TABLE IF EXISTS projects_sales2;
             - DROP TABLE IF EXISTS projects_eng2;
             - DROP TABLE IF EXISTS projects_hr2;
+            - DROP TABLE IF EXISTS projects_fin2;
             - DROP TABLE IF EXISTS projects_default2;
 
             - DROP INDEX IF EXISTS fk_index1;
@@ -47,12 +49,14 @@ microbenchmark:
             - CREATE TABLE projects_sales1 PARTITION OF projects_with_part_with_fk FOR VALUES IN ('Sales');
             - CREATE TABLE projects_eng1 PARTITION OF projects_with_part_with_fk FOR VALUES IN ('Engineering');
             - CREATE TABLE projects_hr1 PARTITION OF projects_with_part_with_fk FOR VALUES IN ('HR');
+            - CREATE TABLE projects_fin1 PARTITION OF projects_with_part_with_fk FOR VALUES IN ('Finance');
             - CREATE TABLE projects_default1 PARTITION OF projects_with_part_with_fk DEFAULT;
 
             - create table projects_with_part_without_fk (id int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, dept)) PARTITION BY LIST (dept);
             - CREATE TABLE projects_sales2 PARTITION OF projects_with_part_without_fk FOR VALUES IN ('Sales');
             - CREATE TABLE projects_eng2 PARTITION OF projects_with_part_without_fk FOR VALUES IN ('Engineering');
             - CREATE TABLE projects_hr2 PARTITION OF projects_with_part_without_fk FOR VALUES IN ('HR');
+            - CREATE TABLE projects_fin2 PARTITION OF projects_with_part_without_fk FOR VALUES IN ('Finance');
             - CREATE TABLE projects_default2 PARTITION OF projects_with_part_without_fk DEFAULT;
 
             - create table projects_without_part_with_fk (id int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, dept));
@@ -76,12 +80,15 @@ microbenchmark:
             - DROP TABLE IF EXISTS projects_sales1;
             - DROP TABLE IF EXISTS projects_eng1;
             - DROP TABLE IF EXISTS projects_hr1;
+            - DROP TABLE IF EXISTS projects_fin1;
             - DROP TABLE IF EXISTS projects_default1;
 
             - DROP TABLE IF EXISTS projects_sales2;
             - DROP TABLE IF EXISTS projects_eng2;
             - DROP TABLE IF EXISTS projects_hr2;
+            - DROP TABLE IF EXISTS projects_fin2;
             - DROP TABLE IF EXISTS projects_default2;
+
         loadRules:
             - table: projects_with_part_with_fk
               rows: 100000
@@ -94,7 +101,7 @@ microbenchmark:
                     params: [1, 20]
                   - name: dept
                     util: SeqStringGenFromArray
-                    params: [['Sales','Engineering','HR','Anonymous']]
+                    params: ['Sales','Engineering','HR','Finance','Anonymous']
                   - name: created_at
                     util: RandomDateBtwYears
                     params: [2000,2025]
@@ -110,7 +117,7 @@ microbenchmark:
                     params: [1, 20]
                   - name: dept
                     util: SeqStringGenFromArray
-                    params: [['Sales','Engineering','HR','Anonymous']]
+                    params: ['Sales','Engineering','HR','Finance','Anonymous']
                   - name: created_at
                     util: RandomDateBtwYears
                     params: [2000,2025]
@@ -126,7 +133,7 @@ microbenchmark:
                     params: [1, 20]
                   - name: dept
                     util: SeqStringGenFromArray
-                    params: [['Sales','Engineering','HR','Anonymous']]
+                    params: ['Sales','Engineering','HR','Finance','Anonymous']
                   - name: created_at
                     util: RandomDateBtwYears
                     params: [2000,2025]
@@ -142,7 +149,7 @@ microbenchmark:
                     params: [1, 20]
                   - name: dept
                     util: SeqStringGenFromArray
-                    params: [['Sales','Engineering','HR','Anonymous']]
+                    params: ['Sales','Engineering','HR','Finance','Anonymous']
                   - name: created_at
                     util: RandomDateBtwYears
                     params: [2000,2025]
@@ -161,7 +168,7 @@ microbenchmark:
                     params: [1,100000]
                   - name: project_dept
                     util: SeqStringGenFromArray
-                    params: [['Sales','Engineering','HR','Anonymous']]
+                    params: ['Sales','Engineering','HR','Finance','Anonymous']
                   - name: hired_at
                     util: RandomDateBtwYears
                     params: [2000,2025]
@@ -180,7 +187,7 @@ microbenchmark:
                     params: [1,100000]
                   - name: project_dept
                     util: SeqStringGenFromArray
-                    params: [['Sales','Engineering','HR','Anonymous']]
+                    params: ['Sales','Engineering','HR','Finance','Anonymous']
                   - name: hired_at
                     util: RandomDateBtwYears
                     params: [2000,2025]
@@ -199,7 +206,7 @@ microbenchmark:
                         - query: update projects_with_part_with_fk set id=id+100000 where dept=?;
                           bindings:
                             - util: OneStringFromArray
-                              params: [['Sales','Engineering','HR','Anonymous']]
+                              params: ['Sales','Engineering','HR','Finance','Anonymous']
 
             - workload: update_with_part_without_fk
               run:
@@ -209,7 +216,7 @@ microbenchmark:
                         - query: update projects_with_part_without_fk set id=id+100000 where dept=?;
                           bindings:
                             - util: OneStringFromArray
-                              params: [['Sales','Engineering','HR','Anonymous']]
+                              params: ['Sales','Engineering','HR','Finance','Anonymous']
             
             - workload: update_without_part_with_fk
               run:
@@ -219,7 +226,7 @@ microbenchmark:
                         - query: update projects_without_part_with_fk set id=id+100000 where dept=?;
                           bindings:
                             - util: OneStringFromArray
-                              params: [['Sales','Engineering','HR','Anonymous']]
+                              params: ['Sales','Engineering','HR','Finance','Anonymous']
 
             - workload: update_without_part_without_fk
               run:
@@ -229,7 +236,7 @@ microbenchmark:
                         - query: update projects_without_part_without_fk set id=id+100000 where dept=?;
                           bindings:
                             - util: OneStringFromArray
-                              params: [['Sales','Engineering','HR','Anonymous']]
+                              params: ['Sales','Engineering','HR','Finance','Anonymous']
 
             - workload: delete_with_part_with_fk
               run:
@@ -239,7 +246,7 @@ microbenchmark:
                         - query: delete from projects_with_part_with_fk where dept=?;
                           bindings:
                             - util: OneStringFromArray
-                              params: [['Sales','Engineering','HR','Anonymous']]
+                              params: ['Sales','Engineering','HR','Finance','Anonymous']
 
             - workload: delete_with_part_without_fk
               run:
@@ -249,7 +256,7 @@ microbenchmark:
                         - query: delete from projects_with_part_without_fk where dept=?;
                           bindings:
                             - util: OneStringFromArray
-                              params: [['Sales','Engineering','HR','Anonymous']]
+                              params: ['Sales','Engineering','HR','Finance','Anonymous']
                             
             - workload: delete_without_part_with_fk
               run:
@@ -259,7 +266,7 @@ microbenchmark:
                         - query: delete from projects_without_part_with_fk where dept=?;
                           bindings:
                             - util: OneStringFromArray
-                              params: [['Sales','Engineering','HR','Anonymous']]
+                              params: ['Sales','Engineering','HR','Finance','Anonymous']
 
             - workload: delete_without_part_without_fk
               run:
@@ -269,4 +276,4 @@ microbenchmark:
                         - query: delete from projects_without_part_without_fk where dept=?;
                           bindings:
                             - util: OneStringFromArray
-                              params: [['Sales','Engineering','HR','Anonymous']]
+                              params: ['Sales','Engineering','HR','Finance','Anonymous']

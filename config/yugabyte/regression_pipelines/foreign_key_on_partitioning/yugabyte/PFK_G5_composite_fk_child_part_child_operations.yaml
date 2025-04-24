@@ -30,11 +30,13 @@ microbenchmark:
             - DROP TABLE IF EXISTS employees_sales_1;
             - DROP TABLE IF EXISTS employees_eng_1;
             - DROP TABLE IF EXISTS employees_hr_1;
+            - DROP TABLE IF EXISTS employees_fin_1;
             - DROP TABLE IF EXISTS employees_default_1;
 
             - DROP TABLE IF EXISTS employees_sales_2;
             - DROP TABLE IF EXISTS employees_eng_2;
             - DROP TABLE IF EXISTS employees_hr_2;
+            - DROP TABLE IF EXISTS employees_fin_2;
             - DROP TABLE IF EXISTS employees_default_2;
 
             - DROP TABLE IF EXISTS projects_with_part;
@@ -47,12 +49,14 @@ microbenchmark:
             - CREATE TABLE employees_sales_1 PARTITION OF employees_with_part_with_fk FOR VALUES IN ('Sales');
             - CREATE TABLE employees_eng_1 PARTITION OF employees_with_part_with_fk FOR VALUES IN ('Engineering');
             - CREATE TABLE employees_hr_1 PARTITION OF employees_with_part_with_fk FOR VALUES IN ('HR');
+            - CREATE TABLE employees_fin_1 PARTITION OF employees_with_part_with_fk FOR VALUES IN ('Finance');
             - CREATE TABLE employees_default_1 PARTITION OF employees_with_part_with_fk DEFAULT;
 
             - create table employees_with_part_without_fk (id int, name varchar(50) not null, project_id int, project_dept varchar(15), hired_at date, UNIQUE(id, project_id,project_dept))  PARTITION BY LIST (project_dept);
             - CREATE TABLE employees_sales_2 PARTITION OF employees_with_part_without_fk FOR VALUES IN ('Sales');
             - CREATE TABLE employees_eng_2 PARTITION OF employees_with_part_without_fk FOR VALUES IN ('Engineering');
             - CREATE TABLE employees_hr_2 PARTITION OF employees_with_part_without_fk FOR VALUES IN ('HR');
+            - CREATE TABLE employees_fin_2 PARTITION OF employees_with_part_with_fk FOR VALUES IN ('Finance');
             - CREATE TABLE employees_default_2 PARTITION OF employees_with_part_without_fk DEFAULT;
 
             - create table employees_without_part_with_fk (id int, name varchar(50) not null, project_id int, project_dept varchar(15), hired_at date,  UNIQUE(id, project_id,project_dept));
@@ -67,11 +71,13 @@ microbenchmark:
             - DROP TABLE IF EXISTS employees_sales_1;
             - DROP TABLE IF EXISTS employees_eng_1;
             - DROP TABLE IF EXISTS employees_hr_1;
+            - DROP TABLE IF EXISTS employees_fin_1;
             - DROP TABLE IF EXISTS employees_default_1;
 
             - DROP TABLE IF EXISTS employees_sales_2;
             - DROP TABLE IF EXISTS employees_eng_2;
             - DROP TABLE IF EXISTS employees_hr_2;
+            - DROP TABLE IF EXISTS employees_fin_2;
             - DROP TABLE IF EXISTS employees_default_2;
 
             - DROP TABLE IF EXISTS projects_with_part;
@@ -88,7 +94,7 @@ microbenchmark:
                     params: [1, 20]
                   - name: dept
                     util: SeqStringGenFromArray
-                    params: [['Sales','Engineering','HR','Anonymous']]
+                    params: ['Sales','Engineering','HR','Finance','Anonymous']
                   - name: created_at
                     util: RandomDateBtwYears
                     params: [2000,2025]
@@ -104,7 +110,7 @@ microbenchmark:
                     params: [1, 20]
                   - name: dept
                     util: SeqStringGenFromArray
-                    params: [['Sales','Engineering','HR','Anonymous']]
+                    params: ['Sales','Engineering','HR','Finance','Anonymous']
                   - name: created_at
                     util: RandomDateBtwYears
                     params: [2000,2025]
@@ -123,7 +129,7 @@ microbenchmark:
                     params: [1,100000]
                   - name: project_dept
                     util: SeqStringGenFromArray
-                    params: [['Sales','Engineering','HR','Anonymous']]
+                    params: ['Sales','Engineering','HR','Finance','Anonymous']
                   - name: hired_at
                     util: RandomDateBtwYears
                     params: [2000,2025]
@@ -142,7 +148,7 @@ microbenchmark:
                     params: [1,100000]
                   - name: project_dept
                     util: SeqStringGenFromArray
-                    params: [['Sales','Engineering','HR','Anonymous']]
+                    params: ['Sales','Engineering','HR','Finance','Anonymous']
                   - name: hired_at
                     util: RandomDateBtwYears
                     params: [2000,2025]
@@ -161,7 +167,7 @@ microbenchmark:
                     params: [1,100000]
                   - name: project_dept
                     util: SeqStringGenFromArray
-                    params: [['Sales','Engineering','HR','Anonymous']]
+                    params: ['Sales','Engineering','HR','Finance','Anonymous']
                   - name: hired_at
                     util: RandomDateBtwYears
                     params: [2000,2025]
@@ -180,7 +186,7 @@ microbenchmark:
                     params: [1,100000]
                   - name: project_dept
                     util: SeqStringGenFromArray
-                    params: [['Sales','Engineering','HR','Anonymous']]
+                    params: ['Sales','Engineering','HR','Finance','Anonymous']
                   - name: hired_at
                     util: RandomDateBtwYears
                     params: [2000,2025]
@@ -205,7 +211,7 @@ microbenchmark:
                               - util: CyclicSeqIntGen
                                 params: [1,100000]
                               - util: SeqStringGenFromArray
-                                params: [['Sales','Engineering','HR','Anonymous']]
+                                params: ['Sales','Engineering','HR','Finance','Anonymous']
                               - util: RandomDateBtwYears
                                 params: [2000,2025]
             
@@ -223,7 +229,7 @@ microbenchmark:
                               - util: CyclicSeqIntGen
                                 params: [1,100000]
                               - util: SeqStringGenFromArray
-                                params: [['Sales','Engineering','HR','Anonymous']]
+                                params: ['Sales','Engineering','HR','Finance','Anonymous']
                               - util: RandomDateBtwYears
                                 params: [2000,2025]
 
@@ -241,7 +247,7 @@ microbenchmark:
                               - util: CyclicSeqIntGen
                                 params: [1,100000]
                               - util: SeqStringGenFromArray
-                                params: [['Sales','Engineering','HR','Anonymous']]
+                                params: ['Sales','Engineering','HR','Finance','Anonymous']
                               - util: RandomDateBtwYears
                                 params: [2000,2025]
 
@@ -259,7 +265,7 @@ microbenchmark:
                               - util: CyclicSeqIntGen
                                 params: [1,100000]
                               - util: SeqStringGenFromArray
-                                params: [['Sales','Engineering','HR','Anonymous']]
+                                params: ['Sales','Engineering','HR','Finance','Anonymous']
                               - util: RandomDateBtwYears
                                 params: [2000,2025]
 
@@ -273,7 +279,7 @@ microbenchmark:
                             - util: PrimaryIntGen
                               params: [1, 100000]
                             - util: SeqStringGenFromArray
-                              params: [['Sales','Engineering','HR','Anonymous']]
+                              params: ['Sales','Engineering','HR','Finance','Anonymous']
                             - util: RandomInt
                               params: [1, 1000000]
 
@@ -287,7 +293,7 @@ microbenchmark:
                             - util: PrimaryIntGen
                               params: [1, 100000]
                             - util: SeqStringGenFromArray
-                              params: [['Sales','Engineering','HR','Anonymous']]
+                              params: ['Sales','Engineering','HR','Finance','Anonymous']
                             - util: RandomInt
                               params: [1, 1000000]
 
@@ -301,7 +307,7 @@ microbenchmark:
                             - util: PrimaryIntGen
                               params: [1, 100000]
                             - util: SeqStringGenFromArray
-                              params: [['Sales','Engineering','HR','Anonymous']]
+                              params: ['Sales','Engineering','HR','Finance','Anonymous']
                             - util: RandomInt
                               params: [1, 1000000]
 
@@ -315,6 +321,6 @@ microbenchmark:
                             - util: PrimaryIntGen
                               params: [1, 100000]
                             - util: SeqStringGenFromArray
-                              params: [['Sales','Engineering','HR','Anonymous']]
+                              params: ['Sales','Engineering','HR','Finance','Anonymous']
                             - util: RandomInt
                               params: [1, 1000000]
