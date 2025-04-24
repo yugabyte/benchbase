@@ -1,0 +1,114 @@
+type: YUGABYTE
+driver: com.yugabyte.Driver
+url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
+username: {{username}}
+password: {{password}}
+
+batchsize: 128
+isolation: TRANSACTION_REPEATABLE_READ
+loaderThreads: 1
+terminals: 1
+collect_pg_stat_statements: true
+use_dist_in_explain : true
+yaml_version: v1.0
+works:
+    work:
+        time_secs: 60
+        active_terminals: 1
+        rate: unlimited
+        warmup: 30
+microbenchmark:
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
+    properties:
+        setAutoCommit: false
+        create:
+            - DROP TABLE IF EXISTS projects_with_part;
+            - DROP TABLE IF EXISTS projects_without_part;
+
+            - DROP TABLE IF EXISTS projects_sales;
+            - DROP TABLE IF EXISTS projects_eng;
+            - DROP TABLE IF EXISTS projects_hr;
+            - DROP TABLE IF EXISTS projects_fin;
+            - DROP TABLE IF EXISTS projects_default;
+
+            - create table projects_with_part (id int, uid int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, dept)) PARTITION BY LIST (dept);
+            - CREATE TABLE projects_sales PARTITION OF projects_with_part FOR VALUES IN ('Sales');
+            - CREATE TABLE projects_eng PARTITION OF projects_with_part FOR VALUES IN ('Engineering');
+            - CREATE TABLE projects_hr PARTITION OF projects_with_part FOR VALUES IN ('HR');
+            - CREATE TABLE projects_fin PARTITION OF projects_with_part FOR VALUES IN ('Finance');
+            - CREATE TABLE projects_default PARTITION OF projects_with_part DEFAULT;
+
+            - create table projects_without_part (id int, uid int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, dept));
+        cleanup:
+            - DROP TABLE IF EXISTS projects_with_part;
+            - DROP TABLE IF EXISTS projects_without_part;
+
+            - DROP TABLE IF EXISTS projects_sales;
+            - DROP TABLE IF EXISTS projects_eng;
+            - DROP TABLE IF EXISTS projects_hr;
+            - DROP TABLE IF EXISTS projects_fin;
+            - DROP TABLE IF EXISTS projects_default;
+
+        loadRules:
+            - table: projects_with_part
+              rows: 100000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 100000]
+                  - name: uid
+                    util: PrimaryIntGen
+                    params: [1, 100000]
+                  - name: name
+                    util: RandomAString
+                    params: [1, 20]
+                  - name: dept
+                    util: SeqStringGenFromArray
+                    params: ['Sales','Engineering','HR','Finance','Anonymous']
+                  - name: created_at
+                    util: CyclicSeqDateGen
+                    params: [2001,2025]
+
+            - table: projects_without_part
+              rows: 100000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 100000]
+                  - name: uid
+                    util: PrimaryIntGen
+                    params: [1, 100000]
+                  - name: name
+                    util: RandomAString
+                    params: [1, 20]
+                  - name: dept
+                    util: SeqStringGenFromArray
+                    params: ['Sales','Engineering','HR','Finance','Anonymous']
+                  - name: created_at
+                    util: CyclicSeqDateGen
+                    params: [2001,2025]
+
+        # afterLoad:
+        #     - ALTER TABLE employees_with_fk add CONSTRAINT fk_project FOREIGN KEY (project_id) REFERENCES projects(id);
+            
+        executeRules:
+
+            - workload: update_with_part
+              run:
+                  - name: update_with_part
+                    weight: 100
+                    queries:
+                        - query: update projects_with_part set uid=uid+1 where id=?;
+                          bindings:
+                            - util: RandomInt
+                              params: [1, 100000]
+
+            - workload: update_without_part
+              run:
+                  - name: update_without_part
+                    weight: 100
+                    queries:
+                        - query: update projects_without_part set uid=uid+1 where id=?;
+                          bindings:
+                            - util: RandomInt
+                              params: [1, 100000]
