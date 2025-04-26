@@ -86,6 +86,7 @@ microbenchmark:
                         weight: 100
                         queries:
                             -   query: INSERT INTO index_test_1 (id, col_int_1, col_int_2, col_int_3, col_int_4, col_int_5, col_int_6, col_int_7, col_int_8, col_int_9, col_int_10, col_varchar_1, col_varchar_2, col_varchar_3, col_date, col_boolean) values (?, ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                                count: 10
                                 bindings:
                                     -   util: PrimaryIntGen
                                         params: [ 1000001, 100000000 ]
@@ -102,6 +103,7 @@ microbenchmark:
                         weight: 100
                         queries:
                             -   query: INSERT INTO index_test_2 (id, col_int_1, col_int_2, col_int_3, col_int_4, col_int_5, col_int_6, col_int_7, col_int_8, col_int_9, col_int_10, col_varchar_1, col_varchar_2, col_varchar_3, col_date, col_boolean) values (?, ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                                count: 10
                                 bindings:
                                     -   util: PrimaryIntGen
                                         params: [ 1000001, 100000000 ]
@@ -118,6 +120,7 @@ microbenchmark:
                         weight: 100
                         queries:
                             -   query: INSERT INTO index_test_3 (id, col_int_1, col_int_2, col_int_3, col_int_4, col_int_5, col_int_6, col_int_7, col_int_8, col_int_9, col_int_10, col_varchar_1, col_varchar_2, col_varchar_3, col_date, col_boolean) values (?, ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                                count: 10
                                 bindings:
                                     -   util: PrimaryIntGen
                                         params: [ 1000001, 100000000 ]
@@ -134,6 +137,7 @@ microbenchmark:
                         weight: 100
                         queries:
                             -   query: INSERT INTO index_test_4 (id, col_int_1, col_int_2, col_int_3, col_int_4, col_int_5, col_int_6, col_int_7, col_int_8, col_int_9, col_int_10, col_varchar_1, col_varchar_2, col_varchar_3, col_date, col_boolean) values (?, ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                                count: 10
                                 bindings:
                                     -   util: PrimaryIntGen
                                         params: [ 1000001, 100000000 ]

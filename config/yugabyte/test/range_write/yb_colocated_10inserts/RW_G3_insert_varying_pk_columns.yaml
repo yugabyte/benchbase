@@ -53,6 +53,7 @@ microbenchmark:
                         weight: 100
                         queries:
                             -   query: INSERT INTO table_test_1 (col_int_1, col_int_2, col_int_3, col_int_4, col_int_5, col_int_6, col_int_7) values (?, ?,?,?,?,?,?)
+                                count: 10
                                 bindings:
                                     -   util: PrimaryIntGen
                                         count: 7
@@ -63,6 +64,7 @@ microbenchmark:
                         weight: 100
                         queries:
                             -   query: INSERT INTO table_test_2 (col_int_1, col_int_2, col_int_3, col_int_4, col_int_5, col_int_6, col_int_7) values (?,?, ?,?,?,?,?)
+                                count: 10
                                 bindings:
                                     -   util: PrimaryIntGen
                                         count: 7
@@ -73,6 +75,7 @@ microbenchmark:
                         weight: 100
                         queries:
                             -   query: INSERT INTO table_test_3 (col_int_1, col_int_2, col_int_3, col_int_4, col_int_5, col_int_6, col_int_7) values (?,?,?, ?,?,?,?)
+                                count: 10
                                 bindings:
                                     -   util: PrimaryIntGen
                                         count: 7
@@ -83,6 +86,7 @@ microbenchmark:
                         weight: 100
                         queries:
                             -   query: INSERT INTO table_test_4 (col_int_1, col_int_2, col_int_3, col_int_4, col_int_5, col_int_6, col_int_7) values (?,?,?,?,?, ?,?)
+                                count: 10
                                 bindings:
                                     -   util: PrimaryIntGen
                                         count: 7
