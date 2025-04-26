@@ -19,7 +19,7 @@ works:
 microbenchmark:
     class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
     properties:
-        setAutoCommit: false
+        setAutoCommit: true
         create:
             - drop table if exists index_test_1;
             - drop table if exists index_test_2;
