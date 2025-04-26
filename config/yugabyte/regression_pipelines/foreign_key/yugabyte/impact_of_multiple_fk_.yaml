@@ -439,25 +439,25 @@ microbenchmark:
                     params: [1,100000]
 
         afterLoad:
-            - ALTER TABLE employees_with_1fk add CONSTRAINT fk_project FOREIGN KEY (project_id1) REFERENCES projects_with_1_fk(uid1);
+            - ALTER TABLE employees_with_1fk add CONSTRAINT fk_project1_1 FOREIGN KEY (project_id1) REFERENCES projects_with_1_fk(uid1);
 
-            - ALTER TABLE employees_with_2fk add CONSTRAINT fk_project1 FOREIGN KEY (project_id1) REFERENCES projects_with_2_fk(uid1);
-            - ALTER TABLE employees_with_2fk add CONSTRAINT fk_project2 FOREIGN KEY (project_id2) REFERENCES projects_with_2_fk(uid2);
+            - ALTER TABLE employees_with_2fk add CONSTRAINT fk_project2_1 FOREIGN KEY (project_id1) REFERENCES projects_with_2_fk(uid1);
+            - ALTER TABLE employees_with_2fk add CONSTRAINT fk_project2_2 FOREIGN KEY (project_id2) REFERENCES projects_with_2_fk(uid2);
 
-            - ALTER TABLE employees_with_3fk add CONSTRAINT fk_project1 FOREIGN KEY (project_id1) REFERENCES projects_with_3_fk(uid1);
-            - ALTER TABLE employees_with_3fk add CONSTRAINT fk_project2 FOREIGN KEY (project_id2) REFERENCES projects_with_3_fk(uid2);
-            - ALTER TABLE employees_with_3fk add CONSTRAINT fk_project3 FOREIGN KEY (project_id3) REFERENCES projects_with_3_fk(uid3);
+            - ALTER TABLE employees_with_3fk add CONSTRAINT fk_project3_1 FOREIGN KEY (project_id1) REFERENCES projects_with_3_fk(uid1);
+            - ALTER TABLE employees_with_3fk add CONSTRAINT fk_project3_2 FOREIGN KEY (project_id2) REFERENCES projects_with_3_fk(uid2);
+            - ALTER TABLE employees_with_3fk add CONSTRAINT fk_project3_3 FOREIGN KEY (project_id3) REFERENCES projects_with_3_fk(uid3);
 
-            - ALTER TABLE employees_with_4fk add CONSTRAINT fk_project1 FOREIGN KEY (project_id1) REFERENCES projects_with_4_fk(uid1);
-            - ALTER TABLE employees_with_4fk add CONSTRAINT fk_project2 FOREIGN KEY (project_id2) REFERENCES projects_with_4_fk(uid2);
-            - ALTER TABLE employees_with_4fk add CONSTRAINT fk_project3 FOREIGN KEY (project_id3) REFERENCES projects_with_4_fk(uid3);
-            - ALTER TABLE employees_with_4fk add CONSTRAINT fk_project4 FOREIGN KEY (project_id4) REFERENCES projects_with_4_fk(uid4);
+            - ALTER TABLE employees_with_4fk add CONSTRAINT fk_project4_1 FOREIGN KEY (project_id1) REFERENCES projects_with_4_fk(uid1);
+            - ALTER TABLE employees_with_4fk add CONSTRAINT fk_project4_2 FOREIGN KEY (project_id2) REFERENCES projects_with_4_fk(uid2);
+            - ALTER TABLE employees_with_4fk add CONSTRAINT fk_project4_3 FOREIGN KEY (project_id3) REFERENCES projects_with_4_fk(uid3);
+            - ALTER TABLE employees_with_4fk add CONSTRAINT fk_project4_4 FOREIGN KEY (project_id4) REFERENCES projects_with_4_fk(uid4);
 
-            - ALTER TABLE employees_with_5fk add CONSTRAINT fk_project1 FOREIGN KEY (project_id1) REFERENCES projects_with_5_fk(uid1);
-            - ALTER TABLE employees_with_5fk add CONSTRAINT fk_project2 FOREIGN KEY (project_id2) REFERENCES projects_with_5_fk(uid2);
-            - ALTER TABLE employees_with_5fk add CONSTRAINT fk_project3 FOREIGN KEY (project_id3) REFERENCES projects_with_5_fk(uid3);
-            - ALTER TABLE employees_with_5fk add CONSTRAINT fk_project4 FOREIGN KEY (project_id4) REFERENCES projects_with_5_fk(uid4);
-            - ALTER TABLE employees_with_5fk add CONSTRAINT fk_project5 FOREIGN KEY (project_id5) REFERENCES projects_with_5_fk(uid5);
+            - ALTER TABLE employees_with_5fk add CONSTRAINT fk_project5_1 FOREIGN KEY (project_id1) REFERENCES projects_with_5_fk(uid1);
+            - ALTER TABLE employees_with_5fk add CONSTRAINT fk_project5_2 FOREIGN KEY (project_id2) REFERENCES projects_with_5_fk(uid2);
+            - ALTER TABLE employees_with_5fk add CONSTRAINT fk_project5_3 FOREIGN KEY (project_id3) REFERENCES projects_with_5_fk(uid3);
+            - ALTER TABLE employees_with_5fk add CONSTRAINT fk_project5_4 FOREIGN KEY (project_id4) REFERENCES projects_with_5_fk(uid4);
+            - ALTER TABLE employees_with_5fk add CONSTRAINT fk_project5_5 FOREIGN KEY (project_id5) REFERENCES projects_with_5_fk(uid5);
             
         executeRules:
 
