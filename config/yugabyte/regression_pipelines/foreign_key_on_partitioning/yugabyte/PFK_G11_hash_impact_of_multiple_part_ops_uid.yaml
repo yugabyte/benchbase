@@ -165,7 +165,7 @@ microbenchmark:
                   - name: update_without_part
                     weight: 100
                     queries:
-                        - query: update projects_without_part version=version+1 where uid=? or uid=?;
+                        - query: update projects_without_part set version=version+1 where uid=? or uid=?;
                           bindings:
                             - count: 2
                               util: RandomInt
