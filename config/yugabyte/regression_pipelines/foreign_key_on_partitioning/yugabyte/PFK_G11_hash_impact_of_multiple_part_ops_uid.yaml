@@ -31,14 +31,14 @@ microbenchmark:
             - DROP TABLE IF EXISTS projects_rem_3;
             - DROP TABLE IF EXISTS projects_rem_4;
 
-            - create table projects_with_part (id int, name varchar(20) NOT NULL, uid int, created_at date,PRIMARY KEY (id, uid)) PARTITION BY HASH (uid);
+            - create table projects_with_part (id int, name varchar(20) NOT NULL, uid int, version int, created_at date,PRIMARY KEY (id, uid)) PARTITION BY HASH (uid);
             - CREATE TABLE projects_rem_0 PARTITION OF projects_with_part FOR VALUES WITH (MODULUS 5, REMAINDER 0);
             - CREATE TABLE projects_rem_1 PARTITION OF projects_with_part FOR VALUES WITH (MODULUS 5, REMAINDER 1);
             - CREATE TABLE projects_rem_2 PARTITION OF projects_with_part FOR VALUES WITH (MODULUS 5, REMAINDER 2);
             - CREATE TABLE projects_rem_3 PARTITION OF projects_with_part FOR VALUES WITH (MODULUS 5, REMAINDER 3);
             - CREATE TABLE projects_rem_4 PARTITION OF projects_with_part FOR VALUES WITH (MODULUS 5, REMAINDER 4);
 
-            - create table projects_without_part (id int, name varchar(20) NOT NULL, uid int, created_at date,PRIMARY KEY (id, uid));
+            - create table projects_without_part (id int, name varchar(20) NOT NULL, uid int, version int, created_at date,PRIMARY KEY (id, uid));
         cleanup:
             - DROP TABLE IF EXISTS projects_with_part;
             - DROP TABLE IF EXISTS projects_without_part;
@@ -61,6 +61,9 @@ microbenchmark:
                   - name: uid
                     util: PrimaryIntGen
                     params: [1, 100000]
+                  - name: version
+                    util: PrimaryIntGen
+                    params: [1, 100000]
                   - name: created_at
                     util: CyclicSeqDateGen
                     params: [2001,2025]
@@ -77,6 +80,9 @@ microbenchmark:
                   - name: uid
                     util: PrimaryIntGen
                     params: [1, 100000]
+                  - name: version
+                    util: PrimaryIntGen
+                    params: [1, 100000]
                   - name: created_at
                     util: CyclicSeqDateGen
                     params: [2001,2025]
@@ -90,9 +96,10 @@ microbenchmark:
                   - name: select_with_part
                     weight: 100
                     queries:
-                        - query: SELECT * FROM projects_with_part where uid=?;
+                        - query: SELECT * FROM projects_with_part where uid=? or uid=?;
                           bindings:
-                              - util: RandomInt
+                              - count: 2
+                                util: RandomInt
                                 params: [1, 100000]
 
             - workload: select_without_part
@@ -100,9 +107,10 @@ microbenchmark:
                   - name: select_without_part
                     weight: 100
                     queries:
-                        - query: SELECT * FROM projects_without_part where uid=?;
+                        - query: SELECT * FROM projects_without_part where uid=? or uid=?;
                           bindings:
-                              - util: RandomInt
+                              - count: 2
+                                util: RandomInt
                                 params: [1, 100000]
                               
             - workload: insert_with_part
@@ -110,12 +118,14 @@ microbenchmark:
                   - name: insert_with_part
                     weight: 100
                     queries:
-                        - query: insert into projects_with_part values(?,?,?,?);
+                        - query: insert into projects_with_part values(?,?,?,?,?);
                           bindings:
                               - util: PrimaryIntGen
                                 params: [100001, 500000]
                               - util: RandomAString
                                 params: [1, 20]
+                              - util: PrimaryIntGen
+                                params: [1, 100000]
                               - util: PrimaryIntGen
                                 params: [1, 100000]
                               - util: CyclicSeqDateGen
@@ -126,12 +136,14 @@ microbenchmark:
                   - name: insert_without_part
                     weight: 100
                     queries:
-                        - query: insert into projects_without_part values(?,?,?,?);
+                        - query: insert into projects_without_part values(?,?,?,?,?);
                           bindings:
                               - util: PrimaryIntGen
                                 params: [100001, 500000]
                               - util: RandomAString
                                 params: [1, 20]
+                              - util: PrimaryIntGen
+                                params: [1, 100000]
                               - util: PrimaryIntGen
                                 params: [1, 100000]
                               - util: CyclicSeqDateGen
@@ -142,9 +154,10 @@ microbenchmark:
                   - name: update_with_part
                     weight: 100
                     queries:
-                        - query: update projects_with_part set id=id+100000 where uid=?;
+                        - query: update projects_with_part set version=version+1 where uid=? or uid=?;
                           bindings:
-                            - util: RandomInt
+                            - count: 2
+                              util: RandomInt
                               params: [1, 100000]
 
             - workload: update_without_part
@@ -152,9 +165,10 @@ microbenchmark:
                   - name: update_without_part
                     weight: 100
                     queries:
-                        - query: update projects_without_part set id=id+100000 where uid=?;
+                        - query: update projects_without_part version=version+1 where uid=? or uid=?;
                           bindings:
-                            - util: RandomInt
+                            - count: 2
+                              util: RandomInt
                               params: [1, 100000]
 
             - workload: delete_with_part
@@ -162,9 +176,10 @@ microbenchmark:
                   - name: delete_with_part
                     weight: 100
                     queries:
-                        - query: delete from projects_with_part where uid=?; 
+                        - query: delete from projects_with_part where uid=? or uid=?;
                           bindings:
-                            - util: PrimaryIntGen
+                            - count: 2
+                              util: PrimaryIntGen
                               params: [1, 100000]
 
             - workload: delete_without_part
@@ -172,7 +187,8 @@ microbenchmark:
                   - name: delete_without_part
                     weight: 100
                     queries:
-                        - query: delete from projects_without_part where uid=?;
+                        - query: delete from projects_without_part where uid=? or uid=?;
                           bindings:
-                            - util: PrimaryIntGen
+                            - count: 2
+                              util: PrimaryIntGen
                               params: [1, 100000]

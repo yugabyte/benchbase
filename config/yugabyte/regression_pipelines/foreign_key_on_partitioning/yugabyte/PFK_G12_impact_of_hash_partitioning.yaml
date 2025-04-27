@@ -168,7 +168,7 @@ microbenchmark:
                     queries:
                         - query: delete from projects_with_part where id=?; 
                           bindings:
-                            - util: RandomInt
+                            - util: PrimaryIntGen
                               params: [1, 100000]
 
             - workload: delete_without_part
@@ -178,5 +178,5 @@ microbenchmark:
                     queries:
                         - query: delete from projects_without_part where id=?;
                           bindings:
-                            - util: RandomInt
+                            - util: PrimaryIntGen
                               params: [1, 100000]
