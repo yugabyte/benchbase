@@ -24,11 +24,27 @@ microbenchmark:
         setAutoCommit: false
         create:
             - DROP TABLE IF EXISTS test_table_hash;
+            - DROP TABLE IF EXISTS test_table_range;
+            - DROP TABLE IF EXISTS test_table;
+            - CREATE TABLE test_data (id SERIAL PRIMARY KEY, data TEXT);
             - CREATE TABLE test_data_hash (id SERIAL PRIMARY KEY, data TEXT);
+            - CREATE TABLE test_data_range (id SERIAL PRIMARY KEY, data TEXT);
         cleanup:
-            - DROP TABLE IF EXISTS test_table_hash;
+            - DROP TABLE IF EXISTS test_table;
         loadRules:
+            - table: test_table
+              rows: 10000
+              columns:
+                - name: data
+                  util: OneStringFromArray
+                  params: [ '100000' ]
             - table: test_table_hash
+              rows: 10000
+              columns:
+                - name: data
+                  util: OneStringFromArray
+                  params: [ '100000' ]
+            - table: test_table_range
               rows: 10000
               columns:
                   - name: data
