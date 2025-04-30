@@ -21,7 +21,7 @@ works:
 microbenchmark:
     class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
     properties:
-        setAutoCommit: false
+        setAutoCommit: true
         create:
             - DROP TABLE IF EXISTS test_table_hash;
             - DROP TABLE IF EXISTS test_table_range;
@@ -37,19 +37,19 @@ microbenchmark:
               columns:
                 - name: data
                   util: OneStringFromArray
-                  params: [ '100000' ]
+                  params: ['abc', 'xyz','123']
             - table: test_table_hash
               rows: 10000
               columns:
                 - name: data
                   util: OneStringFromArray
-                  params: [ '100000' ]
+                  params: ['abc', 'xyz','123']
             - table: test_table_range
               rows: 10000
               columns:
                   - name: data
                     util: OneStringFromArray
-                    params: ['100000']
+                    params: ['abc', 'xyz','123']
 
         executeRules:
             - workload: advisory_locks_select
@@ -60,15 +60,15 @@ microbenchmark:
                         - query: "SELECT pg_advisory_lock(?);"
                           bindings:
                               - util: OneStringFromArray
-                                params: ['100000']
+                                params: ['1234']
                         - query: "SELECT * FROM test_table WHERE id = ?"
                           bindings:
                               - util: OneStringFromArray
-                                params: [ '100000' ]
+                                params: [ '1234' ]
                         - query: "SELECT pg_advisory_unlock(?);"
                           bindings:
                               -  util: OneStringFromArray
-                                 params: [ '100000' ]
+                                 params: [ '1234' ]
 
 
 
