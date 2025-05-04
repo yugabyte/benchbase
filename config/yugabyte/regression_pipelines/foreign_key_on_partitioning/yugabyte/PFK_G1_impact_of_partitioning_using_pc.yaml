@@ -85,57 +85,57 @@ microbenchmark:
         #     - ALTER TABLE employees_with_fk add CONSTRAINT fk_project FOREIGN KEY (project_id) REFERENCES projects(id);
             
         executeRules:
-            # - workload: select_with_part
-            #   run:
-            #       - name: select_with_part
-            #         weight: 100
-            #         queries:
-            #             - query: SELECT * FROM projects_with_part where dept=?;
-            #               bindings:
-            #                   - util: OneStringFromArray
-            #                     params: ['Sales','Engineering','HR','Finance','Anonymous']
+            - workload: select_with_part
+              run:
+                  - name: select_with_part
+                    weight: 100
+                    queries:
+                        - query: SELECT * FROM projects_with_part where dept=?;
+                          bindings:
+                              - util: OneStringFromArray
+                                params: ['Sales','Engineering','HR','Finance','Anonymous']
 
-            # - workload: select_without_part
-            #   run:
-            #       - name: select_without_part
-            #         weight: 100
-            #         queries:
-            #             - query: SELECT * FROM projects_without_part where dept=?;
-            #               bindings:
-            #                   - util: OneStringFromArray
-            #                     params: ['Sales','Engineering','HR','Finance','Anonymous']
+            - workload: select_without_part
+              run:
+                  - name: select_without_part
+                    weight: 100
+                    queries:
+                        - query: SELECT * FROM projects_without_part where dept=?;
+                          bindings:
+                              - util: OneStringFromArray
+                                params: ['Sales','Engineering','HR','Finance','Anonymous']
                               
-            # - workload: insert_with_part
-            #   run:
-            #       - name: insert_with_part
-            #         weight: 100
-            #         queries:
-            #             - query: insert into projects_with_part values(?,?,?,?);
-            #               bindings:
-            #                   - util: PrimaryIntGen
-            #                     params: [100001, 500000]
-            #                   - util: RandomAString
-            #                     params: [1, 20]
-            #                   - util: SeqStringGenFromArray
-            #                     params: ['Sales','Engineering','HR','Finance','Anonymous']
-            #                   - util: CyclicSeqDateGen
-            #                     params: [2001,2025]
+            - workload: insert_with_part
+              run:
+                  - name: insert_with_part
+                    weight: 100
+                    queries:
+                        - query: insert into projects_with_part values(?,?,?,?);
+                          bindings:
+                              - util: PrimaryIntGen
+                                params: [100001, 500000]
+                              - util: RandomAString
+                                params: [1, 20]
+                              - util: SeqStringGenFromArray
+                                params: ['Sales','Engineering','HR','Finance','Anonymous']
+                              - util: CyclicSeqDateGen
+                                params: [2001,2025]
             
-            # - workload: insert_without_part
-            #   run:
-            #       - name: insert_without_part
-            #         weight: 100
-            #         queries:
-            #             - query: insert into projects_without_part values(?,?,?,?);
-            #               bindings:
-            #                   - util: PrimaryIntGen
-            #                     params: [100001, 500000]
-            #                   - util: RandomAString
-            #                     params: [1, 20]
-            #                   - util: SeqStringGenFromArray
-            #                     params: ['Sales','Engineering','HR','Finance','Anonymous']
-            #                   - util: CyclicSeqDateGen
-            #                     params: [2001,2025]
+            - workload: insert_without_part
+              run:
+                  - name: insert_without_part
+                    weight: 100
+                    queries:
+                        - query: insert into projects_without_part values(?,?,?,?);
+                          bindings:
+                              - util: PrimaryIntGen
+                                params: [100001, 500000]
+                              - util: RandomAString
+                                params: [1, 20]
+                              - util: SeqStringGenFromArray
+                                params: ['Sales','Engineering','HR','Finance','Anonymous']
+                              - util: CyclicSeqDateGen
+                                params: [2001,2025]
 
             - workload: delete_with_part
               run:

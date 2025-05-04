@@ -141,35 +141,35 @@ microbenchmark:
                               - util: CyclicSeqDateGen
                                 params: [2001,2025]
 
-            # - workload: delete_with_part
-            #   run:
-            #       - name: delete_with_part
-            #         weight: 100
-            #         queries:
-            #             - query: delete from projects_with_part where (dept=? or dept=?) and id between ?*100+1 and ?*100+100;
-            #               bindings:
-            #                   - util: OneStringFromArray
-            #                     params: ['Sales','Engineering','Finance']
-            #                   - util: OneStringFromArray
-            #                     params: ['HR','Anonymous']
-            #                   - count: 2
-            #                     util: PrimaryIntGen
-            #                     params: [0, 999]
+            - workload: delete_with_part
+              run:
+                  - name: delete_with_part
+                    weight: 100
+                    queries:
+                        - query: delete from projects_with_part where (dept=? or dept=?) and id between ?*10 and ?*10+10;
+                          bindings:
+                              - util: SeqStringGenFromArray
+                                params: ['Sales','Engineering','Finance']
+                              - util: SeqStringGenFromArray
+                                params: ['HR','Anonymous']
+                              - count: 2
+                                util: SeqIntGenWithInterval
+                                params: [0, 9999, 3]
 
-            # - workload: delete_without_part
-            #   run:
-            #       - name: delete_without_part
-            #         weight: 100
-            #         queries:
-            #             - query: delete from projects_without_part where (dept=? or dept=?) and id between ?*100+1 and ?*100+100;
-            #               bindings:
-            #                   - util: OneStringFromArray
-            #                     params: ['Sales','Engineering','Finance']
-            #                   - util: OneStringFromArray
-            #                     params: ['HR','Anonymous']
-            #                   - count: 2
-            #                     util: PrimaryIntGen
-            #                     params: [0, 999]
+            - workload: delete_without_part
+              run:
+                  - name: delete_without_part
+                    weight: 100
+                    queries:
+                        - query: delete from projects_without_part where (dept=? or dept=?) and id between ?*10 and ?*10+10;
+                          bindings:
+                              - util: SeqStringGenFromArray
+                                params: ['Sales','Engineering','Finance']
+                              - util: SeqStringGenFromArray
+                                params: ['HR','Anonymous']
+                              - count: 2
+                                util: SeqIntGenWithInterval
+                                params: [0, 9999, 3]
 
             - workload: update_with_part
               run:
