@@ -22,6 +22,7 @@ microbenchmark:
         setAutoCommit: true
         create:
             - drop table if exists index_test_4;
+            - create table index_test_4 (id bigint, col_int_1 int, col_int_2 int, col_int_3 int, col_int_4 int, col_int_5 int, col_int_6 int, col_int_7 int, col_int_8 int, col_int_9 int, col_int_10 int, col_varchar_1 varchar(20), col_varchar_2 varchar(20), col_varchar_3 varchar(20), col_date text, col_boolean boolean, primary key (id asc));
             - create index index_test_4_idx1 on index_test_4(col_int_1 asc, col_int_2 asc, col_int_3 asc, col_int_4 asc, col_int_5 asc);
         cleanup:
             - drop table if exists index_test_4;
