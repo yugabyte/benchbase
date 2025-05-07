@@ -1,0 +1,493 @@
+type: YUGABYTE
+driver: com.yugabyte.Driver
+url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
+username: {{username}}
+password: {{password}}
+
+batchsize: 128
+isolation: TRANSACTION_REPEATABLE_READ
+loaderThreads: 1
+terminals: 1
+collect_pg_stat_statements: true
+use_dist_in_explain : true
+yaml_version: v1.0
+works:
+    work:
+        time_secs: 60
+        active_terminals: 1
+        rate: unlimited
+        warmup: 30
+microbenchmark:
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
+    properties:
+        setAutoCommit: false
+        create:
+            - DROP TABLE IF EXISTS projects_with_1_part;
+            - DROP TABLE IF EXISTS projects_with_2_part;
+            - DROP TABLE IF EXISTS projects_with_3_part;
+            - DROP TABLE IF EXISTS projects_with_4_part;
+            - DROP TABLE IF EXISTS projects_with_5_part;
+            - DROP TABLE IF EXISTS projects_without_part;
+
+            - DROP TABLE IF EXISTS projects_2000_2025;
+
+            - DROP TABLE IF EXISTS projects_2000_2012;
+            - DROP TABLE IF EXISTS projects_2013_2025;
+
+            - DROP TABLE IF EXISTS projects_2000_2008;
+            - DROP TABLE IF EXISTS projects_2009_2016;
+            - DROP TABLE IF EXISTS projects_2016_2025;
+
+            - DROP TABLE IF EXISTS projects_2000_2006;
+            - DROP TABLE IF EXISTS projects_2007_2012;
+            - DROP TABLE IF EXISTS projects_2013_2018;
+            - DROP TABLE IF EXISTS projects_2019_2025;
+
+            - DROP TABLE IF EXISTS projects_2000_2005;
+            - DROP TABLE IF EXISTS projects_2005_2010;
+            - DROP TABLE IF EXISTS projects_2010_2015;
+            - DROP TABLE IF EXISTS projects_2015_2020;
+            - DROP TABLE IF EXISTS projects_default;
+
+            - create table projects_with_1_part (id int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, created_at)) PARTITION BY RANGE (created_at);
+            - CREATE TABLE projects_2000_2025 PARTITION OF projects_with_1_part FOR VALUES FROM ('2001-01-01') TO ('2026-01-01');
+
+            - create table projects_with_2_part (id int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, created_at)) PARTITION BY RANGE (created_at);
+            - CREATE TABLE projects_2000_2012 PARTITION OF projects_with_2_part FOR VALUES FROM ('2001-01-01') TO ('2013-01-01');
+            - CREATE TABLE projects_2013_2025 PARTITION OF projects_with_2_part FOR VALUES FROM ('2013-01-01') TO ('2026-01-01');
+
+            - create table projects_with_3_part (id int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, created_at)) PARTITION BY RANGE (created_at);
+            - CREATE TABLE projects_2000_2008 PARTITION OF projects_with_3_part FOR VALUES FROM ('2001-01-01') TO ('2009-01-01');
+            - CREATE TABLE projects_2009_2016 PARTITION OF projects_with_3_part FOR VALUES FROM ('2009-01-01') TO ('2016-01-01');
+            - CREATE TABLE projects_2016_2025 PARTITION OF projects_with_3_part FOR VALUES FROM ('2016-01-01') TO ('2026-01-01');
+
+            - create table projects_with_4_part (id int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, created_at)) PARTITION BY RANGE (created_at);
+            - CREATE TABLE projects_2000_2006 PARTITION OF projects_with_4_part FOR VALUES FROM ('2001-01-01') TO ('2007-04-01');
+            - CREATE TABLE projects_2007_2012 PARTITION OF projects_with_4_part FOR VALUES FROM ('2007-04-01') TO ('2013-07-01');
+            - CREATE TABLE projects_2013_2018 PARTITION OF projects_with_4_part FOR VALUES FROM ('2013-07-01') TO ('2018-10-01');
+            - CREATE TABLE projects_2019_2025 PARTITION OF projects_with_4_part FOR VALUES FROM ('2018-10-01') TO ('2026-01-01');
+
+            - create table projects_with_5_part (id int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, created_at)) PARTITION BY RANGE (created_at);
+            - CREATE TABLE projects_2000_2005 PARTITION OF projects_with_5_part FOR VALUES FROM ('2001-01-01') TO ('2006-01-01');
+            - CREATE TABLE projects_2005_2010 PARTITION OF projects_with_5_part FOR VALUES FROM ('2006-01-01') TO ('2011-01-01');
+            - CREATE TABLE projects_2010_2015 PARTITION OF projects_with_5_part FOR VALUES FROM ('2011-01-01') TO ('2016-01-01');
+            - CREATE TABLE projects_2015_2020 PARTITION OF projects_with_5_part FOR VALUES FROM ('2016-01-01') TO ('2021-01-01');
+            - CREATE TABLE projects_default PARTITION OF projects_with_5_part DEFAULT;
+
+            - create table projects_without_part (id int, name varchar(20) NOT NULL, dept varchar(15), created_at date,PRIMARY KEY (id, created_at));
+        cleanup:
+            - DROP TABLE IF EXISTS projects_with_1_part;
+            - DROP TABLE IF EXISTS projects_with_2_part;
+            - DROP TABLE IF EXISTS projects_with_3_part;
+            - DROP TABLE IF EXISTS projects_with_4_part;
+            - DROP TABLE IF EXISTS projects_with_5_part;
+            - DROP TABLE IF EXISTS projects_without_part;
+
+            - DROP TABLE IF EXISTS projects_2000_2025;
+
+            - DROP TABLE IF EXISTS projects_2000_2012;
+            - DROP TABLE IF EXISTS projects_2013_2025;
+
+            - DROP TABLE IF EXISTS projects_2000_2008;
+            - DROP TABLE IF EXISTS projects_2009_2016;
+            - DROP TABLE IF EXISTS projects_2016_2025;
+
+            - DROP TABLE IF EXISTS projects_2000_2006;
+            - DROP TABLE IF EXISTS projects_2007_2012;
+            - DROP TABLE IF EXISTS projects_2013_2018;
+            - DROP TABLE IF EXISTS projects_2019_2025;
+
+            - DROP TABLE IF EXISTS projects_2000_2005;
+            - DROP TABLE IF EXISTS projects_2005_2010;
+            - DROP TABLE IF EXISTS projects_2010_2015;
+            - DROP TABLE IF EXISTS projects_2015_2020;
+            - DROP TABLE IF EXISTS projects_default;
+        loadRules:
+
+            - table: projects_with_1_part
+              rows: 100000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 100000]
+                  - name: name
+                    util: RandomAString
+                    params: [1, 20]
+                  - name: dept
+                    util: SeqStringGenFromArray
+                    params: ['Sales','Engineering','HR','Anonymous']
+                  - name: created_at
+                    util: CyclicSeqDateGen
+                    params: [2001,2025]
+            
+            - table: projects_with_2_part
+              rows: 100000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 100000]
+                  - name: name
+                    util: RandomAString
+                    params: [1, 20]
+                  - name: dept
+                    util: SeqStringGenFromArray
+                    params: ['Sales','Engineering','HR','Anonymous']
+                  - name: created_at
+                    util: CyclicSeqDateGen
+                    params: [2001,2025]
+
+            - table: projects_with_3_part
+              rows: 100000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 100000]
+                  - name: name
+                    util: RandomAString
+                    params: [1, 20]
+                  - name: dept
+                    util: SeqStringGenFromArray
+                    params: ['Sales','Engineering','HR','Anonymous']
+                  - name: created_at
+                    util: CyclicSeqDateGen
+                    params: [2001,2025]
+
+            - table: projects_with_4_part
+              rows: 100000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 100000]
+                  - name: name
+                    util: RandomAString
+                    params: [1, 20]
+                  - name: dept
+                    util: SeqStringGenFromArray
+                    params: ['Sales','Engineering','HR','Anonymous']
+                  - name: created_at
+                    util: CyclicSeqDateGen
+                    params: [2001,2025]
+
+            - table: projects_with_5_part
+              rows: 100000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 100000]
+                  - name: name
+                    util: RandomAString
+                    params: [1, 20]
+                  - name: dept
+                    util: SeqStringGenFromArray
+                    params: ['Sales','Engineering','HR','Anonymous']
+                  - name: created_at
+                    util: CyclicSeqDateGen
+                    params: [2001,2025]
+
+            - table: projects_without_part
+              rows: 100000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 100000]
+                  - name: name
+                    util: RandomAString
+                    params: [1, 20]
+                  - name: dept
+                    util: SeqStringGenFromArray
+                    params: ['Sales','Engineering','HR','Anonymous']
+                  - name: created_at
+                    util: CyclicSeqDateGen
+                    params: [2001,2025]
+            
+        executeRules:
+
+            - workload: select_without_part
+              run:
+                  - name: select_without_part
+                    weight: 100
+                    queries:
+                        - query: SELECT * FROM projects_without_part where id=?;
+                          bindings:
+                              util: RandomInt
+                              params: [1,100000]
+            
+            - workload: insert_without_part
+              run:
+                  - name: insert_without_part
+                    weight: 100
+                    queries:
+                        - query: insert into projects_without_part values(?,?,?,?);
+                          bindings:
+                              - util: PrimaryIntGen
+                                params: [100001, 500000]
+                              - util: RandomAString
+                                params: [1, 20]
+                              - util: OneStringFromArray
+                                params: ['Sales','Engineering','HR','Anonymous']
+                              - util: CyclicSeqDateGen
+                                params: [2001,2025]
+            
+            - workload: update_without_part
+              run:
+                  - name: update_without_part
+                    weight: 100
+                    queries:
+                        - query: update projects_without_part set created_at=? where id=?;
+                          bindings:
+                            - util: RandomDateBtwYears
+                              params: [2001,2025]
+                            - util: PrimaryIntGen
+                              params: [1, 100000]
+
+            - workload: delete_without_part
+              run:
+                  - name: delete_without_part
+                    weight: 100
+                    queries:
+                        - query: delete from projects_without_part where id=?;
+                          bindings:
+                            - util: PrimaryIntGen
+                              params: [1, 100000]
+
+            - workload: select_with_1_part
+              run:
+                  - name: select_with_1_part
+                    weight: 100
+                    queries:
+                        - query: SELECT * FROM projects_with_1_part where id=?;
+                          bindings:
+                              util: RandomInt
+                              params: [1,100000]
+                              
+            - workload: insert_with_1_part
+              run:
+                  - name: insert_with_1_part
+                    weight: 100
+                    queries:
+                        - query: insert into projects_with_1_part values(?,?,?,?);
+                          bindings:
+                              - util: PrimaryIntGen
+                                params: [100001, 500000]
+                              - util: RandomAString
+                                params: [1, 20]
+                              - util: OneStringFromArray
+                                params: ['Sales','Engineering','HR','Anonymous']
+                              - util: CyclicSeqDateGen
+                                params: [2001,2025]
+
+            - workload: update_with_1_part
+              run:
+                  - name: update_with_1_part
+                    weight: 100
+                    queries:
+                        - query: update projects_with_1_part set created_at=? where id=?;
+                          bindings:
+                            - util: RandomDateBtwYears
+                              params: [2001,2025]
+                            - util: PrimaryIntGen
+                              params: [1, 100000]
+
+            - workload: delete_with_1_part
+              run:
+                  - name: delete_with_1_part
+                    weight: 100
+                    queries:
+                        - query: delete from projects_with_1_part where id=?;
+                          bindings:
+                            - util: PrimaryIntGen
+                              params: [1, 100000]
+
+            - workload: select_with_2_part
+              run:
+                  - name: select_with_2_part
+                    weight: 100
+                    queries:
+                        - query: SELECT * FROM projects_with_2_part where id=?;
+                          bindings:
+                              util: RandomInt
+                              params: [1,100000]
+                              
+            - workload: insert_with_2_part
+              run:
+                  - name: insert_with_2_part
+                    weight: 100
+                    queries:
+                        - query: insert into projects_with_2_part values(?,?,?,?);
+                          bindings:
+                              - util: PrimaryIntGen
+                                params: [100001, 500000]
+                              - util: RandomAString
+                                params: [1, 20]
+                              - util: OneStringFromArray
+                                params: ['Sales','Engineering','HR','Anonymous']
+                              - util: CyclicSeqDateGen
+                                params: [2001,2025]
+
+            - workload: update_with_2_part
+              run:
+                  - name: update_with_2_part
+                    weight: 100
+                    queries:
+                        - query: update projects_with_2_part set created_at=? where id=?;
+                          bindings:
+                            - util: RandomDateBtwYears
+                              params: [2001,2025]
+                            - util: PrimaryIntGen
+                              params: [1, 100000]
+
+            - workload: delete_with_2_part
+              run:
+                  - name: delete_with_2_part
+                    weight: 100
+                    queries:
+                        - query: delete from projects_with_2_part where id=?;
+                          bindings:
+                            - util: PrimaryIntGen
+                              params: [1, 100000]
+
+            - workload: select_with_3_part
+              run:
+                  - name: select_with_3_part
+                    weight: 100
+                    queries:
+                        - query: SELECT * FROM projects_with_3_part where id=?;
+                          bindings:
+                              util: RandomInt
+                              params: [1,100000]
+                              
+            - workload: insert_with_3_part
+              run:
+                  - name: insert_with_3_part
+                    weight: 100
+                    queries:
+                        - query: insert into projects_with_3_part values(?,?,?,?);
+                          bindings:
+                              - util: PrimaryIntGen
+                                params: [100001, 500000]
+                              - util: RandomAString
+                                params: [1, 20]
+                              - util: OneStringFromArray
+                                params: ['Sales','Engineering','HR','Anonymous']
+                              - util: CyclicSeqDateGen
+                                params: [2001,2025]
+
+            - workload: update_with_3_part
+              run:
+                  - name: update_with_3_part
+                    weight: 100
+                    queries:
+                        - query: update projects_with_3_part set created_at=? where id=?;
+                          bindings:
+                            - util: RandomDateBtwYears
+                              params: [2001,2025]
+                            - util: PrimaryIntGen
+                              params: [1, 100000]
+
+            - workload: delete_with_3_part
+              run:
+                  - name: delete_with_3_part
+                    weight: 100
+                    queries:
+                        - query: delete from projects_with_3_part where id=?;
+                          bindings:
+                            - util: PrimaryIntGen
+                              params: [1, 100000]
+
+            - workload: select_with_4_part
+              run:
+                  - name: select_with_4_part
+                    weight: 100
+                    queries:
+                        - query: SELECT * FROM projects_with_4_part where id=?;
+                          bindings:
+                              util: RandomInt
+                              params: [1,100000]
+                              
+            - workload: insert_with_4_part
+              run:
+                  - name: insert_with_4_part
+                    weight: 100
+                    queries:
+                        - query: insert into projects_with_4_part values(?,?,?,?);
+                          bindings:
+                              - util: PrimaryIntGen
+                                params: [100001, 500000]
+                              - util: RandomAString
+                                params: [1, 20]
+                              - util: OneStringFromArray
+                                params: ['Sales','Engineering','HR','Anonymous']
+                              - util: CyclicSeqDateGen
+                                params: [2001,2025]
+
+            - workload: update_with_4_part
+              run:
+                  - name: update_with_4_part
+                    weight: 100
+                    queries:
+                        - query: update projects_with_4_part set created_at=? where id=?;
+                          bindings:
+                            - util: RandomDateBtwYears
+                              params: [2001,2025]
+                            - util: PrimaryIntGen
+                              params: [1, 100000]
+
+            - workload: delete_with_4_part
+              run:
+                  - name: delete_with_4_part
+                    weight: 100
+                    queries:
+                        - query: delete from projects_with_4_part where id=?;
+                          bindings:
+                            - util: PrimaryIntGen
+                              params: [1, 100000]
+
+            - workload: select_with_5_part
+              run:
+                  - name: select_with_5_part
+                    weight: 100
+                    queries:
+                        - query: SELECT * FROM projects_with_5_part where id=?;
+                          bindings:
+                              util: RandomInt
+                              params: [1,100000]
+                              
+            - workload: insert_with_5_part
+              run:
+                  - name: insert_with_5_part
+                    weight: 100
+                    queries:
+                        - query: insert into projects_with_5_part values(?,?,?,?);
+                          bindings:
+                              - util: PrimaryIntGen
+                                params: [100001, 500000]
+                              - util: RandomAString
+                                params: [1, 20]
+                              - util: OneStringFromArray
+                                params: ['Sales','Engineering','HR','Anonymous']
+                              - util: CyclicSeqDateGen
+                                params: [2001,2025]
+
+            - workload: update_with_5_part
+              run:
+                  - name: update_with_5_part
+                    weight: 100
+                    queries:
+                        - query: update projects_with_5_part set created_at=? where id=?;
+                          bindings:
+                            - util: RandomDateBtwYears
+                              params: [2001,2025]
+                            - util: PrimaryIntGen
+                              params: [1, 100000]
+
+            - workload: delete_with_5_part
+              run:
+                  - name: delete_with_5_part
+                    weight: 100
+                    queries:
+                        - query: delete from projects_with_5_part where id=?;
+                          bindings:
+                            - util: PrimaryIntGen
+                              params: [1, 100000]
+
+            
