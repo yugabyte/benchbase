@@ -1,0 +1,90 @@
+type: YUGABYTE
+driver: com.yugabyte.Driver
+url: jdbc:postgresql://172.151.22.176:5433/yugabyte?sslmode=require
+username: yugabyte
+password: Password@321
+
+batchsize: 128
+isolation: TRANSACTION_REPEATABLE_READ
+loaderThreads: 1
+terminals: 1
+collect_pg_stat_statements: true
+use_dist_in_explain : true
+yaml_version: v1.0
+works:
+    work:
+        time_secs: 60
+        active_terminals: 1
+        rate: unlimited
+        warmup: 30
+microbenchmark:
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
+    properties:
+        setAutoCommit: false
+        create:
+
+            - DROP TABLE tab1 IF EXISTS
+
+            - CREATE TABLE tab1(id int primary key, uid int unique, name varchar(20));
+            
+        cleanup:
+            
+        loadRules:
+
+            - table: tab1
+              rows: 1000000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 1000000]
+                  - name: uid
+                    util: PrimaryIntGen
+                    params: [1, 1000000]
+                  - name: name
+                    util: RandomAString
+                    params: [1, 20]
+                  
+        executeRules:
+            - workload: select
+              run:
+                  - name: select
+                    weight: 100
+                    queries:
+                        - query: SELECT * FROM tab1 where id=?;
+                          bindings:
+                              - util: PrimaryIntGen
+                                params: [1,1000000]
+
+            - workload: insert
+              run:
+                  - name: insert
+                    weight: 100
+                    queries:
+                        - query: insert into tab1 values(?,?,?);
+                          bindings:
+                              - util: PrimaryIntGen
+                                params: [1000001, 5000000]
+                              - util: PrimaryIntGen
+                                params: [1000001, 5000000]
+                              - util: RandomAString
+                                params: [1, 20]
+
+            - workload: update
+              run:
+                  - name: update
+                    weight: 100
+                    queries:
+                        - query: update tab1 set uid=uid+5000000 where id=?;
+                          bindings:
+                              - util: PrimaryIntGen
+                                params: [1,1000000]
+            
+            - workload: delete
+              run:
+                  - name: delete
+                    weight: 100
+                    queries:
+                        - query: delete from projects_with_part where id=?
+                          bindings:
+                            - util: PrimaryIntGen
+                              params: [1,1000000]
