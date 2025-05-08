@@ -233,7 +233,7 @@ microbenchmark:
                   - name: update_without_part
                     weight: 100
                     queries:
-                        - query: update projects_with_part set dept=? where id=?;
+                        - query: update projects_without_part set dept=? where id=?;
                           bindings:
                             - util: SeqStringGenFromArray
                               params: ['Engineering','HR','Finance','Anonymous','Sales']
@@ -281,7 +281,7 @@ microbenchmark:
                   - name: update_with_1_part
                     weight: 100
                     queries:
-                        - query: update projects_with_part set dept=? where id=?;
+                        - query: update projects_with_1_part set dept=? where id=?;
                           bindings:
                             - util: SeqStringGenFromArray
                               params: ['Sales']
@@ -329,7 +329,7 @@ microbenchmark:
                   - name: update_with_2_part
                     weight: 100
                     queries:
-                        - query: update projects_with_part set dept=? where id=?;
+                        - query: update projects_with_2_part set dept=? where id=?;
                           bindings:
                             - util: SeqStringGenFromArray
                               params: ['Engineering','Sales']
@@ -377,7 +377,7 @@ microbenchmark:
                   - name: update_with_3_part
                     weight: 100
                     queries:
-                        - query: update projects_with_part set dept=? where id=?;
+                        - query: update projects_with_3_part set dept=? where id=?;
                           bindings:
                             - util: SeqStringGenFromArray
                               params: ['Engineering','HR','Sales']
@@ -425,7 +425,7 @@ microbenchmark:
                   - name: update_with_4_part
                     weight: 100
                     queries:
-                        - query: update projects_with_part set dept=? where id=?;
+                        - query: update projects_with_4_part set dept=? where id=?;
                           bindings:
                             - util: SeqStringGenFromArray
                               params: ['Engineering','HR','Finance','Sales']
@@ -473,7 +473,7 @@ microbenchmark:
                   - name: update_with_5_part
                     weight: 100
                     queries:
-                        - query: update projects_with_part set dept=? where id=?;
+                        - query: update projects_with_5_part set dept=? where id=?;
                           bindings:
                             - util: SeqStringGenFromArray
                               params: ['Engineering','HR','Finance','Anonymous','Sales']
