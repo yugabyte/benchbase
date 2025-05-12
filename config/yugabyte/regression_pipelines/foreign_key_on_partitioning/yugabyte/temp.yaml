@@ -23,7 +23,7 @@ microbenchmark:
         setAutoCommit: false
         create:
 
-            - DROP TABLE tab1 IF EXISTS
+            - DROP TABLE IF EXISTS tab1;
 
             - CREATE TABLE tab1(id int primary key, uid int unique, name varchar(20));
             
