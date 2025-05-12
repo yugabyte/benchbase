@@ -3,7 +3,7 @@ driver: com.yugabyte.Driver
 url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true&load-balance=false
 username: {{username}}
 password: {{password}}
-batchsize: 1024
+batchsize: 2048
 isolation: TRANSACTION_REPEATABLE_READ
 loaderthreads: 1
 terminals: 1
