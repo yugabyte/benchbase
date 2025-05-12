@@ -36,7 +36,7 @@ microbenchmark:
                     - name: col_bigint_id_
                       count: 4
                       util: PrimaryIntGen
-                      params: [ 1, 1000000 ]
+                      params: [ 1, 10000000 ]
                     - name: col_bigint_
                       count: 2
                       util: RandomNumber
