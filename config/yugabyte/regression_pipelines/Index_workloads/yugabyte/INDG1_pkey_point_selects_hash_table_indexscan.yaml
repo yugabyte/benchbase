@@ -3,7 +3,7 @@ driver: com.yugabyte.Driver
 url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true&load-balance=false
 username: {{username}}
 password: {{password}}
-batchsize: 128
+batchsize: 1024
 isolation: TRANSACTION_REPEATABLE_READ
 loaderthreads: 1
 terminals: 1
@@ -22,7 +22,7 @@ microbenchmark:
         setAutoCommit: true
         create:
             - DROP TABLE IF EXISTS CompositeHashtbl_1;
-            - CREATE TABLE CompositeHashtbl_1(col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_bigint_id_4 bigint, col_bigint_1 bigint, col_bigint_2 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1, col_bigint_id_2));
+            - CREATE TABLE CompositeHashtbl_1(col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_bigint_id_4 bigint, col_bigint_1 bigint, col_bigint_2 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1));
 
         cleanup:
             - DROP TABLE IF EXISTS CompositeHashtbl_1;
@@ -31,7 +31,7 @@ microbenchmark:
 
               - table: CompositeHashtbl_
                 count: 1
-                rows: 1000000
+                rows: 10000000
                 columns:
                     - name: col_bigint_id_
                       count: 4
