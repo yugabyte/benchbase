@@ -195,7 +195,7 @@ microbenchmark:
                     params: [1, 20]
                   - name: dept
                     util: SeqStringGenFromArray
-                    params: ['Sales','Engineering','HR','Finance','Anonymous']
+                    params: ['Sales']
                   - name: created_at
                     util: CyclicSeqDateGen
                     params: [2001,2025]
@@ -224,7 +224,7 @@ microbenchmark:
                               - util: RandomAString
                                 params: [1, 20]
                               - util: SeqStringGenFromArray
-                                params: ['Sales','Engineering','HR','Finance','Anonymous']
+                                params: ['Sales']
                               - util: CyclicSeqDateGen
                                 params: [2001,2025]
             
@@ -236,7 +236,7 @@ microbenchmark:
                         - query: update projects_without_part set dept=? where id=?;
                           bindings:
                             - util: SeqStringGenFromArray
-                              params: ['Engineering','HR','Finance','Anonymous','Sales']
+                              params: ['Sales']
                             - util: PrimaryIntGen
                               params: [1, 100000]
 
