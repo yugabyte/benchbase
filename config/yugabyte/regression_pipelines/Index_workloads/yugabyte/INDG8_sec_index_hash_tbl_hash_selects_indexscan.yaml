@@ -65,40 +65,40 @@ microbenchmark:
 
         executeRules:
 
-            - workload: INDG8_1_rangetbl_range_lookup_index_scan_using_comp_skey_first_part_range
-              customTags: schematype=regular,partition=range,skey=composite,cardinality=single,projection=all,filtercount=one,filteron=rangeskey,filtertype=comparision,queryshape=scan
+            - workload: INDG8_1_hashtbl_hash_lookup_index_scan_using_comp_skey_first_part_hash
+              customTags: schematype=regular,partition=hash,skey=composite,cardinality=single,projection=all,filtercount=one,filteron=hashskey,filtertype=comparision,queryshape=scan
               run:
                   - name: hashtbl_index_scan_using_sec_index
                     weight: 100
                     queries:
                         - query: select * from INDG8_hashtbl_comp_skey_1 where col_bigint_id_2=500000
 
-            - workload: INDG8_2_rangetbl_range_lookup_index_scan_using_comp_skey_sec_part_range
-              customTags: schematype=regular,partition=range,skey=composite,cardinality=single,projection=all,filtercount=one,filteron=rangeskey,filtertype=comparision,queryshape=scan
+            - workload: INDG8_2_hashtbl_hash_lookup_index_scan_using_comp_skey_sec_part_hash
+              customTags: schematype=regular,partition=hash,skey=composite,cardinality=single,projection=all,filtercount=one,filteron=hashskey,filtertype=comparision,queryshape=scan
               run:
                   - name: hashtbl_index_scan_using_sec_index
                     weight: 100
                     queries:
                         - query: select * from INDG8_hashtbl_comp_skey_1 where col_bigint_id_3=500000
 
-            - workload: INDG8_3_rangetbl_range_lookup_index_scan_using_mixed_comp_skey_first_part_hash
-              customTags: schematype=regular,partition=range,skey=composite,cardinality=single,projection=all,filtercount=one,filteron=hashskey,filtertype=comparision,queryshape=scan
+            - workload: INDG8_3_hashtbl_hash_lookup_index_scan_using_mixed_comp_skey_first_part_hash
+              customTags: schematype=regular,partition=hash,skey=composite,cardinality=single,projection=all,filtercount=one,filteron=hashskey,filtertype=comparision,queryshape=scan
               run:
                   - name: hashtbl_index_scan_using_sec_index
                     weight: 100
                     queries:
                         - query: select * from INDG8_hashtbl_comp_skey_1 where col_bigint_id_4=500000
 
-            - workload: INDG8_4_rangetbl_range_lookup_index_scan_using_mixed_comp_skey_sec_part_range
-              customTags: schematype=regular,partition=range,skey=composite,cardinality=single,projection=all,filtercount=one,filteron=rangeskey,filtertype=comparision,queryshape=scan
+            - workload: INDG8_4_hashtbl_hash_lookup_index_scan_using_mixed_comp_skey_sec_part_hash
+              customTags: schematype=regular,partition=hash,skey=composite,cardinality=single,projection=all,filtercount=one,filteron=hashskey,filtertype=comparision,queryshape=scan
               run:
                   - name: hashtbl_index_scan_using_sec_index
                     weight: 100
                     queries:
                         - query: select * from INDG8_hashtbl_comp_skey_1 where col_bigint_id_5=500000
 
-            - workload: INDG8_1_rangetbl_range_lookup_index_scan_using_comp_skey_first_part_range
-              customTags: schematype=regular,partition=range,skey=composite,cardinality=single,projection=all,filtercount=one,filteron=rangeskey,filtertype=comparision,queryshape=scan
+            - workload: INDG8_1_hashtbl_hash_lookup_index_scan_using_comp_skey_first_part_hash
+              customTags: schematype=regular,partition=hash,skey=composite,cardinality=single,projection=all,filtercount=one,filteron=hashskey,filtertype=comparision,queryshape=scan
               run:
                   - name: hashtbl_index_scan_using_sec_index
                     weight: 100
@@ -109,8 +109,8 @@ microbenchmark:
                               util: RandomNumber
                               params: [ 1, 1000000 ]
 
-            - workload: INDG8_2_rangetbl_range_lookup_index_scan_using_comp_skey_sec_part_range
-              customTags: schematype=regular,partition=range,skey=composite,cardinality=single,projection=all,filtercount=one,filteron=rangeskey,filtertype=comparision,queryshape=scan
+            - workload: INDG8_2_hashtbl_hash_lookup_index_scan_using_comp_skey_sec_part_hash
+              customTags: schematype=regular,partition=hash,skey=composite,cardinality=single,projection=all,filtercount=one,filteron=hashskey,filtertype=comparision,queryshape=scan
               run:
                   - name: hashtbl_index_scan_using_sec_index
                     weight: 100
@@ -121,8 +121,8 @@ microbenchmark:
                               util: RandomNumber
                               params: [ 1, 1000000 ]
 
-            - workload: INDG8_3_rangetbl_range_lookup_index_scan_using_mixed_comp_skey_first_part_hash
-              customTags: schematype=regular,partition=range,skey=composite,cardinality=single,projection=all,filtercount=one,filteron=hashskey,filtertype=comparision,queryshape=scan
+            - workload: INDG8_3_hashtbl_hash_lookup_index_scan_using_mixed_comp_skey_first_part_hash
+              customTags: schematype=regular,partition=hash,skey=composite,cardinality=single,projection=all,filtercount=one,filteron=hashskey,filtertype=comparision,queryshape=scan
               run:
                   - name: hashtbl_index_scan_using_sec_index
                     weight: 100
@@ -133,8 +133,8 @@ microbenchmark:
                               util: RandomNumber
                               params: [ 1, 1000000 ]
 
-            - workload: INDG8_4_rangetbl_range_lookup_index_scan_using_mixed_comp_skey_sec_part_range
-              customTags: schematype=regular,partition=range,skey=composite,cardinality=single,projection=all,filtercount=one,filteron=rangeskey,filtertype=comparision,queryshape=scan
+            - workload: INDG8_4_hashtbl_hash_lookup_index_scan_using_mixed_comp_skey_sec_part_hash
+              customTags: schematype=regular,partition=hash,skey=composite,cardinality=single,projection=all,filtercount=one,filteron=hashskey,filtertype=comparision,queryshape=scan
               run:
                   - name: hashtbl_index_scan_using_sec_index
                     weight: 100
