@@ -22,6 +22,8 @@ package com.oltpbenchmark;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 import com.hubspot.jinjava.Jinjava;
 import com.hubspot.jinjava.JinjavaConfig;
@@ -55,6 +57,8 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.sql.Connection;
+import java.sql.ResultSet;
 
 public class DBWorkload {
     private static final Logger LOG = LoggerFactory.getLogger(DBWorkload.class);
@@ -663,6 +667,30 @@ public class DBWorkload {
                     String val = workloads.get(workCount - 1).getString("workload");
                     if (uniqueRunWorkloads.contains(val) || uniqueRunWorkloads.contains("DEFAULT_WORKLOAD")) {
                         LOG.info("Starting Workload " + (workloads.get(workCount - 1).containsKey("workload") ? workloads.get(workCount - 1).getString("workload") : workCount));
+                        // Add optimal thread finding here for current workload
+                        if (xmlConfig.containsKey("optimalThreads") && xmlConfig.getBoolean("optimalThreads")) {
+                            int maxThreads = xmlConfig.getInt("maxThreads", Runtime.getRuntime().availableProcessors() * 2);
+                            int minThreads = xmlConfig.getInt("minThreads", 1);
+                            double targetCPU = xmlConfig.getDouble("targetCPU", 80.0);
+
+                            LOG.info("Finding optimal threads for workload: {}", val);
+                            LOG.info("First BenchmarkModule: {}", benchList.get(0));
+                            LOG.info("maxThreads: {}, minThreads: {}, targetCPU: {}", maxThreads, minThreads, targetCPU);
+
+                            // Store original terminal count
+                            int originalTerminals = benchList.get(0).getWorkloadConfiguration().getTerminals();
+
+                            // Find optimal threads for this workload
+                            int optimalThreads = findOptimalThreadCount(benchList.get(0), minThreads, maxThreads, targetCPU);
+
+                            // Update the configuration with optimal thread count
+                            for (BenchmarkModule benchi : benchList) {
+                                benchi.getWorkloadConfiguration().setTerminals(optimalThreads);
+                            }
+
+                            LOG.info("Using optimal thread count for workload {}: {} (original was: {})",
+                                val, optimalThreads, originalTerminals);
+                        }
                         try {
                             Results r = runWorkload(benchList, intervalMonitor, workCount);
                             writeOutputs(r, activeTXTypes, argsLine, xmlConfig,
@@ -692,6 +720,31 @@ public class DBWorkload {
                         LOG.info("Starting Workload " + workCount);
                     } else {
                         LOG.info("Starting Workload " + (workloads.get(workCount - 1).containsKey("workload") ? workloads.get(workCount - 1).getString("workload") : workCount));
+                        if (xmlConfig.containsKey("optimalThreads") && xmlConfig.getBoolean("optimalThreads")) {
+                            String val = workloads.get(workCount - 1).getString("workload");
+                            int maxThreads = xmlConfig.getInt("maxThreads", Runtime.getRuntime().availableProcessors() * 2);
+                            int minThreads = xmlConfig.getInt("minThreads", 1);
+                            double targetCPU = xmlConfig.getDouble("targetCPU", 80.0);
+
+                            LOG.info("Finding optimal threads for workload: {}", val);
+                            LOG.info("First BenchmarkModule: {}", benchList.get(0));
+                            LOG.info("maxThreads: {}, minThreads: {}, targetCPU: {}", maxThreads, minThreads, targetCPU);
+
+                            // Store original terminal count
+                            int originalTerminals = benchList.get(0).getWorkloadConfiguration().getTerminals();
+                            LOG.info("Terminal for starting: {}", originalTerminals);
+
+                            // Find optimal threads for this workload
+                            int optimalThreads = findOptimalThreadCount(benchList.get(0), minThreads, maxThreads, targetCPU);
+
+                            // Update the configuration with optimal thread count
+                            for (BenchmarkModule benchi : benchList) {
+                                benchi.getWorkloadConfiguration().setTerminals(optimalThreads);
+                            }
+
+                            LOG.info("Using optimal thread count for workload {}: {} (original was: {})",
+                                val, optimalThreads, originalTerminals);
+                        }
                     }
                     // Bombs away!
                     try {
@@ -1126,5 +1179,129 @@ public class DBWorkload {
             LOG.info("No match!");
         }
 
+    }
+
+    // Returns a list of CPU utilizations (percent) for all nodes
+    private static List<Double> getYBCPUUtilizationAllNodes(BenchmarkModule bench) {
+        List<Double> cpuList = new ArrayList<>();
+        try (Connection conn = bench.makeConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery("select uuid, metrics, status, error from yb_servers_metrics()")) {
+            while (rs.next()) {
+                String metricsJson = rs.getString("metrics");
+                try {
+                    ObjectMapper mapper = new ObjectMapper();
+                    JsonNode rootNode = mapper.readTree(metricsJson);
+                    double cpuUser = 0.0, cpuSystem = 0.0;
+                    if (rootNode.has("cpu_usage_user")) {
+                        cpuUser = Double.parseDouble(rootNode.get("cpu_usage_user").asText());
+                    }
+                    if (rootNode.has("cpu_usage_system")) {
+                        cpuSystem = Double.parseDouble(rootNode.get("cpu_usage_system").asText());
+                    }
+                    double totalCPU = (cpuUser + cpuSystem) * 100.0; // percent
+                    cpuList.add(totalCPU);
+                } catch (JsonProcessingException | NumberFormatException e) {
+                    LOG.error("Error parsing metrics JSON", e);
+                }
+            }
+        } catch (SQLException e) {
+            LOG.error("Error getting YugabyteDB metrics", e);
+        }
+        return cpuList;
+    }
+
+    private static int findOptimalThreadCount(BenchmarkModule bench, int minThreads, int maxThreads, double targetCPU) {
+        int optimalThreads = minThreads;
+        int left = minThreads;
+        int right = maxThreads;
+        int interval_gap = 5;
+        LOG.info("Starting optimal thread search between {} and {} threads (target CPU: {}%)", minThreads, maxThreads, targetCPU);
+
+        while (left <= right) {
+            int mid = (left + right) / 2;
+            Phase oldPhase = bench.getWorkloadConfiguration().getPhases().get(0);
+            Phase newPhase = new Phase(
+                // Use the correct constructor arguments for Phase
+                oldPhase.currentPhaseString(),
+                oldPhase.getId(),
+                oldPhase.getTime(),
+                oldPhase.getWarmupTime(),
+                oldPhase.getRate(),
+                oldPhase.getWeights(),
+                oldPhase.isRateLimited(),
+                oldPhase.isDisabled(),
+                oldPhase.isSerial(),
+                oldPhase.isTimed(),
+                mid, // <-- set to your thread count
+                oldPhase.getArrival()
+            );
+            // Replace the phase in the config
+            bench.getWorkloadConfiguration().getPhases().clear();
+            bench.getWorkloadConfiguration().getPhases().add(newPhase);
+            bench.getWorkloadConfiguration().setTerminals(mid);
+
+            double avgMaxCPU = 0.0;
+            try {
+                // Get the current phase (assume first phase for test)
+                List<Phase> phases = bench.getWorkloadConfiguration().getPhases();
+                if (phases.isEmpty()) {
+                    LOG.error("No phases found in workload configuration");
+                    break;
+                }
+                Phase phase = phases.get(0);
+                int totalTime = phase.getWarmupTime() + phase.getTime(); // seconds
+//                if (totalTime < 40) totalTime = 40; // minimum duration for meaningful sampling
+
+                Thread workloadThread = new Thread(() -> {
+                    try {
+                        runWorkload(Collections.singletonList(bench), 0, 1);
+                    } catch (Exception e) {
+                        LOG.error("Error running workload for thread test", e);
+                    }
+                });
+                workloadThread.start();
+
+                // Wait until 3/4th of total time
+                Thread.sleep((long)(totalTime * 0.75 * 1000));
+
+                List<List<Double>> allNodeReadings = new ArrayList<>();
+                for (int i = 0; i < 3; i++) {
+                    List<Double> nodeReadings = getYBCPUUtilizationAllNodes(bench);
+                    LOG.info("CPU Reading {}: {}", i+1, nodeReadings);
+                    allNodeReadings.add(nodeReadings);
+                    Thread.sleep(interval_gap * 1000);
+                }
+
+                // For each node, find the max of its 3 readings
+                int numNodes = allNodeReadings.get(0).size();
+                List<Double> maxPerNode = new ArrayList<>();
+                for (int nodeIdx = 0; nodeIdx < numNodes; nodeIdx++) {
+                    double max = Math.max(allNodeReadings.get(0).get(nodeIdx),
+                                          Math.max(allNodeReadings.get(1).get(nodeIdx),
+                                                   allNodeReadings.get(2).get(nodeIdx)));
+                    maxPerNode.add(max);
+                    LOG.info("Node {} max CPU: {}", nodeIdx+1, max);
+                }
+                avgMaxCPU = maxPerNode.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
+                LOG.info("Average of node max CPU utilizations: {}", avgMaxCPU);
+
+                // Stop the workload thread after test duration
+//                workloadThread.interrupt();
+                workloadThread.join();
+
+                if (avgMaxCPU <= targetCPU) {
+                    optimalThreads = mid;
+                    left = mid + 1;
+                } else {
+                    right = mid - 1;
+                }
+
+            } catch (Exception e) {
+                LOG.error("Error during thread testing", e);
+            }
+        }
+
+        return optimalThreads;
     }
 }
