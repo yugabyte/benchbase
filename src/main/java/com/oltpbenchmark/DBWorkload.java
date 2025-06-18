@@ -1223,7 +1223,7 @@ public class DBWorkload {
             Phase oldPhase = bench.getWorkloadConfiguration().getPhases().get(0);
             Phase newPhase = new Phase(
                 // Use the correct constructor arguments for Phase
-                oldPhase.currentPhaseString(),
+                "FEATUREBENCH",
                 oldPhase.getId(),
                 oldPhase.getTime(),
                 oldPhase.getWarmupTime(),
