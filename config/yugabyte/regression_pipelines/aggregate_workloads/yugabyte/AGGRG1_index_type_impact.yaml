@@ -6,12 +6,15 @@
 #Aggregate function count on secondary indexed column of bigint datatype
 type: YUGABYTE
 driver: com.yugabyte.Driver
-url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true&load-balance=false
-username: {{username}}
-password: {{password}}
+url: jdbc:yugabytedb://172.151.30.23:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true&load-balance=true
+username: yugabyte
+password: Password@321
 batchsize: 128
 isolation: TRANSACTION_REPEATABLE_READ
 loaderthreads: 1
+optimalThreads: true
+maxThreads: 100
+minThreads: 40
 terminals: 1
 collect_pg_stat_statements: true
 yaml_version: v1.1
@@ -34,41 +37,41 @@ microbenchmark:
             - DROP TABLE IF EXISTS Indexed1M_1;
 
         loadRules:
-              - table: Indexed1M_
-                count: 1
-                rows: 1000000
-                columns:
-                    - name: col_bigint_id_
-                      count: 3
-                      util: PrimaryIntGen
-                      params: [ 1, 1000000 ]
-                    - name: col_bigint_
-                      count: 3
-                      util: RandomNumber
-                      params: [ 1, 1000000 ]
-                    - name: col_float2_
-                      count: 2
-                      util: RandomNoWithDecimalPoints
-                      params: [ 1, 1000000, 2 ]
-                    - name: col_float5_
-                      count: 2
-                      util: RandomNoWithDecimalPoints
-                      params: [ 1, 1000000, 5 ]
-                    - name: col_boolean_
-                      count: 1
-                      util: RandomBoolean
-                    - name: col_varchar10_id_
-                      count: 1
-                      util: PrimaryStringGen
-                      params: [1, 10]
-                    - name: col_varchar100_id_
-                      count: 2
-                      util: PrimaryStringGen
-                      params: [1, 100]
-                    - name: col_varchar500_id_
-                      count: 1
-                      util: PrimaryStringGen
-                      params: [1, 500]
+            - table: Indexed1M_
+              count: 1
+              rows: 1000000
+              columns:
+                  - name: col_bigint_id_
+                    count: 3
+                    util: PrimaryIntGen
+                    params: [ 1, 1000000 ]
+                  - name: col_bigint_
+                    count: 3
+                    util: RandomNumber
+                    params: [ 1, 1000000 ]
+                  - name: col_float2_
+                    count: 2
+                    util: RandomNoWithDecimalPoints
+                    params: [ 1, 1000000, 2 ]
+                  - name: col_float5_
+                    count: 2
+                    util: RandomNoWithDecimalPoints
+                    params: [ 1, 1000000, 5 ]
+                  - name: col_boolean_
+                    count: 1
+                    util: RandomBoolean
+                  - name: col_varchar10_id_
+                    count: 1
+                    util: PrimaryStringGen
+                    params: [1, 10]
+                  - name: col_varchar100_id_
+                    count: 2
+                    util: PrimaryStringGen
+                    params: [1, 100]
+                  - name: col_varchar500_id_
+                    count: 1
+                    util: PrimaryStringGen
+                    params: [1, 500]
 
         executeRules:
             - workload: AGGRG1_count_bigint_non_indexed_column
