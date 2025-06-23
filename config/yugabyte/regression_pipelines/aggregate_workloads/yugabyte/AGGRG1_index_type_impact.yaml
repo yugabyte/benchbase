@@ -13,8 +13,8 @@ batchsize: 128
 isolation: TRANSACTION_REPEATABLE_READ
 loaderthreads: 1
 optimalThreads: true
-maxThreads: 100
-minThreads: 40
+maxThreads: 50
+minThreads: 1
 terminals: 1
 collect_pg_stat_statements: true
 yaml_version: v1.1
