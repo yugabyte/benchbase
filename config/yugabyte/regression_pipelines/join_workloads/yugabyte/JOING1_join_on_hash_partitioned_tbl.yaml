@@ -5,8 +5,8 @@ username: {{username}}
 password: {{password}}
 batchsize: 128
 optimalThreads: true
-maxThreads: 100
-minThreads: 35
+maxThreads: 35
+minThreads: 1
 isolation: TRANSACTION_REPEATABLE_READ
 loaderthreads: 1
 terminals: 1
