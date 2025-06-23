@@ -50,6 +50,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -739,6 +741,26 @@ public class DBWorkload {
 
                             // Update the configuration with optimal thread count
                             for (BenchmarkModule benchi : benchList) {
+                                Phase oldPhase = benchi.getWorkloadConfiguration().getPhases().get(0);
+                                Phase newPhase = new Phase(
+                                    // Use the correct constructor arguments for Phase
+                                    "FEATUREBENCH",
+                                    oldPhase.getId(),
+                                    oldPhase.getTime(),
+                                    oldPhase.getWarmupTime(),
+                                    oldPhase.getRate(),
+                                    oldPhase.getWeights(),
+                                    oldPhase.isRateLimited(),
+                                    oldPhase.isDisabled(),
+                                    oldPhase.isSerial(),
+                                    oldPhase.isTimed(),
+                                    optimalThreads,
+                                    oldPhase.getArrival()
+                                );
+                                // Replace the phase in the config
+                                benchi.getWorkloadConfiguration().getPhases().clear();
+                                benchi.getWorkloadConfiguration().getPhases().add(newPhase);
+                                benchi.getWorkloadConfiguration().setTerminals(optimalThreads);
                                 benchi.getWorkloadConfiguration().setTerminals(optimalThreads);
                             }
 
@@ -1217,12 +1239,30 @@ public class DBWorkload {
         int right = maxThreads;
         int interval_gap = 5;
         LOG.info("Starting optimal thread search between {} and {} threads (target CPU: {}%)", minThreads, maxThreads, targetCPU);
+        ObjectMapper mapper = new ObjectMapper();
+
+        // Prepare for logging
+        String workloadName = bench.getWorkloadConfiguration().getBenchmarkName();
+        String outputDir = "results/" + workloadName;
+        String logFile = outputDir + "/optimal_threads_log.csv";
+        try {
+            Files.createDirectories(Paths.get(outputDir));
+            // Write header if file does not exist
+            if (!Files.exists(Paths.get(logFile))) {
+                StringBuilder header = new StringBuilder("mid");
+                for (int i = 1; i <= 3; i++) header.append(",reading" + i);
+                header.append(",");
+                header.append("max_node1,max_node2,max_node3,avg_max_cpu\n");
+                Files.write(Paths.get(logFile), header.toString().getBytes());
+            }
+        } catch (Exception e) {
+            LOG.error("Error creating log directory or file", e);
+        }
 
         while (left <= right) {
             int mid = (left + right) / 2;
             Phase oldPhase = bench.getWorkloadConfiguration().getPhases().get(0);
             Phase newPhase = new Phase(
-                // Use the correct constructor arguments for Phase
                 "FEATUREBENCH",
                 oldPhase.getId(),
                 oldPhase.getTime(),
@@ -1242,6 +1282,7 @@ public class DBWorkload {
             bench.getWorkloadConfiguration().setTerminals(mid);
 
             double avgMaxCPU = 0.0;
+            List<List<Double>> allNodeReadings = new ArrayList<>();
             try {
                 // Get the current phase (assume first phase for test)
                 List<Phase> phases = bench.getWorkloadConfiguration().getPhases();
@@ -1265,7 +1306,6 @@ public class DBWorkload {
                 // Wait until 3/4th of total time
                 Thread.sleep((long)(totalTime * 0.75 * 1000));
 
-                List<List<Double>> allNodeReadings = new ArrayList<>();
                 for (int i = 0; i < 3; i++) {
                     List<Double> nodeReadings = getYBCPUUtilizationAllNodes(bench);
                     LOG.info("CPU Reading {}: {}", i+1, nodeReadings);
@@ -1286,10 +1326,26 @@ public class DBWorkload {
                 avgMaxCPU = maxPerNode.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
                 LOG.info("Average of node max CPU utilizations: {}", avgMaxCPU);
 
+                // Write to log file
+                StringBuilder logLine = new StringBuilder();
+                logLine.append(mid);
+                for (int i = 0; i < 3; i++) {
+                    logLine.append(",");
+                    logLine.append(allNodeReadings.get(i).toString().replaceAll("[\\[\\] ]", ""));
+                }
+                logLine.append(",");
+                for (int i = 0; i < maxPerNode.size(); i++) {
+                    logLine.append(maxPerNode.get(i));
+                    if (i < maxPerNode.size() - 1) logLine.append(",");
+                }
+                logLine.append(",").append(avgMaxCPU).append("\n");
+                Files.write(Paths.get(logFile), logLine.toString().getBytes(), java.nio.file.StandardOpenOption.APPEND);
+
                 // Stop the workload thread after test duration
 //                workloadThread.interrupt();
                 workloadThread.join();
 
+                if(right-left<=1) return left;
                 if (avgMaxCPU <= targetCPU) {
                     optimalThreads = mid;
                     left = mid + 1;
