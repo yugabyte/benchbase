@@ -735,9 +735,9 @@ public class DBWorkload {
                             // Store original terminal count
                             int originalTerminals = benchList.get(0).getWorkloadConfiguration().getTerminals();
                             LOG.info("Terminal for starting: {}", originalTerminals);
-
+                            String workloadName = executeRules == null ? null : workloads.get(workCount - 1).getString("workload");
                             // Find optimal threads for this workload
-                            int optimalThreads = findOptimalThreadCount(benchList.get(0), minThreads, targetCPU, toleranceCPU);
+                            int optimalThreads = findOptimalThreadCount(benchList.get(0), minThreads, targetCPU, toleranceCPU, workloadName);
 
                             // Update the configuration with optimal thread count
                             for (BenchmarkModule benchi : benchList) {
@@ -1233,13 +1233,12 @@ public class DBWorkload {
         return cpuList;
     }
 
-    private static int findOptimalThreadCount(BenchmarkModule bench, int minThreads, double targetCPU, double toleranceCPU) {
+    private static int findOptimalThreadCount(BenchmarkModule bench, int minThreads, double targetCPU, double toleranceCPU, String workloadName) {
         double minTargetCPU = targetCPU - toleranceCPU;
         double maxTargetCPU = targetCPU + toleranceCPU;
         int interval_gap = 5;
         ObjectMapper mapper = new ObjectMapper();
         // Prepare for logging
-        String workloadName = bench.getWorkloadConfiguration().getBenchmarkName();
         String outputDir = "results/" + workloadName;
         String logFile = outputDir + "/optimal_threads_log.csv";
         String jsonFile = outputDir + "/optimal_threads_log.json";
