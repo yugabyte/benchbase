@@ -724,20 +724,20 @@ public class DBWorkload {
                         LOG.info("Starting Workload " + (workloads.get(workCount - 1).containsKey("workload") ? workloads.get(workCount - 1).getString("workload") : workCount));
                         if (xmlConfig.containsKey("optimalThreads") && xmlConfig.getBoolean("optimalThreads")) {
                             String val = workloads.get(workCount - 1).getString("workload");
-                            int maxThreads = xmlConfig.getInt("maxThreads", Runtime.getRuntime().availableProcessors() * 2);
                             int minThreads = xmlConfig.getInt("minThreads", 1);
                             double targetCPU = xmlConfig.getDouble("targetCPU", 80.0);
+                            double toleranceCPU = xmlConfig.getDouble("toleranceCPU", 5.0);
 
                             LOG.info("Finding optimal threads for workload: {}", val);
                             LOG.info("First BenchmarkModule: {}", benchList.get(0));
-                            LOG.info("maxThreads: {}, minThreads: {}, targetCPU: {}", maxThreads, minThreads, targetCPU);
+                            LOG.info("targetCPU: {}, toleranceCPU: {}", targetCPU, toleranceCPU);
 
                             // Store original terminal count
                             int originalTerminals = benchList.get(0).getWorkloadConfiguration().getTerminals();
                             LOG.info("Terminal for starting: {}", originalTerminals);
 
                             // Find optimal threads for this workload
-                            int optimalThreads = findOptimalThreadCount(benchList.get(0), minThreads, maxThreads, targetCPU);
+                            int optimalThreads = findOptimalThreadCount(benchList.get(0), minThreads, targetCPU, toleranceCPU);
 
                             // Update the configuration with optimal thread count
                             for (BenchmarkModule benchi : benchList) {
@@ -1233,23 +1233,21 @@ public class DBWorkload {
         return cpuList;
     }
 
-    private static int findOptimalThreadCount(BenchmarkModule bench, int minThreads, int maxThreads, double targetCPU) {
-        int optimalThreads = minThreads;
-        int left = minThreads;
-        int right = maxThreads;
+    private static int findOptimalThreadCount(BenchmarkModule bench, int minThreads, double targetCPU, double toleranceCPU) {
+        double minTargetCPU = targetCPU - toleranceCPU;
+        double maxTargetCPU = targetCPU + toleranceCPU;
         int interval_gap = 5;
-        LOG.info("Starting optimal thread search between {} and {} threads (target CPU: {}%)", minThreads, maxThreads, targetCPU);
         ObjectMapper mapper = new ObjectMapper();
-
         // Prepare for logging
         String workloadName = bench.getWorkloadConfiguration().getBenchmarkName();
         String outputDir = "results/" + workloadName;
         String logFile = outputDir + "/optimal_threads_log.csv";
+        String jsonFile = outputDir + "/optimal_threads_log.json";
         try {
             Files.createDirectories(Paths.get(outputDir));
             // Write header if file does not exist
             if (!Files.exists(Paths.get(logFile))) {
-                StringBuilder header = new StringBuilder("mid");
+                StringBuilder header = new StringBuilder("threads");
                 for (int i = 1; i <= 3; i++) header.append(",reading" + i);
                 header.append(",");
                 header.append("max_node1,max_node2,max_node3,avg_max_cpu\n");
@@ -1259,8 +1257,14 @@ public class DBWorkload {
             LOG.error("Error creating log directory or file", e);
         }
 
-        while (left <= right) {
-            int mid = (left + right) / 2;
+        int threads = minThreads;
+        int max_iterations =  50;
+        int optimalThreads = threads;
+        boolean found = false;
+        List<Map<String, Object>> jsonResults = new ArrayList<>();
+        Map<Integer, Double> threadCpuMap = new HashMap<>();
+        for(int iter=0; iter<max_iterations; iter++) {
+            LOG.info("Finding optimal threads.... iteration_no. {}, current_threads: {}", iter, threads);
             Phase oldPhase = bench.getWorkloadConfiguration().getPhases().get(0);
             Phase newPhase = new Phase(
                 "FEATUREBENCH",
@@ -1273,13 +1277,13 @@ public class DBWorkload {
                 oldPhase.isDisabled(),
                 oldPhase.isSerial(),
                 oldPhase.isTimed(),
-                mid, // <-- set to your thread count
+                threads, // <-- set to your thread count
                 oldPhase.getArrival()
             );
             // Replace the phase in the config
             bench.getWorkloadConfiguration().getPhases().clear();
             bench.getWorkloadConfiguration().getPhases().add(newPhase);
-            bench.getWorkloadConfiguration().setTerminals(mid);
+            bench.getWorkloadConfiguration().setTerminals(threads);
 
             double avgMaxCPU = 0.0;
             List<List<Double>> allNodeReadings = new ArrayList<>();
@@ -1292,7 +1296,6 @@ public class DBWorkload {
                 }
                 Phase phase = phases.get(0);
                 int totalTime = phase.getWarmupTime() + phase.getTime(); // seconds
-//                if (totalTime < 40) totalTime = 40; // minimum duration for meaningful sampling
 
                 Thread workloadThread = new Thread(() -> {
                     try {
@@ -1328,7 +1331,7 @@ public class DBWorkload {
 
                 // Write to log file
                 StringBuilder logLine = new StringBuilder();
-                logLine.append(mid);
+                logLine.append(threads);
                 for (int i = 0; i < 3; i++) {
                     logLine.append(",");
                     logLine.append(allNodeReadings.get(i).toString().replaceAll("[\\[\\] ]", ""));
@@ -1341,23 +1344,43 @@ public class DBWorkload {
                 logLine.append(",").append(avgMaxCPU).append("\n");
                 Files.write(Paths.get(logFile), logLine.toString().getBytes(), java.nio.file.StandardOpenOption.APPEND);
 
-                // Stop the workload thread after test duration
-//                workloadThread.interrupt();
-                workloadThread.join();
+                // Add to JSON results
+                Map<String, Object> entry = new LinkedHashMap<>();
+                entry.put("threads", threads);
+                entry.put("readings", allNodeReadings);
+                entry.put("max_per_node", maxPerNode);
+                entry.put("avg_max_cpu", avgMaxCPU);
+                jsonResults.add(entry);
 
-                if(right-left<=1) return left;
-                if (avgMaxCPU <= targetCPU) {
-                    optimalThreads = mid;
-                    left = mid + 1;
-                } else {
-                    right = mid - 1;
+                workloadThread.join();
+                threadCpuMap.put(threads, avgMaxCPU);
+                if (avgMaxCPU >= minTargetCPU && avgMaxCPU <= maxTargetCPU) {
+                    optimalThreads = threads;
+                    found = true;
+                    LOG.info("Found optimal threads: {} with avgMaxCPU: {}", optimalThreads, avgMaxCPU);
+                    break;
+                }
+                else {
+                    if(avgMaxCPU<=targetCPU) optimalThreads=threads;
+                    int newThreads = (int) Math.ceil((threads * targetCPU) / avgMaxCPU);
+                    if (threadCpuMap.containsKey(newThreads)) {
+                        LOG.info("newThreads={} already tested. Breaking loop to avoid duplicate testing.", newThreads);
+                        break;
+                    }
+                    threads = newThreads;
                 }
 
             } catch (Exception e) {
                 LOG.error("Error during thread testing", e);
             }
-        }
 
+        }
+        // Write JSON file
+        try {
+            mapper.writerWithDefaultPrettyPrinter().writeValue(new File(jsonFile), jsonResults);
+        } catch (Exception e) {
+            LOG.error("Error writing optimal threads JSON log", e);
+        }
         return optimalThreads;
     }
 }
