@@ -670,6 +670,50 @@ public class DBWorkload {
                     if (uniqueRunWorkloads.contains(val) || uniqueRunWorkloads.contains("DEFAULT_WORKLOAD")) {
                         LOG.info("Starting Workload " + (workloads.get(workCount - 1).containsKey("workload") ? workloads.get(workCount - 1).getString("workload") : workCount));
                         // Add optimal thread finding here for current workload
+                        if (xmlConfig.containsKey("optimalThreads") && xmlConfig.getBoolean("optimalThreads")) {
+                            int minThreads = xmlConfig.getInt("minThreads", 1);
+                            double targetCPU = xmlConfig.getDouble("targetCPU", 80.0);
+                            double toleranceCPU = xmlConfig.getDouble("toleranceCPU", 5.0);
+
+                            LOG.info("Finding optimal threads for workload: {}", val);
+                            LOG.info("First BenchmarkModule: {}", benchList.get(0));
+                            LOG.info("targetCPU: {}, toleranceCPU: {}", targetCPU, toleranceCPU);
+
+                            // Store original terminal count
+                            int originalTerminals = benchList.get(0).getWorkloadConfiguration().getTerminals();
+                            LOG.info("Terminal for starting: {}", originalTerminals);
+                            String workloadName = executeRules == null ? null : workloads.get(workCount - 1).getString("workload");
+                            // Find optimal threads for this workload
+                            int optimalThreads = findOptimalThreadCount(benchList.get(0), minThreads, targetCPU, toleranceCPU, workloadName);
+
+                            // Update the configuration with optimal thread count
+                            for (BenchmarkModule benchi : benchList) {
+                                Phase oldPhase = benchi.getWorkloadConfiguration().getPhases().get(0);
+                                Phase newPhase = new Phase(
+                                    // Use the correct constructor arguments for Phase
+                                    "FEATUREBENCH",
+                                    oldPhase.getId(),
+                                    oldPhase.getTime(),
+                                    oldPhase.getWarmupTime(),
+                                    oldPhase.getRate(),
+                                    oldPhase.getWeights(),
+                                    oldPhase.isRateLimited(),
+                                    oldPhase.isDisabled(),
+                                    oldPhase.isSerial(),
+                                    oldPhase.isTimed(),
+                                    optimalThreads,
+                                    oldPhase.getArrival()
+                                );
+                                // Replace the phase in the config
+                                benchi.getWorkloadConfiguration().getPhases().clear();
+                                benchi.getWorkloadConfiguration().getPhases().add(newPhase);
+                                benchi.getWorkloadConfiguration().setTerminals(optimalThreads);
+                                benchi.getWorkloadConfiguration().setTerminals(optimalThreads);
+                            }
+
+                            LOG.info("Using optimal thread count for workload {}: {} (original was: {})",
+                                val, optimalThreads, originalTerminals);
+                        }
 
                         try {
                             Results r = runWorkload(benchList, intervalMonitor, workCount);
