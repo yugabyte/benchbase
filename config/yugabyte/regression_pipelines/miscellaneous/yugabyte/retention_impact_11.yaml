@@ -31,7 +31,6 @@ microbenchmark:
 
         loadRules:
             - table: nets_1
-              count: 1
               rows: 100000000
               columns:
                     - name: op_id_
@@ -104,7 +103,6 @@ microbenchmark:
                       params: [ 50, 50 ]
 
             - table: nets_2
-              count: 1
               rows: 100000000
               columns:
                     - name: op_id_
