@@ -670,29 +670,7 @@ public class DBWorkload {
                     if (uniqueRunWorkloads.contains(val) || uniqueRunWorkloads.contains("DEFAULT_WORKLOAD")) {
                         LOG.info("Starting Workload " + (workloads.get(workCount - 1).containsKey("workload") ? workloads.get(workCount - 1).getString("workload") : workCount));
                         // Add optimal thread finding here for current workload
-                        if (xmlConfig.containsKey("optimalThreads") && xmlConfig.getBoolean("optimalThreads")) {
-                            int maxThreads = xmlConfig.getInt("maxThreads", Runtime.getRuntime().availableProcessors() * 2);
-                            int minThreads = xmlConfig.getInt("minThreads", 1);
-                            double targetCPU = xmlConfig.getDouble("targetCPU", 80.0);
 
-                            LOG.info("Finding optimal threads for workload: {}", val);
-                            LOG.info("First BenchmarkModule: {}", benchList.get(0));
-                            LOG.info("maxThreads: {}, minThreads: {}, targetCPU: {}", maxThreads, minThreads, targetCPU);
-
-                            // Store original terminal count
-                            int originalTerminals = benchList.get(0).getWorkloadConfiguration().getTerminals();
-
-                            // Find optimal threads for this workload
-                            int optimalThreads = findOptimalThreadCount(benchList.get(0), minThreads, maxThreads, targetCPU);
-
-                            // Update the configuration with optimal thread count
-                            for (BenchmarkModule benchi : benchList) {
-                                benchi.getWorkloadConfiguration().setTerminals(optimalThreads);
-                            }
-
-                            LOG.info("Using optimal thread count for workload {}: {} (original was: {})",
-                                val, optimalThreads, originalTerminals);
-                        }
                         try {
                             Results r = runWorkload(benchList, intervalMonitor, workCount);
                             writeOutputs(r, activeTXTypes, argsLine, xmlConfig,
