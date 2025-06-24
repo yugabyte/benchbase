@@ -1236,6 +1236,7 @@ public class DBWorkload {
     private static int findOptimalThreadCount(BenchmarkModule bench, int minThreads, double targetCPU, double toleranceCPU, String workloadName) {
         double minTargetCPU = targetCPU - toleranceCPU;
         double maxTargetCPU = targetCPU + toleranceCPU;
+        LOG.info("minTargetCPU: {}, maxTargetCPU: {}", minTargetCPU, maxTargetCPU);
         int interval_gap = 5;
         ObjectMapper mapper = new ObjectMapper();
         // Prepare for logging
@@ -1361,6 +1362,7 @@ public class DBWorkload {
                 }
                 else {
                     if(avgMaxCPU<=targetCPU) optimalThreads=threads;
+                    LOG.info("finding new threads for run....");
                     int newThreads = (int) Math.ceil((threads * targetCPU) / avgMaxCPU);
                     if (threadCpuMap.containsKey(newThreads)) {
                         LOG.info("newThreads={} already tested. Breaking loop to avoid duplicate testing.", newThreads);
