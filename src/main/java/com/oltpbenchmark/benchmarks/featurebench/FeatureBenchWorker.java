@@ -329,11 +329,8 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                 for (Map.Entry<String, Integer> entry : queryStringsAndRC.entrySet()) {
                     JSONObject inner = new JSONObject();
                     inner.put("query", entry.getKey());
-                    LOG.info("Entire pg_stats output dump: {}\n", pgStatOutputs.toString());
                     inner.put("pg_stat_statements", pgStatOutputs == null ? new JSONObject() : findQueryInPgStatUsingCosine(pgStatOutputs, entry.getKey()));
 
-//                    System.out.printf("Explain plan RC %s%n", queryToExplainMap.getOrDefault(entry.getKey(), new JSONObject()).get("ExplainPlanRows"));
-//                    System.out.printf("user provided RC %d%n", entry.getValue());
                     if (entry.getValue() != -1)
                         inner.put("explainPlanRcValidationSuccess", Integer.parseInt((String) queryToExplainMap.getOrDefault(entry.getKey(), new JSONObject()).get("ExplainPlanRows")) == entry.getValue());
                     inner.put("explain", queryToExplainMap.getOrDefault(entry.getKey(), new JSONObject()));
@@ -461,25 +458,6 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
 
         return matchedKey != null ? (JSONObject) pgStatOutputs.get(matchedKey) : null;
     }
-
-
-
-    /*private JSONObject findQueryInPgStat(JSONObject pgStatOutputs, String query) {
-        int minDistance = Integer.MAX_VALUE;
-        String keymatters = null;
-        for (String key : pgStatOutputs.keySet()) {
-            JSONObject value = (JSONObject) pgStatOutputs.get(key);
-            String onlyquery = value.getString("query");
-            if (minDistance > similarity(onlyquery, query)) {
-                minDistance = similarity(onlyquery, query);
-                keymatters = key;
-            }
-        }
-        return (JSONObject) pgStatOutputs.get(keymatters);
-    }
-    int similarity(String pg_query, String actual_query) {
-        return new LevenshteinDistance().apply(pg_query, actual_query);
-    }*/
 
     /*TODO: remove collectPgPreparedStatements*/
     private JSONObject collectPgPreparedStatements() throws SQLException{
