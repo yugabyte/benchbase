@@ -441,9 +441,14 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
 
         for (String key : pgStatOutputs.keySet()) {
             JSONObject value = (JSONObject) pgStatOutputs.get(key);
-            String pgQuery = value.getString("query");
-            List<String> pgTokens = tokenizeQuery(pgQuery);
+            String pgQuery = value.getString("query").trim();
 
+            // ❌ Skip explain queries
+            if (pgQuery.toLowerCase().startsWith("explain")) {
+                continue;
+            }
+
+            List<String> pgTokens = tokenizeQuery(pgQuery);
             double similarity = cosineSimilarity(inputTokens, pgTokens);
             int lengthDiff = Math.abs(inputTokens.size() - pgTokens.size());
 
