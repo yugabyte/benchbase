@@ -1272,7 +1272,7 @@ public class DBWorkload {
                 StringBuilder header = new StringBuilder("threads");
                 for (int i = 1; i <= 3; i++) header.append(",reading" + i);
                 header.append(",");
-                header.append("max_node1,max_node2,max_node3,avg_max_cpu\n");
+                header.append("max_node1,max_node2,max_node3,max_cpu\n");
                 Files.write(Paths.get(logFile), header.toString().getBytes());
             }
         } catch (Exception e) {
@@ -1348,8 +1348,9 @@ public class DBWorkload {
                     maxPerNode.add(max);
                     LOG.info("Node {} max CPU: {}", nodeIdx+1, max);
                 }
-                avgMaxCPU = maxPerNode.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
-                LOG.info("Average of node max CPU utilizations: {}", avgMaxCPU);
+//                avgMaxCPU = maxPerNode.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
+                avgMaxCPU = maxPerNode.stream().mapToDouble(Double::doubleValue).max().orElse(0.0);
+                LOG.info("Node max CPU utilizations: {}", avgMaxCPU);
 
                 // Write to log file
                 StringBuilder logLine = new StringBuilder();
@@ -1371,7 +1372,7 @@ public class DBWorkload {
                 entry.put("threads", threads);
                 entry.put("readings", allNodeReadings);
                 entry.put("max_per_node", maxPerNode);
-                entry.put("avg_max_cpu", avgMaxCPU);
+                entry.put("max_cpu", avgMaxCPU);
                 jsonResults.add(entry);
 
                 workloadThread.join();
@@ -1379,7 +1380,7 @@ public class DBWorkload {
                 if (avgMaxCPU >= minTargetCPU && avgMaxCPU <= maxTargetCPU) {
                     optimalThreads = threads;
                     found = true;
-                    LOG.info("Found optimal threads: {} with avgMaxCPU: {}", optimalThreads, avgMaxCPU);
+                    LOG.info("Found optimal threads: {} with MaxCPU: {}", optimalThreads, avgMaxCPU);
                     break;
                 }
                 else {
