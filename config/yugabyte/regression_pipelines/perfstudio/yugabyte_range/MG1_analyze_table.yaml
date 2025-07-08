@@ -22,19 +22,11 @@ microbenchmark:
         setAutoCommit: true
         create:
             - drop table IF EXISTS nets_10M_1;
-            - drop table IF EXISTS nets_50M_1;
-            - drop table IF EXISTS nets_100M_1;
-            - drop table IF EXISTS nets_200M_1;
-            - create table nets_10M_1(op_id_1 text,work_type_1 text,work_id_1 text,sequence_id_1 text,source_1 text,owner_1 text,state_1 text,resource_id_1 text,tracing_data_1 text,created_1 timestamp with time zone,modified_1 timestamp with time zone,timeout_1 timestamp with time zone,retry_count_1 bigint,db_user_id_1 text,shard_id_1 smallint,ingest_time_1 timestamp with time zone,label_1 text,metadata_1 text,primary key (db_user_id_1 ASC, shard_id_1 ASC, op_id_1 ASC));
-            - create table nets_50M_1(op_id_1 text,work_type_1 text,work_id_1 text,sequence_id_1 text,source_1 text,owner_1 text,state_1 text,resource_id_1 text,tracing_data_1 text,created_1 timestamp with time zone,modified_1 timestamp with time zone,timeout_1 timestamp with time zone,retry_count_1 bigint,db_user_id_1 text,shard_id_1 smallint,ingest_time_1 timestamp with time zone,label_1 text,metadata_1 text,primary key (db_user_id_1 ASC, shard_id_1 ASC, op_id_1 ASC));
-            - create table nets_100M_1(op_id_1 text,work_type_1 text,work_id_1 text,sequence_id_1 text,source_1 text,owner_1 text,state_1 text,resource_id_1 text,tracing_data_1 text,created_1 timestamp with time zone,modified_1 timestamp with time zone,timeout_1 timestamp with time zone,retry_count_1 bigint,db_user_id_1 text,shard_id_1 smallint,ingest_time_1 timestamp with time zone,label_1 text,metadata_1 text,primary key (db_user_id_1 ASC, shard_id_1 ASC, op_id_1 ASC));
-            - create table nets_200M_1(op_id_1 text,work_type_1 text,work_id_1 text,sequence_id_1 text,source_1 text,owner_1 text,state_1 text,resource_id_1 text,tracing_data_1 text,created_1 timestamp with time zone,modified_1 timestamp with time zone,timeout_1 timestamp with time zone,retry_count_1 bigint,db_user_id_1 text,shard_id_1 smallint,ingest_time_1 timestamp with time zone,label_1 text,metadata_1 text,primary key (db_user_id_1 ASC, shard_id_1 ASC, op_id_1 ASC));
+            - create table nets_1tb_1(op_id_1 text,work_type_1 text,work_id_1 text,sequence_id_1 text,source_1 text,owner_1 text,state_1 text,resource_id_1 text,tracing_data_1 text,created_1 timestamp with time zone,modified_1 timestamp with time zone,timeout_1 timestamp with time zone,retry_count_1 bigint,db_user_id_1 text,shard_id_1 smallint,ingest_time_1 timestamp with time zone,label_1 text,metadata_1 text,primary key (db_user_id_1 ASC, shard_id_1 ASC, op_id_1 ASC));
 
         cleanup:
             - drop table IF EXISTS nets_10M_1;
-            - drop table IF EXISTS nets_50M_1;
-            - drop table IF EXISTS nets_100M_1;
-            - drop table IF EXISTS nets_200M_1;
+
 
         loadRules:
 

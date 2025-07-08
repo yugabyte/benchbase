@@ -45,7 +45,7 @@ microbenchmark:
               columns:
                   - name: col_bigint_id_
                     count: 1
-                    util: PrimaryIntGen
+                    util: RandomUniqueIntGen
                     params: [1, 1000000]
                   - name: col_bigint_
                     count: 5
@@ -80,7 +80,7 @@ microbenchmark:
               columns:
                   - name: col_bigint_id_
                     count: 1
-                    util: PrimaryIntGen
+                    util: RandomUniqueIntGen
                     params: [1, 5000000]
                   - name: col_bigint_
                     count: 5
@@ -115,7 +115,7 @@ microbenchmark:
               columns:
                   - name: col_bigint_id_
                     count: 1
-                    util: PrimaryIntGen
+                    util: RandomUniqueIntGen
                     params: [1, 10000000]
                   - name: col_bigint_
                     count: 5
