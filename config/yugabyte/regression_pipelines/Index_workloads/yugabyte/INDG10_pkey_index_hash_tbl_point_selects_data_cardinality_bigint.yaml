@@ -48,6 +48,10 @@ microbenchmark:
                       count: 1
                       util: RandomInt
                       params: [ 1000001, 1001000 ]
+                    - name: col_bigint_id_
+                      count: 3
+                      util: RandomUniqueIntGen
+                      params: [ 1, 1000000 ]
                     - name: col_float2_
                       count: 2
                       util: RandomNoWithDecimalPoints
