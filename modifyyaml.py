@@ -19,7 +19,7 @@ class SilentUndefined(Undefined):
 
 
 def jinja2_modification(context, input_yaml):
-    template_env = Environment(loader=FileSystemLoader("./"), undefined=SilentUndefined)
+    template_env = Environment(loader=FileSystemLoader("/"), undefined=SilentUndefined)
     template = template_env.get_template(input_yaml)
     with open(input_yaml, 'w') as f:
         f.write(template.render(context))
