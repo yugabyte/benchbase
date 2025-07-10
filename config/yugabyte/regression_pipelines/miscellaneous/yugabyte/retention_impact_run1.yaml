@@ -101,7 +101,7 @@ microbenchmark:
                       params: [ 50, 50 ]
 
         executeRules:
-            - workload: Retention_pre_workload_run1
+            - workload: Retention_pre_workload_run1_1
               time_secs: 300
               run:
                   - name: NetG1_1_select_query
@@ -119,7 +119,7 @@ microbenchmark:
                               params: [ 31, 40 ]
                             - util: RandomInt
                               params: [ 41, 50 ]
-            - workload: Retention_pre_workload_run1
+            - workload: Retention_pre_workload_run1_2
               time_secs: 600
               run:
                   - name: NetG1_1_select_query
@@ -137,7 +137,7 @@ microbenchmark:
                               params: [ 31, 40 ]
                             - util: RandomInt
                               params: [ 41, 50 ]
-            - workload: Retention_pre_workload_run1
+            - workload: Retention_pre_workload_run1_3
               time_secs: 900
               run:
                   - name: NetG1_1_select_query
@@ -155,7 +155,7 @@ microbenchmark:
                               params: [ 31, 40 ]
                             - util: RandomInt
                               params: [ 41, 50 ]
-            - workload: Retention_pre_workload_run1
+            - workload: Retention_pre_workload_run1_4
               time_secs: 1800
               run:
                   - name: NetG1_1_select_query
