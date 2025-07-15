@@ -37,12 +37,12 @@ microbenchmark:
         loadRules:
             - table: indx_rangescan_tbl_
               count: 1
-              rows: 1000000
+              rows: 10000000
               columns:
                   - name: col_bigint_id_
                     count: 1
                     util: PrimaryIntGen
-                    params: [1, 1000000]
+                    params: [1, 10000000]
                   - name: col_bigint_
                     count: 5
                     util: RandomNumber
@@ -78,25 +78,25 @@ microbenchmark:
                   - name: indx_rangescan_1row_test
                     weight: 100
                     queries:
-                        - query: select col_bigint_id_1 from indx_rangescan_tbl_1 where col_bigint_id_1>999999
-            - workload: scanG3_indx_rangescan_varying_rows_100Krows
+                        - query: select col_bigint_id_1,col_varchar10_1,col_varchar100_1 from indx_rangescan_tbl_1 where col_bigint_id_1>9999999
+            - workload: scanG3_indx_rangescan_varying_rows_100krow
               customTags: schematype=regular,partition=range,skey=asc,cardinality=single,projection=indexed,filtercount=one,filteron=rangeskey,filtertype=comparision,queryshape=scan
               run:
                   - name: indx_rangescan_100krow_test
                     weight: 100
                     queries:
-                        - query: select col_bigint_id_1 from indx_rangescan_tbl_1 where col_bigint_id_1>900000
-            - workload: scanG3_indx_rangescan_varying_rows_500Krows
+                        - query: select col_bigint_id_1,col_varchar10_1,col_varchar100_1,col_varchar500_1 from indx_rangescan_tbl_1 where col_bigint_id_1>9900000
+            - workload: scanG3_indx_rangescan_varying_rows_500krow
               customTags: schematype=regular,partition=range,skey=asc,cardinality=single,projection=indexed,filtercount=one,filteron=rangeskey,filtertype=comparision,queryshape=scan
               run:
                   - name: indx_rangescan_500krow_test
                     weight: 100
                     queries:
-                        - query: select col_bigint_id_1 from indx_rangescan_tbl_1 where col_bigint_id_1>500000
-            - workload: scanG3_indx_rangescan_varying_rows_1Mrows
+                        - query: select col_bigint_id_1,col_varchar10_1,col_varchar100_1,col_varchar500_1 from indx_rangescan_tbl_1 where col_bigint_id_1>9500000
+            - workload: scanG3_indx_rangescan_varying_rows_100Krows
               customTags: schematype=regular,partition=range,skey=asc,cardinality=single,projection=indexed,filtercount=one,filteron=rangeskey,filtertype=comparision,queryshape=scan
               run:
                   - name: indx_rangescan_1Mrow_test
                     weight: 100
                     queries:
-                        - query: select col_bigint_id_1 from indx_rangescan_tbl_1 where col_bigint_id_1>1
+                        - query: select col_bigint_id_1,col_varchar10_1,col_varchar100_1,col_varchar500_1 from indx_rangescan_tbl_1 where col_bigint_id_1>9000000
