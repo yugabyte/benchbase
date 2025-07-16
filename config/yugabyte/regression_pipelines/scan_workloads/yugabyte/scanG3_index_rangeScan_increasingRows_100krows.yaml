@@ -37,12 +37,12 @@ microbenchmark:
         loadRules:
             - table: indx_rangescan_tbl_
               count: 1
-              rows: 100000000
+              rows: 10000000
               columns:
                   - name: col_bigint_id_
                     count: 1
                     util: PrimaryIntGen
-                    params: [1, 100000000]
+                    params: [1, 10000000]
                   - name: col_bigint_
                     count: 5
                     util: RandomNumber
