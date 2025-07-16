@@ -20,17 +20,17 @@ microbenchmark:
     properties:
         setAutoCommit: true
         create:
-          - DROP TABLE IF EXISTS pkeyBigint1M_1;
-          - CREATE TABLE pkeyBigint1M_1(col_bigint_card1_1 bigint, col_bigint_card2_1 bigint, col_bigint_card3_1 bigint, col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1));
-          - CREATE INDEX ON pkeyBigint1M_1(col_bigint_card1_1);
-          - CREATE INDEX ON pkeyBigint1M_1(col_bigint_card2_1 ASC);
-          - CREATE INDEX ON pkeyBigint1M_1(col_bigint_card3_1 DESC);
+          - DROP TABLE IF EXISTS iNDG12_U_pkeyBigint1M_1;
+          - CREATE TABLE iNDG12_U_pkeyBigint1M_1(col_bigint_card1_1 bigint, col_bigint_card2_1 bigint, col_bigint_card3_1 bigint, col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1));
+          - CREATE INDEX ON iNDG12_U_pkeyBigint1M_1(col_bigint_card1_1);
+          - CREATE INDEX ON iNDG12_U_pkeyBigint1M_1(col_bigint_card2_1 ASC);
+          - CREATE INDEX ON iNDG12_U_pkeyBigint1M_1(col_bigint_card3_1 DESC);
 
         cleanup:
-            - DROP TABLE IF EXISTS pkeyBigint1M_1;
+            - DROP TABLE IF EXISTS iNDG12_U_pkeyBigint1M_1;
 
         loadRules:
-              - table: pkeyBigint1M_
+              - table: iNDG12_U_pkeyBigint1M_
                 count: 1
                 rows: 1000000
                 columns:
@@ -83,7 +83,7 @@ microbenchmark:
                   - name: hashtbl_index_scan_using_sec_index
                     weight: 100
                     queries:
-                        - query: select * from pkeyBigint1M_1 where col_bigint_card1_1 IN (1000080,1000100,1000099,1000580,1000880);
+                        - query: select * from iNDG12_U_pkeyBigint1M_1 where col_bigint_card1_1 IN (1000080,1000100,1000099,1000580,1000880);
 
             - workload: INDG12_2_index_scan_range_skey_point_select
               customTags: schematype=regular,partition=hash,pkey=single,cardinality=multiple,projection=all,filtercount=one,filteron=rangeskey,filtertype=pointselect
@@ -91,7 +91,7 @@ microbenchmark:
                   - name: hashtbl_index_scan_using_sec_index
                     weight: 100
                     queries:
-                        - query: select * from pkeyBigint1M_1 where col_bigint_card2_1 IN (1000080,1000100,1000099,1000580,1000880);
+                        - query: select * from iNDG12_U_pkeyBigint1M_1 where col_bigint_card2_1 IN (1000080,1000100,1000099,1000580,1000880);
 
             - workload: INDG12_3_index_scan_range_skey_desc_point_select
               customTags: schematype=regular,partition=hash,pkey=single,cardinality=multiple,projection=all,filtercount=one,filteron=rangeskey,filtertype=pointselect
@@ -99,4 +99,4 @@ microbenchmark:
                   - name: hashtbl_index_scan_using_sec_index
                     weight: 100
                     queries:
-                        - query: select * from pkeyBigint1M_1 where col_bigint_card3_1 IN (1000080,1000100,1000099,1000580,1000880);
+                        - query: select * from iNDG12_U_pkeyBigint1M_1 where col_bigint_card3_1 IN (1000080,1000100,1000099,1000580,1000880);

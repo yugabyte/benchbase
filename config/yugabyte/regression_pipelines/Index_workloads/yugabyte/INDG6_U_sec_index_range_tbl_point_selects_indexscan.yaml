@@ -21,17 +21,17 @@ microbenchmark:
     properties:
         setAutoCommit: true
         create:
-            - DROP TABLE IF EXISTS Rangetbl_comp_skey_1;
-            - CREATE TABLE Rangetbl_comp_skey_1(col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_bigint_id_4 bigint, col_bigint_id_5 bigint, col_bigint_id_6 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1 ASC));
-            - CREATE INDEX ON Rangetbl_comp_skey_1(col_bigint_id_2 ASC, col_bigint_id_3 ASC);
-            - CREATE INDEX ON Rangetbl_comp_skey_1(col_bigint_id_4, col_bigint_id_5 ASC);
+            - DROP TABLE IF EXISTS INDG6_U_Rangetbl_comp_skey_1;
+            - CREATE TABLE INDG6_U_Rangetbl_comp_skey_1(col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_bigint_id_4 bigint, col_bigint_id_5 bigint, col_bigint_id_6 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1 ASC));
+            - CREATE INDEX ON INDG6_U_Rangetbl_comp_skey_1(col_bigint_id_2 ASC, col_bigint_id_3 ASC);
+            - CREATE INDEX ON INDG6_U_Rangetbl_comp_skey_1(col_bigint_id_4, col_bigint_id_5 ASC);
 
         cleanup:
-            - DROP TABLE IF EXISTS Rangetbl_comp_skey_1;
+            - DROP TABLE IF EXISTS INDG6_U_Rangetbl_comp_skey_1;
 
         loadRules:
 
-              - table: Rangetbl_comp_skey_
+              - table: INDG6_U_Rangetbl_comp_skey_
                 count: 1
                 rows: 1000000
                 columns:
@@ -71,7 +71,7 @@ microbenchmark:
                   - name: hashtbl_index_scan_using_sec_index
                     weight: 100
                     queries:
-                        - query: select * from Rangetbl_comp_skey_1 where col_bigint_id_2=500009
+                        - query: select * from INDG6_U_Rangetbl_comp_skey_1 where col_bigint_id_2=500009
 
             - workload: INDG6_2_rangetbl_point_lookup_index_scan_using_comp_range_skey_sec_part_range
               customTags: schematype=regular,partition=range,skey=composite,cardinality=single,projection=all,filtercount=one,filteron=rangeskey,filtertype=pointselect,queryshape=scan
@@ -79,7 +79,7 @@ microbenchmark:
                   - name: hashtbl_index_scan_using_sec_index
                     weight: 100
                     queries:
-                        - query: select * from Rangetbl_comp_skey_1 where col_bigint_id_3=500009
+                        - query: select * from INDG6_U_Rangetbl_comp_skey_1 where col_bigint_id_3=500009
 
             - workload: INDG6_3_rangetbl_point_lookup_index_scan_using_comp_skey_two_conditions_range
               customTags: customer=5,schematype=regular,partition=range,skey=composite,cardinality=single,projection=all,filtercount=two,filteron=mixedskey,filtertype=pointselect,queryshape=scan
@@ -87,7 +87,7 @@ microbenchmark:
                   - name: hashtbl_index_scan_using_sec_index
                     weight: 100
                     queries:
-                        - query: select * from Rangetbl_comp_skey_1 where col_bigint_id_3=500009 and col_bigint_id_4=500009
+                        - query: select * from INDG6_U_Rangetbl_comp_skey_1 where col_bigint_id_3=500009 and col_bigint_id_4=500009
 
             - workload: INDG6_4_rangetbl_point_lookup_index_scan_using_mixed_comp_skey_first_part_hash
               customTags: customer=1,schematype=regular,partition=range,skey=composite,cardinality=single,projection=all,filtercount=one,filteron=hashskey,filtertype=pointselect,queryshape=scan
@@ -95,7 +95,7 @@ microbenchmark:
                   - name: hashtbl_index_scan_using_sec_index
                     weight: 100
                     queries:
-                        - query: select * from Rangetbl_comp_skey_1 where col_bigint_id_4=500009
+                        - query: select * from INDG6_U_Rangetbl_comp_skey_1 where col_bigint_id_4=500009
 
             - workload: INDG6_5_rangetbl_point_lookup_index_scan_using_mixed_comp_skey_sec_part_range
               customTags: customer=1,schematype=regular,partition=range,skey=composite,cardinality=single,projection=all,filtercount=one,filteron=rangeskey,filtertype=pointselect,queryshape=scan
@@ -103,5 +103,5 @@ microbenchmark:
                   - name: hashtbl_index_scan_using_sec_index
                     weight: 100
                     queries:
-                        - query: select * from Rangetbl_comp_skey_1 where col_bigint_id_5=500009
+                        - query: select * from INDG6_U_Rangetbl_comp_skey_1 where col_bigint_id_5=500009
 

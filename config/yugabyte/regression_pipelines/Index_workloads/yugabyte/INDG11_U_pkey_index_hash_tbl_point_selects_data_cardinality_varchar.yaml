@@ -24,14 +24,14 @@ microbenchmark:
     properties:
         setAutoCommit: true
         create:
-          - DROP TABLE IF EXISTS pkeyVarchar10_1;
-          - CREATE TABLE pkeyVarchar10_1(col_varchar_card1_1 varchar(15), col_varchar_card2_1 varchar(15), col_varchar_card3_1 varchar(15), col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_varchar_card1_1, col_varchar_card2_1, col_varchar_card3_1, col_bigint_id_1));
+          - DROP TABLE IF EXISTS INDG11_U_pkeyVarchar10_1;
+          - CREATE TABLE INDG11_U_pkeyVarchar10_1(col_varchar_card1_1 varchar(15), col_varchar_card2_1 varchar(15), col_varchar_card3_1 varchar(15), col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_varchar_card1_1, col_varchar_card2_1, col_varchar_card3_1, col_bigint_id_1));
 
         cleanup:
-            - DROP TABLE IF EXISTS pkeyVarchar10_;
+            - DROP TABLE IF EXISTS INDG11_U_pkeyVarchar10_;
 
         loadRules:
-              - table: pkeyVarchar10_
+              - table: INDG11_U_pkeyVarchar10_
                 count: 1
                 rows: 1000000
                 columns:
@@ -83,7 +83,7 @@ microbenchmark:
                   - name: hashtbl_index_scan_using_sec_index
                     weight: 100
                     queries:
-                        - query: select * from pkeyVarchar10_1 where col_varchar_card1_1='id-1000000'
+                        - query: select * from INDG11_U_pkeyVarchar10_1 where col_varchar_card1_1='id-1000000'
 
             - workload: INDG11_2_data_cardinality_hashtbl_point_lookup_index_scan_using_comp_skey_sec_part_hash_1k
               customTags: schematype=regular,partition=hash,pkey=composite,cardinality=multiple,projection=all,filtercount=one,filteron=rangepkey,filtertype=pointselect,filterdatatype=varchar,queryshape=scan
@@ -91,7 +91,7 @@ microbenchmark:
                   - name: hashtbl_index_scan_using_sec_index
                     weight: 100
                     queries:
-                        - query: select * from pkeyVarchar10_1 where col_varchar_card2_1='id-1000498'
+                        - query: select * from INDG11_U_pkeyVarchar10_1 where col_varchar_card2_1='id-1000498'
 
 
             - workload: INDG11_2_data_cardinality_hashtbl_point_lookup_index_scan_using_comp_skey_sec_part_hash_1k_two_conditions
@@ -100,7 +100,7 @@ microbenchmark:
                   - name: hashtbl_index_scan_using_sec_index
                     weight: 100
                     queries:
-                        - query: select * from pkeyVarchar10_1 where col_varchar_card1_1='id-1000000' and col_varchar_card2_1='id-1000898'
+                        - query: select * from INDG11_U_pkeyVarchar10_1 where col_varchar_card1_1='id-1000000' and col_varchar_card2_1='id-1000898'
 
             - workload: INDG11_2_data_cardinality_hashtbl_point_lookup_index_scan_using_comp_skey_third_part_hash_100_two_conditions
               customTags: schematype=regular,partition=hash,pkey=composite,cardinality=multiple,projection=all,filtercount=one,filteron=mixedpkey,filtertype=pointselect,filterdatatype=varchar,queryshape=scan
@@ -108,7 +108,7 @@ microbenchmark:
                   - name: hashtbl_index_scan_using_sec_index
                     weight: 100
                     queries:
-                        - query: select * from pkeyVarchar10_1 where col_varchar_card1_1='id-1000000' and col_varchar_card3_1='id-7000999'
+                        - query: select * from INDG11_U_pkeyVarchar10_1 where col_varchar_card1_1='id-1000000' and col_varchar_card3_1='id-7000999'
 
             - workload: INDG11_2_data_cardinality_hashtbl_point_lookup_index_scan_using_comp_skey_third_part_hash_100_two_conditions
               customTags: schematype=regular,partition=hash,pkey=composite,cardinality=multiple,projection=all,filtercount=one,filteron=mixedpkey,filtertype=pointselect,filterdatatype=varchar,queryshape=scan
@@ -116,4 +116,4 @@ microbenchmark:
                   - name: hashtbl_index_scan_using_sec_index
                     weight: 100
                     queries:
-                        - query: select * from pkeyVarchar10_1 where col_varchar_card1_1='id-1000000' and col_varchar_card3_1='id-7000999'
+                        - query: select * from INDG11_U_pkeyVarchar10_1 where col_varchar_card1_1='id-1000000' and col_varchar_card3_1='id-7000999'

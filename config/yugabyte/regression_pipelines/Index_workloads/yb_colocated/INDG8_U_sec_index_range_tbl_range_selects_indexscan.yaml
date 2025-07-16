@@ -22,17 +22,17 @@ microbenchmark:
     properties:
         setAutoCommit: true
         create:
-            - DROP TABLE IF EXISTS Rangetbl_comp_skey_1;
-            - CREATE TABLE Rangetbl_comp_skey_1(col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_bigint_id_4 bigint, col_bigint_id_5 bigint, col_bigint_id_6 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1 ASC));
-            - CREATE INDEX ON Rangetbl_comp_skey_1(col_bigint_id_2 ASC);
-            - CREATE INDEX ON Rangetbl_comp_skey_1(col_bigint_id_3 ASC, col_bigint_id_4 ASC);
+            - DROP TABLE IF EXISTS INDG8_U_Rangetbl_comp_skey_1;
+            - CREATE TABLE INDG8_U_Rangetbl_comp_skey_1(col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_bigint_id_4 bigint, col_bigint_id_5 bigint, col_bigint_id_6 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1 ASC));
+            - CREATE INDEX ON INDG8_U_Rangetbl_comp_skey_1(col_bigint_id_2 ASC);
+            - CREATE INDEX ON INDG8_U_Rangetbl_comp_skey_1(col_bigint_id_3 ASC, col_bigint_id_4 ASC);
 
         cleanup:
-            - DROP TABLE IF EXISTS Rangetbl_comp_skey_1;
+            - DROP TABLE IF EXISTS INDG8_U_Rangetbl_comp_skey_1;
 
         loadRules:
 
-              - table: Rangetbl_comp_skey_
+              - table: INDG8_U_Rangetbl_comp_skey_
                 count: 1
                 rows: 1000000
                 columns:
@@ -72,7 +72,7 @@ microbenchmark:
                   - name: hashtbl_index_scan_using_sec_index
                     weight: 100
                     queries:
-                        - query: select * from Rangetbl_comp_skey_1 where col_bigint_id_3>500000
+                        - query: select * from INDG8_U_Rangetbl_comp_skey_1 where col_bigint_id_3>500000
 
             - workload: INDG8_2_rangetbl_range_lookup_index_scan_using_comp_skey_sec_part_range
               customTags: schematype=colocated,partition=range,skey=composite,cardinality=single,projection=all,filtercount=one,filteron=rangeskey,filtertype=comparision,queryshape=scan
@@ -80,7 +80,7 @@ microbenchmark:
                   - name: hashtbl_index_scan_using_sec_index
                     weight: 100
                     queries:
-                        - query: select * from Rangetbl_comp_skey_1 where col_bigint_id_4>500000
+                        - query: select * from INDG8_U_Rangetbl_comp_skey_1 where col_bigint_id_4>500000
 
             - workload: INDG8_5_rangetbl_range_lookup_index_scan_using_comp_skey_two_conditions_range
               customTags: schematype=colocated,partition=range,skey=composite,cardinality=single,projection=all,filtercount=two,filteron=rangeskey,filtertype=comparision,queryshape=scan
@@ -88,7 +88,7 @@ microbenchmark:
                   - name: hashtbl_index_scan_using_sec_index
                     weight: 100
                     queries:
-                        - query: select * from Rangetbl_comp_skey_1 where col_bigint_id_3>250000 and col_bigint_id_4<750000
+                        - query: select * from INDG8_U_Rangetbl_comp_skey_1 where col_bigint_id_3>250000 and col_bigint_id_4<750000
 
             - workload: INDG8_7_rangetbl_range_lookup_index_scan_using_skey_two_conditions_range
               customTags: schematype=colocated,partition=range,skey=composite,cardinality=single,projection=all,filtercount=two,filteron=rangeskey,filtertype=comparision,queryshape=scan
@@ -96,4 +96,4 @@ microbenchmark:
                   - name: hashtbl_index_scan_pkey
                     weight: 100
                     queries:
-                        - query: select * from Rangetbl_comp_skey_1 where col_bigint_id_3>250000 and col_bigint_id_3<750000
+                        - query: select * from INDG8_U_Rangetbl_comp_skey_1 where col_bigint_id_3>250000 and col_bigint_id_3<750000
