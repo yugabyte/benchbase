@@ -30,19 +30,19 @@ microbenchmark:
         setAutoCommit: true
         create:
             - DROP TABLE IF EXISTS indx_rangescan_tbl_1;
-            - CREATE TABLE indx_rangescan_tbl_1(col_bigint_id_1 bigint, col_bigint_1 bigint, col_bigint_2 bigint, col_bigint_3 bigint, col_bigint_4 bigint, col_bigint_5 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_1 varchar(10), col_varchar100_1 varchar(100), col_varchar100_2 varchar(100), col_varchar500_1 varchar(500));
-            - CREATE INDEX ON indx_rangescan_tbl_1(col_bigint_id_1 ASC);
+            - CREATE TABLE indx_rangescan_tbl_1(col_bigint_id_1 bigint primary key, col_bigint_1 bigint, col_bigint_2 bigint, col_bigint_3 bigint, col_bigint_4 bigint, col_bigint_5 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_1 varchar(10), col_varchar100_1 varchar(100), col_varchar100_2 varchar(100), col_varchar500_1 varchar(500));
+            - CREATE INDEX ON indx_rangescan_tbl_1(col_bigint_1 ASC,col_bigint_2 ASC);
         cleanup:
             - DROP TABLE IF EXISTS indx_rangescan_tbl_1;
         loadRules:
             - table: indx_rangescan_tbl_
               count: 1
-              rows: 10000000
+              rows: 100000000
               columns:
                   - name: col_bigint_id_
                     count: 1
                     util: PrimaryIntGen
-                    params: [1, 10000000]
+                    params: [1, 100000000]
                   - name: col_bigint_
                     count: 5
                     util: RandomNumber
@@ -72,10 +72,18 @@ microbenchmark:
                     params: [500, 500]
 
         executeRules:
-            - workload: scanG3_indx_rangescan_varying_rows_100krow
+            - workload: scanG3_indx_rangescan_varying_rows_1
               customTags: schematype=regular,partition=range,skey=asc,cardinality=single,projection=indexed,filtercount=one,filteron=rangeskey,filtertype=comparision,queryshape=scan
               run:
                   - name: indx_rangescan_100krow_test
                     weight: 100
                     queries:
-                        - query: select col_bigint_id_1,col_varchar10_1,col_varchar100_1,col_varchar500_1 from indx_rangescan_tbl_1 where col_bigint_1=ANY(ARRAY[15000,50000,100000,500000,1000000]);
+                        - query: select col_bigint_id_1,col_varchar10_1,col_varchar100_1,col_varchar500_1 from indx_rangescan_tbl_1 where col_bigint_2=ANY(ARRAY[15000,50000,100000,500000,1000000]);
+            - workload: scanG3_indx_rangescan_varying_rows_1
+              customTags: schematype=regular,partition=range,skey=asc,cardinality=single,projection=indexed,filtercount=one,filteron=rangeskey,filtertype=comparision,queryshape=scan
+              run:
+                  - name: indx_rangescan_100krow_test
+                    weight: 100
+                    queries:
+                        - query: select col_bigint_id_1,col_varchar10_1,col_varchar100_1,col_varchar500_1 from indx_rangescan_tbl_1 where col_bigint_2=ANY(ARRAY[15000,50000,100000,500000,1000000]);
+
