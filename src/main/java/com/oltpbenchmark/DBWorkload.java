@@ -74,6 +74,16 @@ public class DBWorkload {
      * @param args
      * @throws Exception
      */
+    private static boolean isOptionTrueForOptimalThreads(XMLConfiguration config, String key) {
+        if (!config.containsKey(key)) return false;
+        Object val = config.getProperty(key);
+        if (val instanceof Boolean) {
+            return (Boolean) val;
+        } else if (val instanceof String) {
+            return ((String) val).equalsIgnoreCase("true");
+        }
+        return false;
+    }
     public static void main(String[] args) throws Exception {
 
         // create the command line parser
@@ -225,6 +235,12 @@ public class DBWorkload {
             List<HierarchicalConfiguration<ImmutableNode>> workloads =
                 xmlConfig.configurationsAt("microbenchmark/properties/executeRules");
 
+            if (isOptionTrueForOptimalThreads(xmlConfig, "optimalThreads")) {
+                if (workloads != null && workloads.size() > 1) {
+                    LOG.error("Error: optimalThreads can only be used when there is exactly one workload. Found {} workloads.", workloads.size());
+                    System.exit(1);
+                }
+            }
             int totalWorkloadCount =
                 plugin.equalsIgnoreCase("featurebench") ?
                     (workloads == null ? 1 : (workloads.size() == 0 ? 1 : workloads.size())) : 1;
