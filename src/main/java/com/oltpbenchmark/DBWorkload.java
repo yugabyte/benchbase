@@ -687,7 +687,7 @@ public class DBWorkload {
                         LOG.info("Starting Workload " + (workloads.get(workCount - 1).containsKey("workload") ? workloads.get(workCount - 1).getString("workload") : workCount));
                         // Add optimal thread finding here for current workload
                         if (xmlConfig.containsKey("optimalThreads") && xmlConfig.getBoolean("optimalThreads")) {
-                            int minThreads = xmlConfig.getInt("minThreads", 1);
+                            int minThreads = xmlConfig.getInt("minThreads", terminals);
                             double targetCPU = xmlConfig.getDouble("targetCPU", 80.0);
                             double toleranceCPU = xmlConfig.getDouble("toleranceCPU", 5.0);
 
@@ -762,7 +762,7 @@ public class DBWorkload {
                         LOG.info("Starting Workload " + (workloads.get(workCount - 1).containsKey("workload") ? workloads.get(workCount - 1).getString("workload") : workCount));
                         if (xmlConfig.containsKey("optimalThreads") && xmlConfig.getBoolean("optimalThreads")) {
                             String val = workloads.get(workCount - 1).getString("workload");
-                            int minThreads = xmlConfig.getInt("minThreads", 1);
+                            int minThreads = xmlConfig.getInt("minThreads", terminals);
                             double targetCPU = xmlConfig.getDouble("targetCPU", 80.0);
                             double toleranceCPU = xmlConfig.getDouble("toleranceCPU", 5.0);
 
