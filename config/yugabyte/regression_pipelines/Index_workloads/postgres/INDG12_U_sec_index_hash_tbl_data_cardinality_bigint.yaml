@@ -21,18 +21,19 @@ microbenchmark:
         setAutoCommit: true
         create:
           - DROP TABLE IF EXISTS iNDG12_U_pkeyBigint1M_1;
-          - CREATE TABLE iNDG12_U_pkeyBigint1M_1(col_bigint_card1_1 bigint, col_bigint_card2_1 bigint, col_bigint_card3_1 bigint, col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1));
+          - CREATE TABLE INDG12_U_pkeyBigint1M_1(col_bigint_card1_1 bigint, col_bigint_card2_1 bigint, col_bigint_card3_1 bigint, col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_bigint_card4_1 bigint, col_bigint_card4_2 bigint, col_bigint_card4_3 bigint, col_bigint_card4_4 bigint, col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1));
           - CREATE INDEX ON iNDG12_U_pkeyBigint1M_1(col_bigint_card1_1);
           - CREATE INDEX ON iNDG12_U_pkeyBigint1M_1(col_bigint_card2_1 ASC);
           - CREATE INDEX ON iNDG12_U_pkeyBigint1M_1(col_bigint_card3_1 DESC);
+          - CREATE INDEX ON INDG12_U_pkeyBigint1M_1(col_bigint_card4_1 ASC, col_bigint_card4_2 ASC col_bigint_card4_3 ASC)
 
         cleanup:
             - DROP TABLE IF EXISTS iNDG12_U_pkeyBigint1M_1;
 
         loadRules:
-              - table: iNDG12_U_pkeyBigint1M_
+              - table: INDG12_U_pkeyBigint1M_
                 count: 1
-                rows: 1000000
+                rows: 100000000
                 columns:
                     - name: col_bigint_card1_
                       count: 1
@@ -49,15 +50,11 @@ microbenchmark:
                     - name: col_bigint_id_
                       count: 3
                       util: RandomUniqueIntGen
-                      params: [ 1, 1000000 ]
-                    - name: col_float2_
-                      count: 2
-                      util: RandomNoWithDecimalPoints
-                      params: [ 1, 1000000, 2 ]
-                    - name: col_float5_
-                      count: 2
-                      util: RandomNoWithDecimalPoints
-                      params: [ 1, 1000000, 5 ]
+                      params: [ 1, 100000000 ]
+                    - name: col_bigint_card4_
+                      count: 4
+                      util: RandomInt
+                      params: [ 1000001, 1001000 ]
                     - name: col_boolean_
                       count: 1
                       util: RandomBoolean
@@ -100,3 +97,12 @@ microbenchmark:
                     weight: 100
                     queries:
                         - query: select * from iNDG12_U_pkeyBigint1M_1 where col_bigint_card3_1 IN (1000080,1000100,1000099,1000580,1000880);
+
+            - workload: INDG12_4
+              customTags: schematype=regular,partition=hash,pkey=single,cardinality=multiple,projection=all,filtercount=one,filteron=hashskey,filtertype=pointselect
+              run:
+                  - name: hashtbl_index_scan_using_sec_index
+                    weight: 100
+                    queries:
+                        - query: select * from INDG12_U_pkeyBigint1M_1 where col_bigint_card4_1 < 1000100 and col_bigint_card4_2 < 1000500 and col_bigint_card4_3 > 1000500
+
