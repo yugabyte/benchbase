@@ -32,7 +32,7 @@ microbenchmark:
         loadRules:
               - table: INDG12_U_pkeyBigint1M_
                 count: 1
-                rows: 1000000
+                rows: 100000000
                 columns:
                     - name: col_bigint_card1_
                       count: 1
@@ -49,7 +49,7 @@ microbenchmark:
                     - name: col_bigint_id_
                       count: 3
                       util: RandomUniqueIntGen
-                      params: [ 1, 1000000 ]
+                      params: [ 1, 100000000 ]
                     - name: col_bigint_card4_
                       count: 4
                       util: RandomInt
@@ -73,7 +73,7 @@ microbenchmark:
 
         executeRules:
 
-            - workload: INDG12_1_index_scan_hash_skey_point_select
+            - workload: INDG12_more_data_1_index_scan_hash_skey_point_select
               customTags: schematype=regular,partition=hash,pkey=single,cardinality=multiple,projection=all,filtercount=one,filteron=hashskey,filtertype=pointselect
               run:
                   - name: hashtbl_index_scan_using_sec_index
@@ -81,7 +81,7 @@ microbenchmark:
                     queries:
                         - query: select * from INDG12_U_pkeyBigint1M_1 where col_bigint_card1_1 IN (1000080,1000100,1000099,1000580,1000880);
 
-            - workload: INDG12_1_index_only_scan_hash_skey_point_select
+            - workload: INDG12_more_data_1_index_only_scan_hash_skey_point_select
               customTags: schematype=regular,partition=hash,pkey=single,cardinality=multiple,projection=all,filtercount=one,filteron=hashskey,filtertype=pointselect
               run:
                   - name: hashtbl_index_scan_using_sec_index
@@ -89,7 +89,7 @@ microbenchmark:
                     queries:
                         - query: select col_bigint_card1_1 from INDG12_U_pkeyBigint1M_1 where col_bigint_card1_1 IN (1000080,1000100,1000099,1000580,1000880);
 
-            - workload: INDG12_2_index_scan_range_skey_point_select
+            - workload: INDG12_more_data_2_index_scan_range_skey_point_select
               customTags: schematype=regular,partition=hash,pkey=single,cardinality=multiple,projection=all,filtercount=one,filteron=rangeskey,filtertype=pointselect
               run:
                   - name: hashtbl_index_scan_using_sec_index
@@ -97,7 +97,7 @@ microbenchmark:
                     queries:
                         - query: select * from INDG12_U_pkeyBigint1M_1 where col_bigint_card2_1 IN (1000080,1000100,1000099,1000580,1000880);
 
-            - workload: INDG12_2_index_only_scan_range_skey_point_select
+            - workload: INDG12_more_data_2_index_only_scan_range_skey_point_select
               customTags: schematype=regular,partition=hash,pkey=single,cardinality=multiple,projection=all,filtercount=one,filteron=rangeskey,filtertype=pointselect
               run:
                   - name: hashtbl_index_scan_using_sec_index
@@ -105,7 +105,7 @@ microbenchmark:
                     queries:
                         - query: select col_bigint_card2_1 from INDG12_U_pkeyBigint1M_1 where col_bigint_card2_1 IN (1000080,1000100,1000099,1000580,1000880);
 
-            - workload: INDG12_3_index_scan_range_skey_desc_point_select
+            - workload: INDG12_more_data_3_index_scan_range_skey_desc_point_select
               customTags: schematype=regular,partition=hash,pkey=single,cardinality=multiple,projection=all,filtercount=one,filteron=rangeskey,filtertype=pointselect
               run:
                   - name: hashtbl_index_scan_using_sec_index
@@ -113,7 +113,7 @@ microbenchmark:
                     queries:
                         - query: select * from INDG12_U_pkeyBigint1M_1 where col_bigint_card3_1 IN (1000080,1000100,1000099,1000580,1000880);
 
-            - workload: INDG12_3_index_only_scan_range_skey_desc_point_select
+            - workload: INDG12_more_data_3_index_only_scan_range_skey_desc_point_select
               customTags: schematype=regular,partition=hash,pkey=single,cardinality=multiple,projection=all,filtercount=one,filteron=rangeskey,filtertype=pointselect
               run:
                   - name: hashtbl_index_scan_using_sec_index
@@ -121,7 +121,7 @@ microbenchmark:
                     queries:
                         - query: select col_bigint_card3_1 from INDG12_U_pkeyBigint1M_1 where col_bigint_card3_1 IN (1000080,1000100,1000099,1000580,1000880);
 
-            - workload: INDG12_4
+            - workload: INDG12_more_data_4
               customTags: schematype=regular,partition=hash,pkey=single,cardinality=multiple,projection=all,filtercount=one,filteron=hashskey,filtertype=pointselect
               run:
                   - name: hashtbl_index_scan_using_sec_index
@@ -130,7 +130,7 @@ microbenchmark:
                         - query: select * from INDG12_U_pkeyBigint1M_1 where col_bigint_card4_1 < 1000100 and col_bigint_card4_2 < 1000500 and col_bigint_card4_3 > 1000500;
 
 
-            - workload: INDG12_4_index_only_scan
+            - workload: INDG12_more_data_4_index_only_scan
               customTags: schematype=regular,partition=hash,pkey=single,cardinality=multiple,projection=all,filtercount=one,filteron=hashskey,filtertype=pointselect
               run:
                   - name: hashtbl_index_scan_using_sec_index
@@ -139,7 +139,7 @@ microbenchmark:
                         - query: select col_bigint_card4_1,col_bigint_card4_2,col_bigint_card4_3 from INDG12_U_pkeyBigint1M_1 where col_bigint_card4_1 < 1000100 and col_bigint_card4_2 < 1000500 and col_bigint_card4_3 > 1000500;
 
 
-            -   workload: INDG12_2_index_scan_range_skey_filter_all_row_matching_single_value
+            -   workload: INDG12_more_data_2_index_scan_range_skey_filter_all_row_matching_single_value
                 customTags: schematype=regular,partition=hash,pkey=single,cardinality=multiple,projection=all,filtercount=one,filteron=rangeskey,filtertype=pointselect
                 run:
                     -   name: hashtbl_index_scan_using_sec_index
@@ -147,10 +147,12 @@ microbenchmark:
                         queries:
                             -   query: select * from INDG12_U_pkeyBigint1M_1 where col_bigint_card2_1 = 1000080;
 
-            -   workload: INDG12_2_index_only_scan_range_skey_filter_all_row_matching_single_value
+            -   workload: INDG12_more_data_2_index_only_scan_range_skey_filter_all_row_matching_single_value
                 customTags: schematype=regular,partition=hash,pkey=single,cardinality=multiple,projection=all,filtercount=one,filteron=rangeskey,filtertype=pointselect
                 run:
                     -   name: hashtbl_index_scan_using_sec_index
                         weight: 100
                         queries:
                             -   query: select col_bigint_card2_1 from INDG12_U_pkeyBigint1M_1 where col_bigint_card2_1 = 1000080;
+
+
