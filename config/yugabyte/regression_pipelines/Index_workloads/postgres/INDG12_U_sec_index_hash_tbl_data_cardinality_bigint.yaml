@@ -25,7 +25,7 @@ microbenchmark:
           - CREATE INDEX ON iNDG12_U_pkeyBigint1M_1(col_bigint_card1_1);
           - CREATE INDEX ON iNDG12_U_pkeyBigint1M_1(col_bigint_card2_1 ASC);
           - CREATE INDEX ON iNDG12_U_pkeyBigint1M_1(col_bigint_card3_1 DESC);
-          - CREATE INDEX ON INDG12_U_pkeyBigint1M_1(col_bigint_card4_1 ASC, col_bigint_card4_2 ASC col_bigint_card4_3 ASC)
+          - CREATE INDEX ON INDG12_U_pkeyBigint1M_1(col_bigint_card4_1 ASC, col_bigint_card4_2 ASC, col_bigint_card4_3 ASC)
 
         cleanup:
             - DROP TABLE IF EXISTS iNDG12_U_pkeyBigint1M_1;
@@ -104,5 +104,5 @@ microbenchmark:
                   - name: hashtbl_index_scan_using_sec_index
                     weight: 100
                     queries:
-                        - query: select * from INDG12_U_pkeyBigint1M_1 where col_bigint_card4_1 < 1000100 and col_bigint_card4_2 < 1000500 and col_bigint_card4_3 > 1000500
+                        - query: select * from INDG12_U_pkeyBigint1M_1 where col_bigint_card4_1 < 1000100 and col_bigint_card4_2 < 1000500 and col_bigint_card4_3 > 1000500;
 
