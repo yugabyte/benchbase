@@ -170,9 +170,9 @@ microbenchmark:
                         queries:
                             -   query: select * from INDG12_U_pkeyBigint1M_1 where col_bigint_card2_1 = ?;
                                 bindings:
-                                      count: 1
-                                      util: RandomNumber
-                                      params: [ 1000001, 1500001 ];
+                                    count: 1
+                                    util: RandomNumber
+                                    params: [ 1000001, 1500001 ]
 
             -   workload: INDG12_more_data_2_index_only_scan_range_skey_filter_all_row_matching_single_value
                 customTags: schematype=regular,partition=hash,pkey=single,cardinality=multiple,projection=all,filtercount=one,filteron=rangeskey,filtertype=pointselect
@@ -182,9 +182,9 @@ microbenchmark:
                         queries:
                             -   query: select col_bigint_card2_1 from INDG12_U_pkeyBigint1M_1 where col_bigint_card2_1 = ?;
                                 bindings:
-                                      count: 1
-                                      util: RandomNumber
-                                      params: [ 1000001, 1500001 ];
+                                    count: 1
+                                    util: RandomNumber
+                                    params: [ 1000001, 1500001 ]
 
 
 
