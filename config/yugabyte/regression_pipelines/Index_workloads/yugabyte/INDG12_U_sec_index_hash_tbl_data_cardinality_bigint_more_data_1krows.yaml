@@ -32,28 +32,28 @@ microbenchmark:
         loadRules:
               - table: INDG12_U_pkeyBigint1M_
                 count: 1
-                rows: 100000000
+                rows: 500000000
                 columns:
                     - name: col_bigint_card1_
                       count: 1
                       util: RandomInt
-                      params: [ 1000001, 1100000 ]
+                      params: [ 1000001, 1500001 ]
                     - name: col_bigint_card2_
                       count: 1
                       util: RandomInt
-                      params: [ 1000001, 1100000 ]
+                      params: [ 1000001, 1500001 ]
                     - name: col_bigint_card3_
                       count: 1
                       util: RandomInt
-                      params: [ 1000001, 1100000 ]
+                      params: [ 1000001, 1500001 ]
                     - name: col_bigint_id_
                       count: 3
                       util: RandomUniqueIntGen
-                      params: [ 1, 100000000 ]
+                      params: [ 1, 500000000 ]
                     - name: col_bigint_card4_
                       count: 4
                       util: RandomInt
-                      params: [ 1000001, 1100000 ]
+                      params: [ 1000001, 1500001 ]
                     - name: col_boolean_
                       count: 1
                       util: RandomBoolean
@@ -79,7 +79,11 @@ microbenchmark:
                   - name: hashtbl_index_scan_using_sec_index
                     weight: 100
                     queries:
-                        - query: select * from INDG12_U_pkeyBigint1M_1 where col_bigint_card1_1 IN (1000080,1000100,1000099,1000580,1000880);
+                        - query: select * from INDG12_U_pkeyBigint1M_1 where col_bigint_card1_1 IN (?,?,?,?,?);
+                          bindings:
+                              count: 5
+                              util: RandomNumber
+                              params: [ 1000001, 1500001 ]
 
             - workload: INDG12_more_data_1_index_only_scan_hash_skey_point_select
               customTags: schematype=regular,partition=hash,pkey=single,cardinality=multiple,projection=all,filtercount=one,filteron=hashskey,filtertype=pointselect
@@ -87,7 +91,11 @@ microbenchmark:
                   - name: hashtbl_index_scan_using_sec_index
                     weight: 100
                     queries:
-                        - query: select col_bigint_card1_1 from INDG12_U_pkeyBigint1M_1 where col_bigint_card1_1 IN (1000080,1000100,1000099,1000580,1000880);
+                        - query: select col_bigint_card1_1 from INDG12_U_pkeyBigint1M_1 where col_bigint_card1_1 IN (?,?,?,?,?);
+                          bindings:
+                              count: 5
+                              util: RandomNumber
+                              params: [ 1000001, 1500001 ]
 
             - workload: INDG12_more_data_2_index_scan_range_skey_point_select
               customTags: schematype=regular,partition=hash,pkey=single,cardinality=multiple,projection=all,filtercount=one,filteron=rangeskey,filtertype=pointselect
@@ -95,7 +103,11 @@ microbenchmark:
                   - name: hashtbl_index_scan_using_sec_index
                     weight: 100
                     queries:
-                        - query: select * from INDG12_U_pkeyBigint1M_1 where col_bigint_card2_1 IN (1000080,1000100,1000099,1000580,1000880);
+                        - query: select * from INDG12_U_pkeyBigint1M_1 where col_bigint_card2_1 IN (?,?,?,?,?);
+                          bindings:
+                              count: 5
+                              util: RandomNumber
+                              params: [ 1000001, 1500001 ]
 
             - workload: INDG12_more_data_2_index_only_scan_range_skey_point_select
               customTags: schematype=regular,partition=hash,pkey=single,cardinality=multiple,projection=all,filtercount=one,filteron=rangeskey,filtertype=pointselect
@@ -103,7 +115,11 @@ microbenchmark:
                   - name: hashtbl_index_scan_using_sec_index
                     weight: 100
                     queries:
-                        - query: select col_bigint_card2_1 from INDG12_U_pkeyBigint1M_1 where col_bigint_card2_1 IN (1000080,1000100,1000099,1000580,1000880);
+                        - query: select col_bigint_card2_1 from INDG12_U_pkeyBigint1M_1 where col_bigint_card2_1 IN (?,?,?,?,?);
+                          bindings:
+                              count: 5
+                              util: RandomNumber
+                              params: [ 1000001, 1500001 ]
 
             - workload: INDG12_more_data_3_index_scan_range_skey_desc_point_select
               customTags: schematype=regular,partition=hash,pkey=single,cardinality=multiple,projection=all,filtercount=one,filteron=rangeskey,filtertype=pointselect
@@ -111,7 +127,11 @@ microbenchmark:
                   - name: hashtbl_index_scan_using_sec_index
                     weight: 100
                     queries:
-                        - query: select * from INDG12_U_pkeyBigint1M_1 where col_bigint_card3_1 IN (1000080,1000100,1000099,1000580,1000880);
+                        - query: select * from INDG12_U_pkeyBigint1M_1 where col_bigint_card3_1 IN (?,?,?,?,?);
+                          bindings:
+                              count: 5
+                              util: RandomNumber
+                              params: [ 1000001, 1500001 ]
 
             - workload: INDG12_more_data_3_index_only_scan_range_skey_desc_point_select
               customTags: schematype=regular,partition=hash,pkey=single,cardinality=multiple,projection=all,filtercount=one,filteron=rangeskey,filtertype=pointselect
@@ -119,7 +139,11 @@ microbenchmark:
                   - name: hashtbl_index_scan_using_sec_index
                     weight: 100
                     queries:
-                        - query: select col_bigint_card3_1 from INDG12_U_pkeyBigint1M_1 where col_bigint_card3_1 IN (1000080,1000100,1000099,1000580,1000880);
+                        - query: select col_bigint_card3_1 from INDG12_U_pkeyBigint1M_1 where col_bigint_card3_1 IN (?,?,?,?,?);
+                          bindings:
+                              count: 5
+                              util: RandomNumber
+                              params: [ 1000001, 1500001 ]
 
             - workload: INDG12_more_data_4
               customTags: schematype=regular,partition=hash,pkey=single,cardinality=multiple,projection=all,filtercount=one,filteron=hashskey,filtertype=pointselect
@@ -145,7 +169,11 @@ microbenchmark:
                     -   name: hashtbl_index_scan_using_sec_index
                         weight: 100
                         queries:
-                            -   query: select * from INDG12_U_pkeyBigint1M_1 where col_bigint_card2_1 = 1000080;
+                            -   query: select * from INDG12_U_pkeyBigint1M_1 where col_bigint_card2_1 = ?;
+                                bindings:
+                                      count: 1
+                                      util: RandomNumber
+                                      params: [ 1000001, 1500001 ];
 
             -   workload: INDG12_more_data_2_index_only_scan_range_skey_filter_all_row_matching_single_value
                 customTags: schematype=regular,partition=hash,pkey=single,cardinality=multiple,projection=all,filtercount=one,filteron=rangeskey,filtertype=pointselect
@@ -153,6 +181,10 @@ microbenchmark:
                     -   name: hashtbl_index_scan_using_sec_index
                         weight: 100
                         queries:
-                            -   query: select col_bigint_card2_1 from INDG12_U_pkeyBigint1M_1 where col_bigint_card2_1 = 1000080;
+                            -   query: select col_bigint_card2_1 from INDG12_U_pkeyBigint1M_1 where col_bigint_card2_1 = ?;
+                                bindings:
+                                      count: 1
+                                      util: RandomNumber
+                                      params: [ 1000001, 1500001 ];
 
 
