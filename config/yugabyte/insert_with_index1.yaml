@@ -36,7 +36,7 @@ microbenchmark:
                 session_id UUID,
                 created_at TIMESTAMP NOT NULL,
                 updated_at TIMESTAMP
-              PRIMARY KEY(event_id asc));
+                PRIMARY KEY(event_id asc));
             - CREATE INDEX idx_1_user_id ON user_events1(user_id asc);
             - CREATE INDEX idx_1_event_time ON user_events1(event_time asc);
             - CREATE INDEX idx_1_is_active ON user_events1(session_id asc);
@@ -52,7 +52,7 @@ microbenchmark:
                 session_id UUID,
                 created_at TIMESTAMP NOT NULL,
                 updated_at TIMESTAMP
-              PRIMARY KEY(event_id asc));
+                PRIMARY KEY(event_id asc));
             - CREATE INDEX idx_2_user_id ON user_events2(user_id asc);
             - CREATE INDEX idx_2_event_time ON user_events2(event_time asc);
             - CREATE INDEX idx_2_is_active ON user_events2(session_id asc);
@@ -68,7 +68,7 @@ microbenchmark:
                 session_id UUID,
                 created_at TIMESTAMP NOT NULL,
                 updated_at TIMESTAMP
-              PRIMARY KEY(event_id asc));
+                PRIMARY KEY(event_id asc));
             - CREATE INDEX idx_3_user_id ON user_events3(user_id asc);
             - CREATE INDEX idx_3_event_time ON user_events3(event_time asc);
             - CREATE INDEX idx_3_is_active ON user_events3(session_id asc);
@@ -84,7 +84,7 @@ microbenchmark:
                 session_id UUID,
                 created_at TIMESTAMP NOT NULL,
                 updated_at TIMESTAMP
-              PRIMARY KEY(event_id asc));
+                PRIMARY KEY(event_id asc));
             - CREATE INDEX idx_4_user_id ON user_events4(user_id asc);
             - CREATE INDEX idx_4_event_time ON user_events4(event_time asc);
             - CREATE INDEX idx_4_is_active ON user_events4(session_id asc);
