@@ -1,0 +1,105 @@
+type: YUGABYTE
+driver: com.yugabyte.Driver
+url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true&load-balance=true
+username: {{username}}
+password: {{password}}
+batchsize: 128
+isolation: TRANSACTION_REPEATABLE_READ
+loaderthreads: 1
+terminals: 1
+collect_pg_stat_statements: true
+yaml_version: v1.0
+use_dist_in_explain: true
+works:
+    work:
+        time_secs: 120
+        rate: unlimited
+        warmup: 10
+microbenchmark:
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
+    properties:
+        setAutoCommit: true
+        create:
+            - drop table IF EXISTS user_events;
+            - CREATE TABLE user_events (
+                event_id UUID PRIMARY KEY,
+                user_id INT NOT NULL,
+                event_time TIMESTAMP NOT NULL,
+                is_active BOOLEAN NOT NULL,
+                event_type TEXT NOT NULL,
+                details TEXT,
+                priority INT,
+                session_id UUID,
+                created_at TIMESTAMP NOT NULL,
+                updated_at TIMESTAMP
+              );
+            - CREATE INDEX idx_user_id ON user_events(user_id);
+            - CREATE INDEX idx_event_time ON user_events(event_time);
+            - CREATE INDEX idx_is_active ON user_events(is_active);
+            - CREATE INDEX idx_event_type ON user_events(event_type);
+        cleanup:
+            - drop table IF EXISTS user_events;
+        loadRules:
+            - table: user_events
+              rows: 1
+              columns:
+                - name: event_id
+                  util: RandomUUID
+                  params: []
+                - name: user_id
+                  util: PrimaryIntGen
+                  params: [1, 1]
+                - name: event_time
+                  util: RandomTimestamp
+                  params: [1]
+                - name: is_active
+                  util: RandomBoolean
+                  params: []
+                - name: event_type
+                  util: OneStringFromArray
+                  params: [['Login', 'Purchase', 'Logout', 'ProfileUpdate', 'PasswordReset']]
+                - name: details
+                  util: OneStringFromArray
+                  params: [['Login', 'Purchase', 'Logout', 'ProfileUpdate', 'PasswordReset']]
+                - name: priority
+                  util: RandomInt
+                  params: [1, 10]
+                - name: session_id
+                  util: RandomUUID
+                  params: []
+                - name: created_at
+                  util: RandomTimestamp
+                  params: [1]
+                - name: updated_at
+                  util: RandomTimestamp
+                  params: [1]
+        executeRules:
+            - workload: insert_user_events
+              time_secs: 120
+              run:
+                - name: insert_event
+                  weight: 100
+                  queries:
+                    - query: INSERT INTO user_events (event_id, user_id, event_time, is_active, event_type, details, priority, session_id, created_at, updated_at)
+                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+                      bindings:
+                        - util: RandomUUID
+                          params: []
+                        - util: PrimaryIntGen
+                          params: [2, 10000001]
+                        - util: RandomTimestamp
+                          params: [100000]
+                        - util: RandomBoolean
+                          params: []
+                        - util: OneStringFromArray
+                          params: [['Login', 'Purchase', 'Logout', 'ProfileUpdate', 'PasswordReset']]
+                        - util: OneStringFromArray
+                          params: [['Login', 'Purchase', 'Logout', 'ProfileUpdate', 'PasswordReset']]
+                        - util: RandomInt
+                          params: [1, 10]
+                        - util: RandomUUID
+                          params: []
+                        - util: RandomTimestamp
+                          params: [10000000]
+                        - util: RandomTimestamp
+                          params: [10000000]
