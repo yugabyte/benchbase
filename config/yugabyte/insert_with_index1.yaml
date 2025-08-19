@@ -6,7 +6,7 @@ password: {{password}}
 batchsize: 128
 isolation: TRANSACTION_REPEATABLE_READ
 loaderthreads: 1
-terminals: 1
+terminals: 100
 collect_pg_stat_statements: true
 yaml_version: v1.0
 use_dist_in_explain: true
@@ -15,6 +15,7 @@ works:
         time_secs: 120
         rate: unlimited
         warmup: 10
+        active_terminals: 100
 microbenchmark:
     class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
     properties:
