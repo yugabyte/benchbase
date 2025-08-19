@@ -1,6 +1,7 @@
 type: YUGABYTE
 driver: com.yugabyte.Driver
 url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true&load-balance=false
+createdb: drop database if exists yb_colocated; create database yb_colocated with colocated=true
 username: {{username}}
 password: {{password}}
 batchsize: 128
@@ -12,7 +13,7 @@ use_dist_in_explain : true
 yaml_version: v1.0
 works:
     work:
-        time_secs: 600
+        time_secs: 180
         active_terminals: 1
         rate: unlimited
         warmup: 60
@@ -21,21 +22,22 @@ microbenchmark:
     properties:
         setAutoCommit: true
         create:
-            - DROP TABLE IF EXISTS INDG13_rangetbl_1;
-            - CREATE TABLE INDG13_rangetbl_1(col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_bigint_id_4 bigint, col_bigint_1 bigint, col_bigint_2 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1 ASC));
-            - CREATE INDEX ON INDG13_rangetbl_1(col_bigint_id_2 ASC);
+            - DROP TABLE IF EXISTS INDG2_U_CompositeRangetbl_1;
+            - CREATE TABLE INDG2_U_CompositeRangetbl_1(col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_bigint_id_4 bigint, col_bigint_1 bigint, col_bigint_2 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1 ASC, col_bigint_id_2 ASC));
 
         cleanup:
-            - DROP TABLE IF EXISTS INDG13_rangetbl_1;
+            - DROP TABLE IF EXISTS INDG2_U_CompositeRangetbl_1;
+
 
         loadRules:
-              - table: INDG13_rangetbl_
+
+              - table: INDG2_U_CompositeRangetbl_
                 count: 1
                 rows: 1000000
                 columns:
                     - name: col_bigint_id_
                       count: 4
-                      util: PrimaryIntGen
+                      util: RandomUniqueIntGen
                       params: [ 1, 1000000 ]
                     - name: col_bigint_
                       count: 2
@@ -66,26 +68,19 @@ microbenchmark:
                       params: [1, 500]
 
         executeRules:
-            - workload: INDG13_1_indexscan_using_pkey
-              customTags: schematype=regular,partition=range,pkey=asc,cardinality=single,projection=indexed,queryshape=join,joinon=rangepkey
+
+            - workload: INDG2_1_rangetbl_point_lookup_index_scan_using_comp_pkey_first_part_range
+              customTags: customer=7,schematype=colocated,partition=range,pkey=composite,cardinality=single,projection=all,filtercount=one,filteron=rangepkey,filtertype=pointselect,queryshape=scan
               run:
-                  - name: join_on_pk_of_range_tbl
+                  - name: hashtbl_index_scan_using_sec_index
                     weight: 100
                     queries:
-                        - query: select col_bigint_id_1 from INDG13_rangetbl_1 where col_bigint_id_1>0
+                        - query: select * from INDG2_U_CompositeRangetbl_1 where col_bigint_id_1=500009
 
-            -   workload: INDG13_2_indexonlyscan_using_skey
-                customTags: schematype=regular,partition=range,pkey=asc,cardinality=single,projection=indexed,queryshape=join,joinon=rangepkey
-                run:
-                    -   name: join_on_pk_of_range_tbl
-                        weight: 100
-                        queries:
-                            -   query: select col_bigint_id_2 from INDG13_rangetbl_1 where col_bigint_id_2>0
-
-            -   workload: INDG13_3_indexscan_using_skey
-                customTags: schematype=regular,partition=range,pkey=asc,cardinality=single,projection=indexed,queryshape=join,joinon=rangepkey
-                run:
-                    -   name: join_on_pk_of_range_tbl
-                        weight: 100
-                        queries:
-                            -   query: select col_bigint_id_1 from INDG13_rangetbl_1 where col_bigint_id_2>0
+            - workload: INDG2_2_rangetbl_point_lookup_index_scan_using_comp_pkey_sec_part_range
+              customTags: schematype=colocated,partition=range,pkey=composite,cardinality=single,projection=all,filtercount=one,filteron=rangepkey,filtertype=pointselect,queryshape=scan
+              run:
+                  - name: hashtbl_index_scan_using_sec_index
+                    weight: 100
+                    queries:
+                        - query: select * from INDG2_U_CompositeRangetbl_1 where col_bigint_id_2=500009

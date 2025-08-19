@@ -20,22 +20,22 @@ microbenchmark:
     properties:
         setAutoCommit: true
         create:
-            - DROP TABLE IF EXISTS Rangetbl_1;
-            - CREATE TABLE Rangetbl_1(col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_bigint_id_4 bigint, col_bigint_id_5 bigint, col_bigint_id_6 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1));
-            - CREATE INDEX ON Rangetbl_1(col_bigint_id_2, col_bigint_id_3);
+            - DROP TABLE IF EXISTS INDG6_U_Rangetbl_1;
+            - CREATE TABLE INDG6_U_Rangetbl_1(col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_bigint_id_4 bigint, col_bigint_id_5 bigint, col_bigint_id_6 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1));
+            - CREATE INDEX ON INDG6_U_Rangetbl_1(col_bigint_id_2, col_bigint_id_3);
 
         cleanup:
-            - DROP TABLE IF EXISTS Rangetbl_1;
+            - DROP TABLE IF EXISTS INDG6_U_Rangetbl_1;
 
         loadRules:
 
-              - table: Rangetbl_
+              - table: INDG6_U_Rangetbl_
                 count: 1
                 rows: 1000000
                 columns:
                     - name: col_bigint_id_
                       count: 6
-                      util: PrimaryIntGen
+                      util: RandomUniqueIntGen
                       params: [ 1, 1000000 ]
                     - name: col_float2_
                       count: 2
@@ -64,19 +64,19 @@ microbenchmark:
         executeRules:
 
 
-            - workload: INDG6_1_rangetbl_point_lookup_index_scan_using_comp_range_skey_first_part_range
+            - workload: INDG6_1_iNDG6_U_Rangetbl_point_lookup_index_scan_using_comp_range_skey_first_part_range
               customTags: customer=1
               run:
                   - name: hashtbl_index_scan_using_sec_index
                     weight: 100
                     queries:
-                        - query: select * from Rangetbl_1 where col_bigint_id_2=500009
+                        - query: select * from INDG6_U_Rangetbl_1 where col_bigint_id_2=500009
 
-            - workload: INDG6_2_rangetbl_point_lookup_index_scan_using_comp_range_skey_sec_part_range
+            - workload: INDG6_2_iNDG6_U_Rangetbl_point_lookup_index_scan_using_comp_range_skey_sec_part_range
               run:
                   - name: hashtbl_index_scan_using_sec_index
                     weight: 100
                     queries:
-                        - query: select * from Rangetbl_1 where col_bigint_id_3=500009
+                        - query: select * from INDG6_U_Rangetbl_1 where col_bigint_id_3=500009
 
 
