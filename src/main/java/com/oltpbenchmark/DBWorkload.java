@@ -26,10 +26,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 // AWS SDK imports for CloudWatch
-import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
+import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
+import software.amazon.awssdk.core.retry.RetryPolicy;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.cloudwatch.CloudWatchClient;
 import software.amazon.awssdk.services.cloudwatch.model.*;
+import java.time.Duration;
 import java.time.Instant;
 
 import com.hubspot.jinjava.Jinjava;
@@ -696,7 +699,7 @@ public class DBWorkload {
                         // For optimalThreads, we expect only one workload in the YAML file
                         workloadsToExecute = workloads == null ? 1 : (workloads.size() == 0 ? 1 : workloads.size());
                     }
-                    
+
                     if (workloadsToExecute > 1) {
                         LOG.error("Error: optimalThreads can only be used when there is exactly one workload. Found {} workloads to execute.", workloadsToExecute);
                         System.exit(1);
@@ -758,8 +761,8 @@ public class DBWorkload {
                             writeOutputs(r, activeTXTypes, argsLine, xmlConfig,
                                 executeRules == null ? null : workloads.get(workCount - 1).getString("workload"),
                                 executeRules == null ? null : workloads.get(workCount - 1).getString("customTags", null),
-                                    executeRules != null && workloads.get(workCount - 1).getBoolean("skipReport", false)
-                                );
+                                executeRules != null && workloads.get(workCount - 1).getBoolean("skipReport", false)
+                            );
                             writeHistograms(r);
 
                             if (argsLine.hasOption("json-histograms")) {
@@ -1293,41 +1296,80 @@ public class DBWorkload {
         return cpuList;
     }
 
+    // Test CloudWatch connectivity
+    private static boolean testCloudWatchConnectivity(String awsRegion) {
+        try {
+            CloudWatchClient testClient = CloudWatchClient.builder()
+                .region(Region.of(awsRegion))
+                .credentialsProvider(DefaultCredentialsProvider.create())
+                .overrideConfiguration(ClientOverrideConfiguration.builder()
+                    .apiCallTimeout(Duration.ofSeconds(10))
+                    .build())
+                .build();
+
+            // Simple test call to list metrics (this should work with basic permissions)
+            ListMetricsRequest testRequest = ListMetricsRequest.builder()
+                .namespace("AWS/RDS")
+                .build();
+
+            testClient.listMetrics(testRequest);
+            testClient.close();
+            LOG.info("CloudWatch connectivity test successful for region: {}", awsRegion);
+            return true;
+        } catch (Exception e) {
+            LOG.warn("CloudWatch connectivity test failed for region {}: {}", awsRegion, e.getMessage());
+            return false;
+        }
+    }
+
     // Returns CPU utilization for RDS PostgreSQL instance via CloudWatch
     private static double getRDSCPUUtilization(String dbInstanceIdentifier, String awsRegion) {
         double cpuUtilization = 0.0;
+        CloudWatchClient cloudWatchClient = null;
+
         try {
-            CloudWatchClient cloudWatchClient = CloudWatchClient.builder()
-                    .region(Region.of(awsRegion))
-                    .credentialsProvider(EnvironmentVariableCredentialsProvider.create())
-                    .build();
+            // Configure client override settings with timeouts and retries
+            ClientOverrideConfiguration clientConfig = ClientOverrideConfiguration.builder()
+                .apiCallTimeout(Duration.ofSeconds(60))
+                .apiCallAttemptTimeout(Duration.ofSeconds(30))
+                .retryPolicy(RetryPolicy.builder()
+                    .numRetries(3)
+                    .build())
+                .build();
+
+            // Build CloudWatch client with explicit configuration
+            cloudWatchClient = CloudWatchClient.builder()
+                .region(Region.of(awsRegion))
+                .credentialsProvider(DefaultCredentialsProvider.create())
+                .overrideConfiguration(clientConfig)
+                .build();
 
             Instant endTime = Instant.now();
             Instant startTime = endTime.minusSeconds(300); // 5 minutes ago
 
             Dimension dbInstanceDimension = Dimension.builder()
-                    .name("DBInstanceIdentifier")
-                    .value(dbInstanceIdentifier)
-                    .build();
+                .name("DBInstanceIdentifier")
+                .value(dbInstanceIdentifier)
+                .build();
 
             GetMetricStatisticsRequest request = GetMetricStatisticsRequest.builder()
-                    .namespace("AWS/RDS")
-                    .metricName("CPUUtilization")
-                    .dimensions(dbInstanceDimension)
-                    .startTime(startTime)
-                    .endTime(endTime)
-                    .period(60) // 1 minute periods
-                    .statistics(Statistic.AVERAGE)
-                    .build();
+                .namespace("AWS/RDS")
+                .metricName("CPUUtilization")
+                .dimensions(dbInstanceDimension)
+                .startTime(startTime)
+                .endTime(endTime)
+                .period(60) // 1 minute periods
+                .statistics(Statistic.AVERAGE)
+                .build();
 
             GetMetricStatisticsResponse response = cloudWatchClient.getMetricStatistics(request);
-            
+
             if (response.datapoints().size() > 0) {
                 // Get the most recent datapoint
                 Datapoint latestDatapoint = response.datapoints().stream()
-                        .max((d1, d2) -> d1.timestamp().compareTo(d2.timestamp()))
-                        .orElse(null);
-                        
+                    .max((d1, d2) -> d1.timestamp().compareTo(d2.timestamp()))
+                    .orElse(null);
+
                 if (latestDatapoint != null) {
                     cpuUtilization = latestDatapoint.average();
                     LOG.info("RDS CPU Utilization: {}%", cpuUtilization);
@@ -1335,10 +1377,26 @@ public class DBWorkload {
             } else {
                 LOG.warn("No CPU utilization data found for RDS instance: {}", dbInstanceIdentifier);
             }
-            
-            cloudWatchClient.close();
+
+        } catch (software.amazon.awssdk.core.exception.SdkClientException e) {
+            if (e.getCause() instanceof java.net.UnknownHostException) {
+                LOG.error("DNS resolution failed for CloudWatch endpoint. Check network connectivity and DNS configuration. Region: {}, Instance: {}", awsRegion, dbInstanceIdentifier);
+                LOG.error("Consider checking: 1) Internet connectivity, 2) DNS settings, 3) VPC configuration if running in private subnet");
+            } else {
+                LOG.error("AWS SDK error getting RDS CPU utilization from CloudWatch: {}", e.getMessage());
+            }
+        } catch (software.amazon.awssdk.services.cloudwatch.model.CloudWatchException e) {
+            LOG.error("CloudWatch service error: {}. Check permissions and RDS instance identifier.", e.awsErrorDetails().errorMessage());
         } catch (Exception e) {
-            LOG.error("Error getting RDS CPU utilization from CloudWatch", e);
+            LOG.error("Unexpected error getting RDS CPU utilization from CloudWatch", e);
+        } finally {
+            if (cloudWatchClient != null) {
+                try {
+                    cloudWatchClient.close();
+                } catch (Exception e) {
+                    LOG.warn("Error closing CloudWatch client: {}", e.getMessage());
+                }
+            }
         }
         return cpuUtilization;
     }
@@ -1347,7 +1405,7 @@ public class DBWorkload {
     private static boolean isYugabyteDB(BenchmarkModule bench) {
         try (Connection conn = bench.makeConnection();
              Statement stmt = conn.createStatement()) {
-            
+
             // Try to execute YugabyteDB-specific function
             try (ResultSet rs = stmt.executeQuery("SELECT version()")) {
                 if (rs.next()) {
@@ -1424,27 +1482,40 @@ public class DBWorkload {
         int optimalThreads = threads;
         List<Map<String, Object>> jsonResults = new ArrayList<>();
         Map<Integer, Double> threadCpuMap = new HashMap<>();
-        
+
         // Detect database type and prepare RDS monitoring if needed
         boolean isYugabyteDatabase = isYugabyteDB(bench);
         String rdsInstanceIdentifier = null;
         String awsRegion = null;
-        
+
         if (!isYugabyteDatabase) {
             // Extract RDS instance details from connection URL
             String jdbcUrl = bench.getWorkloadConfiguration().getUrl();
             rdsInstanceIdentifier = extractRDSInstanceIdentifier(jdbcUrl);
             awsRegion = extractAWSRegion(jdbcUrl);
             LOG.info("Detected RDS PostgreSQL. Instance: {}, Region: {}", rdsInstanceIdentifier, awsRegion);
-            
+
             if (rdsInstanceIdentifier == null) {
                 LOG.error("Could not extract RDS instance identifier from URL: {}", jdbcUrl);
                 return optimalThreads;
             }
+
+            // Check if CloudWatch monitoring should be skipped
+            String skipCloudWatch = System.getProperty("benchbase.skip.cloudwatch", "false");
+            if ("true".equalsIgnoreCase(skipCloudWatch)) {
+                LOG.info("CloudWatch monitoring disabled via system property. Using default thread count.");
+                return optimalThreads;
+            }
+
+            // Test CloudWatch connectivity before proceeding
+            if (!testCloudWatchConnectivity(awsRegion)) {
+                LOG.warn("CloudWatch connectivity test failed. Consider using -Dbenchbase.skip.cloudwatch=true to disable CloudWatch monitoring.");
+                LOG.info("Proceeding with monitoring but expect potential failures...");
+            }
         } else {
             LOG.info("Detected YugabyteDB database");
         }
-        
+
         for(int iter=0; iter<max_iterations; iter++) {
             LOG.info("Finding optimal threads.... iteration_no. {}, current_threads: {}", iter, threads);
             Phase oldPhase = bench.getWorkloadConfiguration().getPhases().get(0);
@@ -1505,8 +1576,8 @@ public class DBWorkload {
                     List<Double> maxPerNode = new ArrayList<>();
                     for (int nodeIdx = 0; nodeIdx < numNodes; nodeIdx++) {
                         double max = Math.max(allNodeReadings.get(0).get(nodeIdx),
-                                              Math.max(allNodeReadings.get(1).get(nodeIdx),
-                                                       allNodeReadings.get(2).get(nodeIdx)));
+                            Math.max(allNodeReadings.get(1).get(nodeIdx),
+                                allNodeReadings.get(2).get(nodeIdx)));
                         maxPerNode.add(max);
                         LOG.info("YB Node {} max CPU: {}", nodeIdx+1, max);
                     }
@@ -1515,13 +1586,22 @@ public class DBWorkload {
                 } else {
                     // RDS PostgreSQL monitoring - single instance
                     List<Double> rdsReadings = new ArrayList<>();
+
                     for (int i = 0; i < 3; i++) {
                         double cpuReading = getRDSCPUUtilization(rdsInstanceIdentifier, awsRegion);
                         rdsReadings.add(cpuReading);
                         LOG.info("RDS CPU Reading {}: {}%", i+1, cpuReading);
-                        Thread.sleep(interval_gap * 1000);
+
+                        // If first reading fails, warn about CloudWatch availability
+                        if (i == 0 && cpuReading == 0.0) {
+                            LOG.warn("CloudWatch monitoring appears unavailable. Consider running with fixed thread count or check network connectivity.");
+                        }
+
+                        if (i < 2) { // Don't sleep after last iteration
+                            Thread.sleep(interval_gap * 1000);
+                        }
                     }
-                    
+
                     // For RDS, we treat it as a single node
                     allNodeReadings.add(rdsReadings);
                     avgMaxCPU = rdsReadings.stream().mapToDouble(Double::doubleValue).max().orElse(0.0);
@@ -1531,7 +1611,7 @@ public class DBWorkload {
                 // Write to log file
                 StringBuilder logLine = new StringBuilder();
                 logLine.append(threads);
-                
+
                 if (isYugabyteDatabase) {
                     // YugabyteDB - multiple readings from multiple nodes
                     for (int i = 0; i < 3; i++) {
@@ -1544,8 +1624,8 @@ public class DBWorkload {
                     List<Double> maxPerNode = new ArrayList<>();
                     for (int nodeIdx = 0; nodeIdx < numNodes; nodeIdx++) {
                         double max = Math.max(allNodeReadings.get(0).get(nodeIdx),
-                                              Math.max(allNodeReadings.get(1).get(nodeIdx),
-                                                       allNodeReadings.get(2).get(nodeIdx)));
+                            Math.max(allNodeReadings.get(1).get(nodeIdx),
+                                allNodeReadings.get(2).get(nodeIdx)));
                         maxPerNode.add(max);
                     }
                     for (int i = 0; i < maxPerNode.size(); i++) {
@@ -1553,7 +1633,7 @@ public class DBWorkload {
                         if (i < maxPerNode.size() - 1) logLine.append(",");
                     }
                     logLine.append(",").append(avgMaxCPU).append("\n");
-                    
+
                     // Add to JSON results
                     Map<String, Object> entry = new LinkedHashMap<>();
                     entry.put("threads", threads);
@@ -1568,7 +1648,7 @@ public class DBWorkload {
                         logLine.append(",").append(rdsReadings.get(i));
                     }
                     logLine.append(",").append(avgMaxCPU).append(",").append(avgMaxCPU).append("\n");
-                    
+
                     // Add to JSON results
                     Map<String, Object> entry = new LinkedHashMap<>();
                     entry.put("threads", threads);
@@ -1576,7 +1656,7 @@ public class DBWorkload {
                     entry.put("max_cpu", avgMaxCPU);
                     jsonResults.add(entry);
                 }
-                
+
                 Files.write(Paths.get(logFile), logLine.toString().getBytes(), java.nio.file.StandardOpenOption.APPEND);
 
                 workloadThread.join();
