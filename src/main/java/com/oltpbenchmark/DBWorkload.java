@@ -1447,7 +1447,7 @@ public class DBWorkload {
 
     private static void checkCompletedTransaction(Results r){
        if(r.getSuccess().getSampleCount() == 0){
-        LOG.error("ERROR: No completed transactions Found");
+        LOG.error("ERROR: Zero completed transactions in Transaction Distribution Summary");
         System.exit(1);
        }
     }
