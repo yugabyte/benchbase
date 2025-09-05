@@ -132,9 +132,14 @@ public class CloudWatchTest {
             String hostPart = endpoint.split(":")[0];
 
             if (hostPart.contains(".rds.amazonaws.com")) {
-                String[] parts = hostPart.split("\\.");
-                if (parts.length >= 3) {
-                    return parts[parts.length - 3]; // us-east-1 in example
+                // Find the string between the last dot and ".rds.amazonaws.com"
+                int rdsIndex = hostPart.indexOf(".rds.amazonaws.com");
+                if (rdsIndex > 0) {
+                    String beforeRds = hostPart.substring(0, rdsIndex);
+                    int lastDotIndex = beforeRds.lastIndexOf(".");
+                    if (lastDotIndex >= 0) {
+                        return beforeRds.substring(lastDotIndex + 1);
+                    }
                 }
             }
         } catch (Exception e) {

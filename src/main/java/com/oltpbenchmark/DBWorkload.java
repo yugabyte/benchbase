@@ -1442,9 +1442,15 @@ public class DBWorkload {
             String url = jdbcUrl.replace("jdbc:postgresql://", "");
             if (url.contains(".rds.amazonaws.com")) {
                 String hostname = url.split(":")[0];
-                String[] parts = hostname.split("\\.");
-                if (parts.length >= 3) {
-                    return parts[parts.length - 3]; // us-east-1 in the example
+                
+                // Find the string between the last dot and ".rds.amazonaws.com"
+                int rdsIndex = hostname.indexOf(".rds.amazonaws.com");
+                if (rdsIndex > 0) {
+                    String beforeRds = hostname.substring(0, rdsIndex);
+                    int lastDotIndex = beforeRds.lastIndexOf(".");
+                    if (lastDotIndex >= 0) {
+                        return beforeRds.substring(lastDotIndex + 1);
+                    }
                 }
             }
         } catch (Exception e) {
