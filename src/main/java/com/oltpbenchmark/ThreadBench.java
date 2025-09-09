@@ -298,20 +298,33 @@ public class ThreadBench implements Thread.UncaughtExceptionHandler {
             int requests = finalizeWorkers(this.workerThreads);
 
             // Combine all the latencies together in the most disgusting way
-            // possible: sorting!
-            for (Worker<?> w : workers) {
-                for (LatencyRecord.Sample sample : w.getLatencyRecords()) {
-                    samples.add(sample);
+            // possible: sorting! (Skip if data collection is disabled for optimal thread finding)
+            boolean skipDataCollection = !workConfs.isEmpty() && workConfs.get(0).getIsOptimalThreadsWorkload();
+            if (!skipDataCollection) {
+                for (Worker<?> w : workers) {
+                    for (LatencyRecord.Sample sample : w.getLatencyRecords()) {
+                        samples.add(sample);
+                    }
                 }
+                Collections.sort(samples);
+            } else {
+                LOG.info("Skipping latency data collection for optimal thread finding workload");
             }
-            Collections.sort(samples);
 
             // Compute stats on all the latencies
-            int[] latencies = new int[samples.size()];
-            for (int i = 0; i < samples.size(); ++i) {
-                latencies[i] = samples.get(i).getLatencyMicrosecond();
+            int[] latencies;
+            DistributionStatistics stats;
+            if (samples.isEmpty()) {
+                // Create empty stats when data collection is skipped
+                latencies = new int[0];
+                stats = DistributionStatistics.computeStatistics(latencies);
+            } else {
+                latencies = new int[samples.size()];
+                for (int i = 0; i < samples.size(); ++i) {
+                    latencies[i] = samples.get(i).getLatencyMicrosecond();
+                }
+                stats = DistributionStatistics.computeStatistics(latencies);
             }
-            DistributionStatistics stats = DistributionStatistics.computeStatistics(latencies);
 
             Results results = new Results(measureEnd - start, requests, stats, samples);
 
