@@ -1543,6 +1543,7 @@ public class DBWorkload {
             bench.getWorkloadConfiguration().getPhases().clear();
             bench.getWorkloadConfiguration().getPhases().add(newPhase);
             bench.getWorkloadConfiguration().setTerminals(threads);
+            bench.getWorkloadConfiguration().setIsOptimalThreadsWorkload(true);
 
             double avgMaxCPU = 0.0;
             List<List<Double>> allNodeReadings = new ArrayList<>();
