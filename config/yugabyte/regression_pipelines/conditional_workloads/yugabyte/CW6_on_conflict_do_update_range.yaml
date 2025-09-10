@@ -134,7 +134,7 @@ microbenchmark:
                           pattern_count: 1024
                           bindings:
                               -   util: RandomUniqueIntGen
-                                  params: [ 4000001, 8000000 ]
+                                  params: [ 1, 8000000 ]
                               -   util: RandomNumber
                                   params: [ 4000001, 8000000 ]
                               -   util: RandomAString
@@ -152,7 +152,7 @@ microbenchmark:
                           pattern_count: 1024
                           bindings:
                               -   util: RandomUniqueIntGen
-                                  params: [ 4000001, 8000000 ]
+                                  params: [ 1, 8000000 ]
                               -   util: RandomNumber
                                   params: [ 4000001, 8000000 ]
                               -   util: RandomAString
