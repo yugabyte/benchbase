@@ -1345,7 +1345,7 @@ public class DBWorkload {
                 .build();
 
             Instant endTime = Instant.now();
-            Instant startTime = endTime.minusSeconds(300); // 5 minutes ago
+            Instant startTime = endTime.minusSeconds(240); // 5 minutes ago
 
             Dimension dbInstanceDimension = Dimension.builder()
                 .name("DBInstanceIdentifier")
@@ -1459,7 +1459,7 @@ public class DBWorkload {
         return "us-east-1"; // Default region
     }
 
-    private static int findOptimalThreadCount(BenchmarkModule bench, int minThreads, double targetCPU, double toleranceCPU, String workloadName) {
+    private static int findOptimalThreadCount(BenchmarkModule bench, int minThreads, double targetCPU, double toleranceCPU, String workloadName) throws InterruptedException {
         double minTargetCPU = targetCPU - toleranceCPU;
         double maxTargetCPU = targetCPU + toleranceCPU;
         LOG.info("minTargetCPU: {}, maxTargetCPU: {}", minTargetCPU, maxTargetCPU);
@@ -1523,6 +1523,14 @@ public class DBWorkload {
         }
 
         for(int iter=0; iter<max_iterations; iter++) {
+
+            // Sleep for 2 minute so that system is stable again
+            if(iter!=0) {
+                Thread.sleep(120 * 1000);
+                LOG.info("Sleeping for 2 minutes so that system is stable again");
+            }
+
+
             LOG.info("Finding optimal threads.... iteration_no. {}, current_threads: {}", iter, threads);
             Phase oldPhase = bench.getWorkloadConfiguration().getPhases().get(0);
             Phase newPhase = new Phase(
@@ -1562,6 +1570,7 @@ public class DBWorkload {
                         runWorkload(Collections.singletonList(bench), 0, 1);
                     } catch (Exception e) {
                         LOG.error("Error running workload for thread test", e);
+                        throw new RuntimeException(e);
                     }
                 });
                 workloadThread.start();
@@ -1593,6 +1602,9 @@ public class DBWorkload {
                 } else {
                     // RDS PostgreSQL monitoring - single instance
                     List<Double> rdsReadings = new ArrayList<>();
+
+                    // Sleep for 1 minute so that RDS CPU utilization is updated
+                    Thread.sleep(60 * 1000);
 
                     for (int i = 0; i < 3; i++) {
                         double cpuReading = getRDSCPUUtilization(rdsInstanceIdentifier, awsRegion);
