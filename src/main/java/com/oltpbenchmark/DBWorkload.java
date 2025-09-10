@@ -826,6 +826,8 @@ public class DBWorkload {
                                 benchi.getWorkloadConfiguration().setTerminals(optimalThreads);
                                 benchi.getWorkloadConfiguration().setTerminals(optimalThreads);
                             }
+                            // Update the configuration with optimal thread count
+                             xmlConfig.setProperty("terminals", optimalThreads);
 
                             LOG.info("Using optimal thread count for workload {}: {} (original was: {})",
                                 val, optimalThreads, originalTerminals);
