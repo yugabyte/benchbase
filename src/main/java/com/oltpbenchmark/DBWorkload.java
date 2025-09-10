@@ -750,6 +750,7 @@ public class DBWorkload {
                                 benchi.getWorkloadConfiguration().getPhases().add(newPhase);
                                 benchi.getWorkloadConfiguration().setTerminals(optimalThreads);
                                 benchi.getWorkloadConfiguration().setTerminals(optimalThreads);
+                                benchi.getWorkloadConfiguration().setIsOptimalThreadsWorkload(false);
                             }
 
                             LOG.info("Using optimal thread count for workload {}: {} (original was: {})",
@@ -825,6 +826,7 @@ public class DBWorkload {
                                 benchi.getWorkloadConfiguration().getPhases().add(newPhase);
                                 benchi.getWorkloadConfiguration().setTerminals(optimalThreads);
                                 benchi.getWorkloadConfiguration().setTerminals(optimalThreads);
+                                benchi.getWorkloadConfiguration().setIsOptimalThreadsWorkload(false);
                             }
                             // Update the configuration with optimal thread count
                              xmlConfig.setProperty("terminals", optimalThreads);
