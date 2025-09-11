@@ -717,6 +717,13 @@ public class DBWorkload {
                             // Find optimal threads for this workload
                             int optimalThreads = findOptimalThreadCount(benchList.get(0), minThreads, targetCPU, toleranceCPU, workloadName);
 
+                            // Sleep for 2 mins so system can stabilize
+                            try {
+                                Thread.sleep(120000);
+                            } catch (InterruptedException e) {
+                                LOG.error("Error sleeping", e);
+                            }
+
                             // Update the configuration with optimal thread count
                             for (BenchmarkModule benchi : benchList) {
                                 Phase oldPhase = benchi.getWorkloadConfiguration().getPhases().get(0);
@@ -791,6 +798,13 @@ public class DBWorkload {
                             String workloadName = executeRules == null ? null : workloads.get(workCount - 1).getString("workload");
                             // Find optimal threads for this workload
                             int optimalThreads = findOptimalThreadCount(benchList.get(0), minThreads, targetCPU, toleranceCPU, workloadName);
+
+                            // Sleep for 2 mins so system can stabilize
+                            try {
+                                Thread.sleep(120000);
+                            } catch (InterruptedException e) {
+                                LOG.error("Error sleeping", e);
+                            }
 
                             // Update the configuration with optimal thread count
                             for (BenchmarkModule benchi : benchList) {
@@ -1355,6 +1369,7 @@ public class DBWorkload {
                         runWorkload(Collections.singletonList(bench), 0, 1);
                     } catch (Exception e) {
                         LOG.error("Error running workload for thread test", e);
+                        throw new RuntimeException(e);
                     }
                 });
                 workloadThread.start();
