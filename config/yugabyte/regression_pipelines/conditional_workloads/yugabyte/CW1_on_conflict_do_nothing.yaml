@@ -9,7 +9,7 @@ loaderThreads: 1
 terminals: 1
 collect_pg_stat_statements: true
 use_dist_in_explain : true
-yaml_version: v1.1
+yaml_version: v1.2
 works:
     work:
         time_secs: 180
@@ -31,16 +31,16 @@ microbenchmark:
         loadRules:
             -   table: accounts_
                 count: 1
-                rows: 8000000
+                rows: 1000000
                 columns:
                     -   name: account_id_
                         count: 1
                         util: PrimaryIntGen
-                        params: [ 1, 8000000 ]
+                        params: [ 1, 1000000 ]
                     -   name: user_id_
                         count: 1
                         util: PrimaryIntGen
-                        params: [ 1, 8000000 ]
+                        params: [ 1, 1000000 ]
                     -   name: addr_
                         count: 1
                         util: PrimaryStringGen
@@ -48,7 +48,7 @@ microbenchmark:
                     -   name: bal_
                         count: 1
                         util: PrimaryFloatGen
-                        params: [ 1, 8000000, 2 ]
+                        params: [ 1, 1000000, 2 ]
 
         executeRules:
             - workload: CW1_1_2column_condition_no_conflict_so_single_insert

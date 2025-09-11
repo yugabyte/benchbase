@@ -15,7 +15,7 @@ isolation: TRANSACTION_REPEATABLE_READ
 loaderthreads: 1
 terminals: 1
 collect_pg_stat_statements: true
-yaml_version: v1.0
+yaml_version: v1.1
 works:
     work:
         time_secs: 120
@@ -145,20 +145,23 @@ microbenchmark:
                     params: [500, 500]
         executeRules:
             - workload: scanG8_noIndex_fullTable_seqScan_1M_rows
+              customTags: schematype=regular,partition=hash,pkey=hash,cardinality=single,projection=nonindexed,filtercount=one,filteron=nonindexed,filtertype=comparision,queryshape=scan
               run:
                   -   name: noIndex_fullTable_seqScan_1M_rows_test
                       weight: 100
                       queries:
-                          -   query: select col_bigint_id_1 from noIndex_fullTable_seqScan_1M_rows_1 where col_bigint_id_1>1000001
+                          -   query: select col_bigint_id_1 from noIndex_fullTable_seqScan_1M_rows_1 where col_bigint_id_1>999999
             -   workload: scanG8_noIndex_fullTable_seqScan_5M_rows
+                customTags: schematype=regular,partition=hash,pkey=hash,cardinality=single,projection=nonindexed,filtercount=one,filteron=nonindexed,filtertype=comparision,queryshape=scan
                 run:
                     -   name: noIndex_fullTable_seqScan_1M_rows_test
                         weight: 100
                         queries:
-                            -   query: select col_bigint_id_1 from noIndex_fullTable_seqScan_5M_rows_1 where col_bigint_id_1>5000001
+                            -   query: select col_bigint_id_1 from noIndex_fullTable_seqScan_5M_rows_1 where col_bigint_id_1>4999999
             -   workload: scanG8_noIndex_fullTable_seqScan_10M_rows
+                customTags: schematype=regular,partition=hash,pkey=hash,cardinality=single,projection=nonindexed,filtercount=one,filteron=nonindexed,filtertype=comparision,queryshape=scan
                 run:
                     -   name: noIndex_fullTable_seqScan_1M_rows_test
                         weight: 100
                         queries:
-                            -   query: select col_bigint_id_1 from noIndex_fullTable_seqScan_10M_rows_1 where col_bigint_id_1>10000001
+                            -   query: select col_bigint_id_1 from noIndex_fullTable_seqScan_10M_rows_1 where col_bigint_id_1>9999999

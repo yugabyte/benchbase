@@ -9,7 +9,7 @@ loaderThreads: 1
 terminals: 1
 collect_pg_stat_statements: true
 use_dist_in_explain : true
-yaml_version: v1.1
+yaml_version: v1.2
 works:
     work:
         time_secs: 180
@@ -38,16 +38,16 @@ microbenchmark:
         loadRules:
             -   table: CW5_accounts_
                 count: 2
-                rows: 8000000
+                rows: 15000000
                 columns:
                     -   name: account_id_
                         count: 1
                         util: PrimaryIntGen
-                        params: [ 1, 8000000 ]
+                        params: [ 1, 15000000 ]
                     -   name: user_id_
                         count: 1
                         util: PrimaryIntGen
-                        params: [ 1, 8000000 ]
+                        params: [ 1, 15000000 ]
                     -   name: addr_
                         count: 1
                         util: PrimaryStringGen
@@ -55,7 +55,7 @@ microbenchmark:
                     -   name: bal_
                         count: 1
                         util: PrimaryFloatGen
-                        params: [ 1, 8000000, 2 ]
+                        params: [ 1, 15000000, 2 ]
 
         executeRules:
             - workload: CW5_1_2column_condition_no_conflict_on_pkey_so_single_insert
@@ -66,13 +66,13 @@ microbenchmark:
                         - query: INSERT INTO CW5_accounts_1(account_id_1,user_id_1,addr_1,bal_1) VALUES (?,?,?,?) ON CONFLICT (account_id_1) DO UPDATE SET (account_id_1,user_id_1,addr_1,bal_1)=(excluded.account_id_1,excluded.user_id_1,excluded.addr_1,excluded.bal_1)
                           bindings:
                               -   util: PrimaryIntGen
-                                  params: [ 1, 8000000 ]
+                                  params: [ 1, 15000000 ]
                               -   util: PrimaryIntGen
-                                  params: [ 1, 8000000 ]
+                                  params: [ 1, 15000000 ]
                               -   util: PrimaryStringGen
                                   params: [ 1, 50 ]
                               -   util: PrimaryFloatGen
-                                  params: [ 1, 8000000, 2 ]
+                                  params: [ 1, 15000000, 2 ]
 
             - workload: CW5_2_2column_condition_no_conflict_on_pkey_so_1024_insert
               run:
@@ -99,13 +99,13 @@ microbenchmark:
                         - query: INSERT INTO CW5_accounts_2(account_id_1,user_id_1,addr_1,bal_1) VALUES (?,?,?,?) ON CONFLICT (account_id_1) DO UPDATE SET (account_id_1,user_id_1,addr_1,bal_1)=(excluded.account_id_1,excluded.user_id_1,excluded.addr_1,excluded.bal_1)
                           bindings:
                               -   util: PrimaryIntGen
-                                  params: [ 1, 8000000 ]
+                                  params: [ 1, 15000000 ]
                               -   util: PrimaryIntGen
-                                  params: [ 1, 8000000 ]
+                                  params: [ 1, 15000000 ]
                               -   util: PrimaryStringGen
                                   params: [ 1, 50 ]
                               -   util: PrimaryFloatGen
-                                  params: [ 1, 8000000, 2 ]
+                                  params: [ 1, 15000000, 2 ]
 
             - workload: CW5_4_no_conflict_on_pkey_so_1024_insert_on_partitioned_tbl_by_hash
               run:
@@ -116,13 +116,13 @@ microbenchmark:
                           count: 1024
                           bindings:
                               -   util: PrimaryIntGen
-                                  params: [ 1, 4000000 ]
+                                  params: [ 1, 15000000 ]
                               -   util: PrimaryIntGen
-                                  params: [ 1, 4000000 ]
+                                  params: [ 1, 15000000 ]
                               -   util: PrimaryStringGen
                                   params: [ 1, 50 ]
                               -   util: PrimaryFloatGen
-                                  params: [ 1, 4000000, 2 ]
+                                  params: [ 1, 15000000, 2 ]
 
             - workload: CW5_5_2column_condition_no_conflict_on_pkey_so_1024_insert
               run:
@@ -132,14 +132,14 @@ microbenchmark:
                         - query: INSERT INTO CW5_accounts_1(account_id_1,user_id_1,addr_1,bal_1) VALUES [(?,?,?,?)][pattern_count] ON CONFLICT (account_id_1) DO UPDATE SET (account_id_1,user_id_1,addr_1,bal_1)=(excluded.account_id_1,excluded.user_id_1,excluded.addr_1,excluded.bal_1)
                           pattern_count: 1024
                           bindings:
+                              -   util: RandomUniqueIntGen
+                                  params: [ 1, 15000000 ]
                               -   util: RandomNumber
-                                  params: [ 4000001, 8000000 ]
-                              -   util: RandomNumber
-                                  params: [ 4000001, 8000000 ]
+                                  params: [ 4000001, 15000000 ]
                               -   util: RandomAString
                                   params: [ 50, 50 ]
                               -   util: RandomFloat
-                                  params: [ 4000001, 8000000, 2 ]
+                                  params: [ 4000001, 15000000, 2 ]
 
 
             - workload: CW5_6_no_conflict_on_pkey_so_1024_insert_on_partitioned_tbl_by_hash
@@ -150,11 +150,11 @@ microbenchmark:
                         - query: INSERT INTO CW5_accounts_2(account_id_1,user_id_1,addr_1,bal_1) VALUES [(?,?,?,?)][pattern_count] ON CONFLICT (account_id_1) DO UPDATE SET (account_id_1,user_id_1,addr_1,bal_1)=(excluded.account_id_1,excluded.user_id_1,excluded.addr_1,excluded.bal_1)
                           pattern_count: 1024
                           bindings:
+                              -   util: RandomUniqueIntGen
+                                  params: [ 1, 15000000 ]
                               -   util: RandomNumber
-                                  params: [ 4000001, 8000000 ]
-                              -   util: RandomNumber
-                                  params: [ 4000001, 8000000 ]
+                                  params: [ 4000001, 15000000 ]
                               -   util: RandomAString
                                   params: [ 50, 50 ]
                               -   util: RandomFloat
-                                  params: [ 4000001, 8000000, 2 ]
+                                  params: [ 4000001, 15000000, 2 ]
