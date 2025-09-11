@@ -36,16 +36,16 @@ microbenchmark:
         loadRules:
             -   table: CW6_accounts_
                 count: 2
-                rows: 8000000
+                rows: 40000000
                 columns:
                     -   name: account_id_
                         count: 1
                         util: PrimaryIntGen
-                        params: [ 1, 15000000 ]
+                        params: [ 1, 40000000 ]
                     -   name: user_id_
                         count: 1
                         util: PrimaryIntGen
-                        params: [ 1, 15000000 ]
+                        params: [ 1, 40000000 ]
                     -   name: addr_
                         count: 1
                         util: PrimaryStringGen
@@ -53,7 +53,7 @@ microbenchmark:
                     -   name: bal_
                         count: 1
                         util: PrimaryFloatGen
-                        params: [ 1, 15000000, 2 ]
+                        params: [ 1, 40000000, 2 ]
 
         executeRules:
             - workload: CW6_1_2column_condition_no_conflict_on_pkey_so_single_insert
@@ -152,7 +152,7 @@ microbenchmark:
                           pattern_count: 1024
                           bindings:
                               -   util: RandomUniqueIntGen
-                                  params: [ 1, 15000000 ]
+                                  params: [ 1, 40000000 ]
                               -   util: RandomNumber
                                   params: [ 4000001, 15000000 ]
                               -   util: RandomAString

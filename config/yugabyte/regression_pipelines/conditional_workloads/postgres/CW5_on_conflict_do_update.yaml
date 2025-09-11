@@ -37,7 +37,7 @@ microbenchmark:
         loadRules:
             -   table: CW5_accounts_
                 count: 2
-                rows: 40000000
+                rows: 15000000
                 columns:
                     -   name: account_id_
                         count: 1
@@ -151,7 +151,7 @@ microbenchmark:
                           pattern_count: 1024
                           bindings:
                               -   util: RandomUniqueIntGen
-                                  params: [ 1, 40000000 ]
+                                  params: [ 1, 15000000 ]
                               -   util: RandomNumber
                                   params: [ 4000001, 15000000 ]
                               -   util: RandomAString
