@@ -25,11 +25,11 @@ microbenchmark:
             - CREATE UNIQUE INDEX CW6_user_accounts_1 ON CW6_accounts_1(account_id_1 ASC, user_id_1 ASC);
 
             - DROP TABLE IF EXISTS CW6_accounts_2;
-            - CREATE TABLE IF NOT EXISTS CW6_accounts_2(account_id_1 bigint, user_id_1 bigint, addr_1 varchar(50), bal_1 float(2),PRIMARY KEY(account_id_1 ASC)) PARTITION BY RANGE (account_id_1);
-            - CREATE TABLE IF NOT EXISTS CW6_0_2M_accounts_0 PARTITION OF CW6_accounts_2 FOR VALUES FROM (1) TO (2000000);
-            - CREATE TABLE IF NOT EXISTS CW6_0_2M_accounts_1 PARTITION OF CW6_accounts_2 FOR VALUES FROM (2000000) TO (4000000);
-            - CREATE TABLE IF NOT EXISTS CW6_0_2M_accounts_2 PARTITION OF CW6_accounts_2 FOR VALUES FROM (4000000) TO (6000000);
-            - CREATE TABLE IF NOT EXISTS CW6_0_2M_accounts_3 PARTITION OF CW6_accounts_2 FOR VALUES FROM (6000000) TO (8000001);
+            - CREATE TABLE IF NOT EXISTS CW6_accounts_2(account_id_1 bigint, user_id_1 bigint, addr_1 varchar(50), bal_1 float(2),PRIMARY KEY(account_id_1)) PARTITION BY RANGE (account_id_1);
+            - CREATE TABLE IF NOT EXISTS CW6_0_2M_accounts_0 PARTITION OF CW6_accounts_2 FOR VALUES FROM (1) TO (10000000);
+            - CREATE TABLE IF NOT EXISTS CW6_0_2M_accounts_1 PARTITION OF CW6_accounts_2 FOR VALUES FROM (10000000) TO (20000000);
+            - CREATE TABLE IF NOT EXISTS CW6_0_2M_accounts_2 PARTITION OF CW6_accounts_2 FOR VALUES FROM (20000000) TO (30000000);
+            - CREATE TABLE IF NOT EXISTS CW6_0_2M_accounts_3 PARTITION OF CW6_accounts_2 FOR VALUES FROM (30000000) TO (40000001);
         cleanup:
             - DROP TABLE IF EXISTS CW6_accounts_1;
             - DROP TABLE IF EXISTS CW6_accounts_2;
@@ -37,16 +37,16 @@ microbenchmark:
         loadRules:
             -   table: CW6_accounts_
                 count: 2
-                rows: 8000000
+                rows: 40000000
                 columns:
                     -   name: account_id_
                         count: 1
                         util: PrimaryIntGen
-                        params: [ 1, 15000000 ]
+                        params: [ 1, 40000000 ]
                     -   name: user_id_
                         count: 1
                         util: PrimaryIntGen
-                        params: [ 1, 15000000 ]
+                        params: [ 1, 40000000 ]
                     -   name: addr_
                         count: 1
                         util: PrimaryStringGen
@@ -54,7 +54,7 @@ microbenchmark:
                     -   name: bal_
                         count: 1
                         util: PrimaryFloatGen
-                        params: [ 1, 15000000, 2 ]
+                        params: [ 1, 40000000, 2 ]
 
         executeRules:
             - workload: CW6_1_2column_condition_no_conflict_on_pkey_so_single_insert
@@ -152,7 +152,7 @@ microbenchmark:
                           pattern_count: 1024
                           bindings:
                               -   util: RandomUniqueIntGen
-                                  params: [ 1, 15000000 ]
+                                  params: [ 1, 40000000 ]
                               -   util: RandomNumber
                                   params: [ 4000001, 15000000 ]
                               -   util: RandomAString
