@@ -116,8 +116,7 @@ public class FeatureBenchBenchmark extends BenchmarkModule {
                 String startWord = querystmt.substring(0, querystmt.indexOf(' ')).trim();
                 String query_type = "";
                 if (startWord.equalsIgnoreCase("with")) {
-                    int with_index = querystmt.indexOf("(");
-                    query_type = querystmt.substring(with_index + 1, querystmt.indexOf(' ', with_index + 4)).trim();
+                    query_type = getQueryTypeforWith(querystmt);
                 } else if (query_hint_index != -1) {
                     query_type = querystmt.substring(query_hint_index + 2, querystmt.indexOf(' ', query_hint_index + 4)).trim();
 
@@ -173,5 +172,33 @@ public class FeatureBenchBenchmark extends BenchmarkModule {
         }
         return executeRules;
     }
+
+    private static String getQueryTypeforWith(String sql) {
+        String trimmed = sql.trim().toUpperCase();
+        int asIndex = trimmed.indexOf("AS");
+        int start = trimmed.indexOf("(", asIndex);
+        int depth = 0;
+        int pos = start;
+
+        for (; pos < trimmed.length(); pos++) {
+            char c = trimmed.charAt(pos);
+            if (c == '(') depth++;
+            else if (c == ')') depth--;
+
+            // when depth returns to 0, we've closed the CTE
+            if (depth == 0 && c == ')') {
+                pos++;
+                break;
+            }
+        }
+
+       trimmed = trimmed.substring(pos).trim();
+       int firstSpace = trimmed.indexOf(" ");
+       if (firstSpace != -1) {
+        return trimmed.substring(0, firstSpace);
+      }
+      return trimmed;
+    }
+
 
 }
