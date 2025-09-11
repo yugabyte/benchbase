@@ -142,6 +142,7 @@ microbenchmark:
 
 
             - workload: CW5_6_no_conflict_on_pkey_so_1024_insert_on_partitioned_tbl_by_hash
+              time_secs: 120
               run:
                   - name: statement1_insert
                     weight: 100
