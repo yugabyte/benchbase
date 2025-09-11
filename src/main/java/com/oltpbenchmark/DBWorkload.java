@@ -1710,6 +1710,7 @@ public class DBWorkload {
                     int newThreads = (int) Math.ceil((threads * targetCPU) / avgMaxCPU);
                     if (threadCpuMap.containsKey(newThreads)) {
                         LOG.info("newThreads={} already tested. Breaking loop to avoid duplicate testing.", newThreads);
+                        optimalThreads = newThreads;
                         break;
                     }
                     threads = newThreads;
