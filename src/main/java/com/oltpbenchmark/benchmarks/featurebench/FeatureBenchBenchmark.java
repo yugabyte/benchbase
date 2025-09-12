@@ -27,6 +27,10 @@ import com.oltpbenchmark.benchmarks.featurebench.procedures.FeatureBench;
 import com.oltpbenchmark.benchmarks.featurebench.workerhelpers.ExecuteRule;
 import com.oltpbenchmark.benchmarks.featurebench.workerhelpers.Query;
 import com.oltpbenchmark.util.TimeUtil;
+import net.sf.jsqlparser.statement.delete.Delete;
+import net.sf.jsqlparser.statement.insert.Insert;
+import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.update.Update;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.slf4j.Logger;
@@ -174,30 +178,25 @@ public class FeatureBenchBenchmark extends BenchmarkModule {
     }
 
     private static String getQueryTypeforWith(String sql) {
-        String trimmed = sql.trim().toUpperCase();
-        int asIndex = trimmed.indexOf("AS");
-        int start = trimmed.indexOf("(", asIndex);
-        int depth = 0;
-        int pos = start;
+        try {
+            // Parse the SQL using JSQLParser
+            net.sf.jsqlparser.statement.Statement statement = net.sf.jsqlparser.parser.CCJSqlParserUtil.parse(sql);
 
-        for (; pos < trimmed.length(); pos++) {
-            char c = trimmed.charAt(pos);
-            if (c == '(') depth++;
-            else if (c == ')') depth--;
-
-            // when depth returns to 0, we've closed the CTE
-            if (depth == 0 && c == ')') {
-                pos++;
-                break;
+            if (statement instanceof Select) {
+                return "SELECT";
+            } else if (statement instanceof Insert) {
+                return "INSERT";
+            } else if (statement instanceof Update) {
+                return "UPDATE";
+            } else if (statement instanceof Delete) {
+                return "DELETE";
+            } else {
+                return "";
             }
-        }
 
-       trimmed = trimmed.substring(pos).trim();
-       int firstSpace = trimmed.indexOf(" ");
-       if (firstSpace != -1) {
-        return trimmed.substring(0, firstSpace);
-      }
-      return trimmed;
+        } catch (Exception e) {
+           return "";
+        }
     }
 
 
