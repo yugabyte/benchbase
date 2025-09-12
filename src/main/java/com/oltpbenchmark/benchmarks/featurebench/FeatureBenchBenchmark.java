@@ -117,16 +117,13 @@ public class FeatureBenchBenchmark extends BenchmarkModule {
                 }
 
                 int query_hint_index = querystmt.indexOf("*/");
-                String startWord = querystmt.substring(0, querystmt.indexOf(' ')).trim();
                 String query_type = "";
-                if (startWord.equalsIgnoreCase("with")) {
-                    query_type = getQueryTypeforWith(querystmt);
-                } else if (query_hint_index != -1) {
+                 query_type = getQueryTypeforStatement(querystmt);
+                if (query_hint_index != -1) {
                     query_type = querystmt.substring(query_hint_index + 2, querystmt.indexOf(' ', query_hint_index + 4)).trim();
 
-                } else {
-                    query_type = startWord;
                 }
+
                 if (query_type.equalsIgnoreCase("select")) {
                     query.setSelectQuery(true);
                 }
@@ -177,7 +174,7 @@ public class FeatureBenchBenchmark extends BenchmarkModule {
         return executeRules;
     }
 
-    private static String getQueryTypeforWith(String sql) {
+    private static String getQueryTypeforStatement(String sql) {
         try {
             // Parse the SQL using JSQLParser
             net.sf.jsqlparser.statement.Statement statement = net.sf.jsqlparser.parser.CCJSqlParserUtil.parse(sql);
