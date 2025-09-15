@@ -723,7 +723,7 @@ public class DBWorkload {
                             LOG.info("Terminal for starting: {}", originalTerminals);
                             String workloadName = executeRules == null ? null : workloads.get(workCount - 1).getString("workload");
                             // Find optimal threads for this workload
-                            int optimalThreads = findOptimalThreadCount(benchList.get(0), minThreads, targetCPU, toleranceCPU, workloadName);
+                            int optimalThreads = findOptimalThreadCount(benchList.get(0), minThreads, targetCPU, toleranceCPU, workloadName, argsLine, xmlConfig, activeTXTypes, workloads, workCount);
 
                             // Sleep for 2 mins so system can stabilize
                             try {
@@ -811,7 +811,7 @@ public class DBWorkload {
                             LOG.info("Terminal for starting: {}", originalTerminals);
                             String workloadName = executeRules == null ? null : workloads.get(workCount - 1).getString("workload");
                             // Find optimal threads for this workload
-                            int optimalThreads = findOptimalThreadCount(benchList.get(0), minThreads, targetCPU, toleranceCPU, workloadName);
+                            int optimalThreads = findOptimalThreadCount(benchList.get(0), minThreads, targetCPU, toleranceCPU, workloadName, argsLine, xmlConfig, activeTXTypes, workloads, workCount);
 
                             // Sleep for 2 mins so system can stabilize
                             try {
@@ -1484,7 +1484,7 @@ public class DBWorkload {
         return "us-east-1"; // Default region
     }
 
-    private static int findOptimalThreadCount(BenchmarkModule bench, int minThreads, double targetCPU, double toleranceCPU, String workloadName) throws InterruptedException {
+    private static int findOptimalThreadCount(BenchmarkModule bench, int minThreads, double targetCPU, double toleranceCPU, String workloadName, CommandLine argsLine, XMLConfiguration xmlConfig, List<TransactionType> activeTXTypes, List<HierarchicalConfiguration<ImmutableNode>> workloads, int workCount) throws InterruptedException {
         double minTargetCPU = targetCPU - toleranceCPU;
         double maxTargetCPU = targetCPU + toleranceCPU;
         LOG.info("minTargetCPU: {}, maxTargetCPU: {}", minTargetCPU, maxTargetCPU);
@@ -1576,7 +1576,7 @@ public class DBWorkload {
             bench.getWorkloadConfiguration().getPhases().clear();
             bench.getWorkloadConfiguration().getPhases().add(newPhase);
             bench.getWorkloadConfiguration().setTerminals(threads);
-            bench.getWorkloadConfiguration().setIsOptimalThreadsWorkload(true);
+            bench.getWorkloadConfiguration().setIsOptimalThreadsWorkload(false);
 
             double avgMaxCPU = 0.0;
             List<List<Double>> allNodeReadings = new ArrayList<>();
@@ -1592,7 +1592,11 @@ public class DBWorkload {
 
                 Thread workloadThread = new Thread(() -> {
                     try {
-                        runWorkload(Collections.singletonList(bench), 0, 1);
+                        Results results = runWorkload(Collections.singletonList(bench), 0, 1);
+                        writeOutputs(results, activeTXTypes, argsLine, xmlConfig,
+                                workloads.get(workCount - 1).getString("workload"),
+                                workloads.get(workCount - 1).getString("customTags", null),
+                                workloads.get(workCount - 1).getBoolean("skipReport", false));
                     } catch (Exception e) {
                         LOG.error("Error running workload for thread test", e);
                         throw new RuntimeException(e);
