@@ -9,7 +9,7 @@ loaderThreads: 1
 terminals: 1
 collect_pg_stat_statements: true
 use_dist_in_explain : true
-yaml_version: v1.1
+yaml_version: v2.0
 works:
     work:
         time_secs: 180
@@ -49,16 +49,16 @@ microbenchmark:
         loadRules:
             -   table: CW4_accounts_
                 count: 2
-                rows: 8000000
+                rows: 1000000
                 columns:
                     -   name: account_id_
                         count: 1
                         util: PrimaryIntGen
-                        params: [ 1, 8000000 ]
+                        params: [ 1, 1000000 ]
                     -   name: user_id_
                         count: 1
                         util: PrimaryIntGen
-                        params: [ 1, 8000000 ]
+                        params: [ 1, 1000000 ]
                     -   name: addr_
                         count: 1
                         util: PrimaryStringGen
@@ -66,7 +66,7 @@ microbenchmark:
                     -   name: bal_
                         count: 1
                         util: PrimaryFloatGen
-                        params: [ 1, 8000000, 2 ]
+                        params: [ 1, 1000000, 2 ]
 
             -   table: CW4_cardinality_tbl1_
                 count: 1
@@ -127,13 +127,13 @@ microbenchmark:
                           count: 1024
                           bindings:
                               -   util: PrimaryIntGen
-                                  params: [ 10000000, 15000000 ]
+                                  params: [ 5000001, 15000000 ]
                               -   util: PrimaryIntGen
-                                  params: [ 10000000, 15000000 ]
+                                  params: [ 5000001, 15000000 ]
                               -   util: PrimaryStringGen
                                   params: [ 1, 50 ]
                               -   util: PrimaryFloatGen
-                                  params: [ 10000000, 15000000, 2 ]
+                                  params: [ 5000001, 15000000, 2 ]
 
             - workload: CW4_3_no_condition_for_on_conflict_1row
               run:
@@ -149,15 +149,15 @@ microbenchmark:
                             -  util: RandomInt
                                params: [ 1000000,1010000]
                             -  util: PrimaryIntGen
-                               params: [ 1, 1000000 ]
+                               params: [ 1000001, 5000000 ]
                             -  util: PrimaryIntGen
-                               params: [ 1, 1000000 ]
+                               params: [ 1000001, 5000000 ]
                             -  util: PrimaryIntGen
-                               params: [ 1, 1000000 ]
+                               params: [ 1000001, 5000000 ]
                             -  util: PrimaryIntGen
-                               params: [ 1, 1000000 ]
+                               params: [ 1000001, 5000000 ]
                             -  util: PrimaryIntGen
-                               params: [ 1, 1000000 ]
+                               params: [ 1000001, 5000000 ]
                             -  util: PrimaryIntGen
                                params: [ 1, 1000000 ]
                             -  util: PrimaryIntGen
@@ -194,15 +194,15 @@ microbenchmark:
                             -  util: RandomInt
                                params: [ 1000000,1010000]
                             -  util: PrimaryIntGen
-                               params: [ 1, 1000000 ]
+                               params: [ 5000001, 9000000 ]
                             -  util: PrimaryIntGen
-                               params: [ 1, 1000000 ]
+                               params: [ 5000001, 9000000 ]
                             -  util: PrimaryIntGen
-                               params: [ 1, 1000000 ]
+                               params: [ 5000001, 9000000 ]
                             -  util: PrimaryIntGen
-                               params: [ 1, 1000000 ]
+                               params: [ 5000001, 9000000 ]
                             -  util: PrimaryIntGen
-                               params: [ 1, 1000000 ]
+                               params: [ 5000001, 9000000 ]
                             -  util: PrimaryIntGen
                                params: [ 1, 1000000 ]
                             -  util: PrimaryIntGen
@@ -232,13 +232,13 @@ microbenchmark:
                         - query: INSERT INTO CW4_accounts_2(account_id_1,user_id_1,addr_1,bal_1) VALUES (?,?,?,?) ON CONFLICT (account_id_1) DO NOTHING
                           bindings:
                               -   util: PrimaryIntGen
-                                  params: [ 1, 4000000 ]
+                                  params: [ 1000001, 10000000 ]
                               -   util: PrimaryIntGen
-                                  params: [ 1, 4000000 ]
+                                  params: [ 1000001, 10000000 ]
                               -   util: PrimaryStringGen
                                   params: [ 1, 50 ]
                               -   util: PrimaryFloatGen
-                                  params: [ 1, 4000000, 2 ]
+                                  params: [ 1000001, 10000000, 2 ]
 
             - workload: CW4_6_no_conflict_on_pkey_so_1024_insert_on_partitioned_tbl_by_hash
               run:
@@ -249,13 +249,13 @@ microbenchmark:
                           count: 1024
                           bindings:
                               -   util: PrimaryIntGen
-                                  params: [ 1, 4000000 ]
+                                  params: [ 10000001, 30000000 ]
                               -   util: PrimaryIntGen
-                                  params: [ 1, 4000000 ]
+                                  params: [ 10000001, 30000000 ]
                               -   util: PrimaryStringGen
                                   params: [ 1, 50 ]
                               -   util: PrimaryFloatGen
-                                  params: [ 1, 4000000, 2 ]
+                                  params: [ 10000001, 30000000, 2 ]
 
             - workload: CW4_7_2column_condition_no_conflict_on_pkey_so_1024_insert
               run:
@@ -266,13 +266,13 @@ microbenchmark:
                           pattern_count: 1024
                           bindings:
                               -   util: RandomNumber
-                                  params: [ 4000001, 8000000 ]
+                                  params: [ 15000001, 25000000 ]
                               -   util: RandomNumber
-                                  params: [ 4000001, 8000000 ]
+                                  params: [ 15000001, 25000000 ]
                               -   util: RandomAString
                                   params: [ 50, 50 ]
                               -   util: RandomFloat
-                                  params: [ 4000001, 8000000, 2 ]
+                                  params: [ 15000001, 25000000, 2 ]
 
             - workload: CW4_8_no_conflict_on_pkey_so_1024_insert_on_partitioned_tbl_by_hash
               run:
@@ -283,10 +283,10 @@ microbenchmark:
                           pattern_count: 1024
                           bindings:
                               -   util: RandomNumber
-                                  params: [ 4000001, 8000000 ]
+                                  params: [ 30000001, 50000000 ]
                               -   util: RandomNumber
-                                  params: [ 4000001, 8000000 ]
+                                  params: [ 30000001, 50000000 ]
                               -   util: RandomAString
                                   params: [ 50, 50 ]
                               -   util: RandomFloat
-                                  params: [ 4000001, 8000000, 2 ]
+                                  params: [ 30000001, 50000000, 2 ]
