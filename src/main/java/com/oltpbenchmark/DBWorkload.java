@@ -724,7 +724,6 @@ public class DBWorkload {
                             String workloadName = executeRules == null ? null : workloads.get(workCount - 1).getString("workload");
                             // Find optimal threads for this workload
                             int optimalThreads = findOptimalThreadCount(benchList.get(0), minThreads, targetCPU, toleranceCPU, workloadName, argsLine, xmlConfig, activeTXTypes, workloads, workCount);
-
                             // Sleep for 2 mins so system can stabilize
                             try {
                                 Thread.sleep(120000);
@@ -1592,7 +1591,7 @@ public class DBWorkload {
 
                 Thread workloadThread = new Thread(() -> {
                     try {
-                        Results results = runWorkload(Collections.singletonList(bench), 0, 1);
+                        Results results = runWorkload(Collections.singletonList(bench), 0, workCount);
                         writeOutputs(results, activeTXTypes, argsLine, xmlConfig,
                                 workloads.get(workCount - 1).getString("workload"),
                                 workloads.get(workCount - 1).getString("customTags", null),
