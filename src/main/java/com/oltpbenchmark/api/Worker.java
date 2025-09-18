@@ -309,7 +309,10 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
                             break;
                         }
                         if (preState == MEASURE && postPhase.getId() == prePhase.getId()) {
-                            latencies.addLatency(transactionType.getId(), start, end, this.id, prePhase.getId());
+                            // Skip latency recording for optimal thread finding workloads to save memory
+                            if (!configuration.getIsOptimalThreadsWorkload()) {
+                                latencies.addLatency(transactionType.getId(), start, end, this.id, prePhase.getId());
+                            }
                             intervalRequests.incrementAndGet();
                         }
                         if (prePhase.isLatencyRun()) {

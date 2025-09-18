@@ -29,7 +29,6 @@ import com.oltpbenchmark.util.FileUtil;
 import com.yugabyte.util.PSQLException;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.tree.ImmutableNode;
-import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -98,6 +97,11 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
+        }
+
+
+        if (this.getWorkloadConfiguration().getIsOptimalThreadsWorkload()) {
+            return;
         }
 
         if (isInitializeDone.get()) return;
@@ -304,7 +308,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
     public void tearDown() {
         synchronized (FeatureBenchWorker.class) {
             boolean shouldCollect = this.getWorkloadConfiguration().getXmlConfig().getBoolean("collect_pg_stat_statements", false);
-            if (!this.configuration.getNewConnectionPerTxn() && (shouldCollect && !isPGStatStatementCollected.get()) && this.conn != null) {
+            if ( !this.getWorkloadConfiguration().getIsOptimalThreadsWorkload() && !this.configuration.getNewConnectionPerTxn() && (shouldCollect && !isPGStatStatementCollected.get()) && this.conn != null) {
 
                 Map<String, Integer> queryStringsAndRC = new LinkedHashMap<>();
                 for (ExecuteRule er : executeRules) {
