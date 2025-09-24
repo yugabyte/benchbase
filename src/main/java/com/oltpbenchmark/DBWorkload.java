@@ -713,6 +713,7 @@ public class DBWorkload {
                             int minThreads = xmlConfig.getInt("minThreads", terminals);
                             double targetCPU = xmlConfig.getDouble("targetCPU", 80.0);
                             double toleranceCPU = xmlConfig.getDouble("toleranceCPU", 5.0);
+                            int samplingTime = xmlConfig.getInt("samplingTime", 0);
 
                             LOG.info("Finding optimal threads for workload: {}", val);
                             LOG.info("First BenchmarkModule: {}", benchList.get(0));
@@ -723,7 +724,7 @@ public class DBWorkload {
                             LOG.info("Terminal for starting: {}", originalTerminals);
                             String workloadName = executeRules == null ? null : workloads.get(workCount - 1).getString("workload");
                             // Find optimal threads for this workload
-                            int optimalThreads = findOptimalThreadCount(benchList.get(0), minThreads, targetCPU, toleranceCPU, workloadName, workCount);   
+                            int optimalThreads = findOptimalThreadCount(benchList.get(0), minThreads, targetCPU, toleranceCPU, workloadName, workCount,samplingTime);   
 
                             // Sleep for 2 mins so system can stabilize
                             try {
@@ -801,6 +802,7 @@ public class DBWorkload {
                             int minThreads = xmlConfig.getInt("minThreads", terminals);
                             double targetCPU = xmlConfig.getDouble("targetCPU", 80.0);
                             double toleranceCPU = xmlConfig.getDouble("toleranceCPU", 5.0);
+                            int samplingTime = xmlConfig.getInt("samplingTime", 0);
 
                             LOG.info("Finding optimal threads for workload: {}", val);
                             LOG.info("First BenchmarkModule: {}", benchList.get(0));
@@ -811,7 +813,7 @@ public class DBWorkload {
                             LOG.info("Terminal for starting: {}", originalTerminals);
                             String workloadName = executeRules == null ? null : workloads.get(workCount - 1).getString("workload");
                             // Find optimal threads for this workload
-                            int optimalThreads = findOptimalThreadCount(benchList.get(0), minThreads, targetCPU, toleranceCPU, workloadName, workCount);
+                            int optimalThreads = findOptimalThreadCount(benchList.get(0), minThreads, targetCPU, toleranceCPU, workloadName, workCount,samplingTime);
 
                             // Sleep for 2 mins so system can stabilize
                             try {
@@ -1484,7 +1486,7 @@ public class DBWorkload {
         return "us-east-1"; // Default region
     }
 
-    private static int findOptimalThreadCount(BenchmarkModule bench, int minThreads, double targetCPU, double toleranceCPU, String workloadName, int workCount) throws InterruptedException {
+    private static int findOptimalThreadCount(BenchmarkModule bench, int minThreads, double targetCPU, double toleranceCPU, String workloadName, int workCount, int samplingTime) throws InterruptedException {
         double minTargetCPU = targetCPU - toleranceCPU;
         double maxTargetCPU = targetCPU + toleranceCPU;
         LOG.info("minTargetCPU: {}, maxTargetCPU: {}", minTargetCPU, maxTargetCPU);
@@ -1558,11 +1560,12 @@ public class DBWorkload {
 
             LOG.info("Finding optimal threads.... iteration_no. {}, current_threads: {}", iter, threads);
             Phase oldPhase = bench.getWorkloadConfiguration().getPhases().get(0);
+            int totalTime = samplingTime != 0 ? samplingTime : oldPhase.getTime() + oldPhase.getWarmupTime();
             Phase newPhase = new Phase(
                 "FEATUREBENCH",
                 oldPhase.getId(),
-                oldPhase.getTime(),
-                oldPhase.getWarmupTime(),
+                totalTime,
+                0,
                 oldPhase.getRate(),
                 oldPhase.getWeights(),
                 oldPhase.isRateLimited(),
@@ -1587,9 +1590,6 @@ public class DBWorkload {
                     LOG.error("No phases found in workload configuration");
                     break;
                 }
-                Phase phase = phases.get(0);
-                int totalTime = phase.getWarmupTime() + phase.getTime(); // seconds
-
                 Thread workloadThread = new Thread(() -> {
                     try {
                         runWorkload(Collections.singletonList(bench), 0, workCount);
