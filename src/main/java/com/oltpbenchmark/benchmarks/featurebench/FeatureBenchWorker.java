@@ -23,6 +23,7 @@ import com.oltpbenchmark.api.Worker;
 import com.oltpbenchmark.benchmarks.featurebench.helpers.UtilToMethod;
 import com.oltpbenchmark.benchmarks.featurebench.workerhelpers.ExecuteRule;
 import com.oltpbenchmark.benchmarks.featurebench.workerhelpers.Query;
+import com.oltpbenchmark.types.DatabaseType;
 import com.oltpbenchmark.types.State;
 import com.oltpbenchmark.types.TransactionStatus;
 import com.oltpbenchmark.util.FileUtil;
@@ -30,6 +31,7 @@ import com.yugabyte.util.PSQLException;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.json.JSONObject;
+import org.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,6 +41,8 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+
 
 
 /**
@@ -117,6 +121,19 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                     if (!conn.getAutoCommit())
                         conn.commit();
                     isPGStatResetCalled.set(true);
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+                
+            }
+            // For Postgres, we need to reset pg_stat_user_indexes
+            if (this.getWorkloadConfiguration().getDatabaseType().equals(DatabaseType.POSTGRES)) {
+                LOG.info("Resetting pg_stat_user_indexes for workload : " + this.workloadName);
+                try {
+                    Statement stmt = conn.createStatement();
+                    stmt.executeQuery("SELECT pg_stat_reset();");
+                    if (!conn.getAutoCommit())
+                        conn.commit();
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }
@@ -321,6 +338,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                 List<JSONObject> jsonResultsList = new ArrayList<>();
                 JSONObject pgStatOutputs = null;
                 JSONObject pgPreparedStatementOutputs = null;
+                JSONArray pgStatUserIndexesOutputs = null;
                 try {
                     LOG.info("Collecting pg_stat_statements for workload : " + this.workloadName);
                     pgStatOutputs = callPGStats();
@@ -328,6 +346,16 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                     pgPreparedStatementOutputs = collectPgPreparedStatements();
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
+                }
+
+                // For Postgres, we need to collect pg_stat_user_indexes
+                if (this.getWorkloadConfiguration().getDatabaseType().equals(DatabaseType.POSTGRES)) {
+                    LOG.info("Collecting pg_stat_user_indexes for workload : " + this.workloadName);
+                    try {
+                        pgStatUserIndexesOutputs = callPGStatUserIndexes();
+                    } catch (SQLException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
 
                 for (Map.Entry<String, Integer> entry : queryStringsAndRC.entrySet()) {
@@ -341,6 +369,9 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                     /*TODO: remove prepared_statements*/
                     inner.put("prepared_statements", pgPreparedStatementOutputs == null ? new JSONObject() : pgPreparedStatementOutputs);
                     jsonResultsList.add(inner);
+                }
+                if (pgStatUserIndexesOutputs != null) {
+                    jsonResultsList.add(new JSONObject().put("pg_stat_user_indexes", pgStatUserIndexesOutputs));
                 }
                 this.featurebenchAdditionalResults.setJsonResultsList(jsonResultsList);
                 isPGStatStatementCollected.set(true);
@@ -482,5 +513,26 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             resultSetCount++;
         }
         return pgPreparedStatementOutputs;
+    }
+
+    private JSONArray callPGStatUserIndexes() throws SQLException{
+        String pgStatUserIndexes = "SELECT relname AS table_name, seq_scan, idx_scan, seq_tup_read, idx_tup_fetch FROM pg_stat_user_tables;";
+        Statement stmt = this.conn.createStatement();
+        ResultSet resultSet = stmt.executeQuery(pgStatUserIndexes);
+        if(!conn.getAutoCommit())
+            conn.commit();
+        ResultSetMetaData rsmd = resultSet.getMetaData();
+        JSONArray pgStatUserIndexesOutputs = new JSONArray();
+        while (resultSet.next()) {
+            JSONObject pgStatUserIndexesOutputPerRecord = new JSONObject();
+            for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+                pgStatUserIndexesOutputPerRecord.put(
+                    rsmd.getColumnName(i),
+                    resultSet.getString(i)
+                );
+            }
+            pgStatUserIndexesOutputs.put(pgStatUserIndexesOutputPerRecord);
+        }
+        return pgStatUserIndexesOutputs;
     }
 }
