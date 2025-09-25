@@ -89,14 +89,14 @@ microbenchmark:
                     -   name: thrpt_wrkld_4
                         weight: 100
                         queries:
-                            -   query: SELECT * FROM THRPT_G1_range_table_1 WHERE region_id IN (1, 5, 7, 9)  AND category_id IN (1, 3);
+                            -   query: SELECT * FROM THRPT_G1_range_table_1 WHERE region_id IN (1, 5)  AND category_id IN (1, 3);
 
             -   workload: THRPT_G1_5_indexonly_IN
                 run:
                     -   name: thrpt_wrkld_5
                         weight: 100
                         queries:
-                            -   query: SELECT id, amount, quantity, status_code FROM THRPT_G1_range_table_1 WHERE region_id IN (1, 5, 7, 9) AND category_id IN (1, 3);
+                            -   query: SELECT id, amount, quantity, status_code FROM THRPT_G1_range_table_1 WHERE region_id IN (1, 5) AND category_id IN (1, 3);
 
             -   workload: THRPT_G1_6_partial_index
                 run:
