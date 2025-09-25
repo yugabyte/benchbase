@@ -22,10 +22,13 @@ microbenchmark:
         setAutoCommit: true
         create:
             - DROP TABLE IF EXISTS test_table_1;
+            - DROP TABLE IF EXISTS test_table_2;
             - CREATE TABLE test_table_1(k0 INT, k1 INT, k2 INT, c0 INT, PRIMARY KEY(k0 ASC, k1 ASC, k2 ASC));
+            - CREATE TABLE test_table_2(k0 INT, k1 INT, k2 INT, c0 INT, PRIMARY KEY(k0 ASC, k1 ASC, k2 ASC));
 
         cleanup:
             - DROP TABLE IF EXISTS test_table_1;
+            - DROP TABLE IF EXISTS test_table_2;
 
         loadRules:
 
