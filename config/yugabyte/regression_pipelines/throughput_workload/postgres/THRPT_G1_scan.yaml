@@ -96,10 +96,3 @@ microbenchmark:
                         weight: 100
                         queries:
                             -   query: SELECT id, amount, quantity, status_code FROM THRPT_G1_range_table_1 WHERE region_id IN (1, 5) AND category_id = 1;
-
-            -   workload: THRPT_G1_6_partial_index
-                run:
-                    -   name: thrpt_wrkld_6
-                        weight: 100
-                        queries:
-                            -   query: SELECT id, date_created FROM THRPT_G1_range_table_1 WHERE region_id IN = 1 AND status_code = 1 AND priority_level = 1;
