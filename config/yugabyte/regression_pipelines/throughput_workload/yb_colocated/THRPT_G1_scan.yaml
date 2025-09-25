@@ -70,39 +70,39 @@ microbenchmark:
                   - name: thrpt_wrkld_1
                     weight: 100
                     queries:
-                        - query: select * from THRPT_G1_range_table_1 where amount BETWEEN 90000 AND 90100
+                        - query: select * from THRPT_G1_range_table_1 where amount BETWEEN 90000 AND 90010
 
             -   workload: THRPT_G1_2_index_between
                 run:
                     -   name: thrpt_wrkld_2
                         weight: 100
                         queries:
-                            -   query: SELECT * FROM THRPT_G1_range_table_1 WHERE region_id = 10 AND category_id = 20 AND id BETWEEN 1 AND 100000;
+                            -   query: SELECT * FROM THRPT_G1_range_table_1 WHERE region_id = 10 AND category_id = 20 AND id BETWEEN 1 AND 50000;
 
             -   workload: THRPT_G1_3_indexonly_between
                 run:
                     -   name: thrpt_wrkld_3
                         weight: 100
                         queries:
-                            -   query: SELECT id, amount, quantity, status_code FROM THRPT_G1_range_table_1 WHERE region_id = 5 AND category_id = 25 AND id BETWEEN 1 AND 100000;
+                            -   query: SELECT id, amount, quantity, status_code FROM THRPT_G1_range_table_1 WHERE region_id = 5 AND category_id = 25 AND id BETWEEN 1 AND 50000;
 
             -   workload: THRPT_G1_4_index_IN
                 run:
                     -   name: thrpt_wrkld_4
                         weight: 100
                         queries:
-                            -   query: SELECT * FROM THRPT_G1_range_table_1 WHERE region_id IN (1, 5)  AND category_id IN (1, 3);
+                            -   query: SELECT * FROM THRPT_G1_range_table_1 WHERE region_id IN (1, 5)  AND category_id IN = 1;
 
             -   workload: THRPT_G1_5_indexonly_IN
                 run:
                     -   name: thrpt_wrkld_5
                         weight: 100
                         queries:
-                            -   query: SELECT id, amount, quantity, status_code FROM THRPT_G1_range_table_1 WHERE region_id IN (1, 5) AND category_id IN (1, 3);
+                            -   query: SELECT id, amount, quantity, status_code FROM THRPT_G1_range_table_1 WHERE region_id IN (1, 5) AND category_id = 1;
 
             -   workload: THRPT_G1_6_partial_index
                 run:
                     -   name: thrpt_wrkld_6
                         weight: 100
                         queries:
-                            -   query: SELECT id, date_created FROM THRPT_G1_range_table_1 WHERE region_id IN (1, 5) AND status_code = 1 AND priority_level = 1;
+                            -   query: SELECT id, date_created FROM THRPT_G1_range_table_1 WHERE region_id IN = 1 AND status_code = 1 AND priority_level = 1;
