@@ -39,7 +39,7 @@ microbenchmark:
                       params: [ 1, 1000000 ]
                     - name: region_id
                       util: RandomNumber
-                      params: [ 1, 25 ]
+                      params: [ 1, 100 ]
                     - name: category_id
                       util: RandomNumber
                       params: [ 1, 50 ]
