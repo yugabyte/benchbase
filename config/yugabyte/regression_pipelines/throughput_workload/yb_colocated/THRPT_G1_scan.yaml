@@ -27,6 +27,7 @@ microbenchmark:
             - CREATE TABLE THRPT_G1_range_table_1(id INT, region_id INT, category_id INT, subcategory_id INT, date_created DATE, status_code INT, priority_level INT, amount INT, quantity INT, PRIMARY KEY(id ASC));
             - CREATE INDEX idx_covering_region_cat_amount ON THRPT_G1_range_table_1 (region_id, category_id, id) INCLUDE (amount, quantity, status_code);
             - CREATE INDEX idx_partial_status ON THRPT_G1_range_table_1 (region_id, category_id, date_created, id) WHERE status_code IN (1, 2, 3) and priority_level IN (1, 2, 3);
+            - CREATE index idx_covering_region_cat_amount_asc on thrpt_g1_range_table_1 (region_id ASC, category_id ASC, id ASC) INCLUDE (amount, quantity, status_code);
 
         cleanup:
             - DROP TABLE IF EXISTS THRPT_G1_range_table_1;
@@ -41,7 +42,7 @@ microbenchmark:
                       params: [ 1, 1000000 ]
                     - name: region_id
                       util: RandomNumber
-                      params: [ 1, 10 ]
+                      params: [ 1, 25 ]
                     - name: category_id
                       util: RandomNumber
                       params: [ 1, 50 ]
@@ -77,14 +78,14 @@ microbenchmark:
                     -   name: thrpt_wrkld_2
                         weight: 100
                         queries:
-                            -   query: SELECT * FROM THRPT_G1_range_table_1 WHERE region_id = 10 AND category_id = 20 AND id BETWEEN 1 AND 50000;
+                            -   query: SELECT * FROM THRPT_G1_range_table_1 WHERE region_id BETWEEN 10 AND 11 and category_id = 20;
 
             -   workload: THRPT_G1_3_indexonly_between
                 run:
                     -   name: thrpt_wrkld_3
                         weight: 100
                         queries:
-                            -   query: SELECT id, amount, quantity, status_code FROM THRPT_G1_range_table_1 WHERE region_id = 5 AND category_id = 25 AND id BETWEEN 1 AND 50000;
+                            -   query: SELECT id, amount, quantity, status_code FROM THRPT_G1_range_table_1 WHERE region_id BETWEEN 10 AND 11 and category_id = 20;
 
             -   workload: THRPT_G1_4_index_IN
                 run:
