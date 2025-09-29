@@ -1,0 +1,74 @@
+type: YUGABYTE
+driver: com.yugabyte.Driver
+url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true&load-balance=false
+createdb: drop database if exists yb_colocated; create database yb_colocated with colocated=true
+username: {{username}}
+password: {{password}}
+batchsize: 128
+isolation: TRANSACTION_REPEATABLE_READ
+loaderthreads: 1
+terminals: 1
+collect_pg_stat_statements: true
+use_dist_in_explain : true
+yaml_version: v1.0
+works:
+    work:
+        time_secs: 180
+        active_terminals: 1
+        rate: unlimited
+        warmup: 60
+microbenchmark:
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
+    properties:
+        setAutoCommit: true
+        create:
+            - DROP TABLE IF EXISTS THRPT_G1_range_table_1;
+            - CREATE TABLE THRPT_G1_range_table_1(id INT, region_id INT, category_id INT, subcategory_id INT, date_created DATE, status_code INT, priority_level INT, amount INT, quantity INT, PRIMARY KEY(id ASC));
+            - CREATE INDEX idx_covering_region_cat_amount ON THRPT_G1_range_table_1 (region_id, category_id, id) INCLUDE (amount, quantity, status_code);
+            - CREATE INDEX idx_partial_status ON THRPT_G1_range_table_1 (region_id, category_id, date_created, id) WHERE status_code IN (1, 2, 3) and priority_level IN (1, 2, 3);
+            - CREATE index idx_covering_region_cat_amount_asc on thrpt_g1_range_table_1 (region_id ASC, category_id ASC, id ASC) INCLUDE (amount, quantity, status_code);
+
+        cleanup:
+            - DROP TABLE IF EXISTS THRPT_G1_range_table_1;
+
+        loadRules:
+              - table: THRPT_G1_range_table_
+                count: 1
+                rows: 1000000
+                columns:
+                    - name: id
+                      util: RandomUniqueIntGen
+                      params: [ 1, 1000000 ]
+                    - name: region_id
+                      util: RandomNumber
+                      params: [ 1, 100 ]
+                    - name: category_id
+                      util: RandomNumber
+                      params: [ 1, 50 ]
+                    - name: subcategory_id
+                      util: RandomNumber
+                      params: [ 1, 500 ]
+                    - name: date_created
+                      util: RandomDateBtwYears
+                      params: [2000, 2025]
+                    - name: status_code
+                      util: RandomNumber
+                      params: [ 1, 5 ]
+                    - name: priority_level
+                      util: RandomNumber
+                      params: [ 1, 10 ]
+                    - name: amount
+                      util: RandomNumber
+                      params: [ 1, 100000 ]
+                    - name: quantity
+                      util: RandomNumber
+                      params: [ 1, 100000 ]
+
+        executeRules:
+
+            -   workload: THRPT_G10_Orderby_Desc_Index_Limit
+                run:
+                    -   name: thrpt_wrkld_10
+                        weight: 100
+                        queries:
+                            -   query: SELECT region_id, category_id, date_created, id, amount, quantity, status_code FROM THRPT_G1_range_table_1 WHERE status_code IN (1, 2) AND priority_level IN (1, 2) AND region_id <=3 ORDER BY region_id DESC, category_id DESC, date_created DESC, id DESC limit 50;
