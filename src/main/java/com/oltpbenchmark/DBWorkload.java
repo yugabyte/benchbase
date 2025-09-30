@@ -1549,6 +1549,23 @@ public class DBWorkload {
             LOG.info("Detected YugabyteDB database");
         }
 
+        // Store original phase
+        Phase originalPhase = bench.getWorkloadConfiguration().getPhases().get(0);
+        Phase createOriginalPhase = new Phase(
+            "FEATUREBENCH",
+            originalPhase.getId(),
+            originalPhase.getTime(),
+            originalPhase.getWarmupTime(),
+            originalPhase.getRate(),
+            originalPhase.getWeights(),
+            originalPhase.isRateLimited(),
+            originalPhase.isDisabled(),
+            originalPhase.isSerial(),
+            originalPhase.isTimed(),
+            originalPhase.getActiveTerminals(),
+            originalPhase.getArrival()
+    );
+
         for(int iter=0; iter<max_iterations; iter++) {
 
             // Sleep for 2 minute so that system is stable again
@@ -1733,6 +1750,9 @@ public class DBWorkload {
         } catch (Exception e) {
             LOG.error("Error writing optimal threads JSON log", e);
         }
+        // Restore original phase
+        bench.getWorkloadConfiguration().getPhases().clear();
+        bench.getWorkloadConfiguration().getPhases().add(createOriginalPhase);
         return optimalThreads;
     }
 

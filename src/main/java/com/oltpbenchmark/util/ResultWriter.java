@@ -242,6 +242,7 @@ public class ResultWriter {
         detailedSummaryMap.put("metadata", metadata);
         detailedSummaryMap.put("Summary", summaryMap);
         detailedSummaryMap.put("queries", results.getFeaturebenchAdditionalResults().getJsonResultsList());
+        detailedSummaryMap.put("metadata", results.getFeaturebenchAdditionalResults().getMetaDataJson());
         os.println(JSONUtil.format(JSONUtil.toJSONString(detailedSummaryMap)));
         return detailedSummaryMap;
     }

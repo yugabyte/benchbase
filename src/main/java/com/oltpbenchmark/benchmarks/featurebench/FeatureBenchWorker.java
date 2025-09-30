@@ -371,7 +371,9 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                     jsonResultsList.add(inner);
                 }
                 if (pgStatUserIndexesOutputs != null) {
-                    jsonResultsList.add(new JSONObject().put("pg_stat_user_indexes", pgStatUserIndexesOutputs));
+                    JSONObject metaDataJson = this.featurebenchAdditionalResults.getMetaDataJson();
+                    metaDataJson.put("pg_stat_user_indexes", pgStatUserIndexesOutputs);
+                    this.featurebenchAdditionalResults.setMetaDataJson(metaDataJson);
                 }
                 this.featurebenchAdditionalResults.setJsonResultsList(jsonResultsList);
                 isPGStatStatementCollected.set(true);
