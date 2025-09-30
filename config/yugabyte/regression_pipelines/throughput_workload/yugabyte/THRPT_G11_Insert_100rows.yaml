@@ -12,10 +12,10 @@ use_dist_in_explain : true
 yaml_version: v1.0
 works:
     work:
-        time_secs: 180
+        time_secs: 120
         active_terminals: 1
         rate: unlimited
-        warmup: 60
+        warmup: 30
 microbenchmark:
     class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
     properties:
