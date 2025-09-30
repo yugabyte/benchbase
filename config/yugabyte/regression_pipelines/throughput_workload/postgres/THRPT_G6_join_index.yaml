@@ -88,4 +88,4 @@ microbenchmark:
                     -   name: thrpt_wrkld_6
                         weight: 100
                         queries:
-                            -   query: SELECT f.id, f.amount, f.quantity, r.region_name, r.region_managercFROM THRPT_G1_range_table_1 f JOIN REGION_1 r ON f.region_id = r.region_id WHERE f.category_id < 10 AND f.date_created BETWEEN '2024-01-01' AND '2025-01-01' AND r.is_active = TRUE;
+                            -   query: SELECT f.id, f.amount, f.quantity, r.region_name, r.region_manager FROM THRPT_G1_range_table_1 f JOIN REGION_1 r ON f.region_id = r.region_id WHERE f.category_id < 2 AND f.date_created BETWEEN '2024-01-01' AND '2025-01-01' AND r.is_active = TRUE;
