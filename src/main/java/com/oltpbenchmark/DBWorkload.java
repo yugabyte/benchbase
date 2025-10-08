@@ -1294,11 +1294,15 @@ public class DBWorkload {
     }
 
     // Returns a list of CPU utilizations (percent) for all nodes
-    private static List<Double> getYBCPUUtilizationAllNodes(BenchmarkModule bench) {
+    private static List<Double> getYBCPUUtilizationAllNodes(BenchmarkModule bench) throws SQLException {
         List<Double> cpuList = new ArrayList<>();
-        try (Connection conn = bench.makeConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery("select uuid, metrics, status, error from yb_servers_metrics()")) {
+        Connection conn = null;
+        Statement stmt = null;
+        ResultSet rs = null;
+        try {
+            conn = bench.makeConnection();
+            stmt = conn.createStatement();
+            rs = stmt.executeQuery("select uuid, metrics, status, error from yb_servers_metrics()");
             while (rs.next()) {
                 String metricsJson = rs.getString("metrics");
                 try {
@@ -1319,6 +1323,16 @@ public class DBWorkload {
             }
         } catch (SQLException e) {
             LOG.error("Error getting YugabyteDB metrics", e);
+        } finally {
+            if (rs != null) {
+                rs.close();
+            }
+            if (stmt != null) {
+                stmt.close();
+            }
+            if (conn != null) {
+                conn.close();
+            }
         }
         return cpuList;
     }
