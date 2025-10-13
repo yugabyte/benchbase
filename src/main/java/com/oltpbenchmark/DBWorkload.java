@@ -1645,15 +1645,15 @@ public class DBWorkload {
 
                     // For each node, find the max of its 3 readings
                     int numNodes = allNodeReadings.get(0).size();
-                    List<Double> maxPerNode = new ArrayList<>();
+                    List<Double> perNodeValues = new ArrayList<>();
                     for (int nodeIdx = 0; nodeIdx < numNodes; nodeIdx++) {
-                        double max = Math.max(allNodeReadings.get(0).get(nodeIdx),
-                            Math.max(allNodeReadings.get(1).get(nodeIdx),
+                        double minPerNode = Math.min(allNodeReadings.get(0).get(nodeIdx),
+                            Math.min(allNodeReadings.get(1).get(nodeIdx),
                                 allNodeReadings.get(2).get(nodeIdx)));
-                        maxPerNode.add(max);
-                        LOG.info("YB Node {} max CPU: {}", nodeIdx+1, max);
+                        perNodeValues.add(minPerNode);
+                        LOG.info("YB Node {} min CPU: {}", nodeIdx+1, minPerNode);
                     }
-                    avgMaxCPU = maxPerNode.stream().mapToDouble(Double::doubleValue).max().orElse(0.0);
+                    avgMaxCPU = perNodeValues.stream().mapToDouble(Double::doubleValue).max().orElse(0.0);
                     LOG.info("YB Node max CPU utilizations: {}", avgMaxCPU);
                 } else {
                     // RDS PostgreSQL monitoring - single instance
@@ -1696,16 +1696,16 @@ public class DBWorkload {
                     logLine.append(",");
                     // Get maxPerNode for YugabyteDB
                     int numNodes = allNodeReadings.get(0).size();
-                    List<Double> maxPerNode = new ArrayList<>();
+                    List<Double> perNodeValues = new ArrayList<>();
                     for (int nodeIdx = 0; nodeIdx < numNodes; nodeIdx++) {
-                        double max = Math.max(allNodeReadings.get(0).get(nodeIdx),
-                            Math.max(allNodeReadings.get(1).get(nodeIdx),
+                        double minPerNode = Math.min(allNodeReadings.get(0).get(nodeIdx),
+                            Math.min(allNodeReadings.get(1).get(nodeIdx),
                                 allNodeReadings.get(2).get(nodeIdx)));
-                        maxPerNode.add(max);
+                        perNodeValues.add(minPerNode);
                     }
-                    for (int i = 0; i < maxPerNode.size(); i++) {
-                        logLine.append(maxPerNode.get(i));
-                        if (i < maxPerNode.size() - 1) logLine.append(",");
+                    for (int i = 0; i < perNodeValues.size(); i++) {
+                        logLine.append(perNodeValues.get(i));
+                        if (i < perNodeValues.size() - 1) logLine.append(",");
                     }
                     logLine.append(",").append(avgMaxCPU).append("\n");
 
@@ -1713,7 +1713,7 @@ public class DBWorkload {
                     Map<String, Object> entry = new LinkedHashMap<>();
                     entry.put("threads", threads);
                     entry.put("readings", allNodeReadings);
-                    entry.put("max_per_node", maxPerNode);
+                    entry.put("min_per_node", perNodeValues);
                     entry.put("max_cpu", avgMaxCPU);
                     jsonResults.add(entry);
                 } else {
