@@ -21,17 +21,6 @@ package com.oltpbenchmark;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
-
-// AWS SDK imports for CloudWatch
-import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
-import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
-import software.amazon.awssdk.core.retry.RetryPolicy;
-import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.cloudwatch.CloudWatchClient;
-import software.amazon.awssdk.services.cloudwatch.model.*;
-import java.time.Duration;
-import java.time.Instant;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hubspot.jinjava.Jinjava;
@@ -42,6 +31,7 @@ import com.oltpbenchmark.api.TransactionType;
 import com.oltpbenchmark.api.TransactionTypes;
 import com.oltpbenchmark.api.Worker;
 import com.oltpbenchmark.types.DatabaseType;
+import com.oltpbenchmark.types.State;
 import com.oltpbenchmark.util.*;
 import org.apache.commons.cli.*;
 import org.apache.commons.collections4.map.ListOrderedMap;
@@ -57,6 +47,12 @@ import org.apache.commons.configuration2.tree.xpath.XPathExpressionEngine;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
+import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
+import software.amazon.awssdk.core.retry.RetryPolicy;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.cloudwatch.CloudWatchClient;
+import software.amazon.awssdk.services.cloudwatch.model.*;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -65,6 +61,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -724,7 +722,7 @@ public class DBWorkload {
                             LOG.info("Terminal for starting: {}", originalTerminals);
                             String workloadName = executeRules == null ? null : workloads.get(workCount - 1).getString("workload");
                             // Find optimal threads for this workload
-                            int optimalThreads = findOptimalThreadCount(benchList.get(0), minThreads, targetCPU, toleranceCPU, workloadName, workCount,samplingTime);   
+                            int optimalThreads = findOptimalThreadCount(benchList.get(0), minThreads, targetCPU, toleranceCPU, workloadName, workCount,samplingTime);
 
                             // Sleep for 2 mins so system can stabilize
                             try {
@@ -761,7 +759,7 @@ public class DBWorkload {
                             xmlConfig.setProperty("terminals", optimalThreads);
                             LOG.info("Using optimal thread count for workload {}: {} (original was: {})",
                                 val, optimalThreads, originalTerminals);
-                            
+
                         }
 
                         try {
@@ -1302,7 +1300,7 @@ public class DBWorkload {
         try {
             conn = bench.makeConnection();
             stmt = conn.createStatement();
-            rs = stmt.executeQuery("select uuid, metrics, status, error from yb_servers_metrics()");
+            rs = stmt.executeQuery("select uuid, metrics, status, error from yb_servers_metrics() ORDER BY uuid ;");
             while (rs.next()) {
                 String metricsJson = rs.getString("metrics");
                 try {
@@ -1483,7 +1481,7 @@ public class DBWorkload {
             String url = jdbcUrl.replace("jdbc:postgresql://", "");
             if (url.contains(".rds.amazonaws.com")) {
                 String hostname = url.split(":")[0];
-                
+
                 // Find the string between the last dot and ".rds.amazonaws.com"
                 int rdsIndex = hostname.indexOf(".rds.amazonaws.com");
                 if (rdsIndex > 0) {
@@ -1631,8 +1629,17 @@ public class DBWorkload {
                 });
                 workloadThread.start();
 
-                // Wait until 3/4th of total time
+                // Wait for measurement phase to actually start
+                WorkloadState workloadState = bench.getWorkloadConfiguration().getWorkloadState();
+
+                while(workloadState == null || workloadState.getBenchmarkState().getState() != State.MEASURE) {
+                    Thread.sleep(2000);
+                    workloadState = bench.getWorkloadConfiguration().getWorkloadState();
+                }                
+                LOG.info("Connection established. Sleeping for 3/4 of total time...");
                 Thread.sleep((long)(totalTime * 0.75 * 1000));
+                LOG.info("Starting CPU collection...");
+
 
                 if (isYugabyteDatabase) {
                     // YugabyteDB monitoring - multiple nodes
