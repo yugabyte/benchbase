@@ -21,17 +21,6 @@ package com.oltpbenchmark;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
-
-// AWS SDK imports for CloudWatch
-import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
-import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
-import software.amazon.awssdk.core.retry.RetryPolicy;
-import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.cloudwatch.CloudWatchClient;
-import software.amazon.awssdk.services.cloudwatch.model.*;
-import java.time.Duration;
-import java.time.Instant;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hubspot.jinjava.Jinjava;
@@ -42,6 +31,7 @@ import com.oltpbenchmark.api.TransactionType;
 import com.oltpbenchmark.api.TransactionTypes;
 import com.oltpbenchmark.api.Worker;
 import com.oltpbenchmark.types.DatabaseType;
+import com.oltpbenchmark.types.State;
 import com.oltpbenchmark.util.*;
 import org.apache.commons.cli.*;
 import org.apache.commons.collections4.map.ListOrderedMap;
@@ -57,6 +47,12 @@ import org.apache.commons.configuration2.tree.xpath.XPathExpressionEngine;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
+import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
+import software.amazon.awssdk.core.retry.RetryPolicy;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.cloudwatch.CloudWatchClient;
+import software.amazon.awssdk.services.cloudwatch.model.*;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -65,6 +61,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -724,7 +722,7 @@ public class DBWorkload {
                             LOG.info("Terminal for starting: {}", originalTerminals);
                             String workloadName = executeRules == null ? null : workloads.get(workCount - 1).getString("workload");
                             // Find optimal threads for this workload
-                            int optimalThreads = findOptimalThreadCount(benchList.get(0), minThreads, targetCPU, toleranceCPU, workloadName, workCount,samplingTime);   
+                            int optimalThreads = findOptimalThreadCount(benchList.get(0), minThreads, targetCPU, toleranceCPU, workloadName, workCount,samplingTime);
 
                             // Sleep for 2 mins so system can stabilize
                             try {
@@ -761,7 +759,7 @@ public class DBWorkload {
                             xmlConfig.setProperty("terminals", optimalThreads);
                             LOG.info("Using optimal thread count for workload {}: {} (original was: {})",
                                 val, optimalThreads, originalTerminals);
-                            
+
                         }
 
                         try {
@@ -1294,11 +1292,15 @@ public class DBWorkload {
     }
 
     // Returns a list of CPU utilizations (percent) for all nodes
-    private static List<Double> getYBCPUUtilizationAllNodes(BenchmarkModule bench) {
+    private static List<Double> getYBCPUUtilizationAllNodes(BenchmarkModule bench) throws SQLException {
         List<Double> cpuList = new ArrayList<>();
-        try (Connection conn = bench.makeConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery("select uuid, metrics, status, error from yb_servers_metrics()")) {
+        Connection conn = null;
+        Statement stmt = null;
+        ResultSet rs = null;
+        try {
+            conn = bench.makeConnection();
+            stmt = conn.createStatement();
+            rs = stmt.executeQuery("select uuid, metrics, status, error from yb_servers_metrics() ORDER BY uuid ;");
             while (rs.next()) {
                 String metricsJson = rs.getString("metrics");
                 try {
@@ -1319,6 +1321,16 @@ public class DBWorkload {
             }
         } catch (SQLException e) {
             LOG.error("Error getting YugabyteDB metrics", e);
+        } finally {
+            if (rs != null) {
+                rs.close();
+            }
+            if (stmt != null) {
+                stmt.close();
+            }
+            if (conn != null) {
+                conn.close();
+            }
         }
         return cpuList;
     }
@@ -1469,7 +1481,7 @@ public class DBWorkload {
             String url = jdbcUrl.replace("jdbc:postgresql://", "");
             if (url.contains(".rds.amazonaws.com")) {
                 String hostname = url.split(":")[0];
-                
+
                 // Find the string between the last dot and ".rds.amazonaws.com"
                 int rdsIndex = hostname.indexOf(".rds.amazonaws.com");
                 if (rdsIndex > 0) {
@@ -1509,6 +1521,7 @@ public class DBWorkload {
         } catch (Exception e) {
             LOG.error("Error creating log directory or file", e);
         }
+        
 
         int threads = minThreads;
         int max_iterations =  50;
@@ -1520,6 +1533,12 @@ public class DBWorkload {
         boolean isYugabyteDatabase = isYugabyteDB(bench);
         String rdsInstanceIdentifier = null;
         String awsRegion = null;
+
+        // Remove: Set start 3 for yugabyteDB
+        if (isYugabyteDatabase) {
+            threads = 3;
+        }
+        
 
         if (!isYugabyteDatabase) {
             // Extract RDS instance details from connection URL
@@ -1617,8 +1636,17 @@ public class DBWorkload {
                 });
                 workloadThread.start();
 
-                // Wait until 3/4th of total time
+                // Wait for measurement phase to actually start
+                WorkloadState workloadState = bench.getWorkloadConfiguration().getWorkloadState();
+
+                while(workloadState == null || workloadState.getBenchmarkState().getState() != State.MEASURE) {
+                    Thread.sleep(2000);
+                    workloadState = bench.getWorkloadConfiguration().getWorkloadState();
+                }                
+                LOG.info("Connection established. Sleeping for 3/4 of total time...");
                 Thread.sleep((long)(totalTime * 0.75 * 1000));
+                LOG.info("Starting CPU collection...");
+
 
                 if (isYugabyteDatabase) {
                     // YugabyteDB monitoring - multiple nodes
@@ -1631,15 +1659,15 @@ public class DBWorkload {
 
                     // For each node, find the max of its 3 readings
                     int numNodes = allNodeReadings.get(0).size();
-                    List<Double> maxPerNode = new ArrayList<>();
+                    List<Double> perNodeValues = new ArrayList<>();
                     for (int nodeIdx = 0; nodeIdx < numNodes; nodeIdx++) {
-                        double max = Math.max(allNodeReadings.get(0).get(nodeIdx),
-                            Math.max(allNodeReadings.get(1).get(nodeIdx),
+                        double minPerNode = Math.min(allNodeReadings.get(0).get(nodeIdx),
+                            Math.min(allNodeReadings.get(1).get(nodeIdx),
                                 allNodeReadings.get(2).get(nodeIdx)));
-                        maxPerNode.add(max);
-                        LOG.info("YB Node {} max CPU: {}", nodeIdx+1, max);
+                        perNodeValues.add(minPerNode);
+                        LOG.info("YB Node {} min CPU: {}", nodeIdx+1, minPerNode);
                     }
-                    avgMaxCPU = maxPerNode.stream().mapToDouble(Double::doubleValue).max().orElse(0.0);
+                    avgMaxCPU = perNodeValues.stream().mapToDouble(Double::doubleValue).max().orElse(0.0);
                     LOG.info("YB Node max CPU utilizations: {}", avgMaxCPU);
                 } else {
                     // RDS PostgreSQL monitoring - single instance
@@ -1682,16 +1710,16 @@ public class DBWorkload {
                     logLine.append(",");
                     // Get maxPerNode for YugabyteDB
                     int numNodes = allNodeReadings.get(0).size();
-                    List<Double> maxPerNode = new ArrayList<>();
+                    List<Double> perNodeValues = new ArrayList<>();
                     for (int nodeIdx = 0; nodeIdx < numNodes; nodeIdx++) {
-                        double max = Math.max(allNodeReadings.get(0).get(nodeIdx),
-                            Math.max(allNodeReadings.get(1).get(nodeIdx),
+                        double minPerNode = Math.min(allNodeReadings.get(0).get(nodeIdx),
+                            Math.min(allNodeReadings.get(1).get(nodeIdx),
                                 allNodeReadings.get(2).get(nodeIdx)));
-                        maxPerNode.add(max);
+                        perNodeValues.add(minPerNode);
                     }
-                    for (int i = 0; i < maxPerNode.size(); i++) {
-                        logLine.append(maxPerNode.get(i));
-                        if (i < maxPerNode.size() - 1) logLine.append(",");
+                    for (int i = 0; i < perNodeValues.size(); i++) {
+                        logLine.append(perNodeValues.get(i));
+                        if (i < perNodeValues.size() - 1) logLine.append(",");
                     }
                     logLine.append(",").append(avgMaxCPU).append("\n");
 
@@ -1699,7 +1727,7 @@ public class DBWorkload {
                     Map<String, Object> entry = new LinkedHashMap<>();
                     entry.put("threads", threads);
                     entry.put("readings", allNodeReadings);
-                    entry.put("max_per_node", maxPerNode);
+                    entry.put("min_per_node", perNodeValues);
                     entry.put("max_cpu", avgMaxCPU);
                     jsonResults.add(entry);
                 } else {
@@ -1728,9 +1756,21 @@ public class DBWorkload {
                     break;
                 }
                 else {
+                    int newThreads = 0;
                     if(avgMaxCPU<=targetCPU) optimalThreads=threads;
                     LOG.info("finding new threads for run....");
-                    int newThreads = (int) Math.ceil((threads * targetCPU) / avgMaxCPU);
+                    if(isYugabyteDatabase) {
+                        if(avgMaxCPU > targetCPU) {
+                            LOG.info("MaxCPU is greater than targetCPU. Breaking loop. Current threads: {}", threads);
+                            optimalThreads = Math.max(1, threads-3);
+                            break;
+                        }
+                        newThreads = threads + 3;
+                        LOG.info("Adding 3 threads to the current threads. New threads: {}", threads);
+                    }else{
+                        newThreads = (int) Math.ceil((threads * targetCPU) / avgMaxCPU);
+                       
+                    }
                     if (threadCpuMap.containsKey(newThreads)) {
                         LOG.info("newThreads={} already tested. Breaking loop to avoid duplicate testing.", newThreads);
                         optimalThreads = newThreads;
