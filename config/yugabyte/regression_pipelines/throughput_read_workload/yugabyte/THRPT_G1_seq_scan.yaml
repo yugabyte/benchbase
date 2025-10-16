@@ -63,7 +63,7 @@ microbenchmark:
                     params: [1, 100000]
 
         executeRules:
-            - workload: THRPT_G1_seq_scan_between
+            - workload: THRPT_G1_seq_scan_BETWEEN
               run:
                   - name: thrpt_wrkld_1
                     weight: 100
