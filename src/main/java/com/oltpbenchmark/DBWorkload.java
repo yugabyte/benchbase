@@ -1521,6 +1521,7 @@ public class DBWorkload {
         } catch (Exception e) {
             LOG.error("Error creating log directory or file", e);
         }
+        
 
         int threads = minThreads;
         int max_iterations =  50;
@@ -1532,6 +1533,12 @@ public class DBWorkload {
         boolean isYugabyteDatabase = isYugabyteDB(bench);
         String rdsInstanceIdentifier = null;
         String awsRegion = null;
+
+        // Remove: Set start 3 for yugabyteDB
+        if (isYugabyteDatabase) {
+            threads = 3;
+        }
+        
 
         if (!isYugabyteDatabase) {
             // Extract RDS instance details from connection URL
@@ -1749,9 +1756,21 @@ public class DBWorkload {
                     break;
                 }
                 else {
+                    int newThreads = 0;
                     if(avgMaxCPU<=targetCPU) optimalThreads=threads;
                     LOG.info("finding new threads for run....");
-                    int newThreads = (int) Math.ceil((threads * targetCPU) / avgMaxCPU);
+                    if(isYugabyteDatabase) {
+                        if(avgMaxCPU > targetCPU) {
+                            LOG.info("MaxCPU is greater than targetCPU. Breaking loop. Current threads: {}", threads);
+                            optimalThreads = Math.max(1, threads-3);
+                            break;
+                        }
+                        newThreads = threads + 3;
+                        LOG.info("Adding 3 threads to the current threads. New threads: {}", threads);
+                    }else{
+                        newThreads = (int) Math.ceil((threads * targetCPU) / avgMaxCPU);
+                       
+                    }
                     if (threadCpuMap.containsKey(newThreads)) {
                         LOG.info("newThreads={} already tested. Breaking loop to avoid duplicate testing.", newThreads);
                         optimalThreads = newThreads;
