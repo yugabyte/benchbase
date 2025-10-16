@@ -22,10 +22,9 @@ microbenchmark:
         setAutoCommit: true
         create:
             - DROP TABLE IF EXISTS THRPT_G1_range_table_1;
-            - CREATE TABLE THRPT_G1_range_table_1(id INT, region_id INT, category_id INT, subcategory_id INT, date_created DATE, status_code INT, priority_level INT, amount INT, quantity INT, PRIMARY KEY(id ASC));
-            - CREATE INDEX idx_covering_region_cat_amount ON THRPT_G1_range_table_1 (region_id, category_id, id) INCLUDE (amount, quantity, status_code);
-            - CREATE INDEX idx_partial_status ON THRPT_G1_range_table_1 (region_id, category_id, date_created, id) WHERE status_code IN (1, 2, 3) and priority_level IN (1, 2, 3);
-            - CREATE index idx_covering_region_cat_amount_asc on thrpt_g1_range_table_1 (region_id ASC, category_id ASC, id ASC) INCLUDE (amount, quantity, status_code);
+            - CREATE TABLE THRPT_G1_range_table_1(id INT, region_id INT, category_id INT, subcategory_id INT, date_created DATE, status_code INT, priority_level INT, amount INT, quantity INT, PRIMARY KEY(id ASC)) SPLIT AT VALUES ((333333), (666666));
+            - CREATE INDEX idx_partial_status ON THRPT_G1_range_table_1 (region_id ASC, category_id ASC, date_created ASC, id ASC)   SPLIT AT VALUES ((33), (66)) WHERE status_code IN (1, 2, 3) and priority_level IN (1, 2, 3);
+            - CREATE index idx_covering_region_cat_amount_asc on thrpt_g1_range_table_1 (region_id ASC, category_id ASC, id ASC) INCLUDE (amount, quantity, status_code)  SPLIT AT VALUES ((33), (66));
 
         cleanup:
             - DROP TABLE IF EXISTS THRPT_G1_range_table_1;
