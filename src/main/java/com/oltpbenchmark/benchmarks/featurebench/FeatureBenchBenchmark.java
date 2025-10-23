@@ -27,6 +27,10 @@ import com.oltpbenchmark.benchmarks.featurebench.procedures.FeatureBench;
 import com.oltpbenchmark.benchmarks.featurebench.workerhelpers.ExecuteRule;
 import com.oltpbenchmark.benchmarks.featurebench.workerhelpers.Query;
 import com.oltpbenchmark.util.TimeUtil;
+import net.sf.jsqlparser.statement.delete.Delete;
+import net.sf.jsqlparser.statement.insert.Insert;
+import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.update.Update;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.slf4j.Logger;
@@ -75,7 +79,7 @@ public class FeatureBenchBenchmark extends BenchmarkModule {
     protected Loader<FeatureBenchBenchmark> makeLoaderImpl() {
         HierarchicalConfiguration<ImmutableNode> conf = workConf.getXmlConfig().configurationAt("microbenchmark");
         FeatureBenchLoader loader = new FeatureBenchLoader(this);
-        loader.workloadClass = conf.getString("class");
+        loader.workloadClass = conf.getString("class", conf.getString("className"));
         loader.config = conf.configurationAt("properties");
         return loader;
     }
@@ -99,24 +103,27 @@ public class FeatureBenchBenchmark extends BenchmarkModule {
             List<Query> queries = new ArrayList<>();
             for (HierarchicalConfiguration<ImmutableNode> confquery : confExecuteRule.configurationsAt("queries")) {
                 Query query = new Query();
+                if (confquery.containsKey("pattern_count")) {
+                    query.setPattern_count(confquery.getInt("pattern_count"));
+                }
                 String querystmt = confquery.getString("query");
                 query.setQuery(querystmt);
                 if (confquery.containsKey("count")) {
                     query.setCount(confquery.getInt("count"));
                 }
 
+                if (confquery.containsKey("explain-plan-rc-validation")) {
+                    query.setExplainPlanRCValidateCount(confquery.getInt("explain-plan-rc-validation"));
+                }
+
                 int query_hint_index = querystmt.indexOf("*/");
-                String startWord = querystmt.substring(0, querystmt.indexOf(' ')).trim();
                 String query_type = "";
-                if (startWord.equalsIgnoreCase("with")) {
-                    int with_index = querystmt.indexOf("(");
-                    query_type = querystmt.substring(with_index + 1, querystmt.indexOf(' ', with_index + 4)).trim();
-                } else if (query_hint_index != -1) {
+                 query_type = getQueryTypeforStatement(querystmt);
+                if (query_hint_index != -1) {
                     query_type = querystmt.substring(query_hint_index + 2, querystmt.indexOf(' ', query_hint_index + 4)).trim();
 
-                } else {
-                    query_type = startWord;
                 }
+
                 if (query_type.equalsIgnoreCase("select")) {
                     query.setSelectQuery(true);
                 }
@@ -133,6 +140,28 @@ public class FeatureBenchBenchmark extends BenchmarkModule {
                                 obj.setAlias(bindingsList.getString("alias"));
                             }
                             baseutils.add(obj);
+                        }
+                    } else if (bindingsList.containsKey("split_min_max_for_count")) {
+                        int count = bindingsList.getInt("split_min_max_for_count");
+                        if (bindingsList.getList("params").size() == 2) {
+                            List<Object> bindings = bindingsList.getList("params");
+                            int min = (int) bindings.get(0);
+                            int max = (int) bindings.get(1);
+                            int range = max - min + 1;
+                            int splitSize = range / count;
+                            int remainder = range % count;
+
+                            int currentMin = min;
+                            for (int i = 0; i < count; i++) {
+                                int currentMax = currentMin + splitSize - 1;
+                                if (remainder > 0) {
+                                    currentMax++;
+                                    remainder--;
+                                }
+                                UtilToMethod obj = new UtilToMethod(bindingsList.getString("util"), List.of(currentMin, currentMax), workerId, totalWorker);
+                                baseutils.add(obj);
+                                currentMin = currentMax + 1;
+                            }
                         }
                     } else {
                         UtilToMethod obj = new UtilToMethod(bindingsList.getString("util"), bindingsList.getList("params"), workerId, totalWorker);
@@ -151,5 +180,28 @@ public class FeatureBenchBenchmark extends BenchmarkModule {
         }
         return executeRules;
     }
+
+    private static String getQueryTypeforStatement(String sql) {
+        try {
+            // Parse the SQL using JSQLParser
+            net.sf.jsqlparser.statement.Statement statement = net.sf.jsqlparser.parser.CCJSqlParserUtil.parse(sql);
+
+            if (statement instanceof Select) {
+                return "SELECT";
+            } else if (statement instanceof Insert) {
+                return "INSERT";
+            } else if (statement instanceof Update) {
+                return "UPDATE";
+            } else if (statement instanceof Delete) {
+                return "DELETE";
+            } else {
+                return "";
+            }
+
+        } catch (Exception e) {
+           return "";
+        }
+    }
+
 
 }

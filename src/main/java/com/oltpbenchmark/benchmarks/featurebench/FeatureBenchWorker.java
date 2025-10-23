@@ -24,14 +24,15 @@ import com.oltpbenchmark.benchmarks.featurebench.helpers.EvaluateAlias;
 import com.oltpbenchmark.benchmarks.featurebench.helpers.UtilToMethod;
 import com.oltpbenchmark.benchmarks.featurebench.workerhelpers.ExecuteRule;
 import com.oltpbenchmark.benchmarks.featurebench.workerhelpers.Query;
+import com.oltpbenchmark.types.DatabaseType;
 import com.oltpbenchmark.types.State;
 import com.oltpbenchmark.types.TransactionStatus;
 import com.oltpbenchmark.util.FileUtil;
 import com.yugabyte.util.PSQLException;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.tree.ImmutableNode;
-import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.json.JSONObject;
+import org.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,6 +43,8 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+
 
 
 /**
@@ -58,7 +61,9 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
     private HashMap<String, PreparedStatement> preparedStatementsPerQuery;
     public static Map<String,JSONObject> queryToExplainMap = new HashMap<>();
 
-    public AtomicBoolean isPGStatStatementCollected = new AtomicBoolean(false);
+    static AtomicBoolean isPGStatStatementCollected = new AtomicBoolean(false);
+
+    static AtomicBoolean isPGStatResetCalled = new AtomicBoolean(false);
 
     static AtomicBoolean isInitializeDone = new AtomicBoolean(false);
 
@@ -75,6 +80,10 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
         this.executeRules = executeRules;
         this.config = workerConfig;
         this.workloadName = workloadName;
+        isInitializeDone.set(false);
+        isPGStatResetCalled.set(false);
+        isPGStatStatementCollected.set(false);
+        isCleanUpDone.set(false);
         try {
             ybm = (YBMicroBenchmark) Class.forName(workloadClass)
                 .getDeclaredConstructor(HierarchicalConfiguration.class)
@@ -98,14 +107,35 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             throw new RuntimeException(e);
         }
 
+
+        if (this.getWorkloadConfiguration().getIsOptimalThreadsWorkload()) {
+            return;
+        }
+
         if (isInitializeDone.get()) return;
         synchronized (FeatureBenchWorker.class) {
             if (isInitializeDone.get()) return;
-            if (this.getWorkloadConfiguration().getXmlConfig().getBoolean("collect_pg_stat_statements", false)) {
+            if (!isPGStatResetCalled.get() &&
+                this.getWorkloadConfiguration().getXmlConfig().getBoolean("collect_pg_stat_statements", false)
+            ) {
                 LOG.info("Resetting pg_stat_statements for workload : " + this.workloadName);
                 try {
                     Statement stmt = conn.createStatement();
                     stmt.executeQuery("SELECT pg_stat_statements_reset();");
+                    if (!conn.getAutoCommit())
+                        conn.commit();
+                    isPGStatResetCalled.set(true);
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+                
+            }
+            // For Postgres, we need to reset pg_stat_user_indexes
+            if (this.getWorkloadConfiguration().getDatabaseType().equals(DatabaseType.POSTGRES)) {
+                LOG.info("Resetting pg_stat_user_indexes for workload : " + this.workloadName);
+                try {
+                    Statement stmt = conn.createStatement();
+                    stmt.executeQuery("SELECT pg_stat_reset();");
                     if (!conn.getAutoCommit())
                         conn.commit();
                 } catch (SQLException e) {
@@ -130,31 +160,30 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
 
             String explainSelect = "explain (analyze,verbose,costs,buffers) ";
             String explainUpdate = "explain (analyze) ";
+            String explainOthers = "explain ";
 
+            if (this.getWorkloadConfiguration().getXmlConfig().getBoolean("force_capture_explain_analyze", false)) {
+                explainOthers = "explain (analyze,verbose,costs,buffers) ";
+            }
             if (this.getWorkloadConfiguration().getXmlConfig().containsKey("use_dist_in_explain")
                 && this.getWorkloadConfiguration().getXmlConfig().getBoolean("use_dist_in_explain")) {
                 if (this.getWorkloadConfiguration().getXmlConfig().getString("type").equalsIgnoreCase("YUGABYTE")) {
-                    explainSelect = "explain (analyze,dist,verbose,costs,buffers) ";
+                    explainSelect = explainSelect.replace(") ", ",debug,dist) ");
+                    explainUpdate = explainUpdate.replace(") ", ",debug,dist) ");
+                    explainOthers = explainOthers.replace(") ", ",debug,dist) ");
                 } else {
-                    throw new RuntimeException("dist option for explain not supported by this database type, Please remove key!");
+                    throw new RuntimeException("dist and debug option for explain not supported by this database type, Please remove key!");
                 }
             }
 
+            Map<String, PreparedStatement> explainDDLMap = new LinkedHashMap<>();
 
-            List<String> allQueries = new ArrayList<>();
-            for (ExecuteRule er : executeRules) {
-                for (int i = 0; i < er.getQueries().size(); i++) {
-                    allQueries.add(er.getQueries().get(i).getQuery());
-                }
-            }
-            List<PreparedStatement> explainDDLs = new ArrayList<>();
-            for (ExecuteRule er : executeRules) {
-                for (Query query : er.getQueries()) {
-                    if (query.isSelectQuery() || query.isUpdateQuery()) {
+            if (!this.getWorkloadConfiguration().getXmlConfig().getBoolean("disable_explain", false)) {
+                for (ExecuteRule er : executeRules) {
+                    for (Query query : er.getQueries()) {
                         String querystmt = query.getQuery();
                         try {
-
-                            PreparedStatement stmt = conn.prepareStatement((query.isSelectQuery() ? explainSelect : explainUpdate) + querystmt);
+                            PreparedStatement stmt = conn.prepareStatement((query.isSelectQuery() ? explainSelect : query.isUpdateQuery() ? explainUpdate : explainOthers) + querystmt);
                             List<UtilToMethod> baseUtils = query.getBaseUtils();
                             HashMap<String,Object> aliasValue = new HashMap<>();
                             HashMap<Integer,Object> applyAlias = new HashMap<>();
@@ -182,13 +211,13 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                         } catch (SQLException | ScriptException e) {
                             throw new RuntimeException(e);
                         }
-                    }
 
+                    }
                 }
             }
             try {
-                if (explainDDLs.size() > 0)
-                    runExplainAnalyse(explainDDLs, allQueries);
+                if (!explainDDLMap.isEmpty())
+                    runExplainAnalyse(explainDDLMap);
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -198,12 +227,12 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
     }
 
 
-    public void runExplainAnalyse(List<PreparedStatement> explainSQLS, List<String> allQueries) throws SQLException {
+    public void runExplainAnalyse(Map<String, PreparedStatement> explainDDLMap) throws SQLException {
         LOG.info("Running explain for select/update queries before execute phase for workload : " + this.workloadName);
-        int count = 0;
-        for (PreparedStatement ddl : explainSQLS) {
+        for (Map.Entry<String, PreparedStatement> entry : explainDDLMap.entrySet()) {
+            String query = entry.getKey();
+            PreparedStatement ddl = entry.getValue();
             JSONObject jsonObject = new JSONObject();
-            count++;
             int countResultSetGen = 0;
             boolean distOptionPresent = true;
             while (countResultSetGen < 3) {
@@ -214,6 +243,11 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                 } catch (PSQLException e) {
                     if (distOptionPresent && e.getMessage().contains("unrecognized EXPLAIN option \"dist\"")) {
                         String modifiedQuery = ddl.toString().replace("dist,", "");
+                        ddl = conn.prepareStatement(modifiedQuery);
+                        distOptionPresent = false;
+                        continue;
+                    } else if (distOptionPresent && e.getMessage().contains("unrecognized EXPLAIN option \"debug\"")) {
+                        String modifiedQuery = ddl.toString().replace("debug", "");
                         ddl = conn.prepareStatement(modifiedQuery);
                         distOptionPresent = false;
                         continue;
@@ -244,9 +278,14 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                 jsonObject.put("Execution Time(ms)", matcher.group(2));
                 jsonObject.put("Peak Memory Usage(kB)", matcher.group(3));
             }
+            Pattern rowsPattern = Pattern.compile("\\(actual[^)]*rows=(\\d+)\\s+loops=");
+            Matcher rowsMatcher = rowsPattern.matcher(data.toString());
+            if (rowsMatcher.find()) {
+                jsonObject.put("ExplainPlanRows", rowsMatcher.group(1));
+            }
 
             jsonObject.put("ClientSideExplainTime(ms)", explainEnd - explainStart);
-            queryToExplainMap.put(allQueries.get(count-1), jsonObject);
+            queryToExplainMap.put(query, jsonObject);
         }
     }
 
@@ -276,7 +315,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                 for (int i = 0; i < count; i++) {
                     for (int j = 0; j < baseUtils.size(); j++)
                         stmt.setObject(j + 1, baseUtils.get(j).get());
-                    if (query.isSelectQuery()) {
+                    if (query.isSelectQuery() || stmt.toString().toUpperCase().contains(" RETURNING ")) {
                         ResultSet rs = stmt.executeQuery();
                         int countSet = 0;
                         while (rs.next()) countSet++;
@@ -302,65 +341,73 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
     @Override
     public void tearDown() {
         synchronized (FeatureBenchWorker.class) {
-            if (!this.configuration.getNewConnectionPerTxn() && this.configuration.getWorkloadState().getGlobalState() == State.EXIT && !isPGStatStatementCollected.get()) {
+            boolean shouldCollect = this.getWorkloadConfiguration().getXmlConfig().getBoolean("collect_pg_stat_statements", false);
+            if ( !this.getWorkloadConfiguration().getIsOptimalThreadsWorkload() && !this.configuration.getNewConnectionPerTxn() && (shouldCollect && !isPGStatStatementCollected.get()) && this.conn != null) {
 
-                List<String> queryStrings = new ArrayList<>();
+                Map<String, Integer> queryStringsAndRC = new LinkedHashMap<>();
                 for (ExecuteRule er : executeRules) {
                     for (int i = 0; i < er.getQueries().size(); i++) {
-                        queryStrings.add(er.getQueries().get(i).getQuery());
+                        Query q = er.getQueries().get(i);
+                        queryStringsAndRC.put(q.getQuery(), q.getExplainPlanRCValidateCount());
                     }
                 }
 
                 List<JSONObject> jsonResultsList = new ArrayList<>();
                 JSONObject pgStatOutputs = null;
                 JSONObject pgPreparedStatementOutputs = null;
-                if (this.getWorkloadConfiguration().getXmlConfig().getBoolean("collect_pg_stat_statements", false)) {
-                    try {
-                        LOG.info("Collecting pg_stat_statements for workload : " + this.workloadName);
-                        pgStatOutputs = callPGStats();
-                        /*TODO: remove collecting prepared_statements*/
-                        pgPreparedStatementOutputs = collectPgPreparedStatements();
-                    } catch (SQLException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-                // reset pg_stat_statements
+                JSONArray pgStatUserIndexesOutputs = null;
                 try {
-                    if (this.getWorkloadConfiguration().getXmlConfig().getBoolean("collect_pg_stat_statements", false)) {
-                        Statement stmt = null;
-                        stmt = conn.createStatement();
-                        stmt.executeQuery("SELECT pg_stat_statements_reset();");
-                    }
-                    if (!conn.getAutoCommit())
-                        conn.commit();
+                    LOG.info("Collecting pg_stat_statements for workload : " + this.workloadName);
+                    pgStatOutputs = callPGStats();
+                    /*TODO: remove collecting prepared_statements*/
+                    pgPreparedStatementOutputs = collectPgPreparedStatements();
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }
 
-                for (String queryString : queryStrings) {
+                // For Postgres, we need to collect pg_stat_user_indexes
+                if (this.getWorkloadConfiguration().getDatabaseType().equals(DatabaseType.POSTGRES)) {
+                    LOG.info("Collecting pg_stat_user_indexes for workload : " + this.workloadName);
+                    try {
+                        pgStatUserIndexesOutputs = callPGStatUserIndexes();
+                    } catch (SQLException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+
+                for (Map.Entry<String, Integer> entry : queryStringsAndRC.entrySet()) {
                     JSONObject inner = new JSONObject();
-                    inner.put("query", queryString);
-                    inner.put("pg_stat_statements", pgStatOutputs == null ? new JSONObject() : findQueryInPgStat(pgStatOutputs, queryString));
-                    inner.put("explain", queryToExplainMap.getOrDefault(queryString, new JSONObject()));
+                    inner.put("query", entry.getKey());
+                    inner.put("pg_stat_statements", pgStatOutputs == null ? new JSONObject() : findQueryInPgStatUsingCosine(pgStatOutputs, entry.getKey()));
+
+                    if (entry.getValue() != -1)
+                        inner.put("explainPlanRcValidationSuccess", Integer.parseInt((String) queryToExplainMap.getOrDefault(entry.getKey(), new JSONObject()).get("ExplainPlanRows")) == entry.getValue());
+                    inner.put("explain", queryToExplainMap.getOrDefault(entry.getKey(), new JSONObject()));
                     /*TODO: remove prepared_statements*/
                     inner.put("prepared_statements", pgPreparedStatementOutputs == null ? new JSONObject() : pgPreparedStatementOutputs);
                     jsonResultsList.add(inner);
                 }
+                if (pgStatUserIndexesOutputs != null) {
+                    jsonResultsList.add(new JSONObject().put("pg_stat_user_indexes", pgStatUserIndexesOutputs));
+                }
                 this.featurebenchAdditionalResults.setJsonResultsList(jsonResultsList);
                 isPGStatStatementCollected.set(true);
             }
-        }
-        synchronized (FeatureBenchWorker.class) {
-            if (!this.configuration.getNewConnectionPerTxn() && this.conn != null && ybm != null) {
+
+            if (((config.containsKey("execute") && config.getBoolean("execute")) || (executeRules == null || executeRules.isEmpty()) )&& !isCleanUpDone.get()) {
                 try {
-                    if ((config.containsKey("execute") && config.getBoolean("execute")) || (executeRules == null || executeRules.size() == 0)) {
-                        if (this.configuration.getWorkloadState().getGlobalState() == State.EXIT && !isCleanUpDone.get()) {
-                            ybm.cleanUp(conn);
-                            LOG.info("\n=================Cleanup Phase taking from User=========\n");
-                            conn.close();
-                            isCleanUpDone.set(true);
-                        }
-                    }
+                    ybm.cleanUp(conn);
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+                LOG.info("\n=================Cleanup Phase taking from User=========\n");
+                    isCleanUpDone.set(true);
+
+            }
+
+            if (!this.configuration.getNewConnectionPerTxn() && this.conn != null) {
+                try {
+                    conn.close();
                 } catch (SQLException e) {
                     LOG.error("Connection couldn't be closed.", e);
                 }
@@ -388,21 +435,80 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
         return pgStatOutputs;
     }
 
-    private JSONObject findQueryInPgStat(JSONObject pgStatOutputs, String query) {
-        int minDistance = Integer.MAX_VALUE;
-        String keymatters = null;
+    private List<String> tokenizeQuery(String query) {
+        // Remove placeholders
+        String cleaned = query.replaceAll("\\?", "");
+
+        // Remove huge IN (...) clauses completely
+        cleaned = cleaned.replaceAll("(?i)in\\s*\\(([^)]*)\\)", "in()");
+
+        // Normalize whitespace and lowercase
+        cleaned = cleaned.replaceAll("\\s+", " ").trim().toLowerCase();
+
+        // Tokenize by word characters
+        return Arrays.asList(cleaned.split("\\W+"));
+    }
+
+    private double cosineSimilarity(List<String> tokens1, List<String> tokens2) {
+        Map<String, Integer> freq1 = getFrequencyMap(tokens1);
+        Map<String, Integer> freq2 = getFrequencyMap(tokens2);
+
+        Set<String> allTokens = new HashSet<>();
+        allTokens.addAll(freq1.keySet());
+        allTokens.addAll(freq2.keySet());
+
+        double dotProduct = 0.0;
+        double norm1 = 0.0;
+        double norm2 = 0.0;
+
+        for (String token : allTokens) {
+            int v1 = freq1.getOrDefault(token, 0);
+            int v2 = freq2.getOrDefault(token, 0);
+
+            dotProduct += v1 * v2;
+            norm1 += v1 * v1;
+            norm2 += v2 * v2;
+        }
+
+        return (norm1 == 0 || norm2 == 0) ? 0.0 : dotProduct / (Math.sqrt(norm1) * Math.sqrt(norm2));
+    }
+
+    private Map<String, Integer> getFrequencyMap(List<String> tokens) {
+        Map<String, Integer> freqMap = new HashMap<>();
+        for (String token : tokens) {
+            freqMap.put(token, freqMap.getOrDefault(token, 0) + 1);
+        }
+        return freqMap;
+    }
+
+    private JSONObject findQueryInPgStatUsingCosine(JSONObject pgStatOutputs, String inputQuery) {
+        List<String> inputTokens = tokenizeQuery(inputQuery);
+
+        double maxSimilarity = -1.0;
+        int minLengthDiff = Integer.MAX_VALUE;
+        String matchedKey = null;
+
         for (String key : pgStatOutputs.keySet()) {
             JSONObject value = (JSONObject) pgStatOutputs.get(key);
-            String onlyquery = value.getString("query");
-            if (minDistance > similarity(onlyquery, query)) {
-                minDistance = similarity(onlyquery, query);
-                keymatters = key;
+            String pgQuery = value.getString("query").trim();
+
+            // ❌ Skip explain queries
+            if (pgQuery.toLowerCase().startsWith("explain")) {
+                continue;
+            }
+
+            List<String> pgTokens = tokenizeQuery(pgQuery);
+            double similarity = cosineSimilarity(inputTokens, pgTokens);
+            int lengthDiff = Math.abs(inputTokens.size() - pgTokens.size());
+
+            if (similarity > maxSimilarity || (similarity == maxSimilarity && lengthDiff < minLengthDiff)) {
+                maxSimilarity = similarity;
+                minLengthDiff = lengthDiff;
+                matchedKey = key;
             }
         }
-        return (JSONObject) pgStatOutputs.get(keymatters);
-    }
-    int similarity(String pg_query, String actual_query) {
-        return new LevenshteinDistance().apply(pg_query, actual_query);
+
+        return matchedKey != null ? (JSONObject) pgStatOutputs.get(matchedKey) : null;
     }
 
     /*TODO: remove collectPgPreparedStatements*/
@@ -424,5 +530,26 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             resultSetCount++;
         }
         return pgPreparedStatementOutputs;
+    }
+
+    private JSONArray callPGStatUserIndexes() throws SQLException{
+        String pgStatUserIndexes = "SELECT relname AS table_name, seq_scan, idx_scan, seq_tup_read, idx_tup_fetch FROM pg_stat_user_tables;";
+        Statement stmt = this.conn.createStatement();
+        ResultSet resultSet = stmt.executeQuery(pgStatUserIndexes);
+        if(!conn.getAutoCommit())
+            conn.commit();
+        ResultSetMetaData rsmd = resultSet.getMetaData();
+        JSONArray pgStatUserIndexesOutputs = new JSONArray();
+        while (resultSet.next()) {
+            JSONObject pgStatUserIndexesOutputPerRecord = new JSONObject();
+            for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+                pgStatUserIndexesOutputPerRecord.put(
+                    rsmd.getColumnName(i),
+                    resultSet.getString(i)
+                );
+            }
+            pgStatUserIndexesOutputs.put(pgStatUserIndexesOutputPerRecord);
+        }
+        return pgStatUserIndexesOutputs;
     }
 }

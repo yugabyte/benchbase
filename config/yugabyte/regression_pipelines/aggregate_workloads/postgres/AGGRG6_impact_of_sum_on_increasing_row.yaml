@@ -14,6 +14,7 @@ isolation: TRANSACTION_REPEATABLE_READ
 loaderthreads: 1
 terminals: 1
 collect_pg_stat_statements: true
+yaml_version: v1.0
 works:
     work:
         time_secs: 120
@@ -155,6 +156,7 @@ microbenchmark:
                     queries:
                         - query: select sum(col_bigint_id_1) from pkeyBigint1M_1
             - workload: AGGRG6_sum_bigint_10M_table_rows
+              customTags: customer=2
               run:
                   - name: pg_distinct_bigint_10M_table_rows
                     weight: 100

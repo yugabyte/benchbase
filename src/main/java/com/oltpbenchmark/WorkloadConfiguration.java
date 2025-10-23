@@ -49,6 +49,10 @@ public class WorkloadConfiguration {
     private int isolationMode = Connection.TRANSACTION_SERIALIZABLE;
     private String dataDir = null;
     private String ddlPath = null;
+    private String configFilePath = null;
+    
+    // Variable to store is an test to find optimal threads
+    private boolean isOptimalThreadsWorkload = false;
 
     /**
      * If true, establish a new connection for each transaction, otherwise use one persistent connection per client
@@ -122,6 +126,22 @@ public class WorkloadConfiguration {
 
     public void setMaxRetries(int maxRetries) {
         this.maxRetries = maxRetries;
+    }
+
+    public String getConfigFilePath() {
+        return configFilePath;
+    }
+
+    public void setConfigFilePath(String configFilePath) {
+        this.configFilePath = configFilePath;
+    }
+
+    public boolean getIsOptimalThreadsWorkload() {
+        return isOptimalThreadsWorkload;
+    }
+
+    public void setIsOptimalThreadsWorkload(boolean isOptimalThreadsWorkload) {
+        this.isOptimalThreadsWorkload = isOptimalThreadsWorkload;
     }
 
     /**

@@ -19,10 +19,21 @@
 package com.oltpbenchmark;
 
 
-
 import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
+// AWS SDK imports for CloudWatch
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
+import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
+import software.amazon.awssdk.core.retry.RetryPolicy;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.cloudwatch.CloudWatchClient;
+import software.amazon.awssdk.services.cloudwatch.model.*;
+import java.time.Duration;
+import java.time.Instant;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hubspot.jinjava.Jinjava;
 import com.hubspot.jinjava.JinjavaConfig;
 import com.hubspot.jinjava.interpret.RenderResult;
@@ -48,7 +59,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
@@ -68,6 +82,16 @@ public class DBWorkload {
      * @param args
      * @throws Exception
      */
+    private static boolean isOptionTrueForOptimalThreads(XMLConfiguration config, String key) {
+        if (!config.containsKey(key)) return false;
+        Object val = config.getProperty(key);
+        if (val instanceof Boolean) {
+            return (Boolean) val;
+        } else if (val instanceof String) {
+            return ((String) val).equalsIgnoreCase("true");
+        }
+        return false;
+    }
     public static void main(String[] args) throws Exception {
 
         // create the command line parser
@@ -120,7 +144,7 @@ public class DBWorkload {
         int lastTxnId = 0;
         for (String plugin : targetList) {
             String pluginTest = "[@bench='" + plugin + "']";
-            if (plugin.equalsIgnoreCase("featurebench"))
+            if (plugin.equalsIgnoreCase("featurebench") || plugin.equalsIgnoreCase("perf-dataloader"))
             {
                 String[] params=null;
                 if (argsLine.hasOption("params")) {
@@ -140,6 +164,7 @@ public class DBWorkload {
             WorkloadConfiguration wrkld = new WorkloadConfiguration();
             wrkld.setBenchmarkName(plugin);
             wrkld.setXmlConfig(xmlConfig);
+            wrkld.setConfigFilePath(configFile);
 
             // Pull in database configuration
             wrkld.setDatabaseType(DatabaseType.get(xmlConfig.getString("type")));
@@ -218,6 +243,7 @@ public class DBWorkload {
             List<HierarchicalConfiguration<ImmutableNode>> workloads =
                 xmlConfig.configurationsAt("microbenchmark/properties/executeRules");
 
+            // optimalThreads check will be done later in execute phase only
             int totalWorkloadCount =
                 plugin.equalsIgnoreCase("featurebench") ?
                     (workloads == null ? 1 : (workloads.size() == 0 ? 1 : workloads.size())) : 1;
@@ -410,9 +436,13 @@ public class DBWorkload {
 
                     if (targetList.length > 1 || work.containsKey("weights[@bench]")) {
                         weight_strings = Arrays.asList(work.getString("weights" + pluginTest).split("\\s*,\\s*"));
-                    } else if (plugin.equalsIgnoreCase("featurebench")) {
+                    } else if (plugin.equalsIgnoreCase("featurebench") || plugin.equalsIgnoreCase("perf-dataloader")) {
                         weight_strings = List.of();
                         time = work.getInt("/time_secs", 0);
+                        // get workload specific time in secs
+                        if(workloads != null && workloads.size() >= workCount && workloads.get(workCount-1).containsKey("time_secs")){
+                            time = workloads.get(workCount-1).getInt("time_secs");
+                        }
                     } else {
                         weight_strings = Arrays.asList(work.getString("weights[not(@bench)]").split("\\s*,\\s*"));
                     }
@@ -654,16 +684,98 @@ public class DBWorkload {
                 }
 
 
+                // Check optimalThreads constraint for execute phase
+                if (isBooleanOptionSet(argsLine, "execute") && isOptionTrueForOptimalThreads(xmlConfig, "optimalThreads")) {
+                    // Determine the number of workloads to be executed
+                    int workloadsToExecute = 0;
+                    if (argsLine.hasOption("workloads") && !argsLine.getOptionValue("workloads").isEmpty()) {
+                        // If --workloads option is specified, count the workloads in that option
+                        List<String> runWorkloads = List.of(argsLine.getOptionValue("workloads").trim().split("\\s*,\\s*"));
+                        workloadsToExecute = runWorkloads.size();
+                    } else {
+                        // If no --workloads option, all workloads from XML configuration will be executed
+                        // For optimalThreads, we expect only one workload in the YAML file
+                        workloadsToExecute = workloads == null ? 1 : (workloads.size() == 0 ? 1 : workloads.size());
+                    }
+
+                    if (workloadsToExecute > 1) {
+                        LOG.error("Error: optimalThreads can only be used when there is exactly one workload. Found {} workloads to execute.", workloadsToExecute);
+                        System.exit(1);
+                    }
+                }
+
                 if (isBooleanOptionSet(argsLine, "execute") && (argsLine.hasOption("workloads")) && executeRules != null) {
                     String val = workloads.get(workCount - 1).getString("workload");
                     if (uniqueRunWorkloads.contains(val) || uniqueRunWorkloads.contains("DEFAULT_WORKLOAD")) {
                         LOG.info("Starting Workload " + (workloads.get(workCount - 1).containsKey("workload") ? workloads.get(workCount - 1).getString("workload") : workCount));
+                        // Add optimal thread finding here for current workload
+                        if (xmlConfig.containsKey("optimalThreads") && xmlConfig.getBoolean("optimalThreads")) {
+                            int minThreads = xmlConfig.getInt("minThreads", terminals);
+                            double targetCPU = xmlConfig.getDouble("targetCPU", 80.0);
+                            double toleranceCPU = xmlConfig.getDouble("toleranceCPU", 5.0);
+                            int samplingTime = xmlConfig.getInt("samplingTime", 0);
+
+                            LOG.info("Finding optimal threads for workload: {}", val);
+                            LOG.info("First BenchmarkModule: {}", benchList.get(0));
+                            LOG.info("targetCPU: {}, toleranceCPU: {}", targetCPU, toleranceCPU);
+
+                            // Store original terminal count
+                            int originalTerminals = benchList.get(0).getWorkloadConfiguration().getTerminals();
+                            LOG.info("Terminal for starting: {}", originalTerminals);
+                            String workloadName = executeRules == null ? null : workloads.get(workCount - 1).getString("workload");
+                            // Find optimal threads for this workload
+                            int optimalThreads = findOptimalThreadCount(benchList.get(0), minThreads, targetCPU, toleranceCPU, workloadName, workCount,samplingTime);   
+
+                            // Sleep for 2 mins so system can stabilize
+                            try {
+                                Thread.sleep(120000);
+                            } catch (InterruptedException e) {
+                                LOG.error("Error sleeping", e);
+                            }
+
+                            // Update the configuration with optimal thread count
+                            for (BenchmarkModule benchi : benchList) {
+                                Phase oldPhase = benchi.getWorkloadConfiguration().getPhases().get(0);
+                                Phase newPhase = new Phase(
+                                    // Use the correct constructor arguments for Phase
+                                    "FEATUREBENCH",
+                                    oldPhase.getId(),
+                                    oldPhase.getTime(),
+                                    oldPhase.getWarmupTime(),
+                                    oldPhase.getRate(),
+                                    oldPhase.getWeights(),
+                                    oldPhase.isRateLimited(),
+                                    oldPhase.isDisabled(),
+                                    oldPhase.isSerial(),
+                                    oldPhase.isTimed(),
+                                    optimalThreads,
+                                    oldPhase.getArrival()
+                                );
+                                // Replace the phase in the config
+                                benchi.getWorkloadConfiguration().getPhases().clear();
+                                benchi.getWorkloadConfiguration().getPhases().add(newPhase);
+                                benchi.getWorkloadConfiguration().setTerminals(optimalThreads);
+                                benchi.getWorkloadConfiguration().setTerminals(optimalThreads);
+                                benchi.getWorkloadConfiguration().setIsOptimalThreadsWorkload(false);
+                            }
+                            xmlConfig.setProperty("terminals", optimalThreads);
+                            LOG.info("Using optimal thread count for workload {}: {} (original was: {})",
+                                val, optimalThreads, originalTerminals);
+                            
+                        }
+
                         try {
                             Results r = runWorkload(benchList, intervalMonitor, workCount);
                             writeOutputs(r, activeTXTypes, argsLine, xmlConfig,
                                 executeRules == null ? null : workloads.get(workCount - 1).getString("workload"),
-                                executeRules == null ? null : workloads.get(workCount - 1).getString("customTags", null));
+                                executeRules == null ? null : workloads.get(workCount - 1).getString("customTags", null),
+                                executeRules != null && workloads.get(workCount - 1).getBoolean("skipReport", false)
+                            );
                             writeHistograms(r);
+
+                            if(benchList.get(0).getBenchmarkName().equalsIgnoreCase("featurebench")){
+                                checkCompletedTransaction(r);
+                            }
 
                             if (argsLine.hasOption("json-histograms")) {
                                 String histogram_json = writeJSONHistograms(r);
@@ -685,6 +797,62 @@ public class DBWorkload {
                         LOG.info("Starting Workload " + workCount);
                     } else {
                         LOG.info("Starting Workload " + (workloads.get(workCount - 1).containsKey("workload") ? workloads.get(workCount - 1).getString("workload") : workCount));
+                        if (xmlConfig.containsKey("optimalThreads") && xmlConfig.getBoolean("optimalThreads")) {
+                            String val = workloads.get(workCount - 1).getString("workload");
+                            int minThreads = xmlConfig.getInt("minThreads", terminals);
+                            double targetCPU = xmlConfig.getDouble("targetCPU", 80.0);
+                            double toleranceCPU = xmlConfig.getDouble("toleranceCPU", 5.0);
+                            int samplingTime = xmlConfig.getInt("samplingTime", 0);
+
+                            LOG.info("Finding optimal threads for workload: {}", val);
+                            LOG.info("First BenchmarkModule: {}", benchList.get(0));
+                            LOG.info("targetCPU: {}, toleranceCPU: {}", targetCPU, toleranceCPU);
+
+                            // Store original terminal count
+                            int originalTerminals = benchList.get(0).getWorkloadConfiguration().getTerminals();
+                            LOG.info("Terminal for starting: {}", originalTerminals);
+                            String workloadName = executeRules == null ? null : workloads.get(workCount - 1).getString("workload");
+                            // Find optimal threads for this workload
+                            int optimalThreads = findOptimalThreadCount(benchList.get(0), minThreads, targetCPU, toleranceCPU, workloadName, workCount,samplingTime);
+
+                            // Sleep for 2 mins so system can stabilize
+                            try {
+                                Thread.sleep(120000);
+                            } catch (InterruptedException e) {
+                                LOG.error("Error sleeping", e);
+                            }
+
+                            // Update the configuration with optimal thread count
+                            for (BenchmarkModule benchi : benchList) {
+                                Phase oldPhase = benchi.getWorkloadConfiguration().getPhases().get(0);
+                                Phase newPhase = new Phase(
+                                    // Use the correct constructor arguments for Phase
+                                    "FEATUREBENCH",
+                                    oldPhase.getId(),
+                                    oldPhase.getTime(),
+                                    oldPhase.getWarmupTime(),
+                                    oldPhase.getRate(),
+                                    oldPhase.getWeights(),
+                                    oldPhase.isRateLimited(),
+                                    oldPhase.isDisabled(),
+                                    oldPhase.isSerial(),
+                                    oldPhase.isTimed(),
+                                    optimalThreads,
+                                    oldPhase.getArrival()
+                                );
+                                // Replace the phase in the config
+                                benchi.getWorkloadConfiguration().getPhases().clear();
+                                benchi.getWorkloadConfiguration().getPhases().add(newPhase);
+                                benchi.getWorkloadConfiguration().setTerminals(optimalThreads);
+                                benchi.getWorkloadConfiguration().setTerminals(optimalThreads);
+                                benchi.getWorkloadConfiguration().setIsOptimalThreadsWorkload(false);
+                            }
+                            // Update the configuration with optimal thread count
+                             xmlConfig.setProperty("terminals", optimalThreads);
+
+                            LOG.info("Using optimal thread count for workload {}: {} (original was: {})",
+                                val, optimalThreads, originalTerminals);
+                        }
                     }
                     // Bombs away!
                     try {
@@ -692,14 +860,19 @@ public class DBWorkload {
                         // if block currently only valid for bulkload experiments
                         if(xmlConfig.containsKey("microbenchmark/properties/workload")) {
                             writeOutputs(r, activeTXTypes, argsLine, xmlConfig,
-                                xmlConfig.getString("microbenchmark/properties/workload"), null);
+                                xmlConfig.getString("microbenchmark/properties/workload"), null,false);
                         }
                         else {
                             writeOutputs(r, activeTXTypes, argsLine, xmlConfig,
                                 executeRules == null ? null : workloads.get(workCount - 1).getString("workload"),
-                                executeRules == null ? null : workloads.get(workCount - 1).getString("customTags", null));
+                                executeRules == null ? null : workloads.get(workCount - 1).getString("customTags", null),
+                                executeRules != null && workloads.get(workCount - 1).getBoolean("skipReport", false));
                         }
                         writeHistograms(r);
+
+                        if(benchList.get(0).getBenchmarkName().equalsIgnoreCase("featurebench")){
+                                checkCompletedTransaction(r);
+                        }
 
                         if (argsLine.hasOption("json-histograms")) {
                             String histogram_json = writeJSONHistograms(r);
@@ -758,7 +931,7 @@ public class DBWorkload {
         options.addOption(null, "dialects-export", true, "Export benchmark SQL to a dialects file");
         options.addOption("jh", "json-histograms", true, "Export histograms to JSON file");
         options.addOption("workloads", "workloads", true, "Run some specific workloads");
-        options.addOption("p", "params", true, "Use varibles through CLI for YAML");
+        options.addOption("p", "params", true, "Use variables through CLI for YAML");
         options.addOption(null, "cleanup", true, "Clean up the database");
         return options;
     }
@@ -829,7 +1002,7 @@ public class DBWorkload {
      */
     private static void writeOutputs(Results r, List<TransactionType> activeTXTypes, CommandLine argsLine,
                                      XMLConfiguration xmlConfig, String workload_name,
-                                     String customTags) throws Exception {
+                                     String customTags,Boolean skipReport) throws Exception {
 
         // If an output directory is used, store the information
         String outputDirectory = "results";
@@ -901,7 +1074,7 @@ public class DBWorkload {
                 }
                 if(workload_name == null || workload_name.isEmpty())
                     workload_name = baseFileName;
-                workloadToSummaryMap.put(workload_name, rw.writeDetailedSummary(ps, customTags));
+                workloadToSummaryMap.put(workload_name, rw.writeDetailedSummary(ps, customTags, skipReport));
 
                 try {
                     FileWriter writer = new FileWriter(filePathForOutputJson);
@@ -1118,5 +1291,456 @@ public class DBWorkload {
             LOG.info("No match!");
         }
 
+    }
+
+    // Returns a list of CPU utilizations (percent) for all nodes
+    private static List<Double> getYBCPUUtilizationAllNodes(BenchmarkModule bench) {
+        List<Double> cpuList = new ArrayList<>();
+        try (Connection conn = bench.makeConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery("select uuid, metrics, status, error from yb_servers_metrics()")) {
+            while (rs.next()) {
+                String metricsJson = rs.getString("metrics");
+                try {
+                    ObjectMapper mapper = new ObjectMapper();
+                    JsonNode rootNode = mapper.readTree(metricsJson);
+                    double cpuUser = 0.0, cpuSystem = 0.0;
+                    if (rootNode.has("cpu_usage_user")) {
+                        cpuUser = Double.parseDouble(rootNode.get("cpu_usage_user").asText());
+                    }
+                    if (rootNode.has("cpu_usage_system")) {
+                        cpuSystem = Double.parseDouble(rootNode.get("cpu_usage_system").asText());
+                    }
+                    double totalCPU = (cpuUser + cpuSystem) * 100.0; // percent
+                    cpuList.add(totalCPU);
+                } catch (JsonProcessingException | NumberFormatException e) {
+                    LOG.error("Error parsing metrics JSON", e);
+                }
+            }
+        } catch (SQLException e) {
+            LOG.error("Error getting YugabyteDB metrics", e);
+        }
+        return cpuList;
+    }
+
+    // Test CloudWatch connectivity
+    private static boolean testCloudWatchConnectivity(String awsRegion) {
+        try {
+            CloudWatchClient testClient = CloudWatchClient.builder()
+                .region(Region.of(awsRegion))
+                .credentialsProvider(DefaultCredentialsProvider.create())
+                .overrideConfiguration(ClientOverrideConfiguration.builder()
+                    .apiCallTimeout(Duration.ofSeconds(10))
+                    .build())
+                .build();
+
+            // Simple test call to list metrics (this should work with basic permissions)
+            ListMetricsRequest testRequest = ListMetricsRequest.builder()
+                .namespace("AWS/RDS")
+                .build();
+
+            testClient.listMetrics(testRequest);
+            testClient.close();
+            LOG.info("CloudWatch connectivity test successful for region: {}", awsRegion);
+            return true;
+        } catch (Exception e) {
+            LOG.warn("CloudWatch connectivity test failed for region {}: {}", awsRegion, e.getMessage());
+            return false;
+        }
+    }
+
+    // Returns CPU utilization for RDS PostgreSQL instance via CloudWatch
+    private static double getRDSCPUUtilization(String dbInstanceIdentifier, String awsRegion) {
+        double cpuUtilization = 0.0;
+        CloudWatchClient cloudWatchClient = null;
+
+        try {
+            // Configure client override settings with timeouts and retries
+            ClientOverrideConfiguration clientConfig = ClientOverrideConfiguration.builder()
+                .apiCallTimeout(Duration.ofSeconds(60))
+                .apiCallAttemptTimeout(Duration.ofSeconds(30))
+                .retryPolicy(RetryPolicy.builder()
+                    .numRetries(3)
+                    .build())
+                .build();
+
+            // Build CloudWatch client with explicit configuration
+            cloudWatchClient = CloudWatchClient.builder()
+                .region(Region.of(awsRegion))
+                .credentialsProvider(DefaultCredentialsProvider.create())
+                .overrideConfiguration(clientConfig)
+                .build();
+
+            Instant endTime = Instant.now();
+            Instant startTime = endTime.minusSeconds(240); // 5 minutes ago
+
+            Dimension dbInstanceDimension = Dimension.builder()
+                .name("DBInstanceIdentifier")
+                .value(dbInstanceIdentifier)
+                .build();
+
+            GetMetricStatisticsRequest request = GetMetricStatisticsRequest.builder()
+                .namespace("AWS/RDS")
+                .metricName("CPUUtilization")
+                .dimensions(dbInstanceDimension)
+                .startTime(startTime)
+                .endTime(endTime)
+                .period(60) // 1 minute periods
+                .statistics(Statistic.AVERAGE)
+                .build();
+
+            GetMetricStatisticsResponse response = cloudWatchClient.getMetricStatistics(request);
+
+            if (response.datapoints().size() > 0) {
+                // Get the most recent datapoint
+                Datapoint latestDatapoint = response.datapoints().stream()
+                    .max((d1, d2) -> d1.timestamp().compareTo(d2.timestamp()))
+                    .orElse(null);
+
+                if (latestDatapoint != null) {
+                    cpuUtilization = latestDatapoint.average();
+                    LOG.info("RDS CPU Utilization: {}%", cpuUtilization);
+                }
+            } else {
+                LOG.warn("No CPU utilization data found for RDS instance: {}", dbInstanceIdentifier);
+            }
+
+        } catch (software.amazon.awssdk.core.exception.SdkClientException e) {
+            if (e.getCause() instanceof java.net.UnknownHostException) {
+                LOG.error("DNS resolution failed for CloudWatch endpoint. Check network connectivity and DNS configuration. Region: {}, Instance: {}", awsRegion, dbInstanceIdentifier);
+                LOG.error("Consider checking: 1) Internet connectivity, 2) DNS settings, 3) VPC configuration if running in private subnet");
+            } else {
+                LOG.error("AWS SDK error getting RDS CPU utilization from CloudWatch: {}", e.getMessage());
+            }
+        } catch (software.amazon.awssdk.services.cloudwatch.model.CloudWatchException e) {
+            LOG.error("CloudWatch service error: {}. Check permissions and RDS instance identifier.", e.awsErrorDetails().errorMessage());
+        } catch (Exception e) {
+            LOG.error("Unexpected error getting RDS CPU utilization from CloudWatch", e);
+        } finally {
+            if (cloudWatchClient != null) {
+                try {
+                    cloudWatchClient.close();
+                } catch (Exception e) {
+                    LOG.warn("Error closing CloudWatch client: {}", e.getMessage());
+                }
+            }
+        }
+        return cpuUtilization;
+    }
+
+    // Detects if we're running against YugabyteDB vs RDS PostgreSQL
+    private static boolean isYugabyteDB(BenchmarkModule bench) {
+        try (Connection conn = bench.makeConnection();
+             Statement stmt = conn.createStatement()) {
+
+            // Try to execute YugabyteDB-specific function
+            try (ResultSet rs = stmt.executeQuery("SELECT version()")) {
+                if (rs.next()) {
+                    String version = rs.getString(1).toLowerCase();
+                    return version.contains("yugabyte");
+                }
+            }
+        } catch (SQLException e) {
+            LOG.debug("Error checking database type", e);
+        }
+        return false;
+    }
+
+    // Extracts RDS instance identifier from JDBC URL
+    private static String extractRDSInstanceIdentifier(String jdbcUrl) {
+        // Example URL: jdbc:postgresql://mydb.cluster-xyz.us-east-1.rds.amazonaws.com:5432/postgres
+        // Extract the part before the first dot as instance identifier
+        try {
+            String url = jdbcUrl.replace("jdbc:postgresql://", "");
+            if (url.contains(".rds.amazonaws.com")) {
+                String hostname = url.split(":")[0];
+                return hostname.split("\\.")[0];
+            }
+        } catch (Exception e) {
+            LOG.error("Error extracting RDS instance identifier from URL: {}", jdbcUrl, e);
+        }
+        return null;
+    }
+
+    // Extracts AWS region from JDBC URL
+    private static String extractAWSRegion(String jdbcUrl) {
+        // Example URL: jdbc:postgresql://mydb.cluster-xyz.us-east-1.rds.amazonaws.com:5432/postgres
+        try {
+            String url = jdbcUrl.replace("jdbc:postgresql://", "");
+            if (url.contains(".rds.amazonaws.com")) {
+                String hostname = url.split(":")[0];
+                
+                // Find the string between the last dot and ".rds.amazonaws.com"
+                int rdsIndex = hostname.indexOf(".rds.amazonaws.com");
+                if (rdsIndex > 0) {
+                    String beforeRds = hostname.substring(0, rdsIndex);
+                    int lastDotIndex = beforeRds.lastIndexOf(".");
+                    if (lastDotIndex >= 0) {
+                        return beforeRds.substring(lastDotIndex + 1);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            LOG.error("Error extracting AWS region from URL: {}", jdbcUrl, e);
+        }
+        return "us-east-1"; // Default region
+    }
+
+    private static int findOptimalThreadCount(BenchmarkModule bench, int minThreads, double targetCPU, double toleranceCPU, String workloadName, int workCount, int samplingTime) throws InterruptedException {
+        double minTargetCPU = targetCPU - toleranceCPU;
+        double maxTargetCPU = targetCPU + toleranceCPU;
+        LOG.info("minTargetCPU: {}, maxTargetCPU: {}", minTargetCPU, maxTargetCPU);
+        int interval_gap = 5;
+        ObjectMapper mapper = new ObjectMapper();
+        // Prepare for logging
+        String outputDir = "results/" + workloadName;
+        String logFile = outputDir + "/optimal_threads_log.csv";
+        String jsonFile = outputDir + "/optimal_threads_log.json";
+        try {
+            Files.createDirectories(Paths.get(outputDir));
+            // Write header if file does not exist
+            if (!Files.exists(Paths.get(logFile))) {
+                StringBuilder header = new StringBuilder("threads");
+                for (int i = 1; i <= 3; i++) header.append(",reading" + i);
+                header.append(",");
+                header.append("max_per_node,max_cpu\n");
+                Files.write(Paths.get(logFile), header.toString().getBytes());
+            }
+        } catch (Exception e) {
+            LOG.error("Error creating log directory or file", e);
+        }
+
+        int threads = minThreads;
+        int max_iterations =  50;
+        int optimalThreads = threads;
+        List<Map<String, Object>> jsonResults = new ArrayList<>();
+        Map<Integer, Double> threadCpuMap = new HashMap<>();
+
+        // Detect database type and prepare RDS monitoring if needed
+        boolean isYugabyteDatabase = isYugabyteDB(bench);
+        String rdsInstanceIdentifier = null;
+        String awsRegion = null;
+
+        if (!isYugabyteDatabase) {
+            // Extract RDS instance details from connection URL
+            String jdbcUrl = bench.getWorkloadConfiguration().getUrl();
+            rdsInstanceIdentifier = extractRDSInstanceIdentifier(jdbcUrl);
+            awsRegion = extractAWSRegion(jdbcUrl);
+            LOG.info("Detected RDS PostgreSQL. Instance: {}, Region: {}", rdsInstanceIdentifier, awsRegion);
+
+            if (rdsInstanceIdentifier == null) {
+                LOG.error("Could not extract RDS instance identifier from URL: {}", jdbcUrl);
+                return optimalThreads;
+            }
+
+            // Check if CloudWatch monitoring should be skipped
+            String skipCloudWatch = System.getProperty("benchbase.skip.cloudwatch", "false");
+            if ("true".equalsIgnoreCase(skipCloudWatch)) {
+                LOG.info("CloudWatch monitoring disabled via system property. Using default thread count.");
+                return optimalThreads;
+            }
+
+            // Test CloudWatch connectivity before proceeding
+            if (!testCloudWatchConnectivity(awsRegion)) {
+                LOG.warn("CloudWatch connectivity test failed. Consider using -Dbenchbase.skip.cloudwatch=true to disable CloudWatch monitoring.");
+                LOG.info("Proceeding with monitoring but expect potential failures...");
+            }
+        } else {
+            LOG.info("Detected YugabyteDB database");
+        }
+
+        for(int iter=0; iter<max_iterations; iter++) {
+
+            // Sleep for 2 minute so that system is stable again
+            if(iter!=0) {
+                Thread.sleep(120 * 1000);
+                LOG.info("Sleeping for 2 minutes so that system is stable again");
+            }
+
+
+            LOG.info("Finding optimal threads.... iteration_no. {}, current_threads: {}", iter, threads);
+            Phase oldPhase = bench.getWorkloadConfiguration().getPhases().get(0);
+            int totalTime = samplingTime != 0 ? samplingTime : oldPhase.getTime() + oldPhase.getWarmupTime();
+            Phase newPhase = new Phase(
+                "FEATUREBENCH",
+                oldPhase.getId(),
+                totalTime,
+                0,
+                oldPhase.getRate(),
+                oldPhase.getWeights(),
+                oldPhase.isRateLimited(),
+                oldPhase.isDisabled(),
+                oldPhase.isSerial(),
+                oldPhase.isTimed(),
+                threads, // <-- set to your thread count
+                oldPhase.getArrival()
+            );
+            // Replace the phase in the config
+            bench.getWorkloadConfiguration().getPhases().clear();
+            bench.getWorkloadConfiguration().getPhases().add(newPhase);
+            bench.getWorkloadConfiguration().setTerminals(threads);
+            bench.getWorkloadConfiguration().setIsOptimalThreadsWorkload(true);
+
+            double avgMaxCPU = 0.0;
+            List<List<Double>> allNodeReadings = new ArrayList<>();
+            try {
+                // Get the current phase (assume first phase for test)
+                List<Phase> phases = bench.getWorkloadConfiguration().getPhases();
+                if (phases.isEmpty()) {
+                    LOG.error("No phases found in workload configuration");
+                    break;
+                }
+                Thread workloadThread = new Thread(() -> {
+                    try {
+                        runWorkload(Collections.singletonList(bench), 0, workCount);
+                    } catch (Exception e) {
+                        LOG.error("Error running workload for thread test", e);
+                        throw new RuntimeException(e);
+                    }
+                });
+                workloadThread.start();
+
+                // Wait until 3/4th of total time
+                Thread.sleep((long)(totalTime * 0.75 * 1000));
+
+                if (isYugabyteDatabase) {
+                    // YugabyteDB monitoring - multiple nodes
+                    for (int i = 0; i < 3; i++) {
+                        List<Double> nodeReadings = getYBCPUUtilizationAllNodes(bench);
+                        LOG.info("YB CPU Reading {}: {}", i+1, nodeReadings);
+                        allNodeReadings.add(nodeReadings);
+                        Thread.sleep(interval_gap * 1000);
+                    }
+
+                    // For each node, find the max of its 3 readings
+                    int numNodes = allNodeReadings.get(0).size();
+                    List<Double> maxPerNode = new ArrayList<>();
+                    for (int nodeIdx = 0; nodeIdx < numNodes; nodeIdx++) {
+                        double max = Math.max(allNodeReadings.get(0).get(nodeIdx),
+                            Math.max(allNodeReadings.get(1).get(nodeIdx),
+                                allNodeReadings.get(2).get(nodeIdx)));
+                        maxPerNode.add(max);
+                        LOG.info("YB Node {} max CPU: {}", nodeIdx+1, max);
+                    }
+                    avgMaxCPU = maxPerNode.stream().mapToDouble(Double::doubleValue).max().orElse(0.0);
+                    LOG.info("YB Node max CPU utilizations: {}", avgMaxCPU);
+                } else {
+                    // RDS PostgreSQL monitoring - single instance
+                    List<Double> rdsReadings = new ArrayList<>();
+
+                    // Sleep for 1 minute so that RDS CPU utilization is updated
+                    Thread.sleep(60 * 1000);
+
+                    for (int i = 0; i < 3; i++) {
+                        double cpuReading = getRDSCPUUtilization(rdsInstanceIdentifier, awsRegion);
+                        rdsReadings.add(cpuReading);
+                        LOG.info("RDS CPU Reading {}: {}%", i+1, cpuReading);
+
+                        // If first reading fails, warn about CloudWatch availability
+                        if (i == 0 && cpuReading == 0.0) {
+                            LOG.warn("CloudWatch monitoring appears unavailable. Consider running with fixed thread count or check network connectivity.");
+                        }
+
+                        if (i < 2) { // Don't sleep after last iteration
+                            Thread.sleep(interval_gap * 1000);
+                        }
+                    }
+
+                    // For RDS, we treat it as a single node
+                    allNodeReadings.add(rdsReadings);
+                    avgMaxCPU = rdsReadings.stream().mapToDouble(Double::doubleValue).max().orElse(0.0);
+                    LOG.info("RDS max CPU utilization: {}%", avgMaxCPU);
+                }
+
+                // Write to log file
+                StringBuilder logLine = new StringBuilder();
+                logLine.append(threads);
+
+                if (isYugabyteDatabase) {
+                    // YugabyteDB - multiple readings from multiple nodes
+                    for (int i = 0; i < 3; i++) {
+                        logLine.append(",");
+                        logLine.append(allNodeReadings.get(i).toString().replaceAll("[\\[\\] ]", ""));
+                    }
+                    logLine.append(",");
+                    // Get maxPerNode for YugabyteDB
+                    int numNodes = allNodeReadings.get(0).size();
+                    List<Double> maxPerNode = new ArrayList<>();
+                    for (int nodeIdx = 0; nodeIdx < numNodes; nodeIdx++) {
+                        double max = Math.max(allNodeReadings.get(0).get(nodeIdx),
+                            Math.max(allNodeReadings.get(1).get(nodeIdx),
+                                allNodeReadings.get(2).get(nodeIdx)));
+                        maxPerNode.add(max);
+                    }
+                    for (int i = 0; i < maxPerNode.size(); i++) {
+                        logLine.append(maxPerNode.get(i));
+                        if (i < maxPerNode.size() - 1) logLine.append(",");
+                    }
+                    logLine.append(",").append(avgMaxCPU).append("\n");
+
+                    // Add to JSON results
+                    Map<String, Object> entry = new LinkedHashMap<>();
+                    entry.put("threads", threads);
+                    entry.put("readings", allNodeReadings);
+                    entry.put("max_per_node", maxPerNode);
+                    entry.put("max_cpu", avgMaxCPU);
+                    jsonResults.add(entry);
+                } else {
+                    // RDS - single instance readings
+                    List<Double> rdsReadings = allNodeReadings.get(0);
+                    for (int i = 0; i < 3; i++) {
+                        logLine.append(",").append(rdsReadings.get(i));
+                    }
+                    logLine.append(",").append(avgMaxCPU).append(",").append(avgMaxCPU).append("\n");
+
+                    // Add to JSON results
+                    Map<String, Object> entry = new LinkedHashMap<>();
+                    entry.put("threads", threads);
+                    entry.put("readings", rdsReadings);
+                    entry.put("max_cpu", avgMaxCPU);
+                    jsonResults.add(entry);
+                }
+
+                Files.write(Paths.get(logFile), logLine.toString().getBytes(), java.nio.file.StandardOpenOption.APPEND);
+
+                workloadThread.join();
+                threadCpuMap.put(threads, avgMaxCPU);
+                if (avgMaxCPU >= minTargetCPU && avgMaxCPU <= maxTargetCPU) {
+                    optimalThreads = threads;
+                    LOG.info("Found optimal threads: {} with MaxCPU: {}", optimalThreads, avgMaxCPU);
+                    break;
+                }
+                else {
+                    if(avgMaxCPU<=targetCPU) optimalThreads=threads;
+                    LOG.info("finding new threads for run....");
+                    int newThreads = (int) Math.ceil((threads * targetCPU) / avgMaxCPU);
+                    if (threadCpuMap.containsKey(newThreads)) {
+                        LOG.info("newThreads={} already tested. Breaking loop to avoid duplicate testing.", newThreads);
+                        optimalThreads = newThreads;
+                        break;
+                    }
+                    threads = newThreads;
+                }
+
+            } catch (Exception e) {
+                LOG.error("Error during thread testing", e);
+            }
+
+        }
+        // Write JSON file
+        try {
+            mapper.writerWithDefaultPrettyPrinter().writeValue(new File(jsonFile), jsonResults);
+        } catch (Exception e) {
+            LOG.error("Error writing optimal threads JSON log", e);
+        }
+        return optimalThreads;
+    }
+
+
+    private static void checkCompletedTransaction(Results r){
+       if(r.getSuccess().getSampleCount() == 0){
+        LOG.error("ERROR: Zero completed transactions in Transaction Distribution Summary");
+        System.exit(1);
+       }
     }
 }
