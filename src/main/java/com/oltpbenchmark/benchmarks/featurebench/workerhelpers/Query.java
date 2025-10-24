@@ -16,6 +16,7 @@ public class Query {
     public List<UtilToMethod> baseUtils;
     public boolean isSelectQuery = false;
     public boolean isUpdateQuery = false;
+    public List<Boolean> isExpression;
 
     public List<UtilToMethod> getBaseUtils() {
         return baseUtils;
@@ -75,6 +76,14 @@ public class Query {
 
     public void setPattern_count(int pattern_count) {
         this.pattern_count = pattern_count;
+    }
+
+    public void setIsExpression(List<Boolean> isExpression) {
+        this.isExpression = isExpression;
+    }
+
+    public List<Boolean> getIsExpression() {
+        return isExpression;
     }
 
     public String processQuery(String query) {

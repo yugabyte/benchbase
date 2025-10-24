@@ -131,12 +131,21 @@ public class FeatureBenchBenchmark extends BenchmarkModule {
                     query.setUpdateQuery(true);
                 }
                 List<UtilToMethod> baseutils = new ArrayList<>();
+                List<Boolean> isExpressionList = new ArrayList<>();
+                
                 for (HierarchicalConfiguration<ImmutableNode> bindingsList : confquery.configurationsAt("bindings")) {
-                    if (bindingsList.containsKey("count")) {
+                    if (bindingsList.containsKey("expression")) {
+                        // This is an expression binding
+                        String expr = bindingsList.getString("expression");
+                        UtilToMethod obj = new UtilToMethod("ExpressionEval", List.of(expr), workerId, totalWorker);
+                        baseutils.add(obj);
+                        isExpressionList.add(true);
+                    } else if (bindingsList.containsKey("count")) {
                         int count = bindingsList.getInt("count");
                         for (int i = 0; i < count; i++) {
                             UtilToMethod obj = new UtilToMethod(bindingsList.getString("util"), bindingsList.getList("params"), workerId, totalWorker);
                             baseutils.add(obj);
+                            isExpressionList.add(false);
                         }
                     } else if (bindingsList.containsKey("split_min_max_for_count")) {
                         int count = bindingsList.getInt("split_min_max_for_count");
@@ -157,15 +166,18 @@ public class FeatureBenchBenchmark extends BenchmarkModule {
                                 }
                                 UtilToMethod obj = new UtilToMethod(bindingsList.getString("util"), List.of(currentMin, currentMax), workerId, totalWorker);
                                 baseutils.add(obj);
+                                isExpressionList.add(false);
                                 currentMin = currentMax + 1;
                             }
                         }
                     } else {
                         UtilToMethod obj = new UtilToMethod(bindingsList.getString("util"), bindingsList.getList("params"), workerId, totalWorker);
                         baseutils.add(obj);
+                        isExpressionList.add(false);
                     }
                 }
                 query.setBaseUtils(baseutils);
+                query.setIsExpression(isExpressionList);
                 queries.add(query);
             }
             rule.setQueries(queries);

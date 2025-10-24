@@ -21,6 +21,8 @@ import com.oltpbenchmark.api.Procedure.UserAbortException;
 import com.oltpbenchmark.api.TransactionType;
 import com.oltpbenchmark.api.Worker;
 import com.oltpbenchmark.benchmarks.featurebench.helpers.UtilToMethod;
+import com.oltpbenchmark.benchmarks.featurebench.utils.BaseUtil;
+import com.oltpbenchmark.benchmarks.featurebench.utils.ExpressionEval;
 import com.oltpbenchmark.benchmarks.featurebench.workerhelpers.ExecuteRule;
 import com.oltpbenchmark.benchmarks.featurebench.workerhelpers.Query;
 import com.oltpbenchmark.types.DatabaseType;
@@ -294,10 +296,40 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                 String queryStmt = query.getQuery();
                 PreparedStatement stmt = this.preparedStatementsPerQuery.get(queryStmt);
                 List<UtilToMethod> baseUtils = query.getBaseUtils();
+                List<Boolean> isExpressionFlags = query.getIsExpression();
                 int count = query.getCount();
+                
                 for (int i = 0; i < count; i++) {
-                    for (int j = 0; j < baseUtils.size(); j++)
-                        stmt.setObject(j + 1, baseUtils.get(j).get());
+                    Object[] generatedValues = new Object[baseUtils.size()];
+                    
+                    // First pass: generate all non-expression values
+                    for (int j = 0; j < baseUtils.size(); j++) {
+                        if (isExpressionFlags != null && j < isExpressionFlags.size() && isExpressionFlags.get(j)) {
+                            // Skip expressions in first pass
+                            continue;
+                        }
+                        generatedValues[j] = baseUtils.get(j).get();
+                    }
+                    System.out.println("Generated values: " + Arrays.toString(generatedValues));
+                    
+                    // Second pass: evaluate expressions with access to previous values
+                    for (int j = 0; j < baseUtils.size(); j++) {
+                        if (isExpressionFlags != null && j < isExpressionFlags.size() && isExpressionFlags.get(j)) {
+                            // This is an expression - evaluate it
+                            BaseUtil util = baseUtils.get(j).getInstance();
+                            if (util instanceof ExpressionEval) {
+                                ((ExpressionEval) util).setReferencedValues(generatedValues);
+                                generatedValues[j] = baseUtils.get(j).get();
+                            }
+                        }
+                    }
+                    
+                    // Set all parameters in the prepared statement
+                    for (int j = 0; j < baseUtils.size(); j++) {
+                        stmt.setObject(j + 1, generatedValues[j]);
+                    }
+                    
+                    System.out.println("Executing query: " + stmt.toString());
                     if (query.isSelectQuery() || stmt.toString().toUpperCase().contains(" RETURNING ")) {
                         ResultSet rs = stmt.executeQuery();
                         int countSet = 0;
