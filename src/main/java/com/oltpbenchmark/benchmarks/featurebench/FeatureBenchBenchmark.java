@@ -131,11 +131,14 @@ public class FeatureBenchBenchmark extends BenchmarkModule {
                     query.setUpdateQuery(true);
                 }
                 List<UtilToMethod> baseutils = new ArrayList<>();
+                
                 for (HierarchicalConfiguration<ImmutableNode> bindingsList : confquery.configurationsAt("bindings")) {
+                    String referenceName = bindingsList.getString("referenceName", null);
+                    
                     if (bindingsList.containsKey("count")) {
                         int count = bindingsList.getInt("count");
                         for (int i = 0; i < count; i++) {
-                            UtilToMethod obj = new UtilToMethod(bindingsList.getString("util"), bindingsList.getList("params"), workerId, totalWorker);
+                            UtilToMethod obj = new UtilToMethod(bindingsList.getString("util"), bindingsList.getList("params"), workerId, totalWorker, referenceName);
                             baseutils.add(obj);
                         }
                     } else if (bindingsList.containsKey("split_min_max_for_count")) {
@@ -155,13 +158,13 @@ public class FeatureBenchBenchmark extends BenchmarkModule {
                                     currentMax++;
                                     remainder--;
                                 }
-                                UtilToMethod obj = new UtilToMethod(bindingsList.getString("util"), List.of(currentMin, currentMax), workerId, totalWorker);
+                                UtilToMethod obj = new UtilToMethod(bindingsList.getString("util"), List.of(currentMin, currentMax), workerId, totalWorker, referenceName);
                                 baseutils.add(obj);
                                 currentMin = currentMax + 1;
                             }
                         }
                     } else {
-                        UtilToMethod obj = new UtilToMethod(bindingsList.getString("util"), bindingsList.getList("params"), workerId, totalWorker);
+                        UtilToMethod obj = new UtilToMethod(bindingsList.getString("util"), bindingsList.getList("params"), workerId, totalWorker, referenceName);
                         baseutils.add(obj);
                     }
                 }

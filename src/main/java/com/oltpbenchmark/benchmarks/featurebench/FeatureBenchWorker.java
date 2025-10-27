@@ -21,6 +21,8 @@ import com.oltpbenchmark.api.Procedure.UserAbortException;
 import com.oltpbenchmark.api.TransactionType;
 import com.oltpbenchmark.api.Worker;
 import com.oltpbenchmark.benchmarks.featurebench.helpers.UtilToMethod;
+import com.oltpbenchmark.benchmarks.featurebench.utils.BaseUtil;
+import com.oltpbenchmark.benchmarks.featurebench.utils.ExpressionEval;
 import com.oltpbenchmark.benchmarks.featurebench.workerhelpers.ExecuteRule;
 import com.oltpbenchmark.benchmarks.featurebench.workerhelpers.Query;
 import com.oltpbenchmark.types.DatabaseType;
@@ -181,17 +183,15 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                         try {
                             PreparedStatement stmt = conn.prepareStatement((query.isSelectQuery() ? explainSelect : query.isUpdateQuery() ? explainUpdate : explainOthers) + querystmt);
                             List<UtilToMethod> baseUtils = query.getBaseUtils();
-                            for (int j = 0; j < baseUtils.size(); j++) {
-                                try {
-                                    stmt.setObject(j + 1, baseUtils.get(j).get());
-                                } catch (SQLException | InvocationTargetException | IllegalAccessException |
-                                         ClassNotFoundException | NoSuchMethodException |
-                                         InstantiationException e) {
-                                    throw new RuntimeException(e);
-                                }
+                             Object[] generatedValues = generateParameterValues(baseUtils);
+                            for (int j = 0; j < generatedValues.length; j++) {
+                                stmt.setObject(j + 1, generatedValues[j]);
                             }
                             explainDDLMap.put(query.getQuery(), stmt);
                         } catch (SQLException e) {
+                            throw new RuntimeException(e);
+                        } catch (ClassNotFoundException | InvocationTargetException | NoSuchMethodException |
+                                 InstantiationException | IllegalAccessException e) {
                             throw new RuntimeException(e);
                         }
 
@@ -273,6 +273,53 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
     }
 
 
+    /**
+     * Generates parameter values for a query, evaluating expressions with context from named references.
+     * Uses a two-pass approach:
+     * 1. Generate all non-expression values and build context map
+     * 2. Evaluate expressions using the context
+     * 
+     * @param baseUtils List of utility methods/expressions to generate values
+     * @return Array of generated values ready for PreparedStatement binding
+     */
+    private Object[] generateParameterValues(List<UtilToMethod> baseUtils) 
+            throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, 
+                   InstantiationException, IllegalAccessException {
+        
+        Object[] generatedValues = new Object[baseUtils.size()];
+        Map<String, Object> context = new HashMap<>();
+        
+        // First pass: generate all non-expression values and build context
+        for (int j = 0; j < baseUtils.size(); j++) {
+            if (baseUtils.get(j).isExpression()) {
+                // Skip expressions in first pass
+                continue;
+            }
+            Object value = baseUtils.get(j).get();
+            generatedValues[j] = value;
+            
+            // Add to context if it has a reference name
+            if (baseUtils.get(j).getReferenceName() != null) {
+                context.put(baseUtils.get(j).getReferenceName(), value);
+            }
+        }
+        
+        // Second pass: evaluate expressions with context
+        for (int j = 0; j < baseUtils.size(); j++) {
+            if (baseUtils.get(j).isExpression()) {
+                // This is an expression - evaluate it
+                BaseUtil util = baseUtils.get(j).getInstance();
+                if (util instanceof ExpressionEval) {
+                    ((ExpressionEval) util).setContext(context);
+                    Object value = baseUtils.get(j).get();
+                    generatedValues[j] = value;
+                }
+            }
+        }
+        
+        return generatedValues;
+    }
+
     @Override
     protected TransactionStatus executeWork(Connection conn, TransactionType txnType) throws
         UserAbortException, SQLException {
@@ -295,9 +342,16 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                 PreparedStatement stmt = this.preparedStatementsPerQuery.get(queryStmt);
                 List<UtilToMethod> baseUtils = query.getBaseUtils();
                 int count = query.getCount();
+                
                 for (int i = 0; i < count; i++) {
-                    for (int j = 0; j < baseUtils.size(); j++)
-                        stmt.setObject(j + 1, baseUtils.get(j).get());
+                    // Generate parameter values with expression evaluation
+                    Object[] generatedValues = generateParameterValues(baseUtils);
+                    
+                    // Set all parameters in the prepared statement
+                    for (int j = 0; j < generatedValues.length; j++) {
+                        stmt.setObject(j + 1, generatedValues[j]);
+                    }
+                    
                     if (query.isSelectQuery() || stmt.toString().toUpperCase().contains(" RETURNING ")) {
                         ResultSet rs = stmt.executeQuery();
                         int countSet = 0;

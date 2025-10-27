@@ -168,11 +168,11 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
                     col.put("name", "\"order\"");
                 if (col.containsKey("count")) {
                     for (int i = 0; i < (int) col.get("count"); i++) {
-                        UtilToMethod obj = new UtilToMethod(col.get("util"), col.get("params"));
+                        UtilToMethod obj = new UtilToMethod(col.get("util"), col.get("params"), null);
                         this.baseutils.add(obj);
                     }
                 } else {
-                    UtilToMethod obj = new UtilToMethod(col.get("util"), col.get("params"));
+                    UtilToMethod obj = new UtilToMethod(col.get("util"), col.get("params"), null);
                     this.baseutils.add(obj);
                 }
             }

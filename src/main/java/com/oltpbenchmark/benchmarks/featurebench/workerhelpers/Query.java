@@ -16,6 +16,7 @@ public class Query {
     public List<UtilToMethod> baseUtils;
     public boolean isSelectQuery = false;
     public boolean isUpdateQuery = false;
+    public List<String> referenceNames;
 
     public List<UtilToMethod> getBaseUtils() {
         return baseUtils;
@@ -75,6 +76,15 @@ public class Query {
 
     public void setPattern_count(int pattern_count) {
         this.pattern_count = pattern_count;
+    }
+
+
+    public void setReferenceNames(List<String> referenceNames) {
+        this.referenceNames = referenceNames;
+    }
+
+    public List<String> getReferenceNames() {
+        return referenceNames;
     }
 
     public String processQuery(String query) {
