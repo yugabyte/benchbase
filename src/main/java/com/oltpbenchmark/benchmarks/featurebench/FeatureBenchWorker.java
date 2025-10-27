@@ -351,7 +351,6 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                     for (int j = 0; j < generatedValues.length; j++) {
                         stmt.setObject(j + 1, generatedValues[j]);
                     }
-                    System.out.println("Executing query: " + stmt.toString());
                     
                     if (query.isSelectQuery() || stmt.toString().toUpperCase().contains(" RETURNING ")) {
                         ResultSet rs = stmt.executeQuery();
