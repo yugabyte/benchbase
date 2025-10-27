@@ -307,6 +307,13 @@
             <version>5.3</version>
         </dependency>
 
+        <!-- Nashorn JavaScript engine for ExpressionEval (removed from JDK in Java 15+) -->
+        <dependency>
+            <groupId>org.openjdk.nashorn</groupId>
+            <artifactId>nashorn-core</artifactId>
+            <version>15.4</version>
+        </dependency>
+
     </dependencies>
 
     <build>
