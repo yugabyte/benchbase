@@ -63,9 +63,22 @@ microbenchmark:
 
         executeRules:
 
-            -   workload: THRPT_G10_Orderby_Desc_Index_Limit
-                run:
-                    -   name: thrpt_wrkld_10
-                        weight: 100
-                        queries:
-                            -   query: SELECT region_id, category_id, date_created, id, amount, quantity, status_code FROM THRPT_G1_range_table_1 WHERE status_code IN (1, 2) AND priority_level IN (1, 2) AND region_id <=3 ORDER BY region_id DESC, category_id DESC, date_created DESC, id DESC limit 50;
+            - workload: THRPT_G10_Orderby_Desc_Index_Limit
+              run:
+                  - name: thrpt_wrkld_10
+                    weight: 100
+                    queries:
+                        - query: SELECT region_id, category_id, date_created, id, amount, quantity, status_code FROM THRPT_G1_range_table_1 WHERE status_code IN (?, ?) AND priority_level IN (?, ?) AND region_id <=3 ORDER BY region_id DESC, category_id DESC, date_created DESC, id DESC limit 50;
+                          bindings:
+                              -   util: RandomNumber
+                                  params: [ 1, 4 ]
+                                  referenceName: status_start
+                              -   util: ExpressionEval
+                                  params:
+                                      - "status_start + 1"
+                              -   util: RandomNumber
+                                  params: [ 1, 9 ]
+                                  referenceName: priority_start
+                              -   util: ExpressionEval
+                                  params:
+                                      - "priority_start + 1"

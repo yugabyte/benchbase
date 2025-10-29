@@ -68,4 +68,13 @@ microbenchmark:
                   - name: thrpt_wrkld_9
                     weight: 100
                     queries:
-                        - query: SELECT region_id, category_id, subcategory_id, priority_level, AVG(amount) as avg_amount, AVG(quantity) as avg_quantity, COUNT(*) as record_count FROM THRPT_G1_range_table_1 WHERE priority_level = 1 AND status_code IN (1,2) AND date_created >= '2020-01-01' GROUP BY region_id, category_id, subcategory_id, priority_level;
+                        - query: SELECT region_id, category_id, subcategory_id, priority_level, AVG(amount) as avg_amount, AVG(quantity) as avg_quantity, COUNT(*) as record_count FROM THRPT_G1_range_table_1 WHERE priority_level = ? AND status_code IN (?,?) AND date_created >= '2020-01-01' GROUP BY region_id, category_id, subcategory_id, priority_level;
+                          bindings:
+                           -   util: RandomNumber
+                               params: [ 1, 10 ]
+                           -   util: RandomNumber
+                               params: [ 1, 4 ]
+                               referenceName: status_start
+                           -   util: ExpressionEval
+                               params:
+                                   - "status_start + 1"

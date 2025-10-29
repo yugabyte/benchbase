@@ -66,9 +66,16 @@ microbenchmark:
 
         executeRules:
 
-            -   workload: THRPT_G7_DISTINCT_seq
-                run:
-                    -   name: thrpt_wrkld_7
-                        weight: 100
-                        queries:
-                            -   query: SELECT DISTINCT region_id, status_code FROM THRPT_G1_range_table_1 WHERE priority_level <= 5 and status_code in (1,2);
+            - workload: THRPT_G7_DISTINCT_seq
+              run:
+                  - name: thrpt_wrkld_7
+                    weight: 100
+                    queries:
+                        - query: SELECT DISTINCT region_id, status_code FROM THRPT_G1_range_table_1 WHERE priority_level <= 5 and status_code in (?,?);
+                          bindings:
+                              -   util: RandomNumber
+                                  params: [ 1, 4 ]
+                                  referenceName: status_start
+                              -   util: ExpressionEval
+                                  params:
+                                      - "status_start + 1"

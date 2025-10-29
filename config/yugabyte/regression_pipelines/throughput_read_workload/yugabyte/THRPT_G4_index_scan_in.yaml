@@ -68,4 +68,13 @@ microbenchmark:
                   - name: thrpt_wrkld_4
                     weight: 100
                     queries:
-                        - query: SELECT * FROM THRPT_G1_range_table_1 WHERE region_id IN (1, 5)  AND category_id = 1;
+                        - query: SELECT * FROM THRPT_G1_range_table_1 WHERE region_id IN (?, ?)  AND category_id = ?;
+                          bindings:
+                              -   util: RandomNumber
+                                  params: [1, 90]
+                                  referenceName: region1
+                              -   util: ExpressionEval
+                                  params:
+                                      - "region1 + 5"
+                              - util: RandomNumber
+                                params: [1, 50]

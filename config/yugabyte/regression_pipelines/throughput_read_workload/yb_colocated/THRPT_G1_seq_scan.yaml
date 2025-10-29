@@ -70,5 +70,14 @@ microbenchmark:
                   - name: thrpt_wrkld_1
                     weight: 100
                     queries:
-                        - query: select * from THRPT_G1_range_table_1 where amount BETWEEN 90000 AND 90010
+                        - query: select * from THRPT_G1_range_table_1 where amount BETWEEN ? AND ?
+                          bindings:
+                              - util: RandomNumber
+                                params:
+                                    - 1
+                                    - 99950
+                                referenceName: amount1
+                              - util: ExpressionEval
+                                params:
+                                    - "amount1 + 10"
 

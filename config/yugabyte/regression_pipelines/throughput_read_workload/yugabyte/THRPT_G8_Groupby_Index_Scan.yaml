@@ -63,9 +63,12 @@ microbenchmark:
                     params: [1, 100000]
 
         executeRules:
-            - workload: THRPT_G8_DISTINCT_Index_Sq
-              run:
-                  - name: thrpt_wrkld_8
-                    weight: 100
-                    queries:
-                        - query: SELECT region_id, category_id, subcategory_id, COUNT(*) FROM THRPT_G1_range_table_1 WHERE region_id = 1 and category_id < 25 GROUP BY region_id, category_id, subcategory_id;
+            -   workload: THRPT_G8_DISTINCT_Index_Sq
+                run:
+                    -   name: thrpt_wrkld_8
+                        weight: 100
+                        queries:
+                            -   query: SELECT region_id, category_id, subcategory_id, COUNT(*) FROM THRPT_G1_range_table_1 WHERE region_id = ? and category_id < 25 GROUP BY region_id, category_id, subcategory_id;
+                                bindings:
+                                   -   util: RandomNumber
+                                       params: [ 1, 100 ]
