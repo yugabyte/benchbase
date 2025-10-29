@@ -1,11 +1,13 @@
 package com.oltpbenchmark.benchmarks.featurebench.helpers;
 
+import java.time.LocalDate;
 import java.util.Map;
 import java.util.Stack;
 
 /**
- * Lightweight expression evaluator for basic arithmetic and string operations.
+ * Lightweight expression evaluator for basic arithmetic, string, and date operations.
  * Supports: +, -, *, /, %, parentheses, and named variable references.
+ * For LocalDate: integer operands represent days (e.g., "date + 5" adds 5 days)
  * Optimized for performance with minimal overhead.
  */
 public class SimpleExpressionEvaluator {
@@ -30,8 +32,10 @@ public class SimpleExpressionEvaluator {
             return parseValue(processedExpr);
         }
         
-        // Determine if it's string concatenation or numeric operation
-        if (containsStringOperands(processedExpr, context)) {
+        // Determine the type of operation based on what the expression actually uses
+        if (expressionUsesDateOperand(expression, context)) {
+            return evaluateDateExpression(expression, context);
+        } else if (containsStringOperands(processedExpr, context)) {
             return evaluateStringExpression(processedExpr, context);
         } else {
             return evaluateNumericExpression(processedExpr);
@@ -87,6 +91,23 @@ public class SimpleExpressionEvaluator {
         }
     }
     
+    /**
+     * Check if the expression actually references a date variable from context.
+     * This is more precise than checking if any date exists in context.
+     */
+    private static boolean expressionUsesDateOperand(String expression, Map<String, Object> context) {
+        // Check if any date variable from context is used in this expression
+        for (Map.Entry<String, Object> entry : context.entrySet()) {
+            if (entry.getValue() instanceof LocalDate) {
+                // Check if this date variable name appears in the expression
+                if (expression.matches(".*\\b" + entry.getKey() + "\\b.*")) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
     private static boolean containsStringOperands(String expr, Map<String, Object> context) {
         // Check if expression contains string literals
         if (expr.contains("\"")) {
@@ -101,6 +122,61 @@ public class SimpleExpressionEvaluator {
         }
         
         return false;
+    }
+    
+    /**
+     * Evaluate date expression. Supports adding/subtracting days from LocalDate.
+     * Format: "dateRef + days" or "dateRef - days"
+     * Example: "baseDate + 5" adds 5 days to baseDate
+     */
+    private static Object evaluateDateExpression(String expression, Map<String, Object> context) {
+        expression = expression.trim();
+        
+        // Find the date operand and numeric offset
+        LocalDate dateValue = null;
+        String dateVarName = null;
+        
+        // Find which variable in the expression is a LocalDate
+        for (Map.Entry<String, Object> entry : context.entrySet()) {
+            if (entry.getValue() instanceof LocalDate && expression.contains(entry.getKey())) {
+                dateValue = (LocalDate) entry.getValue();
+                dateVarName = entry.getKey();
+                break;
+            }
+        }
+        
+        if (dateValue == null) {
+            throw new RuntimeException("No LocalDate found in expression: " + expression);
+        }
+        
+        // Parse the operation: "dateVar + offset" or "dateVar - offset"
+        String remaining = expression.replace(dateVarName, "").trim();
+        
+        if (remaining.isEmpty()) {
+            // Just the date reference, no operation
+            return dateValue;
+        }
+        
+        // Extract operator and offset
+        char operator = remaining.charAt(0);
+        if (operator != '+' && operator != '-') {
+            throw new RuntimeException("Invalid date operation. Only + and - are supported: " + expression);
+        }
+        
+        String offsetStr = remaining.substring(1).trim();
+        int offset;
+        try {
+            offset = Integer.parseInt(offsetStr);
+        } catch (NumberFormatException e) {
+            throw new RuntimeException("Invalid day offset in expression: " + expression, e);
+        }
+        
+        // Apply the operation
+        if (operator == '+') {
+            return dateValue.plusDays(offset);
+        } else {
+            return dateValue.minusDays(offset);
+        }
     }
     
     private static String evaluateStringExpression(String expression, Map<String, Object> context) {
