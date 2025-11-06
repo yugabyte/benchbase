@@ -773,7 +773,7 @@ public class DBWorkload {
                             );
                             writeHistograms(r);
 
-                            boolean checkZeroRows = benchList.get(0).getBenchmarkName().equalsIgnoreCase("featurebench") && workloads.get(workCount - 1).getBoolean("zeroRowsValidation", true);
+                            boolean checkZeroRows = benchList.get(0).getBenchmarkName().equalsIgnoreCase("featurebench") && (executeRules == null ? true : workloads.get(workCount - 1).getBoolean("zeroRowsValidation", true));
 
                             if(checkZeroRows){
                                 checkCompletedTransaction(r);
@@ -872,7 +872,7 @@ public class DBWorkload {
                         }
                         writeHistograms(r);
 
-                        boolean checkZeroRows = benchList.get(0).getBenchmarkName().equalsIgnoreCase("featurebench") && workloads.get(workCount - 1).getBoolean("zeroRowsValidation", true);
+                        boolean checkZeroRows = benchList.get(0).getBenchmarkName().equalsIgnoreCase("featurebench") && (executeRules == null ? true : workloads.get(workCount - 1).getBoolean("zeroRowsValidation", true));
 
                         if(checkZeroRows){
                                 checkCompletedTransaction(r);
