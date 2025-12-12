@@ -122,7 +122,7 @@ microbenchmark:
                             - util: RandomInt
                               params: [ 41, 50 ]
             - workload: Retention_mixed_workload_run2
-              time_secs: 3600
+              time_secs: 172800
               run:
                   - name: NetG1_1_update_query
                     weight: 50
