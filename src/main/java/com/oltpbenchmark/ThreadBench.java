@@ -97,7 +97,7 @@ public class ThreadBench implements Thread.UncaughtExceptionHandler {
 
             workers.get(i).tearDown();
         }
-
+        this.workers.get(0).getBenchmark().closeDataSource();
         return requests;
     }
 
