@@ -1,0 +1,63 @@
+# Vector Delete - 512D, single row delete with HNSW index
+# Following VectorDBBench naming conventions
+# Configuration: dimension=512, operation=delete, deletetype=single, indexed=true
+
+type: YUGABYTE
+driver: com.yugabyte.Driver
+url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
+username: {{username}}
+password: {{password}}
+batchsize: 128
+isolation: TRANSACTION_REPEATABLE_READ
+loaderthreads: 4
+terminals: 1
+collect_pg_stat_statements: true
+use_dist_in_explain: true
+yaml_version: v1.0
+works:
+    work:
+        time_secs: 120
+        active_terminals: 1
+        rate: unlimited
+        warmup: 30
+microbenchmark:
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
+    properties:
+        setAutoCommit: false
+        create:
+            - DROP TABLE IF EXISTS vector_delete_512d_indexed;
+            - CREATE TABLE vector_delete_512d_indexed (id bigint PRIMARY KEY, embedding vector(512), metadata text, category int, created_at timestamp);
+            - CREATE INDEX ON vector_delete_512d_indexed USING ybhnsw (embedding vector_l2_ops) WITH (m=16, ef_construction=200);
+        cleanup:
+            - DROP TABLE IF EXISTS vector_delete_512d_indexed;
+        loadRules:
+            - table: vector_delete_512d_indexed
+              rows: 200000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 200000]
+                  - name: embedding
+                    util: RandomFloatArrayGen
+                    params: [512, -1.0, 1.0]
+                  - name: metadata
+                    util: RandomAString
+                    params: [50, 100]
+                  - name: category
+                    util: RandomNumber
+                    params: [1, 10]
+                  - name: created_at
+                    util: RandomTimestampWithoutTimeZone
+
+        executeRules:
+            - workload: delete_512d_single_indexed
+              customTags: dim=512,operation=delete,deletetype=single,indexed=true
+              run:
+                  - name: delete_single_row
+                    weight: 100
+                    queries:
+                        - query: DELETE FROM vector_delete_512d_indexed WHERE id = ?
+                          count: 10
+                          bindings:
+                              - util: RandomNumber
+                                params: [1, 200000]
