@@ -1,6 +1,6 @@
-# Vector Update - 512D, update embedding with HNSW index (L2 distance)
+# Vector Update - 512D, update embedding with HNSW index (Cosine distance)
 # Following VectorDBBench naming conventions
-# Configuration: dimension=512, operation=update, column=embedding, indexed=true, m=16, ef_construction=200, distance=l2
+# Configuration: dimension=512, operation=update, column=embedding, indexed=true, m=16, ef_construction=200, distance=cosine
 
 type: YUGABYTE
 driver: com.yugabyte.Driver
@@ -25,13 +25,13 @@ microbenchmark:
     properties:
         setAutoCommit: false
         create:
-            - DROP TABLE IF EXISTS vector_update_512d_indexed;
-            - CREATE TABLE vector_update_512d_indexed (id bigint PRIMARY KEY, embedding vector(512));
-            - CREATE INDEX ON vector_update_512d_indexed USING ybhnsw (embedding vector_l2_ops) WITH (m=16, ef_construction=200);
+            - DROP TABLE IF EXISTS vector_update_512d_cosine_indexed;
+            - CREATE TABLE vector_update_512d_cosine_indexed (id bigint PRIMARY KEY, embedding vector(512));
+            - CREATE INDEX ON vector_update_512d_cosine_indexed USING ybhnsw (embedding vector_cosine_ops) WITH (m=16, ef_construction=200);
         cleanup:
-            - DROP TABLE IF EXISTS vector_update_512d_indexed;
+            - DROP TABLE IF EXISTS vector_update_512d_cosine_indexed;
         loadRules:
-            - table: vector_update_512d_indexed
+            - table: vector_update_512d_cosine_indexed
               rows: 100000
               columns:
                   - name: id
@@ -42,13 +42,13 @@ microbenchmark:
                     params: [512, -1.0, 1.0, 42]
 
         executeRules:
-            - workload: update_512d_embedding_indexed_m16_ef200
-              customTags: dim=512,operation=update,column=embedding,indexed=true,m=16,ef_construction=200,distance=l2
+            - workload: update_512d_embedding_cosine_indexed
+              customTags: dim=512,operation=update,column=embedding,indexed=true,m=16,ef_construction=200,distance=cosine
               run:
                   - name: update_vector_with_index
                     weight: 100
                     queries:
-                        - query: UPDATE vector_update_512d_indexed SET embedding = ?::vector(512) WHERE id = ?
+                        - query: UPDATE vector_update_512d_cosine_indexed SET embedding = ?::vector(512) WHERE id = ?
                           count: 10
                           bindings:
                               - util: DeterministicVectorGen

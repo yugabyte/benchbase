@@ -1,10 +1,10 @@
-# Vector Update - 512D, update embedding with HNSW index (L2 distance)
+# Vector Update - 1536D, update embedding with HNSW index (L2 distance)
 # Following VectorDBBench naming conventions
-# Configuration: dimension=512, operation=update, column=embedding, indexed=true, m=16, ef_construction=200, distance=l2
+# Configuration: dimension=1536, operation=update, column=embedding, indexed=true, m=16, ef_construction=200, distance=l2
 
-type: YUGABYTE
-driver: com.yugabyte.Driver
-url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
+type: POSTGRES
+driver: org.postgresql.Driver
+url: jdbc:postgresql://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
 username: {{username}}
 password: {{password}}
 batchsize: 128
@@ -25,13 +25,13 @@ microbenchmark:
     properties:
         setAutoCommit: false
         create:
-            - DROP TABLE IF EXISTS vector_update_512d_indexed;
-            - CREATE TABLE vector_update_512d_indexed (id bigint PRIMARY KEY, embedding vector(512));
-            - CREATE INDEX ON vector_update_512d_indexed USING ybhnsw (embedding vector_l2_ops) WITH (m=16, ef_construction=200);
+            - DROP TABLE IF EXISTS vector_update_1536d_indexed;
+            - CREATE TABLE vector_update_1536d_indexed (id bigint PRIMARY KEY, embedding vector(1536));
+            - CREATE INDEX ON vector_update_1536d_indexed USING hnsw (embedding vector_l2_ops) WITH (m=16, ef_construction=200);
         cleanup:
-            - DROP TABLE IF EXISTS vector_update_512d_indexed;
+            - DROP TABLE IF EXISTS vector_update_1536d_indexed;
         loadRules:
-            - table: vector_update_512d_indexed
+            - table: vector_update_1536d_indexed
               rows: 100000
               columns:
                   - name: id
@@ -39,19 +39,19 @@ microbenchmark:
                     params: [1, 100000]
                   - name: embedding
                     util: DeterministicVectorGen
-                    params: [512, -1.0, 1.0, 42]
+                    params: [1536, -1.0, 1.0, 42]
 
         executeRules:
-            - workload: update_512d_embedding_indexed_m16_ef200
-              customTags: dim=512,operation=update,column=embedding,indexed=true,m=16,ef_construction=200,distance=l2
+            - workload: update_1536d_embedding_indexed_m16_ef200
+              customTags: dim=1536,operation=update,column=embedding,indexed=true,m=16,ef_construction=200,distance=l2
               run:
                   - name: update_vector_with_index
                     weight: 100
                     queries:
-                        - query: UPDATE vector_update_512d_indexed SET embedding = ?::vector(512) WHERE id = ?
+                        - query: UPDATE vector_update_1536d_indexed SET embedding = ?::vector(1536) WHERE id = ?
                           count: 10
                           bindings:
                               - util: DeterministicVectorGen
-                                params: [512, -1.0, 1.0, 43]
+                                params: [1536, -1.0, 1.0, 43]
                               - util: RandomNumber
                                 params: [1, 100000]

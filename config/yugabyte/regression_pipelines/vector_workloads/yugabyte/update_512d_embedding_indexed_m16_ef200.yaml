@@ -1,6 +1,6 @@
-# Vector Update - 512D, update embedding with HNSW index
+# Vector Update - 512D, update embedding with HNSW index (L2 distance)
 # Following VectorDBBench naming conventions
-# Configuration: dimension=512, operation=update, column=embedding, indexed=true, m=16, ef_construction=200
+# Configuration: dimension=512, operation=update, column=embedding, indexed=true, m=16, ef_construction=200, distance=l2
 
 type: YUGABYTE
 driver: com.yugabyte.Driver
@@ -26,7 +26,7 @@ microbenchmark:
         setAutoCommit: false
         create:
             - DROP TABLE IF EXISTS vector_update_512d_indexed;
-            - CREATE TABLE vector_update_512d_indexed (id bigint PRIMARY KEY, embedding vector(512), metadata text, category int, updated_at timestamp);
+            - CREATE TABLE vector_update_512d_indexed (id bigint PRIMARY KEY, embedding vector(512));
             - CREATE INDEX ON vector_update_512d_indexed USING ybhnsw (embedding vector_l2_ops) WITH (m=16, ef_construction=200);
         cleanup:
             - DROP TABLE IF EXISTS vector_update_512d_indexed;
@@ -38,29 +38,20 @@ microbenchmark:
                     util: PrimaryIntGen
                     params: [1, 100000]
                   - name: embedding
-                    util: RandomFloatArrayGen
-                    params: [512, -1.0, 1.0]
-                  - name: metadata
-                    util: RandomAString
-                    params: [50, 100]
-                  - name: category
-                    util: RandomNumber
-                    params: [1, 10]
-                  - name: updated_at
-                    util: RandomTimestampWithoutTimeZone
+                    util: DeterministicVectorGen
+                    params: [512, -1.0, 1.0, 42]
 
         executeRules:
             - workload: update_512d_embedding_indexed_m16_ef200
-              customTags: dim=512,operation=update,column=embedding,indexed=true,m=16,ef_construction=200
+              customTags: dim=512,operation=update,column=embedding,indexed=true,m=16,ef_construction=200,distance=l2
               run:
                   - name: update_vector_with_index
                     weight: 100
                     queries:
-                        - query: UPDATE vector_update_512d_indexed SET embedding = ?::vector(512), updated_at = ? WHERE id = ?
+                        - query: UPDATE vector_update_512d_indexed SET embedding = ?::vector(512) WHERE id = ?
                           count: 10
                           bindings:
-                              - util: RandomFloatArrayGen
-                                params: [512, -1.0, 1.0]
-                              - util: RandomTimestampWithoutTimeZone
+                              - util: DeterministicVectorGen
+                                params: [512, -1.0, 1.0, 43]
                               - util: RandomNumber
                                 params: [1, 100000]

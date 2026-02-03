@@ -26,7 +26,7 @@ microbenchmark:
         setAutoCommit: false
         create:
             - DROP TABLE IF EXISTS vector_delete_512d_indexed;
-            - CREATE TABLE vector_delete_512d_indexed (id bigint PRIMARY KEY, embedding vector(512), metadata text, category int, created_at timestamp);
+            - CREATE TABLE vector_delete_512d_indexed (id bigint PRIMARY KEY, embedding vector(512));
             - CREATE INDEX ON vector_delete_512d_indexed USING hnsw (embedding vector_l2_ops) WITH (m=16, ef_construction=200);
         cleanup:
             - DROP TABLE IF EXISTS vector_delete_512d_indexed;
@@ -38,16 +38,8 @@ microbenchmark:
                     util: PrimaryIntGen
                     params: [1, 200000]
                   - name: embedding
-                    util: RandomFloatArrayGen
-                    params: [512, -1.0, 1.0]
-                  - name: metadata
-                    util: RandomAString
-                    params: [50, 100]
-                  - name: category
-                    util: RandomNumber
-                    params: [1, 10]
-                  - name: created_at
-                    util: RandomTimestampWithoutTimeZone
+                    util: DeterministicVectorGen
+                    params: [512, -1.0, 1.0, 42]
 
         executeRules:
             - workload: delete_512d_single_indexed
