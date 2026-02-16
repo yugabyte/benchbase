@@ -21,8 +21,11 @@ import com.oltpbenchmark.api.Procedure.UserAbortException;
 import com.oltpbenchmark.api.TransactionType;
 import com.oltpbenchmark.api.Worker;
 import com.oltpbenchmark.benchmarks.featurebench.helpers.UtilToMethod;
+import com.oltpbenchmark.benchmarks.featurebench.utils.BaseUtil;
+import com.oltpbenchmark.benchmarks.featurebench.utils.ExpressionEval;
 import com.oltpbenchmark.benchmarks.featurebench.workerhelpers.ExecuteRule;
 import com.oltpbenchmark.benchmarks.featurebench.workerhelpers.Query;
+import com.oltpbenchmark.types.DatabaseType;
 import com.oltpbenchmark.types.State;
 import com.oltpbenchmark.types.TransactionStatus;
 import com.oltpbenchmark.util.FileUtil;
@@ -30,6 +33,7 @@ import com.yugabyte.util.PSQLException;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.json.JSONObject;
+import org.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,6 +43,8 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+
 
 
 /**
@@ -120,6 +126,19 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }
+                
+            }
+            // For Postgres, we need to reset pg_stat_user_indexes
+            if (this.getWorkloadConfiguration().getDatabaseType().equals(DatabaseType.POSTGRES)) {
+                LOG.info("Resetting pg_stat_user_indexes for workload : " + this.workloadName);
+                try {
+                    Statement stmt = conn.createStatement();
+                    stmt.executeQuery("SELECT pg_stat_reset();");
+                    if (!conn.getAutoCommit())
+                        conn.commit();
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
             }
 
             if (this.getWorkloadConfiguration().getXmlConfig().getBoolean("analyze_on_all_tables", false)) {
@@ -164,17 +183,15 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                         try {
                             PreparedStatement stmt = conn.prepareStatement((query.isSelectQuery() ? explainSelect : query.isUpdateQuery() ? explainUpdate : explainOthers) + querystmt);
                             List<UtilToMethod> baseUtils = query.getBaseUtils();
-                            for (int j = 0; j < baseUtils.size(); j++) {
-                                try {
-                                    stmt.setObject(j + 1, baseUtils.get(j).get());
-                                } catch (SQLException | InvocationTargetException | IllegalAccessException |
-                                         ClassNotFoundException | NoSuchMethodException |
-                                         InstantiationException e) {
-                                    throw new RuntimeException(e);
-                                }
+                             Object[] generatedValues = generateParameterValues(baseUtils);
+                            for (int j = 0; j < generatedValues.length; j++) {
+                                stmt.setObject(j + 1, generatedValues[j]);
                             }
                             explainDDLMap.put(query.getQuery(), stmt);
                         } catch (SQLException e) {
+                            throw new RuntimeException(e);
+                        } catch (ClassNotFoundException | InvocationTargetException | NoSuchMethodException |
+                                 InstantiationException | IllegalAccessException e) {
                             throw new RuntimeException(e);
                         }
 
@@ -256,6 +273,53 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
     }
 
 
+    /**
+     * Generates parameter values for a query, evaluating expressions with context from named references.
+     * Uses a two-pass approach:
+     * 1. Generate all non-expression values and build context map
+     * 2. Evaluate expressions using the context
+     * 
+     * @param baseUtils List of utility methods/expressions to generate values
+     * @return Array of generated values ready for PreparedStatement binding
+     */
+    private Object[] generateParameterValues(List<UtilToMethod> baseUtils) 
+            throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, 
+                   InstantiationException, IllegalAccessException {
+        
+        Object[] generatedValues = new Object[baseUtils.size()];
+        Map<String, Object> context = new HashMap<>();
+        
+        // First pass: generate all non-expression values and build context
+        for (int j = 0; j < baseUtils.size(); j++) {
+            if (baseUtils.get(j).isExpression()) {
+                // Skip expressions in first pass
+                continue;
+            }
+            Object value = baseUtils.get(j).get();
+            generatedValues[j] = value;
+            
+            // Add to context if it has a reference name
+            if (baseUtils.get(j).getReferenceName() != null) {
+                context.put(baseUtils.get(j).getReferenceName(), value);
+            }
+        }
+        
+        // Second pass: evaluate expressions with context
+        for (int j = 0; j < baseUtils.size(); j++) {
+            if (baseUtils.get(j).isExpression()) {
+                // This is an expression - evaluate it
+                BaseUtil util = baseUtils.get(j).getInstance();
+                if (util instanceof ExpressionEval) {
+                    ((ExpressionEval) util).setContext(context);
+                    Object value = baseUtils.get(j).get();
+                    generatedValues[j] = value;
+                }
+            }
+        }
+        
+        return generatedValues;
+    }
+
     @Override
     protected TransactionStatus executeWork(Connection conn, TransactionType txnType) throws
         UserAbortException, SQLException {
@@ -278,9 +342,16 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                 PreparedStatement stmt = this.preparedStatementsPerQuery.get(queryStmt);
                 List<UtilToMethod> baseUtils = query.getBaseUtils();
                 int count = query.getCount();
+                
                 for (int i = 0; i < count; i++) {
-                    for (int j = 0; j < baseUtils.size(); j++)
-                        stmt.setObject(j + 1, baseUtils.get(j).get());
+                    // Generate parameter values with expression evaluation
+                    Object[] generatedValues = generateParameterValues(baseUtils);
+                    
+                    // Set all parameters in the prepared statement
+                    for (int j = 0; j < generatedValues.length; j++) {
+                        stmt.setObject(j + 1, generatedValues[j]);
+                    }
+                    
                     if (query.isSelectQuery() || stmt.toString().toUpperCase().contains(" RETURNING ")) {
                         ResultSet rs = stmt.executeQuery();
                         int countSet = 0;
@@ -321,6 +392,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                 List<JSONObject> jsonResultsList = new ArrayList<>();
                 JSONObject pgStatOutputs = null;
                 JSONObject pgPreparedStatementOutputs = null;
+                JSONArray pgStatUserIndexesOutputs = null;
                 try {
                     LOG.info("Collecting pg_stat_statements for workload : " + this.workloadName);
                     pgStatOutputs = callPGStats();
@@ -328,6 +400,16 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                     pgPreparedStatementOutputs = collectPgPreparedStatements();
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
+                }
+
+                // For Postgres, we need to collect pg_stat_user_indexes
+                if (this.getWorkloadConfiguration().getDatabaseType().equals(DatabaseType.POSTGRES)) {
+                    LOG.info("Collecting pg_stat_user_indexes for workload : " + this.workloadName);
+                    try {
+                        pgStatUserIndexesOutputs = callPGStatUserIndexes();
+                    } catch (SQLException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
 
                 for (Map.Entry<String, Integer> entry : queryStringsAndRC.entrySet()) {
@@ -341,6 +423,9 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                     /*TODO: remove prepared_statements*/
                     inner.put("prepared_statements", pgPreparedStatementOutputs == null ? new JSONObject() : pgPreparedStatementOutputs);
                     jsonResultsList.add(inner);
+                }
+                if (pgStatUserIndexesOutputs != null) {
+                    jsonResultsList.add(new JSONObject().put("pg_stat_user_indexes", pgStatUserIndexesOutputs));
                 }
                 this.featurebenchAdditionalResults.setJsonResultsList(jsonResultsList);
                 isPGStatStatementCollected.set(true);
@@ -482,5 +567,26 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             resultSetCount++;
         }
         return pgPreparedStatementOutputs;
+    }
+
+    private JSONArray callPGStatUserIndexes() throws SQLException{
+        String pgStatUserIndexes = "SELECT relname AS table_name, seq_scan, idx_scan, seq_tup_read, idx_tup_fetch FROM pg_stat_user_tables;";
+        Statement stmt = this.conn.createStatement();
+        ResultSet resultSet = stmt.executeQuery(pgStatUserIndexes);
+        if(!conn.getAutoCommit())
+            conn.commit();
+        ResultSetMetaData rsmd = resultSet.getMetaData();
+        JSONArray pgStatUserIndexesOutputs = new JSONArray();
+        while (resultSet.next()) {
+            JSONObject pgStatUserIndexesOutputPerRecord = new JSONObject();
+            for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+                pgStatUserIndexesOutputPerRecord.put(
+                    rsmd.getColumnName(i),
+                    resultSet.getString(i)
+                );
+            }
+            pgStatUserIndexesOutputs.put(pgStatUserIndexesOutputPerRecord);
+        }
+        return pgStatUserIndexesOutputs;
     }
 }
