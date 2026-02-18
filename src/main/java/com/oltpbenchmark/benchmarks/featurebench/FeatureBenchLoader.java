@@ -20,6 +20,7 @@ package com.oltpbenchmark.benchmarks.featurebench;
 import com.oltpbenchmark.api.Loader;
 import com.oltpbenchmark.api.LoaderThread;
 import com.oltpbenchmark.benchmarks.featurebench.helpers.UtilToMethod;
+import com.oltpbenchmark.benchmarks.featurebench.utils.BaseUtil;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.slf4j.Logger;
@@ -232,6 +233,8 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
 
         private void typeCastDataTypes(StringBuilder valueString, int index) {
             String utilName = this.baseutils.get(index).getInstance().getClass().getName().toLowerCase();
+            BaseUtil utilInstance = this.baseutils.get(index).getInstance();
+            
             if (utilName.contains("arraygen")) {
                 if(utilName.contains("integer"))
                     valueString.append("?::int[],");
@@ -241,6 +244,28 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
                     valueString.append("?::double[],");
                 else if (utilName.contains("text"))
                     valueString.append("?::text[],");
+                else if (utilName.contains("float")) {
+                    // For float arrays (vectors), need explicit vector type cast
+                    try {
+                        int dimension = 0;
+                        if (utilInstance instanceof com.oltpbenchmark.benchmarks.featurebench.utils.RandomFloatArrayGen) {
+                            dimension = ((com.oltpbenchmark.benchmarks.featurebench.utils.RandomFloatArrayGen) utilInstance).getArraySize();
+                        } else if (utilInstance instanceof com.oltpbenchmark.benchmarks.featurebench.utils.DeterministicVectorGen) {
+                            dimension = ((com.oltpbenchmark.benchmarks.featurebench.utils.DeterministicVectorGen) utilInstance).getArraySize();
+                        }
+                        if (dimension > 0) {
+                            valueString.append("?::vector(").append(dimension).append("),");
+                        } else {
+                            valueString.append("?,");
+                        }
+                    } catch (Exception e) {
+                        // Fallback to plain placeholder if dimension extraction fails
+                        valueString.append("?,");
+                    }
+                } else {
+                    // Default for other array types
+                    valueString.append("?,");
+                }
             }
             else if (utilName.contains("json"))
                 valueString.append("?::JSON,");
