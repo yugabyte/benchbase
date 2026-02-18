@@ -1,0 +1,63 @@
+# Vector Search - 1536D, 50K vectors, L2 distance, No Filter (OpenAI embeddings)
+# Following VectorDBBench naming conventions
+# Configuration: dimension=1536, magnitude=50k, filter=none, distance=l2, ef_construction=200, m=16
+
+type: YUGABYTE
+driver: com.yugabyte.Driver
+url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
+username: {{username}}
+password: {{password}}
+batchsize: 128
+isolation: TRANSACTION_REPEATABLE_READ
+loaderthreads: 4
+terminals: 1
+collect_pg_stat_statements: true
+use_dist_in_explain: true
+yaml_version: v1.0
+works:
+    work:
+        time_secs: 120
+        active_terminals: 1
+        rate: unlimited
+        warmup: 30
+microbenchmark:
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
+    properties:
+        setAutoCommit: true
+        create:
+            - DROP TABLE IF EXISTS vector_search_1536d_50k;
+            - CREATE TABLE vector_search_1536d_50k (id bigint PRIMARY KEY, embedding vector(1536), metadata text, category int);
+            - CREATE INDEX ON vector_search_1536d_50k USING ybhnsw (embedding vector_l2_ops) WITH (m=16, ef_construction=200);
+        cleanup:
+            - DROP TABLE IF EXISTS vector_search_1536d_50k;
+        loadRules:
+            - table: vector_search_1536d_50k
+              rows: 50000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 50000]
+                  - name: embedding
+                    util: RandomFloatArrayGen
+                    params: [1536, -1.0, 1.0]
+                  - name: metadata
+                    util: RandomAString
+                    params: [50, 100]
+                  - name: category
+                    util: RandomNumber
+                    params: [1, 10]
+
+        executeRules:
+            - workload: search_1536d_50k_l2_nofilter
+              customTags: dim=1536,magnitude=50k,distance=l2,filter=none,top_k=10,m=16,ef_construction=200
+              run:
+                  - name: ann_search_l2
+                    weight: 100
+                    queries:
+                        - query: SELECT id, metadata, embedding <-> ?::vector(1536) as distance FROM vector_search_1536d_50k ORDER BY embedding <-> ?::vector(1536) LIMIT 10
+                          count: 100
+                          bindings:
+                              - util: DeterministicVectorGen
+                                params: [1536, -1.0, 1.0, 99999]
+                              - util: DeterministicVectorGen
+                                params: [1536, -1.0, 1.0, 99999]

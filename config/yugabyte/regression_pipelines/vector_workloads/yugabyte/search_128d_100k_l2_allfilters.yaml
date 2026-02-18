@@ -1,0 +1,100 @@
+# Vector Search - 128D, 100K vectors, L2 distance, All Filter Types
+# Following VectorDBBench naming conventions
+# Configuration: dimension=128, magnitude=100k, distance=l2, filters=all
+# Tests: nofilter, 1percentile, 99percentile
+
+type: YUGABYTE
+driver: com.yugabyte.Driver
+url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
+username: {{username}}
+password: {{password}}
+batchsize: 128
+isolation: TRANSACTION_REPEATABLE_READ
+loaderthreads: 4
+terminals: 1
+collect_pg_stat_statements: true
+use_dist_in_explain: true
+yaml_version: v1.0
+works:
+    work:
+        time_secs: 120
+        active_terminals: 1
+        rate: unlimited
+        warmup: 30
+microbenchmark:
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
+    properties:
+        setAutoCommit: true
+        create:
+            - DROP TABLE IF EXISTS vector_search_128d_100k;
+            - CREATE TABLE vector_search_128d_100k (id bigint PRIMARY KEY, embedding vector(128), metadata text, category int);
+            - CREATE INDEX ON vector_search_128d_100k USING ybhnsw (embedding vector_l2_ops) WITH (m=16, ef_construction=200);
+            - CREATE INDEX ON vector_search_128d_100k (category);
+        cleanup:
+            - DROP TABLE IF EXISTS vector_search_128d_100k;
+        loadRules:
+            - table: vector_search_128d_100k
+              rows: 100000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 100000]
+                  - name: embedding
+                    util: RandomFloatArrayGen
+                    params: [128, -1.0, 1.0]
+                  - name: metadata
+                    util: RandomAString
+                    params: [50, 100]
+                  - name: category
+                    util: RandomNumber
+                    params: [1, 100]
+
+        executeRules:
+            # Test 1: No Filter - Pure ANN search
+            - workload: search_128d_100k_l2_nofilter
+              customTags: dim=128,magnitude=100k,distance=l2,filter=none,top_k=10,m=16,ef_construction=200
+              run:
+                  - name: ann_search_l2_nofilter
+                    weight: 100
+                    queries:
+                        - query: SELECT id, metadata, embedding <-> ?::vector(128) as distance FROM vector_search_128d_100k ORDER BY embedding <-> ?::vector(128) LIMIT 10
+                          count: 100
+                          bindings:
+                              - util: DeterministicVectorGen
+                                params: [128, -1.0, 1.0, 12345]
+                              - util: DeterministicVectorGen
+                                params: [128, -1.0, 1.0, 12345]
+
+            # Test 2: 1% Filter - Selective filtering (category 1-100, ~1% selectivity)
+            - workload: search_128d_100k_l2_1percentile
+              customTags: dim=128,magnitude=100k,distance=l2,filter=1percentile,top_k=10,m=16,ef_construction=200
+              run:
+                  - name: ann_search_l2_1pct_filter
+                    weight: 100
+                    queries:
+                        - query: SELECT id, metadata, embedding <-> ?::vector(128) as distance FROM vector_search_128d_100k WHERE category = ? ORDER BY embedding <-> ?::vector(128) LIMIT 10
+                          count: 100
+                          bindings:
+                              - util: DeterministicVectorGen
+                                params: [128, -1.0, 1.0, 12345]
+                              - util: RandomNumber
+                                params: [1, 100]
+                              - util: DeterministicVectorGen
+                                params: [128, -1.0, 1.0, 12345]
+
+            # Test 3: 99% Filter - Broad filtering (category 1-2, ~50% selectivity each = 99% combined)
+            - workload: search_128d_100k_l2_99percentile
+              customTags: dim=128,magnitude=100k,distance=l2,filter=99percentile,top_k=10,m=16,ef_construction=200
+              run:
+                  - name: ann_search_l2_99pct_filter
+                    weight: 100
+                    queries:
+                        - query: SELECT id, metadata, embedding <-> ?::vector(128) as distance FROM vector_search_128d_100k WHERE category <= ? ORDER BY embedding <-> ?::vector(128) LIMIT 10
+                          count: 100
+                          bindings:
+                              - util: DeterministicVectorGen
+                                params: [128, -1.0, 1.0, 12345]
+                              - util: SeededRandomNumber
+                                params: [95, 100, 99999]
+                              - util: DeterministicVectorGen
+                                params: [128, -1.0, 1.0, 12345]
