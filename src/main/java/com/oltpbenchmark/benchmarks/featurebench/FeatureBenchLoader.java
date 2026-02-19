@@ -245,13 +245,10 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
                 else if (utilName.contains("text"))
                     valueString.append("?::text[],");
                 else if (utilName.contains("float")) {
-                    // For float arrays (vectors), need explicit vector type cast
                     try {
                         int dimension = 0;
                         if (utilInstance instanceof com.oltpbenchmark.benchmarks.featurebench.utils.RandomFloatArrayGen) {
                             dimension = ((com.oltpbenchmark.benchmarks.featurebench.utils.RandomFloatArrayGen) utilInstance).getArraySize();
-                        } else if (utilInstance instanceof com.oltpbenchmark.benchmarks.featurebench.utils.DeterministicVectorGen) {
-                            dimension = ((com.oltpbenchmark.benchmarks.featurebench.utils.DeterministicVectorGen) utilInstance).getArraySize();
                         }
                         if (dimension > 0) {
                             valueString.append("?::vector(").append(dimension).append("),");
@@ -259,11 +256,24 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
                             valueString.append("?,");
                         }
                     } catch (Exception e) {
-                        // Fallback to plain placeholder if dimension extraction fails
                         valueString.append("?,");
                     }
                 } else {
-                    // Default for other array types
+                    valueString.append("?,");
+                }
+            }
+            else if (utilName.contains("vectorgen")) {
+                try {
+                    int dimension = 0;
+                    if (utilInstance instanceof com.oltpbenchmark.benchmarks.featurebench.utils.DeterministicVectorGen) {
+                        dimension = ((com.oltpbenchmark.benchmarks.featurebench.utils.DeterministicVectorGen) utilInstance).getArraySize();
+                    }
+                    if (dimension > 0) {
+                        valueString.append("?::vector(").append(dimension).append("),");
+                    } else {
+                        valueString.append("?,");
+                    }
+                } catch (Exception e) {
                     valueString.append("?,");
                 }
             }
