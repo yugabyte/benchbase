@@ -20,87 +20,48 @@ microbenchmark:
     properties:
         setAutoCommit: true
         create:
-            - drop table IF EXISTS wide_blob_table;
-            - CREATE TABLE wide_blob_table (
+            - drop table IF EXISTS wide_table;
+            - CREATE TABLE wide_table (
                 int_col1 INT PRIMARY KEY,
                 int_col2 INT,
-                blob1 BYTEA,
-                blob2 BYTEA,
-                blob3 BYTEA,
-                blob4 BYTEA,
-                blob5 BYTEA,
-                blob6 BYTEA,
-                blob7 BYTEA,
-                blob8 BYTEA,
-                blob9 BYTEA,
-                blob10 BYTEA
-              );
+                text_col1 TEXT,
+                text_col2 TEXT,
+                text_col3 TEXT,
+                text_col4 TEXT,
+                text_col5 TEXT,
+                text_col6 TEXT,
+                text_col7 TEXT,
+                text_col8 TEXT,
+                text_col9 TEXT,
+                text_col10 TEXT,
+                );
 
         afterLoad:
-            - CREATE INDEX idx_int_col2 ON wide_blob_table(int_col2);
+            - CREATE INDEX idx_int_col2 ON wide_table(int_col2);
 
         loadRules:
-            - table: wide_blob_table
-              count: 1
-              rows: 1000000
+            - table: wide_table
+              rows: 100000
               columns:
-                - name: int_col1
-                  count: 1
-                  util: PrimaryIntGen
-                  params: [1, 1000000]
-                - name: int_col2
-                  count: 1
-                  util: PrimaryIntGen
-                  params: [1, 1000000]
-                - name: blob1
-                  count: 1
-                  util: RandomBytea
-                  params: [500000, 1000000]
-                - name: blob2
-                  count: 1
-                  util: RandomBytea
-                  params: [500000, 1000000]
-                - name: blob3
-                  count: 1
-                  util: RandomBytea
-                  params: [500000, 1000000]
-                - name: blob4
-                  count: 1
-                  util: RandomBytea
-                  params: [500000, 1000000]
-                - name: blob5
-                  count: 1
-                  util: RandomBytea
-                  params: [500000, 1000000]
-                - name: blob6
-                  count: 1
-                  util: RandomBytea
-                  params: [500000, 1000000]
-                - name: blob7
-                  count: 1
-                  util: RandomBytea
-                  params: [500000, 1000000]
-                - name: blob8
-                  count: 1
-                  util: RandomBytea
-                  params: [500000, 1000000]
-                - name: blob9
-                  count: 1
-                  util: RandomBytea
-                  params: [500000, 1000000]
-                - name: blob10
-                  count: 1
-                  util: RandomBytea
-                  params: [500000, 1000000]
+                  - name: int_col1
+                    util: PrimaryIntGen
+                    params: [1, 100000]
+                  - name: int_col2
+                    util: PrimaryIntGen
+                    params: [1, 100000]
+                  - name: text_col
+                    count: 20
+                    util: RandomAString
+                    params: [4000, 5000]
 
         executeRules:
             - workload: select_by_index
               time_secs: 30
               run:
-                - name: select_by_index
-                  weight: 100
-                  queries:
-                    - query: SELECT * FROM wide_blob_table WHERE int_col2 = ?
-                      bindings:
-                        - util: CyclicSeqIntGen
-                          params: [1, 1000000]
+                  - name: select_by_index
+                    weight: 100
+                    queries:
+                        - query: SELECT * FROM wide_table WHERE int_col2 = ?
+                          bindings:
+                              - util: CyclicSeqIntGen
+                                params: [1, 1000000]
