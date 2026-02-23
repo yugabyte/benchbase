@@ -1,6 +1,6 @@
-# Vector Insert - 768D, with HNSW index (m=16, ef_construction=200)
+# Vector Insert - 768D, with HNSW index (m=16, ef_construction=200), Cosine distance
 # Following VectorDBBench naming conventions
-# Configuration: dimension=768, operation=insert, indexed=true, m=16, ef_construction=200
+# Configuration: dimension=768, operation=insert, indexed=true, m=16, ef_construction=200, distance=cosine
 
 type: POSTGRES
 driver: org.postgresql.Driver
@@ -28,7 +28,7 @@ microbenchmark:
             - CREATE EXTENSION IF NOT EXISTS vector;
             - DROP TABLE IF EXISTS vector_insert_768d_indexed;
             - CREATE TABLE vector_insert_768d_indexed (id bigint PRIMARY KEY, embedding vector(768));
-            - CREATE INDEX ON vector_insert_768d_indexed USING hnsw (embedding vector_l2_ops) WITH (m=16, ef_construction=200);
+            - CREATE INDEX ON vector_insert_768d_indexed USING hnsw (embedding vector_cosine_ops) WITH (m=16, ef_construction=200);
         cleanup:
             - DROP TABLE IF EXISTS vector_insert_768d_indexed;
         loadRules:
@@ -44,7 +44,7 @@ microbenchmark:
 
         executeRules:
             - workload: insert_768d_indexed_m16_ef200
-              customTags: dim=768,operation=insert,indexed=true,m=16,ef_construction=200
+              customTags: dim=768,operation=insert,indexed=true,m=16,ef_construction=200,distance=cosine
               run:
                   - name: insert_vector_with_index
                     weight: 100

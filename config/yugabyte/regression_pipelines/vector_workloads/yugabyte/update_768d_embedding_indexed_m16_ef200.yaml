@@ -1,6 +1,6 @@
-# Vector Update - 768D, update embedding with HNSW index (L2 distance)
+# Vector Update - 768D, update embedding with HNSW index (Cosine distance)
 # Following VectorDBBench naming conventions
-# Configuration: dimension=768, operation=update, column=embedding, indexed=true, m=16, ef_construction=200, distance=l2
+# Configuration: dimension=768, operation=update, column=embedding, indexed=true, m=16, ef_construction=200, distance=cosine
 
 type: YUGABYTE
 driver: com.yugabyte.Driver
@@ -28,7 +28,7 @@ microbenchmark:
             - CREATE EXTENSION IF NOT EXISTS vector;
             - DROP TABLE IF EXISTS vector_update_768d_indexed;
             - CREATE TABLE vector_update_768d_indexed (id bigint PRIMARY KEY, embedding vector(768));
-            - CREATE INDEX ON vector_update_768d_indexed USING ybhnsw (embedding vector_l2_ops) WITH (m=16, ef_construction=200);
+            - CREATE INDEX ON vector_update_768d_indexed USING ybhnsw (embedding vector_cosine_ops) WITH (m=16, ef_construction=200);
         cleanup:
             - DROP TABLE IF EXISTS vector_update_768d_indexed;
         loadRules:
@@ -44,7 +44,7 @@ microbenchmark:
 
         executeRules:
             - workload: update_768d_embedding_indexed_m16_ef200
-              customTags: dim=768,operation=update,column=embedding,indexed=true,m=16,ef_construction=200,distance=l2
+              customTags: dim=768,operation=update,column=embedding,indexed=true,m=16,ef_construction=200,distance=cosine
               run:
                   - name: update_vector_with_index
                     weight: 100

@@ -28,7 +28,7 @@ microbenchmark:
             - CREATE EXTENSION IF NOT EXISTS vector;
             - DROP TABLE IF EXISTS vector_delete_768d_indexed;
             - CREATE TABLE vector_delete_768d_indexed (id bigint PRIMARY KEY, embedding vector(768));
-            - CREATE INDEX ON vector_delete_768d_indexed USING hnsw (embedding vector_l2_ops) WITH (m=16, ef_construction=200);
+            - CREATE INDEX ON vector_delete_768d_indexed USING hnsw (embedding vector_cosine_ops) WITH (m=16, ef_construction=200);
         cleanup:
             - DROP TABLE IF EXISTS vector_delete_768d_indexed;
         loadRules:

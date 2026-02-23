@@ -1,6 +1,6 @@
-# Vector Insert - 1536D, with HNSW index (m=16, ef_construction=200)
+# Vector Insert - 1536D, with HNSW index (m=16, ef_construction=200), Inner Product distance
 # Following VectorDBBench naming conventions
-# Configuration: dimension=1536, operation=insert, indexed=true, m=16, ef_construction=200
+# Configuration: dimension=1536, operation=insert, indexed=true, m=16, ef_construction=200, distance=ip
 
 type: POSTGRES
 driver: org.postgresql.Driver
@@ -28,7 +28,7 @@ microbenchmark:
             - CREATE EXTENSION IF NOT EXISTS vector;
             - DROP TABLE IF EXISTS vector_insert_1536d_indexed;
             - CREATE TABLE vector_insert_1536d_indexed (id bigint PRIMARY KEY, embedding vector(1536));
-            - CREATE INDEX ON vector_insert_1536d_indexed USING hnsw (embedding vector_l2_ops) WITH (m=16, ef_construction=200);
+            - CREATE INDEX ON vector_insert_1536d_indexed USING hnsw (embedding vector_ip_ops) WITH (m=16, ef_construction=200);
         cleanup:
             - DROP TABLE IF EXISTS vector_insert_1536d_indexed;
         loadRules:
@@ -44,7 +44,7 @@ microbenchmark:
 
         executeRules:
             - workload: insert_1536d_indexed_m16_ef200
-              customTags: dim=1536,operation=insert,indexed=true,m=16,ef_construction=200
+              customTags: dim=1536,operation=insert,indexed=true,m=16,ef_construction=200,distance=ip
               run:
                   - name: insert_vector_with_index
                     weight: 100

@@ -1,6 +1,6 @@
-# Vector Update - 1536D, update embedding with HNSW index (L2 distance)
+# Vector Update - 1536D, update embedding with HNSW index (Inner Product distance)
 # Following VectorDBBench naming conventions
-# Configuration: dimension=1536, operation=update, column=embedding, indexed=true, m=16, ef_construction=200, distance=l2
+# Configuration: dimension=1536, operation=update, column=embedding, indexed=true, m=16, ef_construction=200, distance=ip
 
 type: YUGABYTE
 driver: com.yugabyte.Driver
@@ -28,7 +28,7 @@ microbenchmark:
             - CREATE EXTENSION IF NOT EXISTS vector;
             - DROP TABLE IF EXISTS vector_update_1536d_indexed;
             - CREATE TABLE vector_update_1536d_indexed (id bigint PRIMARY KEY, embedding vector(1536));
-            - CREATE INDEX ON vector_update_1536d_indexed USING ybhnsw (embedding vector_l2_ops) WITH (m=16, ef_construction=200);
+            - CREATE INDEX ON vector_update_1536d_indexed USING ybhnsw (embedding vector_ip_ops) WITH (m=16, ef_construction=200);
         cleanup:
             - DROP TABLE IF EXISTS vector_update_1536d_indexed;
         loadRules:
@@ -44,7 +44,7 @@ microbenchmark:
 
         executeRules:
             - workload: update_1536d_embedding_indexed_m16_ef200
-              customTags: dim=1536,operation=update,column=embedding,indexed=true,m=16,ef_construction=200,distance=l2
+              customTags: dim=1536,operation=update,column=embedding,indexed=true,m=16,ef_construction=200,distance=ip
               run:
                   - name: update_vector_with_index
                     weight: 100
