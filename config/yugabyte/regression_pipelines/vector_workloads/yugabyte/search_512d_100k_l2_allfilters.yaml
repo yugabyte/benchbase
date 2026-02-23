@@ -26,6 +26,7 @@ microbenchmark:
     properties:
         setAutoCommit: true
         create:
+            - CREATE EXTENSION IF NOT EXISTS vector;
             - DROP TABLE IF EXISTS vector_search_512d_100k;
             - CREATE TABLE vector_search_512d_100k (id bigint PRIMARY KEY, embedding vector(512), metadata text, category int);
             - CREATE INDEX ON vector_search_512d_100k USING ybhnsw (embedding vector_l2_ops) WITH (m=16, ef_construction=200);
