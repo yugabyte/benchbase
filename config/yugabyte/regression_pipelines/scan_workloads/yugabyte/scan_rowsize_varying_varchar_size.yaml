@@ -1,0 +1,176 @@
+#TEST FOR YUGABYTE REGULAR TABLES
+# Scan workloads varying row size via a single varchar column (primary key + payload).
+# Target row sizes: 500B -> 1KB -> 5KB -> 10KB -> 20KB -> 50KB -> 100KB -> 200KB
+# Schema: col_bigint_id (PK) + col_payload (varchar). Row size ≈ 33 bytes overhead + payload length.
+#TESTS:
+#   Point lookup (SELECT *) for each row size to exercise full-row read path (e.g. CRC checks).
+type: YUGABYTE
+driver: com.yugabyte.Driver
+url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true&load-balance=false
+username: {{username}}
+password: {{password}}
+batchsize: 128
+isolation: TRANSACTION_REPEATABLE_READ
+loaderthreads: 1
+terminals: 1
+collect_pg_stat_statements: true
+use_dist_in_explain: true
+yaml_version: v1.0
+works:
+    work:
+        time_secs: 120
+        active_terminals: 1
+        rate: unlimited
+        warmup: 30
+microbenchmark:
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
+    properties:
+        setAutoCommit: true
+        create:
+            - DROP TABLE IF EXISTS scan_rowsize_500b_tbl;
+            - DROP TABLE IF EXISTS scan_rowsize_1kb_tbl;
+            - DROP TABLE IF EXISTS scan_rowsize_5kb_tbl;
+            - DROP TABLE IF EXISTS scan_rowsize_10kb_tbl;
+            - DROP TABLE IF EXISTS scan_rowsize_20kb_tbl;
+            - DROP TABLE IF EXISTS scan_rowsize_50kb_tbl;
+            - DROP TABLE IF EXISTS scan_rowsize_100kb_tbl;
+            - DROP TABLE IF EXISTS scan_rowsize_200kb_tbl;
+            - CREATE TABLE scan_rowsize_500b_tbl(col_bigint_id bigint, col_payload varchar(467), PRIMARY KEY(col_bigint_id));
+            - CREATE TABLE scan_rowsize_1kb_tbl(col_bigint_id bigint, col_payload varchar(991), PRIMARY KEY(col_bigint_id));
+            - CREATE TABLE scan_rowsize_5kb_tbl(col_bigint_id bigint, col_payload varchar(5087), PRIMARY KEY(col_bigint_id));
+            - CREATE TABLE scan_rowsize_10kb_tbl(col_bigint_id bigint, col_payload varchar(10207), PRIMARY KEY(col_bigint_id));
+            - CREATE TABLE scan_rowsize_20kb_tbl(col_bigint_id bigint, col_payload varchar(20447), PRIMARY KEY(col_bigint_id));
+            - CREATE TABLE scan_rowsize_50kb_tbl(col_bigint_id bigint, col_payload varchar(51167), PRIMARY KEY(col_bigint_id));
+            - CREATE TABLE scan_rowsize_100kb_tbl(col_bigint_id bigint, col_payload varchar(102367), PRIMARY KEY(col_bigint_id));
+            - CREATE TABLE scan_rowsize_200kb_tbl(col_bigint_id bigint, col_payload varchar(204767), PRIMARY KEY(col_bigint_id));
+        cleanup:
+            - DROP TABLE IF EXISTS scan_rowsize_500b_tbl;
+            - DROP TABLE IF EXISTS scan_rowsize_1kb_tbl;
+            - DROP TABLE IF EXISTS scan_rowsize_5kb_tbl;
+            - DROP TABLE IF EXISTS scan_rowsize_10kb_tbl;
+            - DROP TABLE IF EXISTS scan_rowsize_20kb_tbl;
+            - DROP TABLE IF EXISTS scan_rowsize_50kb_tbl;
+            - DROP TABLE IF EXISTS scan_rowsize_100kb_tbl;
+            - DROP TABLE IF EXISTS scan_rowsize_200kb_tbl;
+        loadRules:
+            - table: scan_rowsize_500b_tbl
+              rows: 1000
+              columns:
+                  - name: col_bigint_id
+                    util: PrimaryIntGen
+                    params: [1, 1000]
+                  - name: col_payload
+                    util: RandomAString
+                    params: [467, 467]
+            - table: scan_rowsize_1kb_tbl
+              rows: 1000
+              columns:
+                  - name: col_bigint_id
+                    util: PrimaryIntGen
+                    params: [1, 1000]
+                  - name: col_payload
+                    util: RandomAString
+                    params: [991, 991]
+            - table: scan_rowsize_5kb_tbl
+              rows: 1000
+              columns:
+                  - name: col_bigint_id
+                    util: PrimaryIntGen
+                    params: [1, 1000]
+                  - name: col_payload
+                    util: RandomAString
+                    params: [5087, 5087]
+            - table: scan_rowsize_10kb_tbl
+              rows: 1000
+              columns:
+                  - name: col_bigint_id
+                    util: PrimaryIntGen
+                    params: [1, 1000]
+                  - name: col_payload
+                    util: RandomAString
+                    params: [10207, 10207]
+            - table: scan_rowsize_20kb_tbl
+              rows: 1000
+              columns:
+                  - name: col_bigint_id
+                    util: PrimaryIntGen
+                    params: [1, 1000]
+                  - name: col_payload
+                    util: RandomAString
+                    params: [20447, 20447]
+            - table: scan_rowsize_50kb_tbl
+              rows: 1000
+              columns:
+                  - name: col_bigint_id
+                    util: PrimaryIntGen
+                    params: [1, 1000]
+                  - name: col_payload
+                    util: RandomAString
+                    params: [51167, 51167]
+            - table: scan_rowsize_100kb_tbl
+              rows: 1000
+              columns:
+                  - name: col_bigint_id
+                    util: PrimaryIntGen
+                    params: [1, 1000]
+                  - name: col_payload
+                    util: RandomAString
+                    params: [102367, 102367]
+            - table: scan_rowsize_200kb_tbl
+              rows: 1000
+              columns:
+                  - name: col_bigint_id
+                    util: PrimaryIntGen
+                    params: [1, 1000]
+                  - name: col_payload
+                    util: RandomAString
+                    params: [204767, 204767]
+        executeRules:
+            - workload: scan_rowsize_500b_pointlookup
+              run:
+                  - name: rowsize_500b_pointlookup_test
+                    weight: 100
+                    queries:
+                        - query: select * from scan_rowsize_500b_tbl
+            - workload: scan_rowsize_1kb_pointlookup
+              run:
+                  - name: rowsize_1kb_pointlookup_test
+                    weight: 100
+                    queries:
+                        - query: select * from scan_rowsize_1kb_tbl
+            - workload: scan_rowsize_5kb_pointlookup
+              run:
+                  - name: rowsize_5kb_pointlookup_test
+                    weight: 100
+                    queries:
+                        - query: select * from scan_rowsize_5kb_tbl
+            - workload: scan_rowsize_10kb_pointlookup
+              run:
+                  - name: rowsize_10kb_pointlookup_test
+                    weight: 100
+                    queries:
+                        - query: select * from scan_rowsize_10kb_tbl
+            - workload: scan_rowsize_20kb_pointlookup
+              run:
+                  - name: rowsize_20kb_pointlookup_test
+                    weight: 100
+                    queries:
+                        - query: select * from scan_rowsize_20kb_tbl
+            - workload: scan_rowsize_50kb_pointlookup
+              run:
+                  - name: rowsize_50kb_pointlookup_test
+                    weight: 100
+                    queries:
+                        - query: select * from scan_rowsize_50kb_tbl
+            - workload: scan_rowsize_100kb_pointlookup
+              run:
+                  - name: rowsize_100kb_pointlookup_test
+                    weight: 100
+                    queries:
+                        - query: select * from scan_rowsize_100kb_tbl
+            - workload: scan_rowsize_200kb_pointlookup
+              run:
+                  - name: rowsize_200kb_pointlookup_test
+                    weight: 100
+                    queries:
+                        - query: select * from scan_rowsize_200kb_tbl
