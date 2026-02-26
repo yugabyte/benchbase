@@ -41,7 +41,7 @@ microbenchmark:
 
         loadRules:
             - table: wide_table
-              rows: 100000
+              rows: 10000
               columns:
                   - name: int_col1
                     util: PrimaryIntGen
@@ -50,9 +50,9 @@ microbenchmark:
                     util: PrimaryIntGen
                     params: [1, 100000]
                   - name: text_col
-                    count: 20
+                    count: 10
                     util: RandomAString
-                    params: [4000, 5000]
+                    params: [5000, 5000]
 
         executeRules:
             - workload: scan_table
