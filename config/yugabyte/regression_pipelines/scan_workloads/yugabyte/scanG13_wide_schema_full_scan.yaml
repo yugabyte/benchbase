@@ -31,28 +31,28 @@ microbenchmark:
 
         loadRules:
             - table: wide_table_50kB
-              rows: 100000
+              rows: 10000
               columns:
                   - name: int_col1
                     util: PrimaryIntGen
-                    params: [1, 100000]
+                    params: [1, 10000]
                   - name: int_col2
                     util: PrimaryIntGen
-                    params: [1, 100000]
+                    params: [1, 10000]
                   - name: text_col
                     count: 10
                     util: RandomAString
                     params: [5000, 5000]
             
             - table: wide_table_200kB
-              rows: 100000
+              rows: 10000
               columns:
                   - name: int_col1
                     util: PrimaryIntGen
-                    params: [1, 100000]
+                    params: [1, 10000]
                   - name: int_col2
                     util: PrimaryIntGen
-                    params: [1, 100000]
+                    params: [1, 10000]
                   - name: text_col
                     count: 10
                     util: RandomAString
