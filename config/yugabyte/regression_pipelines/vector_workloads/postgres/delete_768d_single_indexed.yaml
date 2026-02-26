@@ -4,7 +4,7 @@
 
 type: POSTGRES
 driver: org.postgresql.Driver
-url: jdbc:postgresql://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
+url: jdbc:postgresql://{{endpoint}}:5432/postgres?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
 username: {{username}}
 password: {{password}}
 batchsize: 128
@@ -12,7 +12,6 @@ isolation: TRANSACTION_REPEATABLE_READ
 loaderthreads: 4
 terminals: 1
 collect_pg_stat_statements: true
-use_dist_in_explain: true
 yaml_version: v1.0
 works:
     work:
@@ -28,7 +27,7 @@ microbenchmark:
             - CREATE EXTENSION IF NOT EXISTS vector;
             - DROP TABLE IF EXISTS vector_delete_768d_indexed;
             - CREATE TABLE vector_delete_768d_indexed (id bigint PRIMARY KEY, embedding vector(768));
-            - CREATE INDEX ON vector_delete_768d_indexed USING hnsw (embedding vector_l2_ops) WITH (m=16, ef_construction=200);
+            - CREATE INDEX ON vector_delete_768d_indexed USING hnsw (embedding vector_cosine_ops) WITH (m=16, ef_construction=200);
         cleanup:
             - DROP TABLE IF EXISTS vector_delete_768d_indexed;
         loadRules:
@@ -50,7 +49,7 @@ microbenchmark:
                     weight: 100
                     queries:
                         - query: DELETE FROM vector_delete_768d_indexed WHERE id = ?
-                          count: 10
+                          count: 1
                           bindings:
                               - util: RandomNumber
                                 params: [1, 200000]

@@ -1,10 +1,10 @@
-# Vector Delete - 512D, single row delete with HNSW index
+# Vector Delete - 1536D, single row delete with HNSW index
 # Following VectorDBBench naming conventions
-# Configuration: dimension=512, operation=delete, deletetype=single, indexed=true
+# Configuration: dimension=1536, operation=delete, deletetype=single, indexed=true
 
-type: POSTGRES
-driver: org.postgresql.Driver
-url: jdbc:postgresql://{{endpoint}}:5432/postgres?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
+type: YUGABYTE
+driver: com.yugabyte.Driver
+url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
 username: {{username}}
 password: {{password}}
 batchsize: 128
@@ -12,6 +12,7 @@ isolation: TRANSACTION_REPEATABLE_READ
 loaderthreads: 4
 terminals: 1
 collect_pg_stat_statements: true
+use_dist_in_explain: true
 yaml_version: v1.0
 works:
     work:
@@ -25,13 +26,13 @@ microbenchmark:
         setAutoCommit: false
         create:
             - CREATE EXTENSION IF NOT EXISTS vector;
-            - DROP TABLE IF EXISTS vector_delete_512d_indexed;
-            - CREATE TABLE vector_delete_512d_indexed (id bigint PRIMARY KEY, embedding vector(512));
-            - CREATE INDEX ON vector_delete_512d_indexed USING hnsw (embedding vector_l2_ops) WITH (m=16, ef_construction=200);
+            - DROP TABLE IF EXISTS vector_delete_1536d_indexed;
+            - CREATE TABLE vector_delete_1536d_indexed (id bigint PRIMARY KEY, embedding vector(1536));
+            - CREATE INDEX ON vector_delete_1536d_indexed USING ybhnsw (embedding vector_ip_ops) WITH (m=16, ef_construction=200);
         cleanup:
-            - DROP TABLE IF EXISTS vector_delete_512d_indexed;
+            - DROP TABLE IF EXISTS vector_delete_1536d_indexed;
         loadRules:
-            - table: vector_delete_512d_indexed
+            - table: vector_delete_1536d_indexed
               rows: 200000
               columns:
                   - name: id
@@ -39,16 +40,16 @@ microbenchmark:
                     params: [1, 200000]
                   - name: embedding
                     util: DeterministicVectorGen
-                    params: [512, -1.0, 1.0, 42]
+                    params: [1536, -1.0, 1.0, 42]
 
         executeRules:
-            - workload: delete_512d_single_indexed
-              customTags: dim=512,operation=delete,deletetype=single,indexed=true
+            - workload: delete_1536d_single_indexed
+              customTags: dim=1536,operation=delete,deletetype=single,indexed=true
               run:
                   - name: delete_single_row
                     weight: 100
                     queries:
-                        - query: DELETE FROM vector_delete_512d_indexed WHERE id = ?
+                        - query: DELETE FROM vector_delete_1536d_indexed WHERE id = ?
                           count: 1
                           bindings:
                               - util: RandomNumber

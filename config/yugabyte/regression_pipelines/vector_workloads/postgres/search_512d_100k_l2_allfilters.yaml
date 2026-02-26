@@ -1,11 +1,11 @@
 # Vector Search - 512D, 100K vectors, L2 distance, All Filter Types
 # Following VectorDBBench naming conventions
 # Configuration: dimension=512, magnitude=100k, distance=l2, filters=all
-# Tests: nofilter, 1percentile, 99percentile
+# Tests: nofilter, low_filter_1p (1% filtered out), high_filter_99p (99% filtered out)
 
 type: POSTGRES
 driver: org.postgresql.Driver
-url: jdbc:postgresql://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
+url: jdbc:postgresql://{{endpoint}}:5432/postgres?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
 username: {{username}}
 password: {{password}}
 batchsize: 128
@@ -13,7 +13,6 @@ isolation: TRANSACTION_REPEATABLE_READ
 loaderthreads: 4
 terminals: 1
 collect_pg_stat_statements: true
-use_dist_in_explain: true
 yaml_version: v1.0
 works:
     work:
@@ -59,43 +58,43 @@ microbenchmark:
                     weight: 100
                     queries:
                         - query: SELECT id, metadata, embedding <-> ?::vector(512) as distance FROM vector_search_512d_100k ORDER BY embedding <-> ?::vector(512) LIMIT 10
-                          count: 100
+                          count: 1
                           bindings:
                               - util: DeterministicVectorGen
                                 params: [512, -1.0, 1.0, 54321]
                               - util: DeterministicVectorGen
                                 params: [512, -1.0, 1.0, 54321]
 
-            # Test 2: 1% Filter - Selective filtering
-            - workload: search_512d_100k_l2_1percentile
-              customTags: dim=512,magnitude=100k,distance=l2,filter=1percentile,top_k=10,m=16,ef_construction=200
+            # Test 2: Low Filter 1P - 1% of data filtered out (~99% eligible, easy search)
+            - workload: search_512d_100k_l2_low_filter_1p
+              customTags: dim=512,magnitude=100k,distance=l2,filter=low_1pct_out_1p,top_k=10,m=16,ef_construction=200
               run:
-                  - name: ann_search_l2_1pct_filter
-                    weight: 100
-                    queries:
-                        - query: SELECT id, metadata, embedding <-> ?::vector(512) as distance FROM vector_search_512d_100k WHERE category = ? ORDER BY embedding <-> ?::vector(512) LIMIT 10
-                          count: 100
-                          bindings:
-                              - util: DeterministicVectorGen
-                                params: [512, -1.0, 1.0, 54321]
-                              - util: RandomNumber
-                                params: [1, 100]
-                              - util: DeterministicVectorGen
-                                params: [512, -1.0, 1.0, 54321]
-
-            # Test 3: 99% Filter - Broad filtering
-            - workload: search_512d_100k_l2_99percentile
-              customTags: dim=512,magnitude=100k,distance=l2,filter=99percentile,top_k=10,m=16,ef_construction=200
-              run:
-                  - name: ann_search_l2_99pct_filter
+                  - name: ann_search_l2_low_filter_1p
                     weight: 100
                     queries:
                         - query: SELECT id, metadata, embedding <-> ?::vector(512) as distance FROM vector_search_512d_100k WHERE category <= ? ORDER BY embedding <-> ?::vector(512) LIMIT 10
-                          count: 100
+                          count: 1
                           bindings:
                               - util: DeterministicVectorGen
                                 params: [512, -1.0, 1.0, 54321]
                               - util: SeededRandomNumber
                                 params: [95, 100, 99999]
+                              - util: DeterministicVectorGen
+                                params: [512, -1.0, 1.0, 54321]
+
+            # Test 3: High Filter 99P - 99% of data filtered out (~1% eligible, hard search)
+            - workload: search_512d_100k_l2_high_filter_99p
+              customTags: dim=512,magnitude=100k,distance=l2,filter=high_99pct_out_99p,top_k=10,m=16,ef_construction=200
+              run:
+                  - name: ann_search_l2_high_filter_99p
+                    weight: 100
+                    queries:
+                        - query: SELECT id, metadata, embedding <-> ?::vector(512) as distance FROM vector_search_512d_100k WHERE category = ? ORDER BY embedding <-> ?::vector(512) LIMIT 10
+                          count: 1
+                          bindings:
+                              - util: DeterministicVectorGen
+                                params: [512, -1.0, 1.0, 54321]
+                              - util: RandomNumber
+                                params: [1, 100]
                               - util: DeterministicVectorGen
                                 params: [512, -1.0, 1.0, 54321]

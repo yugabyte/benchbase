@@ -1,6 +1,6 @@
-# Vector Insert - 768D, with HNSW index (m=16, ef_construction=200), Cosine distance
+# Vector Update - 768D, update embedding with HNSW index (Cosine distance)
 # Following VectorDBBench naming conventions
-# Configuration: dimension=768, operation=insert, indexed=true, m=16, ef_construction=200, distance=cosine
+# Configuration: dimension=768, operation=update, column=embedding, indexed=true, m=16, ef_construction=200, distance=cosine
 
 type: YUGABYTE
 driver: com.yugabyte.Driver
@@ -26,33 +26,33 @@ microbenchmark:
         setAutoCommit: false
         create:
             - CREATE EXTENSION IF NOT EXISTS vector;
-            - DROP TABLE IF EXISTS vector_insert_768d_indexed;
-            - CREATE TABLE vector_insert_768d_indexed (id bigint PRIMARY KEY, embedding vector(768));
-            - CREATE INDEX ON vector_insert_768d_indexed USING ybhnsw (embedding vector_cosine_ops) WITH (m=16, ef_construction=200);
+            - DROP TABLE IF EXISTS vector_update_768d_indexed;
+            - CREATE TABLE vector_update_768d_indexed (id bigint PRIMARY KEY, embedding vector(768));
+            - CREATE INDEX ON vector_update_768d_indexed USING ybhnsw (embedding vector_cosine_ops) WITH (m=16, ef_construction=200);
         cleanup:
-            - DROP TABLE IF EXISTS vector_insert_768d_indexed;
+            - DROP TABLE IF EXISTS vector_update_768d_indexed;
         loadRules:
-            - table: vector_insert_768d_indexed
-              rows: 50000
+            - table: vector_update_768d_indexed
+              rows: 100000
               columns:
                   - name: id
                     util: PrimaryIntGen
-                    params: [1, 50000]
+                    params: [1, 100000]
                   - name: embedding
                     util: DeterministicVectorGen
                     params: [768, -1.0, 1.0, 42]
 
         executeRules:
-            - workload: insert_768d_indexed_m16_ef200
-              customTags: dim=768,operation=insert,indexed=true,m=16,ef_construction=200,distance=cosine
+            - workload: update_768d_embedding_indexed_m16_ef200
+              customTags: dim=768,operation=update,column=embedding,indexed=true,m=16,ef_construction=200,distance=cosine
               run:
-                  - name: insert_vector_with_index
+                  - name: update_vector_with_index
                     weight: 100
                     queries:
-                        - query: INSERT INTO vector_insert_768d_indexed (id, embedding) VALUES (?, ?::vector(768))
+                        - query: UPDATE vector_update_768d_indexed SET embedding = ?::vector(768) WHERE id = ?
                           count: 1
                           bindings:
-                              - util: PrimaryIntGen
-                                params: [50001, 500000]
                               - util: DeterministicVectorGen
-                                params: [768, -1.0, 1.0, 42]
+                                params: [768, -1.0, 1.0, 43]
+                              - util: RandomNumber
+                                params: [1, 100000]

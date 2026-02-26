@@ -1,6 +1,6 @@
-# Vector Search - 512D, 100K vectors, Cosine distance, No Filter
+# Vector Search - 1536D, 50K vectors, Cosine distance, No Filter (OpenAI embeddings)
 # Following VectorDBBench naming conventions
-# Configuration: dimension=512, magnitude=100k, filter=none, distance=cosine, ef_construction=200, m=16
+# Configuration: dimension=1536, magnitude=50k, filter=none, distance=cosine, ef_construction=200, m=16
 
 type: YUGABYTE
 driver: com.yugabyte.Driver
@@ -26,21 +26,21 @@ microbenchmark:
         setAutoCommit: true
         create:
             - CREATE EXTENSION IF NOT EXISTS vector;
-            - DROP TABLE IF EXISTS vector_search_512d_100k_cosine;
-            - CREATE TABLE vector_search_512d_100k_cosine (id bigint PRIMARY KEY, embedding vector(512), metadata text, category int);
-            - CREATE INDEX ON vector_search_512d_100k_cosine USING ybhnsw (embedding vector_cosine_ops) WITH (m=16, ef_construction=200);
+            - DROP TABLE IF EXISTS vector_search_1536d_50k;
+            - CREATE TABLE vector_search_1536d_50k (id bigint PRIMARY KEY, embedding vector(1536), metadata text, category int);
+            - CREATE INDEX ON vector_search_1536d_50k USING ybhnsw (embedding vector_cosine_ops) WITH (m=16, ef_construction=200);
         cleanup:
-            - DROP TABLE IF EXISTS vector_search_512d_100k_cosine;
+            - DROP TABLE IF EXISTS vector_search_1536d_50k;
         loadRules:
-            - table: vector_search_512d_100k_cosine
-              rows: 100000
+            - table: vector_search_1536d_50k
+              rows: 50000
               columns:
                   - name: id
                     util: PrimaryIntGen
-                    params: [1, 100000]
+                    params: [1, 50000]
                   - name: embedding
                     util: RandomFloatArrayGen
-                    params: [512, -1.0, 1.0]
+                    params: [1536, -1.0, 1.0]
                   - name: metadata
                     util: RandomAString
                     params: [50, 100]
@@ -49,16 +49,16 @@ microbenchmark:
                     params: [1, 10]
 
         executeRules:
-            - workload: search_512d_100k_cosine_nofilter
-              customTags: dim=512,magnitude=100k,distance=cosine,filter=none,top_k=10,m=16,ef_construction=200
+            - workload: search_1536d_50k_cosine_nofilter
+              customTags: dim=1536,magnitude=50k,distance=cosine,filter=none,top_k=10,m=16,ef_construction=200
               run:
                   - name: ann_search_cosine
                     weight: 100
                     queries:
-                        - query: SELECT id, metadata, 1 - (embedding <=> ?::vector(512)) as similarity FROM vector_search_512d_100k_cosine ORDER BY embedding <=> ?::vector(512) LIMIT 10
-                          count: 100
+                        - query: SELECT id, metadata, 1 - (embedding <=> ?::vector(1536)) as similarity FROM vector_search_1536d_50k ORDER BY embedding <=> ?::vector(1536) LIMIT 10
+                          count: 1
                           bindings:
                               - util: DeterministicVectorGen
-                                params: [512, -1.0, 1.0, 11111]
+                                params: [1536, -1.0, 1.0, 99999]
                               - util: DeterministicVectorGen
-                                params: [512, -1.0, 1.0, 11111]
+                                params: [1536, -1.0, 1.0, 99999]

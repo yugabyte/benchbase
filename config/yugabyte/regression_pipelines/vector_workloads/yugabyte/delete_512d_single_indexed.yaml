@@ -2,9 +2,9 @@
 # Following VectorDBBench naming conventions
 # Configuration: dimension=512, operation=delete, deletetype=single, indexed=true
 
-type: POSTGRES
-driver: org.postgresql.Driver
-url: jdbc:postgresql://{{endpoint}}:5432/postgres?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
+type: YUGABYTE
+driver: com.yugabyte.Driver
+url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
 username: {{username}}
 password: {{password}}
 batchsize: 128
@@ -12,6 +12,7 @@ isolation: TRANSACTION_REPEATABLE_READ
 loaderthreads: 4
 terminals: 1
 collect_pg_stat_statements: true
+use_dist_in_explain: true
 yaml_version: v1.0
 works:
     work:
@@ -27,7 +28,7 @@ microbenchmark:
             - CREATE EXTENSION IF NOT EXISTS vector;
             - DROP TABLE IF EXISTS vector_delete_512d_indexed;
             - CREATE TABLE vector_delete_512d_indexed (id bigint PRIMARY KEY, embedding vector(512));
-            - CREATE INDEX ON vector_delete_512d_indexed USING hnsw (embedding vector_l2_ops) WITH (m=16, ef_construction=200);
+            - CREATE INDEX ON vector_delete_512d_indexed USING ybhnsw (embedding vector_l2_ops) WITH (m=16, ef_construction=200);
         cleanup:
             - DROP TABLE IF EXISTS vector_delete_512d_indexed;
         loadRules:
