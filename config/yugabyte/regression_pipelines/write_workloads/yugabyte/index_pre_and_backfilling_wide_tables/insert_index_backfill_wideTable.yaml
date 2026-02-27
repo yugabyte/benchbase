@@ -33,7 +33,7 @@ microbenchmark:
                 text_col7 TEXT,
                 text_col8 TEXT,
                 text_col9 TEXT,
-                text_col10 TEXT,
+                text_col10 TEXT
                 );
 
         loadRules:
