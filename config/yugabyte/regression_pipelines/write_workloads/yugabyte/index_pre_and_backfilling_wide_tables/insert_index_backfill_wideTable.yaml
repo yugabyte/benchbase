@@ -36,9 +36,6 @@ microbenchmark:
                 text_col10 TEXT,
                 );
 
-        afterLoad:
-            - CREATE INDEX idx_int_col2 ON wide_table(int_col2);
-
         loadRules:
             - table: wide_table
               rows: 10000
@@ -61,4 +58,4 @@ microbenchmark:
                   - name: scan_full_table
                     weight: 100
                     queries:
-                         query: SELECT * FROM wide_table;
+                         query: CREATE INDEX idx_int_col2 ON wide_table(int_col2);
