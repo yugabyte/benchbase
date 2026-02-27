@@ -54,7 +54,7 @@ microbenchmark:
                     util: RandomAString
                     params: [5000, 5000]
 
-        executeRules:
+        executeOnce:
             - workload: scan_table
               time_secs: 30
               run:
