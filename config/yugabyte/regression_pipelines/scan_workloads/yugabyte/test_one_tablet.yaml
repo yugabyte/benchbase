@@ -1,0 +1,76 @@
+type: YUGABYTE
+driver: com.yugabyte.Driver
+url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true&load-balance=false
+username: {{username}}
+password: {{password}}
+batchsize: 128
+isolation: TRANSACTION_REPEATABLE_READ
+loaderthreads: 1
+terminals: 1
+collect_pg_stat_statements: true
+yaml_version: v1.0
+use_dist_in_explain: true
+works:
+    work:
+        time_secs: 30
+        rate: unlimited
+        warmup: 10
+microbenchmark:
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
+    properties:
+        setAutoCommit: true
+        create:
+            - drop table IF EXISTS wide_table_50kB;
+            - drop table IF EXISTS wide_table_200kB;
+            - CREATE TABLE wide_table_50kB (int_col1 INT PRIMARY KEY, int_col2 INT, text_col1 TEXT, text_col2 TEXT, text_col3 TEXT, text_col4 TEXT, text_col5 TEXT, text_col6 TEXT, text_col7 TEXT, text_col8 TEXT, text_col9 TEXT, text_col10 TEXT) SPLIT INTO 1 TABLETS;
+            - CREATE TABLE wide_table_200kB (int_col1 INT PRIMARY KEY, int_col2 INT, text_col1 TEXT, text_col2 TEXT, text_col3 TEXT, text_col4 TEXT, text_col5 TEXT, text_col6 TEXT, text_col7 TEXT, text_col8 TEXT, text_col9 TEXT, text_col10 TEXT) SPLIT INTO 1 TABLETS;
+
+        afterLoad:
+            - CREATE INDEX idx_int_col2_50kB ON wide_table_50kB(int_col2);
+            - CREATE INDEX idx_int_col2_200kB ON wide_table_200kB(int_col2);
+
+        loadRules:
+            - table: wide_table_50kB
+              rows: 10000
+              columns:
+                  - name: int_col1
+                    util: PrimaryIntGen
+                    params: [1, 10000]
+                  - name: int_col2
+                    util: PrimaryIntGen
+                    params: [1, 10000]
+                  - name: text_col
+                    count: 10
+                    util: RandomAString
+                    params: [5000, 5000]
+            
+            - table: wide_table_200kB
+              rows: 10000
+              columns:
+                  - name: int_col1
+                    util: PrimaryIntGen
+                    params: [1, 10000]
+                  - name: int_col2
+                    util: PrimaryIntGen
+                    params: [1, 10000]
+                  - name: text_col
+                    count: 10
+                    util: RandomAString
+                    params: [20000, 20000]
+
+        executeRules:
+            - workload: select_50kB
+              time_secs: 30
+              run:
+                  - name: select_50kB
+                    weight: 100
+                    queries:
+                        - query: SELECT * FROM wide_table_50kB;
+
+            - workload: select_200kB
+              time_secs: 30
+              run:
+                  - name: select_200kB
+                    weight: 100
+                    queries:
+                        - query: SELECT * FROM wide_table_200kB;
