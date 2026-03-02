@@ -38,7 +38,7 @@ microbenchmark:
 
         loadRules:
             - table: wide_table
-              rows: 10000
+              rows: 100000
               columns:
                   - name: int_col1
                     util: PrimaryIntGen
