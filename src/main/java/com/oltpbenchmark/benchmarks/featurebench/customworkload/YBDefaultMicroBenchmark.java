@@ -41,7 +41,6 @@ public class YBDefaultMicroBenchmark extends YBMicroBenchmark {
                 for (HierarchicalConfiguration<ImmutableNode> queryConfig : queries) {
                     String query = queryConfig.getString("query");
                     if (query != null && !query.isEmpty()) {
-                        LOG.info("Executing: {}", query);
                         stmtObj.execute(query);
                     }
                 }
