@@ -1,0 +1,101 @@
+# Vector Search - 128D, 100K vectors, Inner Product distance, All Filter Types
+# Following VectorDBBench naming conventions
+# Configuration: dimension=128, magnitude=100k, distance=ip, filters=all
+# Tests: nofilter, low_filter_1p (1% filtered out), high_filter_99p (99% filtered out)
+
+type: YUGABYTE
+driver: com.yugabyte.Driver
+url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
+username: {{username}}
+password: {{password}}
+batchsize: 128
+isolation: TRANSACTION_REPEATABLE_READ
+loaderthreads: 4
+terminals: 1
+collect_pg_stat_statements: true
+use_dist_in_explain: true
+yaml_version: v1.0
+works:
+    work:
+        time_secs: 120
+        active_terminals: 1
+        rate: unlimited
+        warmup: 30
+microbenchmark:
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
+    properties:
+        setAutoCommit: true
+        create:
+            - CREATE EXTENSION IF NOT EXISTS vector;
+            - DROP TABLE IF EXISTS vector_search_128d_100k;
+            - CREATE TABLE vector_search_128d_100k (id bigint PRIMARY KEY, embedding vector(128), metadata text, category int);
+            - CREATE INDEX ON vector_search_128d_100k USING ybhnsw (embedding vector_ip_ops) WITH (m=16, ef_construction=200);
+            - CREATE INDEX ON vector_search_128d_100k (category);
+        cleanup:
+            - DROP TABLE IF EXISTS vector_search_128d_100k;
+        loadRules:
+            - table: vector_search_128d_100k
+              rows: 100000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 100000]
+                  - name: embedding
+                    util: RandomFloatArrayGen
+                    params: [128, -1.0, 1.0]
+                  - name: metadata
+                    util: RandomAString
+                    params: [50, 100]
+                  - name: category
+                    util: RandomNumber
+                    params: [1, 100]
+
+        executeRules:
+            # Test 1: No Filter - Pure ANN search
+            - workload: search_128d_100k_ip_nofilter
+              customTags: dim=128,magnitude=100k,distance=ip,filter=none,top_k=10,m=16,ef_construction=200
+              run:
+                  - name: ann_search_ip_nofilter
+                    weight: 100
+                    queries:
+                        - query: SELECT id, metadata, embedding <#> ?::vector(128) as neg_inner_product FROM vector_search_128d_100k ORDER BY embedding <#> ?::vector(128) LIMIT 10
+                          count: 1
+                          bindings:
+                              - util: DeterministicVectorGen
+                                params: [128, -1.0, 1.0, 12345]
+                              - util: DeterministicVectorGen
+                                params: [128, -1.0, 1.0, 12345]
+
+            # Test 2: Low Filter 1P - 1% of data filtered out (~99% eligible, easy search)
+            - workload: search_128d_100k_ip_low_filter_1p
+              customTags: dim=128,magnitude=100k,distance=ip,filter=low_1pct_out_1p,top_k=10,m=16,ef_construction=200
+              run:
+                  - name: ann_search_ip_low_filter_1p
+                    weight: 100
+                    queries:
+                        - query: SELECT id, metadata, embedding <#> ?::vector(128) as neg_inner_product FROM vector_search_128d_100k WHERE category <= ? ORDER BY embedding <#> ?::vector(128) LIMIT 10
+                          count: 1
+                          bindings:
+                              - util: DeterministicVectorGen
+                                params: [128, -1.0, 1.0, 12345]
+                              - util: SeededRandomNumber
+                                params: [95, 100, 99999]
+                              - util: DeterministicVectorGen
+                                params: [128, -1.0, 1.0, 12345]
+
+            # Test 3: High Filter 99P - 99% of data filtered out (~1% eligible, hard search)
+            - workload: search_128d_100k_ip_high_filter_99p
+              customTags: dim=128,magnitude=100k,distance=ip,filter=high_99pct_out_99p,top_k=10,m=16,ef_construction=200
+              run:
+                  - name: ann_search_ip_high_filter_99p
+                    weight: 100
+                    queries:
+                        - query: SELECT id, metadata, embedding <#> ?::vector(128) as neg_inner_product FROM vector_search_128d_100k WHERE category = ? ORDER BY embedding <#> ?::vector(128) LIMIT 10
+                          count: 1
+                          bindings:
+                              - util: DeterministicVectorGen
+                                params: [128, -1.0, 1.0, 12345]
+                              - util: RandomNumber
+                                params: [1, 100]
+                              - util: DeterministicVectorGen
+                                params: [128, -1.0, 1.0, 12345]
