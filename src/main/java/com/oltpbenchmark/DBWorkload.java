@@ -771,10 +771,12 @@ public class DBWorkload {
                             );
                             writeHistograms(r);
 
-                            if(benchList.get(0).getBenchmarkName().equalsIgnoreCase("featurebench")){
+                            boolean checkZeroRows = benchList.get(0).getBenchmarkName().equalsIgnoreCase("featurebench") && (executeRules == null ? true : workloads.get(workCount - 1).getBoolean("zeroRowsValidation", true));
+
+                            if(checkZeroRows){
                                 checkCompletedTransaction(r);
                             }
-
+                           
                             if (argsLine.hasOption("json-histograms")) {
                                 String histogram_json = writeJSONHistograms(r);
                                 String fileName = argsLine.getOptionValue("json-histograms");
@@ -868,7 +870,9 @@ public class DBWorkload {
                         }
                         writeHistograms(r);
 
-                        if(benchList.get(0).getBenchmarkName().equalsIgnoreCase("featurebench")){
+                        boolean checkZeroRows = benchList.get(0).getBenchmarkName().equalsIgnoreCase("featurebench") && (executeRules == null ? true : workloads.get(workCount - 1).getBoolean("zeroRowsValidation", true));
+
+                        if(checkZeroRows){
                                 checkCompletedTransaction(r);
                         }
 

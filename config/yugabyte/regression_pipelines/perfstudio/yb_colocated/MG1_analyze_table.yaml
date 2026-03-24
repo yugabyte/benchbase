@@ -334,6 +334,7 @@ microbenchmark:
         executeRules:
 
             - workload: MG1_1_Analyze_50M
+              zeroRowsValidation: false
               time_secs: 1800
               run:
                   - name: analyze_1
@@ -342,6 +343,7 @@ microbenchmark:
                         - query: analyze nets_50M_1
 
             - workload: MG1_2_Analyze_100M
+              zeroRowsValidation: false
               time_secs: 1800
               run:
                   - name: analyze_1
@@ -350,6 +352,7 @@ microbenchmark:
                         - query: analyze nets_100M_1
 
             - workload: MG1_3_Analyze_200M
+              zeroRowsValidation: false
               time_secs: 1800
               run:
                   - name: analyze_1
