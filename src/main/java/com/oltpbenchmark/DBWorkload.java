@@ -33,6 +33,7 @@ import com.oltpbenchmark.api.Worker;
 import com.oltpbenchmark.types.DatabaseType;
 import com.oltpbenchmark.types.State;
 import com.oltpbenchmark.util.*;
+import org.json.JSONObject;
 import org.apache.commons.cli.*;
 import org.apache.commons.collections4.map.ListOrderedMap;
 import org.apache.commons.configuration2.HierarchicalConfiguration;
@@ -1296,7 +1297,7 @@ public class DBWorkload {
     }
 
     // Returns a list of CPU utilizations (percent) for all nodes
-    public static List<Double> getYBCPUUtilizationAllNodes(BenchmarkModule bench) throws SQLException {
+    private static List<Double> getYBCPUUtilizationAllNodes(BenchmarkModule bench) throws SQLException {
         List<Double> cpuList = new ArrayList<>();
         Connection conn = null;
         Statement stmt = null;
@@ -1793,6 +1794,16 @@ public class DBWorkload {
             mapper.writerWithDefaultPrettyPrinter().writeValue(new File(jsonFile), jsonResults);
         } catch (Exception e) {
             LOG.error("Error writing optimal threads JSON log", e);
+        }
+        // Store last CPU reading into metadata for the output JSON
+        if (!jsonResults.isEmpty()) {
+            Map<String, Object> lastEntry = jsonResults.get(jsonResults.size() - 1);
+            JSONObject metaDataJson = Worker.featurebenchAdditionalResults.getMetaDataJson();
+            metaDataJson.put("cpu_utilization", lastEntry.get("readings"));
+            metaDataJson.put("avg_cpu", lastEntry.get("readings").stream().mapToDouble(Double::doubleValue).average().orElse(0.0));
+            metaDataJson.put("optimal_threads", optimalThreads);
+            Worker.featurebenchAdditionalResults.setMetaDataJson(metaDataJson);
+            LOG.info("Stored CPU utilization in metadata: max_cpu={}, optimal_threads={}", lastEntry.get("max_cpu"), optimalThreads);
         }
         // Restore original phase
         bench.getWorkloadConfiguration().getPhases().clear();
