@@ -1799,8 +1799,9 @@ public class DBWorkload {
         if (!jsonResults.isEmpty()) {
             Map<String, Object> lastEntry = jsonResults.get(jsonResults.size() - 1);
             JSONObject metaDataJson = Worker.featurebenchAdditionalResults.getMetaDataJson();
-            metaDataJson.put("cpu_utilization", lastEntry.get("readings"));
-            metaDataJson.put("max_cpu", lastEntry.get("max_cpu"));
+            List<List<Double>> readings = (List<List<Double>>) lastEntry.get("readings");
+            metaDataJson.put("cpu_utilization", readings.get(1));
+            metaDataJson.put("avg_cpu", readings.get(1).stream().mapToDouble(Double::doubleValue).average().orElse(0.0));
             metaDataJson.put("optimal_threads", optimalThreads);
             Worker.featurebenchAdditionalResults.setMetaDataJson(metaDataJson);
             LOG.info("Stored CPU utilization in metadata: max_cpu={}, optimal_threads={}", lastEntry.get("max_cpu"), optimalThreads);
