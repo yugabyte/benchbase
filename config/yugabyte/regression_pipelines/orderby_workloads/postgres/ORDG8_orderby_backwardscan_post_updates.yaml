@@ -171,14 +171,6 @@ microbenchmark:
                     queries:
                         - query: select col_bigint_id_1,col_bigint_id_2,col_bigint_card2_1,col_bigint_card3_1 from Indexed1M_1 where col_bigint_card1_1=1000000 and col_bigint_card2_1<1000100 order by col_bigint_card2_1 DESC
 
-            -   workload: ORDG8_2_ordby_bigint_indexed_column_desc
-                customTags: customer=2,schematype=regular,partition=range,skey=desc,columndatatype=bigint,cardinality=single,projection=indexed,queryshape=orderby,orderbyon=rangeskey
-                run:
-                    -   name: ordby_bigint_indexed_column_desc
-                        weight: 100
-                        queries:
-                            -   query: select col_bigint_id_2 from indexedBigint1M_1 order by col_bigint_id_2
-
             - workload: ORDG8_3_ordby_bigint_pkey_column_desc
               customTags: schematype=colocated,partition=hash,cardinality=single,projection=rangepkey,filtercount=one,filteron=rangepkey,filtertype=comparision,queryshape=orderby,orderbyon=rangepkeydesc
               run:
