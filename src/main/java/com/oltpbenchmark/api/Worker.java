@@ -219,6 +219,7 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
                     // test is done notify the global test state, then
                     // continue applying load
                     seenDone = true;
+                    onExecutionEnd();
                     workloadState.signalDone();
                     break;
                 }
@@ -553,6 +554,13 @@ public abstract class Worker<T extends BenchmarkModule> implements Runnable {
      * @throws SQLException       TODO
      */
     protected abstract TransactionStatus executeWork(Connection conn, TransactionType txnType) throws UserAbortException, SQLException;
+
+    /**
+     * Called when the execution/measure phase ends, while other workers may still be active.
+     * Override to collect metrics (e.g. CPU) that require the workload to still be running.
+     */
+    protected void onExecutionEnd() {
+    }
 
     /**
      * Called at the end of the test to do any clean up that may be required.

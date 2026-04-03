@@ -380,6 +380,26 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
 
 
     @Override
+    protected void onExecutionEnd() {
+        synchronized (FeatureBenchWorker.class) {
+            if (!isCPUUtilizationCollected.get()
+                    && this.getWorkloadConfiguration().getDatabaseType().equals(DatabaseType.YUGABYTE)) {
+                try {
+                    List<Double> cpuList = DBWorkload.getYBCPUUtilizationAllNodes(this.getBenchmark());
+                    JSONObject metaDataJson = featurebenchAdditionalResults.getMetaDataJson();
+                    metaDataJson.put("cpu_utilization", new JSONArray(cpuList));
+                    metaDataJson.put("avg_cpu_utilization", cpuList.stream().mapToDouble(Double::doubleValue).average().orElse(0.0));
+                    featurebenchAdditionalResults.setMetaDataJson(metaDataJson);
+                    LOG.info("Collected CPU utilization for workload {}: {}", this.workloadName, cpuList);
+                    isCPUUtilizationCollected.set(true);
+                } catch (SQLException e) {
+                    LOG.error("Error collecting CPU utilization", e);
+                }
+            }
+        }
+    }
+
+    @Override
     public void tearDown() {
         synchronized (FeatureBenchWorker.class) {
             boolean shouldCollect = this.getWorkloadConfiguration().getXmlConfig().getBoolean("collect_pg_stat_statements", false);
@@ -435,20 +455,6 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                 }
                 this.featurebenchAdditionalResults.setJsonResultsList(jsonResultsList);
                 isPGStatStatementCollected.set(true);
-            }
-
-            if (!isCPUUtilizationCollected.get()
-                    && this.getWorkloadConfiguration().getDatabaseType().equals(DatabaseType.YUGABYTE)) {
-                try {
-                    List<Double> cpuList = DBWorkload.getYBCPUUtilizationAllNodes(this.getBenchmark());
-                    JSONObject metaDataJson = this.featurebenchAdditionalResults.getMetaDataJson();
-                    metaDataJson.put("cpu_utilization", new JSONArray(cpuList));
-                    this.featurebenchAdditionalResults.setMetaDataJson(metaDataJson);
-                    LOG.info("Collected CPU utilization for workload {}: {}", this.workloadName, cpuList);
-                    isCPUUtilizationCollected.set(true);
-                } catch (SQLException e) {
-                    LOG.error("Error collecting CPU utilization", e);
-                }
             }
 
             if (((config.containsKey("execute") && config.getBoolean("execute")) || (executeRules == null || executeRules.isEmpty()) )&& !isCleanUpDone.get()) {
