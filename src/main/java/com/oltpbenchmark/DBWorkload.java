@@ -1296,7 +1296,7 @@ public class DBWorkload {
     }
 
     // Returns a list of CPU utilizations (percent) for all nodes
-    private static List<Double> getYBCPUUtilizationAllNodes(BenchmarkModule bench) throws SQLException {
+    public static List<Double> getYBCPUUtilizationAllNodes(BenchmarkModule bench) throws SQLException {
         List<Double> cpuList = new ArrayList<>();
         Connection conn = null;
         Statement stmt = null;
@@ -1766,7 +1766,7 @@ public class DBWorkload {
                     if(isYugabyteDatabase) {
                         if(avgMaxCPU > targetCPU) {
                             LOG.info("MaxCPU is greater than targetCPU. Breaking loop. Current threads: {}", threads);
-                            optimalThreads = Math.max(1, threads-3);
+                            optimalThreads = Math.max(1, threads);
                             break;
                         }
                         newThreads = threads + 3;

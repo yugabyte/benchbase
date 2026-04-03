@@ -25,6 +25,7 @@ import com.oltpbenchmark.api.TransactionType;
 import com.oltpbenchmark.api.collectors.DBParameterCollector;
 import com.oltpbenchmark.api.collectors.DBParameterCollectorGen;
 import com.oltpbenchmark.types.DatabaseType;
+import org.json.JSONObject;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.configuration2.XMLConfiguration;
 import org.apache.commons.configuration2.YAMLConfiguration;
@@ -239,10 +240,13 @@ public class ResultWriter {
         metadata.put("yaml_version", expConf.getString("yaml_version", "v1.0"));
         metadata.put("customTags", formatCustomTags(customTags));
         metadata.put("skipReport",skipReport);
+        JSONObject additionalMetadata = results.getFeaturebenchAdditionalResults().getMetaDataJson();
+        for (String key : additionalMetadata.keySet()) {
+            metadata.put(key, additionalMetadata.get(key));
+        }
         detailedSummaryMap.put("metadata", metadata);
         detailedSummaryMap.put("Summary", summaryMap);
         detailedSummaryMap.put("queries", results.getFeaturebenchAdditionalResults().getJsonResultsList());
-        detailedSummaryMap.put("metadata", results.getFeaturebenchAdditionalResults().getMetaDataJson());
         os.println(JSONUtil.format(JSONUtil.toJSONString(detailedSummaryMap)));
         return detailedSummaryMap;
     }

@@ -17,6 +17,7 @@
 
 package com.oltpbenchmark.benchmarks.featurebench;
 
+import com.oltpbenchmark.DBWorkload;
 import com.oltpbenchmark.api.Procedure.UserAbortException;
 import com.oltpbenchmark.api.TransactionType;
 import com.oltpbenchmark.api.Worker;
@@ -65,6 +66,8 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
 
     static AtomicBoolean isPGStatResetCalled = new AtomicBoolean(false);
 
+    static AtomicBoolean isCPUUtilizationCollected = new AtomicBoolean(false);
+
     static AtomicBoolean isInitializeDone = new AtomicBoolean(false);
 
     public FeatureBenchWorker(FeatureBenchBenchmark benchmarkModule,
@@ -82,6 +85,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
         isPGStatResetCalled.set(false);
         isPGStatStatementCollected.set(false);
         isCleanUpDone.set(false);
+        isCPUUtilizationCollected.set(false);
         try {
             ybm = (YBMicroBenchmark) Class.forName(workloadClass)
                 .getDeclaredConstructor(HierarchicalConfiguration.class)
@@ -431,6 +435,20 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                 }
                 this.featurebenchAdditionalResults.setJsonResultsList(jsonResultsList);
                 isPGStatStatementCollected.set(true);
+            }
+
+            if (!isCPUUtilizationCollected.get()
+                    && this.getWorkloadConfiguration().getDatabaseType().equals(DatabaseType.YUGABYTE)) {
+                try {
+                    List<Double> cpuList = DBWorkload.getYBCPUUtilizationAllNodes(this.getBenchmark());
+                    JSONObject metaDataJson = this.featurebenchAdditionalResults.getMetaDataJson();
+                    metaDataJson.put("cpu_utilization", new JSONArray(cpuList));
+                    this.featurebenchAdditionalResults.setMetaDataJson(metaDataJson);
+                    LOG.info("Collected CPU utilization for workload {}: {}", this.workloadName, cpuList);
+                    isCPUUtilizationCollected.set(true);
+                } catch (SQLException e) {
+                    LOG.error("Error collecting CPU utilization", e);
+                }
             }
 
             if (((config.containsKey("execute") && config.getBoolean("execute")) || (executeRules == null || executeRules.isEmpty()) )&& !isCleanUpDone.get()) {
