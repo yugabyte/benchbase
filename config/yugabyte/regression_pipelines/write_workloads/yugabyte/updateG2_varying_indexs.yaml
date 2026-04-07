@@ -20,20 +20,20 @@ microbenchmark:
     properties:
         setAutoCommit: false
         create:
-            - drop table if exists update_test_table1;
-            - drop table if exists update_test_table2;
-            - drop table if exists update_test_table3;
-            - create table update_test_table1 (id bigint, col_int_1 int, col_int_2 int, col_int_3 int, col_int_4 int, col_int_5 int, col_int_6 int, col_int_7 int, col_int_8 int, col_int_9 int, col_int_10 int, col_varchar_1 varchar(20), col_varchar_2 varchar(20), col_varchar_3 varchar(20), col_date text, col_boolean boolean, primary key (id asc))
-            - create table update_test_table2 (id bigint, col_int_1 int, col_int_2 int, col_int_3 int, col_int_4 int, col_int_5 int, col_int_6 int, col_int_7 int, col_int_8 int, col_int_9 int, col_int_10 int, col_varchar_1 varchar(20), col_varchar_2 varchar(20), col_varchar_3 varchar(20), col_date text, col_boolean boolean, primary key (id asc))
-            - create table update_test_table3 (id bigint, col_int_1 int, col_int_2 int, col_int_3 int, col_int_4 int, col_int_5 int, col_int_6 int, col_int_7 int, col_int_8 int, col_int_9 int, col_int_10 int, col_varchar_1 varchar(20), col_varchar_2 varchar(20), col_varchar_3 varchar(20), col_date text, col_boolean boolean, primary key (id asc))
-            - create index index_test_table2 on update_test_table2(col_int_1);
-            - create index index_test_table3 on update_test_table3(col_int_2) include (col_int_1);
+            - drop table if exists updateg2_update_test_table1;
+            - drop table if exists updateg2_update_test_table2;
+            - drop table if exists updateg2_update_test_table3;
+            - create table updateg2_update_test_table1 (id bigint, col_int_1 int, col_int_2 int, col_int_3 int, col_int_4 int, col_int_5 int, col_int_6 int, col_int_7 int, col_int_8 int, col_int_9 int, col_int_10 int, col_varchar_1 varchar(20), col_varchar_2 varchar(20), col_varchar_3 varchar(20), col_date text, col_boolean boolean, primary key (id asc))
+            - create table updateg2_update_test_table2 (id bigint, col_int_1 int, col_int_2 int, col_int_3 int, col_int_4 int, col_int_5 int, col_int_6 int, col_int_7 int, col_int_8 int, col_int_9 int, col_int_10 int, col_varchar_1 varchar(20), col_varchar_2 varchar(20), col_varchar_3 varchar(20), col_date text, col_boolean boolean, primary key (id asc))
+            - create table updateg2_update_test_table3 (id bigint, col_int_1 int, col_int_2 int, col_int_3 int, col_int_4 int, col_int_5 int, col_int_6 int, col_int_7 int, col_int_8 int, col_int_9 int, col_int_10 int, col_varchar_1 varchar(20), col_varchar_2 varchar(20), col_varchar_3 varchar(20), col_date text, col_boolean boolean, primary key (id asc))
+            - create index index_test_table2 on updateg2_update_test_table2(col_int_1);
+            - create index index_test_table3 on updateg2_update_test_table3(col_int_2) include (col_int_1);
         cleanup:
-            - drop table if exists update_test_table1;
-            - drop table if exists update_test_table2;
-            - drop table if exists update_test_table3;
+            - drop table if exists updateg2_update_test_table1;
+            - drop table if exists updateg2_update_test_table2;
+            - drop table if exists updateg2_update_test_table3;
         loadRules:
-            -   table: update_test_table
+            -   table: updateg2_update_test_table
                 count: 3
                 rows: 1000000
                 columns:
@@ -59,7 +59,7 @@ microbenchmark:
                     -   name: Update_1_row
                         weight: 100
                         queries:
-                            -   query: UPDATE update_test_table1 set col_int_1 = ? where id = ?
+                            -   query: UPDATE updateg2_update_test_table1 set col_int_1 = ? where id = ?
                                 bindings:
                                     -   util: RandomNumber
                                         params: [ 1, 10000 ]
@@ -70,7 +70,7 @@ microbenchmark:
                     -   name: update_1_row
                         weight: 100
                         queries:
-                            -   query: UPDATE update_test_table2 set col_int_1 = ? where id = ?
+                            -   query: UPDATE updateg2_update_test_table2 set col_int_1 = ? where id = ?
                                 bindings:
                                     -   util: RandomNumber
                                         params: [ 1, 10000 ]
@@ -81,7 +81,7 @@ microbenchmark:
                     -   name: update_1_row
                         weight: 100
                         queries:
-                            -   query: UPDATE update_test_table3 set col_int_1 = ? where id = ?
+                            -   query: UPDATE updateg2_update_test_table3 set col_int_1 = ? where id = ?
                                 bindings:
                                     -   util: RandomNumber
                                         params: [ 1, 10000 ]

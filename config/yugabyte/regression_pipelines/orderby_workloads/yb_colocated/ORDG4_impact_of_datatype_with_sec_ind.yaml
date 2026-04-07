@@ -29,25 +29,25 @@ microbenchmark:
     properties:
         setAutoCommit: true
         create:
-          - DROP TABLE IF EXISTS indexedBigint1M_1;
-          - DROP TABLE IF EXISTS indexedVarchar1001M_1;
-          - DROP TABLE IF EXISTS indexedUuid1M_1;
-          - DROP TABLE IF EXISTS indexedDate1M_1;
-          - CREATE TABLE indexedBigint1M_1(col_bigint_id_1 bigint, col_bigint_id_2 bigint,col_bigint_1 bigint, col_bigint_2 bigint, col_bigint_3 bigint, col_bigint_4 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1));
-          - CREATE TABLE indexedVarchar1001M_1(col_bigint_id_1 bigint, col_varchar100_pid_1 varchar(100), col_bigint_1 bigint, col_bigint_2 bigint, col_bigint_3 bigint, col_bigint_4 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1));
-          - CREATE TABLE indexedUuid1M_1(col_bigint_id_1 bigint, col_uuid_id_1 uuid, col_bigint_1 bigint, col_bigint_2 bigint, col_bigint_3 bigint, col_bigint_4 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1));
-          - CREATE TABLE indexedDate1M_1(col_bigint_id_1 bigint, col_date_id_1 date, col_bigint_1 bigint, col_bigint_2 bigint, col_bigint_3 bigint, col_bigint_4 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1));
-          - CREATE INDEX ON indexedBigint1M_1(col_bigint_id_2);
-          - CREATE INDEX ON indexedVarchar1001M_1(col_varchar100_pid_1);
-          - CREATE INDEX ON indexedUuid1M_1(col_uuid_id_1);
-          - CREATE INDEX ON indexedDate1M_1(col_date_id_1);
+          - DROP TABLE IF EXISTS ordg4_indexedBigint1M_1;
+          - DROP TABLE IF EXISTS ordg4_indexedVarchar1001M_1;
+          - DROP TABLE IF EXISTS ordg4_indexedUuid1M_1;
+          - DROP TABLE IF EXISTS ordg4_indexedDate1M_1;
+          - CREATE TABLE ordg4_indexedBigint1M_1(col_bigint_id_1 bigint, col_bigint_id_2 bigint,col_bigint_1 bigint, col_bigint_2 bigint, col_bigint_3 bigint, col_bigint_4 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1));
+          - CREATE TABLE ordg4_indexedVarchar1001M_1(col_bigint_id_1 bigint, col_varchar100_pid_1 varchar(100), col_bigint_1 bigint, col_bigint_2 bigint, col_bigint_3 bigint, col_bigint_4 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1));
+          - CREATE TABLE ordg4_indexedUuid1M_1(col_bigint_id_1 bigint, col_uuid_id_1 uuid, col_bigint_1 bigint, col_bigint_2 bigint, col_bigint_3 bigint, col_bigint_4 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1));
+          - CREATE TABLE ordg4_indexedDate1M_1(col_bigint_id_1 bigint, col_date_id_1 date, col_bigint_1 bigint, col_bigint_2 bigint, col_bigint_3 bigint, col_bigint_4 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1));
+          - CREATE INDEX ON ordg4_indexedBigint1M_1(col_bigint_id_2);
+          - CREATE INDEX ON ordg4_indexedVarchar1001M_1(col_varchar100_pid_1);
+          - CREATE INDEX ON ordg4_indexedUuid1M_1(col_uuid_id_1);
+          - CREATE INDEX ON ordg4_indexedDate1M_1(col_date_id_1);
         cleanup:
-          - DROP TABLE IF EXISTS indexedBigint1M_1;
-          - DROP TABLE IF EXISTS indexedVarchar1001M_1;
-          - DROP TABLE IF EXISTS indexedUuid1M_1;
-          - DROP TABLE IF EXISTS indexedDate1M_1;
+          - DROP TABLE IF EXISTS ordg4_indexedBigint1M_1;
+          - DROP TABLE IF EXISTS ordg4_indexedVarchar1001M_1;
+          - DROP TABLE IF EXISTS ordg4_indexedUuid1M_1;
+          - DROP TABLE IF EXISTS ordg4_indexedDate1M_1;
         loadRules:
-              - table: indexedBigint1M_
+              - table: ordg4_indexedBigint1M_
                 count: 1
                 rows: 1000000
                 columns:
@@ -82,7 +82,7 @@ microbenchmark:
                       count: 1
                       util: PrimaryStringGen
                       params: [1, 500]
-              - table: indexedVarchar1001M_
+              - table: ordg4_indexedVarchar1001M_
                 count: 1
                 rows: 1000000
                 columns:
@@ -121,7 +121,7 @@ microbenchmark:
                       count: 1
                       util: PrimaryStringGen
                       params: [1, 500]
-              - table: indexedUuid1M_
+              - table: ordg4_indexedUuid1M_
                 count: 1
                 rows: 1000000
                 columns:
@@ -159,7 +159,7 @@ microbenchmark:
                       count: 1
                       util: PrimaryStringGen
                       params: [1, 500]
-              - table: indexedDate1M_
+              - table: ordg4_indexedDate1M_
                 count: 1
                 rows: 1000000
                 columns:
@@ -205,25 +205,25 @@ microbenchmark:
                   - name: ybc_ordby_bigint_indexed_column
                     weight: 100
                     queries:
-                        - query: select col_bigint_id_2 from indexedBigint1M_1 order by col_bigint_id_2
+                        - query: select col_bigint_id_2 from ordg4_indexedBigint1M_1 order by col_bigint_id_2
             - workload: ORDG4_ordby_varchar_indexed_column
               customTags: schematype=colocated,partition=range,skey=asc,columndatatype=varchar,cardinality=single,projection=indexed,queryshape=orderby,orderbyon=rangeskey
               run:
                   - name: ybc_ordby_varchar_indexed_column
                     weight: 100
                     queries:
-                        - query: select col_varchar100_pid_1 from indexedVarchar1001M_1 order by col_varchar100_pid_1
+                        - query: select col_varchar100_pid_1 from ordg4_indexedVarchar1001M_1 order by col_varchar100_pid_1
             - workload: ORDG4_ordby_uuid_indexed_column
               customTags: schematype=colocated,partition=range,skey=asc,columndatatype=uuid,cardinality=single,projection=indexed,queryshape=orderby,orderbyon=rangeskey
               run:
                   - name: ybc_ordby_uuid_indexed_column
                     weight: 100
                     queries:
-                        - query: select col_uuid_id_1 from indexedUuid1M_1 order by col_uuid_id_1
+                        - query: select col_uuid_id_1 from ordg4_indexedUuid1M_1 order by col_uuid_id_1
             - workload: ORDG4_ordby_date_indexed_column
               customTags: schematype=colocated,partition=range,skey=asc,columndatatype=date,cardinality=single,projection=indexed,queryshape=orderby,orderbyon=rangeskey
               run:
                   - name: ybc_ordby_date_indexed_column
                     weight: 100
                     queries:
-                        - query: select col_date_id_1 from indexedDate1M_1 order by col_date_id_1
+                        - query: select col_date_id_1 from ordg4_indexedDate1M_1 order by col_date_id_1

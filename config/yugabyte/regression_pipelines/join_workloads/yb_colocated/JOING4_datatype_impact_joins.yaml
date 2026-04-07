@@ -22,23 +22,23 @@ microbenchmark:
     properties:
         setAutoCommit: true
         create:
-          - DROP TABLE IF EXISTS pkeyBigint1M_1;
-          - DROP TABLE IF EXISTS pkeyVarchar1001M_1;
-          - DROP TABLE IF EXISTS pkeyBigint1M_2;
-          - DROP TABLE IF EXISTS pkeyVarchar1001M_2;
-          - CREATE TABLE pkeyBigint1M_1(col_bigint_id_1 bigint, col_bigint_1 bigint, col_bigint_2 bigint, col_bigint_3 bigint, col_bigint_4 bigint, col_bigint_5 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1));
-          - CREATE TABLE pkeyVarchar1001M_1(col_varchar100_pid_1 varchar(100), col_bigint_1 bigint, col_bigint_2 bigint, col_bigint_3 bigint, col_bigint_4 bigint, col_bigint_5 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_varchar100_pid_1));
-          - CREATE TABLE pkeyBigint1M_2(col_bigint_id_1 bigint, col_bigint_1 bigint, col_bigint_2 bigint, col_bigint_3 bigint, col_bigint_4 bigint, col_bigint_5 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1));
-          - CREATE TABLE pkeyVarchar1001M_2(col_varchar100_pid_1 varchar(100), col_bigint_1 bigint, col_bigint_2 bigint, col_bigint_3 bigint, col_bigint_4 bigint, col_bigint_5 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_varchar100_pid_1));
+          - DROP TABLE IF EXISTS joing4_pkeyBigint1M_1;
+          - DROP TABLE IF EXISTS joing4_pkeyVarchar1001M_1;
+          - DROP TABLE IF EXISTS joing4_pkeyBigint1M_2;
+          - DROP TABLE IF EXISTS joing4_pkeyVarchar1001M_2;
+          - CREATE TABLE joing4_pkeyBigint1M_1(col_bigint_id_1 bigint, col_bigint_1 bigint, col_bigint_2 bigint, col_bigint_3 bigint, col_bigint_4 bigint, col_bigint_5 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1));
+          - CREATE TABLE joing4_pkeyVarchar1001M_1(col_varchar100_pid_1 varchar(100), col_bigint_1 bigint, col_bigint_2 bigint, col_bigint_3 bigint, col_bigint_4 bigint, col_bigint_5 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_varchar100_pid_1));
+          - CREATE TABLE joing4_pkeyBigint1M_2(col_bigint_id_1 bigint, col_bigint_1 bigint, col_bigint_2 bigint, col_bigint_3 bigint, col_bigint_4 bigint, col_bigint_5 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1));
+          - CREATE TABLE joing4_pkeyVarchar1001M_2(col_varchar100_pid_1 varchar(100), col_bigint_1 bigint, col_bigint_2 bigint, col_bigint_3 bigint, col_bigint_4 bigint, col_bigint_5 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_varchar100_pid_1));
 
         cleanup:
-            - DROP TABLE IF EXISTS pkeyBigint1M_1;
-            - DROP TABLE IF EXISTS pkeyVarchar1001M_1;
-            - DROP TABLE IF EXISTS pkeyBigint1M_2;
-            - DROP TABLE IF EXISTS pkeyVarchar1001M_2;
+            - DROP TABLE IF EXISTS joing4_pkeyBigint1M_1;
+            - DROP TABLE IF EXISTS joing4_pkeyVarchar1001M_1;
+            - DROP TABLE IF EXISTS joing4_pkeyBigint1M_2;
+            - DROP TABLE IF EXISTS joing4_pkeyVarchar1001M_2;
 
         loadRules:
-              - table: pkeyBigint1M_
+              - table: joing4_pkeyBigint1M_
                 count: 2
                 rows: 1000000
                 columns:
@@ -73,7 +73,7 @@ microbenchmark:
                       count: 1
                       util: PrimaryStringGen
                       params: [1, 500]
-              - table: pkeyVarchar1001M_
+              - table: joing4_pkeyVarchar1001M_
                 count: 2
                 rows: 1000000
                 columns:
@@ -117,7 +117,7 @@ microbenchmark:
                   - name: join_on_pk_of_bigint_datatype
                     weight: 100
                     queries:
-                        - query: select pkeyBigint1M_1.col_bigint_id_1,pkeyBigint1M_2.col_bigint_id_1 from pkeyBigint1M_1 join pkeyBigint1M_2 on pkeyBigint1M_1.col_bigint_id_1=pkeyBigint1M_2.col_bigint_id_1
+                        - query: select joing4_pkeyBigint1M_1.col_bigint_id_1,joing4_pkeyBigint1M_2.col_bigint_id_1 from joing4_pkeyBigint1M_1 join joing4_pkeyBigint1M_2 on joing4_pkeyBigint1M_1.col_bigint_id_1=joing4_pkeyBigint1M_2.col_bigint_id_1
 
 
             - workload: JOING4_2_join_on_pk_of_varchar_datatype
@@ -126,4 +126,4 @@ microbenchmark:
                   - name: join_on_pk_of_bigint_datatype
                     weight: 100
                     queries:
-                        - query: select pkeyVarchar1001M_1.col_varchar100_pid_1,pkeyVarchar1001M_2.col_varchar100_pid_1 from pkeyVarchar1001M_1 join pkeyVarchar1001M_2 on pkeyVarchar1001M_1.col_varchar100_pid_1=pkeyVarchar1001M_2.col_varchar100_pid_1
+                        - query: select joing4_pkeyVarchar1001M_1.col_varchar100_pid_1,joing4_pkeyVarchar1001M_2.col_varchar100_pid_1 from joing4_pkeyVarchar1001M_1 join joing4_pkeyVarchar1001M_2 on joing4_pkeyVarchar1001M_1.col_varchar100_pid_1=joing4_pkeyVarchar1001M_2.col_varchar100_pid_1

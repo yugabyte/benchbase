@@ -19,22 +19,22 @@ microbenchmark:
     properties:
         setAutoCommit: true
         create:
-          - DROP TABLE IF EXISTS pkeyBigint1M_1;
-          - DROP TABLE IF EXISTS pkeyBigint1M_2;
-          - DROP TABLE IF EXISTS pkeyBigint1M_3;
-          - CREATE TABLE pkeyBigint1M_1(col_bigint_card1_1 bigint, col_bigint_card2_1 bigint, col_bigint_card3_1 bigint, col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1, col_bigint_id_2, col_bigint_id_3, col_bigint_card1_1));
-          - CREATE TABLE pkeyBigint1M_2(col_bigint_card1_1 bigint, col_bigint_card2_1 bigint, col_bigint_card3_1 bigint, col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1, col_bigint_id_2, col_bigint_id_3, col_bigint_card1_1));
-          - CREATE TABLE pkeyBigint1M_3(col_bigint_card1_1 bigint, col_bigint_card2_1 bigint, col_bigint_card3_1 bigint, col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1, col_bigint_id_2, col_bigint_id_3, col_bigint_card1_1));
-          - CREATE INDEX ON pkeyBigint1M_1(col_bigint_card2_1);
-          - CREATE INDEX ON pkeyBigint1M_2(col_bigint_card2_1);
-          - CREATE INDEX ON pkeyBigint1M_3(col_bigint_card2_1);
+          - DROP TABLE IF EXISTS joing10_pkeyBigint1M_1;
+          - DROP TABLE IF EXISTS joing10_pkeyBigint1M_2;
+          - DROP TABLE IF EXISTS joing10_pkeyBigint1M_3;
+          - CREATE TABLE joing10_pkeyBigint1M_1(col_bigint_card1_1 bigint, col_bigint_card2_1 bigint, col_bigint_card3_1 bigint, col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1, col_bigint_id_2, col_bigint_id_3, col_bigint_card1_1));
+          - CREATE TABLE joing10_pkeyBigint1M_2(col_bigint_card1_1 bigint, col_bigint_card2_1 bigint, col_bigint_card3_1 bigint, col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1, col_bigint_id_2, col_bigint_id_3, col_bigint_card1_1));
+          - CREATE TABLE joing10_pkeyBigint1M_3(col_bigint_card1_1 bigint, col_bigint_card2_1 bigint, col_bigint_card3_1 bigint, col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1, col_bigint_id_2, col_bigint_id_3, col_bigint_card1_1));
+          - CREATE INDEX ON joing10_pkeyBigint1M_1(col_bigint_card2_1);
+          - CREATE INDEX ON joing10_pkeyBigint1M_2(col_bigint_card2_1);
+          - CREATE INDEX ON joing10_pkeyBigint1M_3(col_bigint_card2_1);
 
         cleanup:
-            - DROP TABLE IF EXISTS pkeyBigint1M_1;
-            - DROP TABLE IF EXISTS pkeyBigint1M_2;
-            - DROP TABLE IF EXISTS pkeyBigint1M_3;
+            - DROP TABLE IF EXISTS joing10_pkeyBigint1M_1;
+            - DROP TABLE IF EXISTS joing10_pkeyBigint1M_2;
+            - DROP TABLE IF EXISTS joing10_pkeyBigint1M_3;
         loadRules:
-              - table: pkeyBigint1M_
+              - table: joing10_pkeyBigint1M_
                 count: 3
                 rows: 1000000
                 columns:
@@ -84,21 +84,21 @@ microbenchmark:
                     -   name: join_on_pk_3tbl
                         weight: 100
                         queries:
-                            -   query: select a.col_bigint_card2_1, count(a.col_bigint_id_1), count(b.col_bigint_id_1) from pkeyBigint1M_1 as a,pkeyBigint1M_2 as b where a.col_bigint_card1_1 in (1000500) and a.col_bigint_id_1=b.col_bigint_id_1  GROUP BY a.col_bigint_card2_1
+                            -   query: select a.col_bigint_card2_1, count(a.col_bigint_id_1), count(b.col_bigint_id_1) from joing10_pkeyBigint1M_1 as a,joing10_pkeyBigint1M_2 as b where a.col_bigint_card1_1 in (1000500) and a.col_bigint_id_1=b.col_bigint_id_1  GROUP BY a.col_bigint_card2_1
 
             - workload: JOING10_2_join_on_3tbls_withfilter_onpkey_grpby_2col
               run:
                   - name: join_on_pk_3tbl
                     weight: 100
                     queries:
-                        - query: select a.col_bigint_card2_1, a.col_bigint_card2_1, count(b.col_bigint_id_1) from pkeyBigint1M_1 as a,pkeyBigint1M_2 as b,pkeyBigint1M_3 as c where a.col_bigint_card2_1 in (1000500) and a.col_bigint_id_1=b.col_bigint_id_1 and a.col_bigint_id_1=c.col_bigint_id_1  GROUP BY a.col_bigint_card2_1,a.col_bigint_card1_1
+                        - query: select a.col_bigint_card2_1, a.col_bigint_card2_1, count(b.col_bigint_id_1) from joing10_pkeyBigint1M_1 as a,joing10_pkeyBigint1M_2 as b,joing10_pkeyBigint1M_3 as c where a.col_bigint_card2_1 in (1000500) and a.col_bigint_id_1=b.col_bigint_id_1 and a.col_bigint_id_1=c.col_bigint_id_1  GROUP BY a.col_bigint_card2_1,a.col_bigint_card1_1
 
             -   workload: JOING10_3_join_on_2tbls_withfilter_onpkey_grpby_2col
                 run:
                     -   name: join_on_pk_3tbl
                         weight: 100
                         queries:
-                            -   query: select a.col_bigint_card2_1, count(a.col_bigint_id_1), count(b.col_bigint_id_1) from pkeyBigint1M_1 as a,pkeyBigint1M_2 as b where a.col_bigint_card2_1 in (1000500) and a.col_bigint_id_1=b.col_bigint_id_1  GROUP BY a.col_bigint_card2_1
+                            -   query: select a.col_bigint_card2_1, count(a.col_bigint_id_1), count(b.col_bigint_id_1) from joing10_pkeyBigint1M_1 as a,joing10_pkeyBigint1M_2 as b where a.col_bigint_card2_1 in (1000500) and a.col_bigint_id_1=b.col_bigint_id_1  GROUP BY a.col_bigint_card2_1
 
 
             -   workload: JOING10_4_join_on_2tbls_withfilter_onpkey_ordby_1col
@@ -106,25 +106,25 @@ microbenchmark:
                     -   name: join_on_pk_3tbl
                         weight: 100
                         queries:
-                            -   query: select pkeyBigint1M_1.col_bigint_id_1, pkeyBigint1M_2.col_bigint_id_1 from pkeyBigint1M_1,pkeyBigint1M_2 where pkeyBigint1M_1.col_bigint_card1_1 in (1000500) and pkeyBigint1M_1.col_bigint_id_1=pkeyBigint1M_2.col_bigint_id_1 ORDER BY pkeyBigint1M_1.col_bigint_card1_1
+                            -   query: select joing10_pkeyBigint1M_1.col_bigint_id_1, joing10_pkeyBigint1M_2.col_bigint_id_1 from joing10_pkeyBigint1M_1,joing10_pkeyBigint1M_2 where joing10_pkeyBigint1M_1.col_bigint_card1_1 in (1000500) and joing10_pkeyBigint1M_1.col_bigint_id_1=joing10_pkeyBigint1M_2.col_bigint_id_1 ORDER BY joing10_pkeyBigint1M_1.col_bigint_card1_1
 
             - workload: JOING10_5_join_on_3tbls_withfilter_onpkey_ordby_1col
               run:
                   - name: join_on_pk_3tbl
                     weight: 100
                     queries:
-                        - query: select pkeyBigint1M_1.col_bigint_id_1, pkeyBigint1M_2.col_bigint_id_1, pkeyBigint1M_3.col_bigint_id_1 from pkeyBigint1M_1,pkeyBigint1M_2,pkeyBigint1M_3 where pkeyBigint1M_1.col_bigint_card1_1 in (1000500) and pkeyBigint1M_1.col_bigint_id_1=pkeyBigint1M_2.col_bigint_id_1 and pkeyBigint1M_1.col_bigint_id_1=pkeyBigint1M_3.col_bigint_id_1 ORDER BY pkeyBigint1M_1.col_bigint_card1_1
+                        - query: select joing10_pkeyBigint1M_1.col_bigint_id_1, joing10_pkeyBigint1M_2.col_bigint_id_1, joing10_pkeyBigint1M_3.col_bigint_id_1 from joing10_pkeyBigint1M_1,joing10_pkeyBigint1M_2,joing10_pkeyBigint1M_3 where joing10_pkeyBigint1M_1.col_bigint_card1_1 in (1000500) and joing10_pkeyBigint1M_1.col_bigint_id_1=joing10_pkeyBigint1M_2.col_bigint_id_1 and joing10_pkeyBigint1M_1.col_bigint_id_1=joing10_pkeyBigint1M_3.col_bigint_id_1 ORDER BY joing10_pkeyBigint1M_1.col_bigint_card1_1
 
             -   workload: JOING10_6_join_on_2tbls_withfilter_onpkey_ordby_2col
                 run:
                     -   name: join_on_pk_3tbl
                         weight: 100
                         queries:
-                            -   query: select pkeyBigint1M_1.col_bigint_id_1, pkeyBigint1M_2.col_bigint_id_1 from pkeyBigint1M_1,pkeyBigint1M_2 where pkeyBigint1M_1.col_bigint_card1_1 in (1000500) and pkeyBigint1M_1.col_bigint_id_1=pkeyBigint1M_2.col_bigint_id_1 ORDER BY pkeyBigint1M_1.col_bigint_card1_1,pkeyBigint1M_1.col_bigint_card2_1
+                            -   query: select joing10_pkeyBigint1M_1.col_bigint_id_1, joing10_pkeyBigint1M_2.col_bigint_id_1 from joing10_pkeyBigint1M_1,joing10_pkeyBigint1M_2 where joing10_pkeyBigint1M_1.col_bigint_card1_1 in (1000500) and joing10_pkeyBigint1M_1.col_bigint_id_1=joing10_pkeyBigint1M_2.col_bigint_id_1 ORDER BY joing10_pkeyBigint1M_1.col_bigint_card1_1,joing10_pkeyBigint1M_1.col_bigint_card2_1
 
             -   workload: JOING10_7_join_on_2tbls_withfilter_onpkey_ordby_desc_1col
                 run:
                     -   name: join_on_pk_3tbl
                         weight: 100
                         queries:
-                        -   query: select pkeyBigint1M_1.col_bigint_id_1, pkeyBigint1M_2.col_bigint_id_1 from pkeyBigint1M_1,pkeyBigint1M_2 where pkeyBigint1M_1.col_bigint_card1_1 in (1000500) and pkeyBigint1M_1.col_bigint_id_1=pkeyBigint1M_2.col_bigint_id_1 ORDER BY pkeyBigint1M_1.col_bigint_card1_1 DESC
+                        -   query: select joing10_pkeyBigint1M_1.col_bigint_id_1, joing10_pkeyBigint1M_2.col_bigint_id_1 from joing10_pkeyBigint1M_1,joing10_pkeyBigint1M_2 where joing10_pkeyBigint1M_1.col_bigint_card1_1 in (1000500) and joing10_pkeyBigint1M_1.col_bigint_id_1=joing10_pkeyBigint1M_2.col_bigint_id_1 ORDER BY joing10_pkeyBigint1M_1.col_bigint_card1_1 DESC

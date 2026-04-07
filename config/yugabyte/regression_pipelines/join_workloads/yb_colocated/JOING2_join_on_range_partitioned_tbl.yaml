@@ -22,18 +22,18 @@ microbenchmark:
     properties:
         setAutoCommit: true
         create:
-            - DROP TABLE IF EXISTS Rangetbl_1;
-            - DROP TABLE IF EXISTS Rangetbl_2;
-            - CREATE TABLE Rangetbl_1(col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_bigint_id_4 bigint, col_bigint_1 bigint, col_bigint_2 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1));
-            - CREATE INDEX ON Rangetbl_1(col_bigint_id_2);
-            - CREATE TABLE Rangetbl_2(col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_bigint_id_4 bigint, col_bigint_1 bigint, col_bigint_2 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1));
-            - CREATE INDEX ON Rangetbl_2(col_bigint_id_2);
+            - DROP TABLE IF EXISTS joing2_Rangetbl_1;
+            - DROP TABLE IF EXISTS joing2_Rangetbl_2;
+            - CREATE TABLE joing2_Rangetbl_1(col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_bigint_id_4 bigint, col_bigint_1 bigint, col_bigint_2 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1));
+            - CREATE INDEX ON joing2_Rangetbl_1(col_bigint_id_2);
+            - CREATE TABLE joing2_Rangetbl_2(col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_bigint_id_4 bigint, col_bigint_1 bigint, col_bigint_2 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1));
+            - CREATE INDEX ON joing2_Rangetbl_2(col_bigint_id_2);
         cleanup:
-            - DROP TABLE IF EXISTS Rangetbl_1;
+            - DROP TABLE IF EXISTS joing2_Rangetbl_1;
             - DROP TABLE IF EXISTS Rangetbl2;
 
         loadRules:
-              - table: Rangetbl_
+              - table: joing2_Rangetbl_
                 count: 2
                 rows: 1000000
                 columns:
@@ -76,7 +76,7 @@ microbenchmark:
                   - name: join_on_pk_of_range_tbl
                     weight: 100
                     queries:
-                        - query: select Rangetbl_1.col_bigint_id_1,Rangetbl_2.col_bigint_id_1 from Rangetbl_1 join Rangetbl_2 on Rangetbl_1.col_bigint_id_1=Rangetbl_2.col_bigint_id_1 where Rangetbl_1.col_bigint_id_1<100001
+                        - query: select joing2_Rangetbl_1.col_bigint_id_1,joing2_Rangetbl_2.col_bigint_id_1 from joing2_Rangetbl_1 join joing2_Rangetbl_2 on joing2_Rangetbl_1.col_bigint_id_1=joing2_Rangetbl_2.col_bigint_id_1 where joing2_Rangetbl_1.col_bigint_id_1<100001
 
             - workload: JOING2_3_join_on_pk_of_range_tbl_with_2_filter
               customTags: customer=2,schematype=colocated,partition=range,pkey=asc,cardinality=single,projection=indexed,filtercount=two,filteron=rangepkey,filtertype=comparision,queryshape=join,joinon=rangepkey
@@ -84,7 +84,7 @@ microbenchmark:
                   - name: join_on_pk_of_range_tbl
                     weight: 100
                     queries:
-                        - query: select Rangetbl_1.col_bigint_id_1,Rangetbl_2.col_bigint_id_1 from Rangetbl_1 join Rangetbl_2 on Rangetbl_1.col_bigint_id_1=Rangetbl_2.col_bigint_id_1 where Rangetbl_1.col_bigint_id_1<100001 and Rangetbl_2.col_bigint_id_1<100001
+                        - query: select joing2_Rangetbl_1.col_bigint_id_1,joing2_Rangetbl_2.col_bigint_id_1 from joing2_Rangetbl_1 join joing2_Rangetbl_2 on joing2_Rangetbl_1.col_bigint_id_1=joing2_Rangetbl_2.col_bigint_id_1 where joing2_Rangetbl_1.col_bigint_id_1<100001 and joing2_Rangetbl_2.col_bigint_id_1<100001
 
             - workload: JOING2_4_join_on_rangeidx_of_range_tbl
               customTags: schematype=colocated,partition=range,skey=asc,cardinality=single,projection=indexed,queryshape=join,joinon=rangeskey
@@ -92,7 +92,7 @@ microbenchmark:
                   - name: join_on_pk_of_range_tbl
                     weight: 100
                     queries:
-                        - query: select Rangetbl_1.col_bigint_id_2,Rangetbl_2.col_bigint_id_2 from Rangetbl_1 join Rangetbl_2 on Rangetbl_1.col_bigint_id_2=Rangetbl_2.col_bigint_id_2
+                        - query: select joing2_Rangetbl_1.col_bigint_id_2,joing2_Rangetbl_2.col_bigint_id_2 from joing2_Rangetbl_1 join joing2_Rangetbl_2 on joing2_Rangetbl_1.col_bigint_id_2=joing2_Rangetbl_2.col_bigint_id_2
 
             - workload: JOING2_5_join_on_rangeidx_of_range_tbl_with_1_filter
               customTags: schematype=colocated,partition=range,skey=asc,cardinality=single,projection=indexed,filtercount=one,filteron=rangeskey,filtertype=comparision,queryshape=join,joinon=rangeskey
@@ -100,7 +100,7 @@ microbenchmark:
                   - name: join_on_pk_of_range_tbl
                     weight: 100
                     queries:
-                        - query: select Rangetbl_1.col_bigint_id_2,Rangetbl_2.col_bigint_id_2 from Rangetbl_1 join Rangetbl_2 on Rangetbl_1.col_bigint_id_2=Rangetbl_2.col_bigint_id_2 where Rangetbl_1.col_bigint_id_2<100001
+                        - query: select joing2_Rangetbl_1.col_bigint_id_2,joing2_Rangetbl_2.col_bigint_id_2 from joing2_Rangetbl_1 join joing2_Rangetbl_2 on joing2_Rangetbl_1.col_bigint_id_2=joing2_Rangetbl_2.col_bigint_id_2 where joing2_Rangetbl_1.col_bigint_id_2<100001
 
             -   workload: JOING2_6_join_on_nonidx_of_range_tbl
                 customTags: schematype=colocated,partition=range,cardinality=single,projection=nonindexed,queryshape=join,joinon=nonindexed
@@ -108,7 +108,7 @@ microbenchmark:
                     -   name: join_on_pk_of_range_tbl
                         weight: 100
                         queries:
-                            -   query: select Rangetbl_1.col_bigint_id_4,Rangetbl_2.col_bigint_id_4 from Rangetbl_1 join Rangetbl_2 on Rangetbl_1.col_bigint_id_4=Rangetbl_2.col_bigint_id_4
+                            -   query: select joing2_Rangetbl_1.col_bigint_id_4,joing2_Rangetbl_2.col_bigint_id_4 from joing2_Rangetbl_1 join joing2_Rangetbl_2 on joing2_Rangetbl_1.col_bigint_id_4=joing2_Rangetbl_2.col_bigint_id_4
 
             -   workload: JOING2_7_join_on_nonidx_of_range_tbl_with_1_filter
                 customTags: schematype=colocated,partition=range,cardinality=single,projection=nonindexed,filtercount=one,filteron=nonindexed,filtertype=comparision,queryshape=join,joinon=nonindexed
@@ -116,4 +116,4 @@ microbenchmark:
                     -   name: join_on_pk_of_range_tbl
                         weight: 100
                         queries:
-                            -   query: select Rangetbl_1.col_bigint_id_4,Rangetbl_2.col_bigint_id_4 from Rangetbl_1 join Rangetbl_2 on Rangetbl_1.col_bigint_id_4=Rangetbl_2.col_bigint_id_4 where Rangetbl_1.col_bigint_id_4<100001
+                            -   query: select joing2_Rangetbl_1.col_bigint_id_4,joing2_Rangetbl_2.col_bigint_id_4 from joing2_Rangetbl_1 join joing2_Rangetbl_2 on joing2_Rangetbl_1.col_bigint_id_4=joing2_Rangetbl_2.col_bigint_id_4 where joing2_Rangetbl_1.col_bigint_id_4<100001

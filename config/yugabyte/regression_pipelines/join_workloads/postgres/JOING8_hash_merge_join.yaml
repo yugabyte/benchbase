@@ -23,15 +23,15 @@ microbenchmark:
     properties:
         setAutoCommit: true
         create:
-            - DROP TABLE IF EXISTS pkey_rangescan_join_1;
-            - DROP TABLE IF EXISTS pkey_rangescan_join_2;
-            - CREATE TABLE pkey_rangescan_join_1(col_bigint_id_1 bigint, col_bigint_1 bigint, col_bigint_2 bigint, col_bigint_3 bigint, col_bigint_4 bigint, col_bigint_5 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_1 varchar(10), col_varchar100_1 varchar(100), col_varchar100_2 varchar(100), col_varchar500_1 varchar(500), PRIMARY KEY(col_bigint_id_1 , col_bigint_1 ));
-            - CREATE TABLE pkey_rangescan_join_2(col_bigint_id_1 bigint, col_bigint_1 bigint, col_bigint_2 bigint, col_bigint_3 bigint, col_bigint_4 bigint, col_bigint_5 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_1 varchar(10), col_varchar100_1 varchar(100), col_varchar100_2 varchar(100), col_varchar500_1 varchar(500), PRIMARY KEY(col_bigint_id_1 , col_bigint_1 ));
+            - DROP TABLE IF EXISTS joing8_pkey_rangescan_join_1;
+            - DROP TABLE IF EXISTS joing8_pkey_rangescan_join_2;
+            - CREATE TABLE joing8_pkey_rangescan_join_1(col_bigint_id_1 bigint, col_bigint_1 bigint, col_bigint_2 bigint, col_bigint_3 bigint, col_bigint_4 bigint, col_bigint_5 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_1 varchar(10), col_varchar100_1 varchar(100), col_varchar100_2 varchar(100), col_varchar500_1 varchar(500), PRIMARY KEY(col_bigint_id_1 , col_bigint_1 ));
+            - CREATE TABLE joing8_pkey_rangescan_join_2(col_bigint_id_1 bigint, col_bigint_1 bigint, col_bigint_2 bigint, col_bigint_3 bigint, col_bigint_4 bigint, col_bigint_5 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_1 varchar(10), col_varchar100_1 varchar(100), col_varchar100_2 varchar(100), col_varchar500_1 varchar(500), PRIMARY KEY(col_bigint_id_1 , col_bigint_1 ));
         cleanup:
-            - DROP TABLE IF EXISTS pkey_rangescan_join_1;
-            - DROP TABLE IF EXISTS pkey_rangescan_join_2;
+            - DROP TABLE IF EXISTS joing8_pkey_rangescan_join_1;
+            - DROP TABLE IF EXISTS joing8_pkey_rangescan_join_2;
         loadRules:
-            -   table: pkey_rangescan_join_
+            -   table: joing8_pkey_rangescan_join_
                 count: 2
                 rows: 1000000
                 columns:
@@ -73,21 +73,21 @@ microbenchmark:
                     -   name: hash_join_fetch_1row
                         weight: 100
                         queries:
-                            -   query: select pkey_rangescan_join_1.col_bigint_id_1 from pkey_rangescan_join_1 JOIN pkey_rangescan_join_2 on pkey_rangescan_join_1.col_bigint_2=pkey_rangescan_join_2.col_bigint_2 and pkey_rangescan_join_1.col_bigint_id_1 = 2 and pkey_rangescan_join_2.col_bigint_id_1 = 2;
+                            -   query: select joing8_pkey_rangescan_join_1.col_bigint_id_1 from joing8_pkey_rangescan_join_1 JOIN joing8_pkey_rangescan_join_2 on joing8_pkey_rangescan_join_1.col_bigint_2=joing8_pkey_rangescan_join_2.col_bigint_2 and joing8_pkey_rangescan_join_1.col_bigint_id_1 = 2 and joing8_pkey_rangescan_join_2.col_bigint_id_1 = 2;
 
             -   workload: JoinG8_hash_join_fetch_1000row
                 run:
                     -   name: hash_join_fetch_1000row
                         weight: 100
                         queries:
-                            -   query: select pkey_rangescan_join_1.col_bigint_id_1 from pkey_rangescan_join_1 JOIN pkey_rangescan_join_2 on pkey_rangescan_join_1.col_bigint_2=pkey_rangescan_join_2.col_bigint_2 and pkey_rangescan_join_1.col_bigint_id_1 < 1001 and pkey_rangescan_join_2.col_bigint_id_1 < 1001 ;
+                            -   query: select joing8_pkey_rangescan_join_1.col_bigint_id_1 from joing8_pkey_rangescan_join_1 JOIN joing8_pkey_rangescan_join_2 on joing8_pkey_rangescan_join_1.col_bigint_2=joing8_pkey_rangescan_join_2.col_bigint_2 and joing8_pkey_rangescan_join_1.col_bigint_id_1 < 1001 and joing8_pkey_rangescan_join_2.col_bigint_id_1 < 1001 ;
 
             -   workload: JoinG8_merge_join_fetch_1row
                 run:
                     -   name: merge_join_fetch_1row
                         weight: 100
                         queries:
-                            -   query: select pkey_rangescan_join_1.col_bigint_id_1 from pkey_rangescan_join_1 JOIN pkey_rangescan_join_2 on pkey_rangescan_join_1.col_bigint_id_1=pkey_rangescan_join_2.col_bigint_id_1 and pkey_rangescan_join_1.col_bigint_id_1 < 2  and pkey_rangescan_join_2.col_bigint_id_1 < 2;
+                            -   query: select joing8_pkey_rangescan_join_1.col_bigint_id_1 from joing8_pkey_rangescan_join_1 JOIN joing8_pkey_rangescan_join_2 on joing8_pkey_rangescan_join_1.col_bigint_id_1=joing8_pkey_rangescan_join_2.col_bigint_id_1 and joing8_pkey_rangescan_join_1.col_bigint_id_1 < 2  and joing8_pkey_rangescan_join_2.col_bigint_id_1 < 2;
 
             -   workload: JoinG8_merge_join_fetch_1000row
                 customTags: customer=4
@@ -95,4 +95,4 @@ microbenchmark:
                     -   name: merge_join_fetch_1000row
                         weight: 100
                         queries:
-                            -   query: select pkey_rangescan_join_1.col_bigint_id_1 from pkey_rangescan_join_1 JOIN pkey_rangescan_join_2 on pkey_rangescan_join_1.col_bigint_id_1=pkey_rangescan_join_2.col_bigint_id_1 and pkey_rangescan_join_1.col_bigint_id_1 < 1001 and pkey_rangescan_join_2.col_bigint_id_1 < 1001 ;
+                            -   query: select joing8_pkey_rangescan_join_1.col_bigint_id_1 from joing8_pkey_rangescan_join_1 JOIN joing8_pkey_rangescan_join_2 on joing8_pkey_rangescan_join_1.col_bigint_id_1=joing8_pkey_rangescan_join_2.col_bigint_id_1 and joing8_pkey_rangescan_join_1.col_bigint_id_1 < 1001 and joing8_pkey_rangescan_join_2.col_bigint_id_1 < 1001 ;

@@ -21,37 +21,37 @@ microbenchmark:
     properties:
         setAutoCommit: false
         create:
-            - drop table if exists index_test_1;
-            - drop table if exists index_test_2;
-            - drop table if exists index_test_3;
-            - drop table if exists index_test_4;
-            - create table index_test_1 (id bigint, col_int_1 int, col_int_2 int, col_int_3 int, col_int_4 int, col_int_5 int, col_int_6 int, col_int_7 int, col_int_8 int, col_int_9 int, col_int_10 int, col_varchar_1 varchar(20), col_varchar_2 varchar(20), col_varchar_3 varchar(20), col_date text, col_boolean boolean, primary key (id asc))
-            - create table index_test_2 (id bigint, col_int_1 int, col_int_2 int, col_int_3 int, col_int_4 int, col_int_5 int, col_int_6 int, col_int_7 int, col_int_8 int, col_int_9 int, col_int_10 int, col_varchar_1 varchar(20), col_varchar_2 varchar(20), col_varchar_3 varchar(20), col_date text, col_boolean boolean, primary key (id asc))
-            - create table index_test_3 (id bigint, col_int_1 int, col_int_2 int, col_int_3 int, col_int_4 int, col_int_5 int, col_int_6 int, col_int_7 int, col_int_8 int, col_int_9 int, col_int_10 int, col_varchar_1 varchar(20), col_varchar_2 varchar(20), col_varchar_3 varchar(20), col_date text, col_boolean boolean, primary key (id asc))
-            - create table index_test_4 (id bigint, col_int_1 int, col_int_2 int, col_int_3 int, col_int_4 int, col_int_5 int, col_int_6 int, col_int_7 int, col_int_8 int, col_int_9 int, col_int_10 int, col_varchar_1 varchar(20), col_varchar_2 varchar(20), col_varchar_3 varchar(20), col_date text, col_boolean boolean, primary key (id asc))
-            - create index index_test_2_idx1 on index_test_2(col_int_1 asc);
-            - create index index_test_3_idx1 on index_test_3(col_int_1 asc);
-            - create index index_test_3_idx2 on index_test_3(col_int_2 asc);
-            - create index index_test_3_idx3 on index_test_3(col_int_3 asc);
-            - create index index_test_3_idx4 on index_test_3(col_int_4 asc);
-            - create index index_test_3_idx5 on index_test_3(col_int_5 asc);
-            - create index index_test_4_idx1 on index_test_4(col_int_1 asc);
-            - create index index_test_4_idx2 on index_test_4(col_int_2 asc);
-            - create index index_test_4_idx3 on index_test_4(col_int_3 asc);
-            - create index index_test_4_idx4 on index_test_4(col_int_4 asc);
-            - create index index_test_4_idx5 on index_test_4(col_int_5 asc);
-            - create index index_test_4_idx6 on index_test_4(col_int_6 asc);
-            - create index index_test_4_idx7 on index_test_4(col_int_7 asc);
-            - create index index_test_4_idx8 on index_test_4(col_int_8 asc);
-            - create index index_test_4_idx9 on index_test_4(col_int_9 asc);
-            - create index index_test_4_idx10 on index_test_4(col_int_10 asc);
+            - drop table if exists rw_g6_index_test_1;
+            - drop table if exists rw_g6_index_test_2;
+            - drop table if exists rw_g6_index_test_3;
+            - drop table if exists rw_g6_index_test_4;
+            - create table rw_g6_index_test_1 (id bigint, col_int_1 int, col_int_2 int, col_int_3 int, col_int_4 int, col_int_5 int, col_int_6 int, col_int_7 int, col_int_8 int, col_int_9 int, col_int_10 int, col_varchar_1 varchar(20), col_varchar_2 varchar(20), col_varchar_3 varchar(20), col_date text, col_boolean boolean, primary key (id asc))
+            - create table rw_g6_index_test_2 (id bigint, col_int_1 int, col_int_2 int, col_int_3 int, col_int_4 int, col_int_5 int, col_int_6 int, col_int_7 int, col_int_8 int, col_int_9 int, col_int_10 int, col_varchar_1 varchar(20), col_varchar_2 varchar(20), col_varchar_3 varchar(20), col_date text, col_boolean boolean, primary key (id asc))
+            - create table rw_g6_index_test_3 (id bigint, col_int_1 int, col_int_2 int, col_int_3 int, col_int_4 int, col_int_5 int, col_int_6 int, col_int_7 int, col_int_8 int, col_int_9 int, col_int_10 int, col_varchar_1 varchar(20), col_varchar_2 varchar(20), col_varchar_3 varchar(20), col_date text, col_boolean boolean, primary key (id asc))
+            - create table rw_g6_index_test_4 (id bigint, col_int_1 int, col_int_2 int, col_int_3 int, col_int_4 int, col_int_5 int, col_int_6 int, col_int_7 int, col_int_8 int, col_int_9 int, col_int_10 int, col_varchar_1 varchar(20), col_varchar_2 varchar(20), col_varchar_3 varchar(20), col_date text, col_boolean boolean, primary key (id asc))
+            - create index rw_g6_index_test_2_idx1 on rw_g6_index_test_2(col_int_1 asc);
+            - create index rw_g6_index_test_3_idx1 on rw_g6_index_test_3(col_int_1 asc);
+            - create index rw_g6_index_test_3_idx2 on rw_g6_index_test_3(col_int_2 asc);
+            - create index rw_g6_index_test_3_idx3 on rw_g6_index_test_3(col_int_3 asc);
+            - create index rw_g6_index_test_3_idx4 on rw_g6_index_test_3(col_int_4 asc);
+            - create index rw_g6_index_test_3_idx5 on rw_g6_index_test_3(col_int_5 asc);
+            - create index rw_g6_index_test_4_idx1 on rw_g6_index_test_4(col_int_1 asc);
+            - create index rw_g6_index_test_4_idx2 on rw_g6_index_test_4(col_int_2 asc);
+            - create index rw_g6_index_test_4_idx3 on rw_g6_index_test_4(col_int_3 asc);
+            - create index rw_g6_index_test_4_idx4 on rw_g6_index_test_4(col_int_4 asc);
+            - create index rw_g6_index_test_4_idx5 on rw_g6_index_test_4(col_int_5 asc);
+            - create index rw_g6_index_test_4_idx6 on rw_g6_index_test_4(col_int_6 asc);
+            - create index rw_g6_index_test_4_idx7 on rw_g6_index_test_4(col_int_7 asc);
+            - create index rw_g6_index_test_4_idx8 on rw_g6_index_test_4(col_int_8 asc);
+            - create index rw_g6_index_test_4_idx9 on rw_g6_index_test_4(col_int_9 asc);
+            - create index rw_g6_index_test_4_idx10 on rw_g6_index_test_4(col_int_10 asc);
         cleanup:
-            - drop table if exists index_test_1;
-            - drop table if exists index_test_2;
-            - drop table if exists index_test_3;
-            - drop table if exists index_test_4;
+            - drop table if exists rw_g6_index_test_1;
+            - drop table if exists rw_g6_index_test_2;
+            - drop table if exists rw_g6_index_test_3;
+            - drop table if exists rw_g6_index_test_4;
         loadRules:
-            -   table: index_test_
+            -   table: rw_g6_index_test_
                 count: 4
                 rows: 2000000
                 columns:
@@ -85,7 +85,7 @@ microbenchmark:
                     -   name: Update_without_index_test
                         weight: 100
                         queries:
-                            -   query: UPDATE index_test_1 SET col_int_1 = ? where id = ?
+                            -   query: UPDATE rw_g6_index_test_1 SET col_int_1 = ? where id = ?
                                 count: 1
                                 bindings:
                                     -   util: RandomNumber
@@ -97,7 +97,7 @@ microbenchmark:
                     -   name: Update_with_1_index_test
                         weight: 100
                         queries:
-                            -   query: UPDATE index_test_2 SET col_int_1 = ? where id = ?
+                            -   query: UPDATE rw_g6_index_test_2 SET col_int_1 = ? where id = ?
                                 count: 1
                                 bindings:
                                     -   util: RandomNumber
@@ -109,7 +109,7 @@ microbenchmark:
                     -   name: Update_with_5_index_test
                         weight: 100
                         queries:
-                            -   query: UPDATE index_test_3 SET col_int_1 = ?, col_int_2 = ?, col_int_3 = ?, col_int_4 = ?, col_int_5 = ? where id = ?
+                            -   query: UPDATE rw_g6_index_test_3 SET col_int_1 = ?, col_int_2 = ?, col_int_3 = ?, col_int_4 = ?, col_int_5 = ? where id = ?
                                 count: 1
                                 bindings:
                                     -   util: RandomNumber
@@ -122,7 +122,7 @@ microbenchmark:
                     -   name: Update_with_10_index_test
                         weight: 100
                         queries:
-                            -   query: UPDATE index_test_4 SET col_int_1 = ?, col_int_2 = ?, col_int_3 = ?, col_int_4 = ?, col_int_5 = ?, col_int_6 = ?, col_int_7 = ?, col_int_8 = ?, col_int_9 = ?, col_int_10 = ? where id = ?
+                            -   query: UPDATE rw_g6_index_test_4 SET col_int_1 = ?, col_int_2 = ?, col_int_3 = ?, col_int_4 = ?, col_int_5 = ?, col_int_6 = ?, col_int_7 = ?, col_int_8 = ?, col_int_9 = ?, col_int_10 = ? where id = ?
                                 count: 1
                                 bindings:
                                     -   util: RandomNumber
