@@ -1,0 +1,61 @@
+type: postgres
+driver: org.postgresql.Driver
+url: jdbc:postgresql://{{endpoint}}:5432/postgres?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
+username: {{username}}
+password: {{password}}
+batchsize: 128
+isolation: TRANSACTION_REPEATABLE_READ
+loaderThreads: 1
+terminals: 1
+collect_pg_stat_statements: true
+yaml_version: v1.0
+works:
+    work:
+        time_secs: 180
+        active_terminals: 1
+        rate: unlimited
+        warmup: 60
+microbenchmark:
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
+    properties:
+        setAutoCommit: true
+        create:
+            - DROP TABLE IF EXISTS THRPT_G15_inventory_bitmap_scan;
+            - CREATE TABLE THRPT_G15_inventory_bitmap_scan (id BIGSERIAL PRIMARY KEY, warehouse_id INT, category_id INT, qty INT, note TEXT);
+            - CREATE INDEX inventory_wh_idx ON THRPT_G15_inventory_bitmap_scan (warehouse_id);
+            - CREATE INDEX inventory_cat_idx ON THRPT_G15_inventory_bitmap_scan (category_id);
+        cleanup:
+            - DROP TABLE IF EXISTS THRPT_G15_inventory_bitmap_scan;
+
+        loadRules:
+            - table: THRPT_G15_inventory_bitmap_scan
+              rows: 400000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 400000]
+                  - name: warehouse_id
+                    util: CyclicSeqIntGen
+                    params: [1, 10000]
+                  - name: category_id
+                    util: CyclicSeqIntGen
+                    params: [1, 2000]
+                  - name: qty
+                    util: RandomNumber
+                    params: [1, 10000]
+                  - name: note
+                    util: RandomAString
+                    params: [100, 100]
+
+        executeRules:
+            - workload: THRPT_G15_bitmap_scan
+              run:
+                  - name: THRPT_G15_bitmap_scan
+                    weight: 100
+                    queries:
+                        - query: SELECT * FROM THRPT_G15_inventory_bitmap_scan WHERE warehouse_id = ? OR category_id = ?;
+                          bindings:
+                              - util: RandomNumber
+                                params: [1, 10000]
+                              - util: RandomNumber
+                                params: [1, 2000]
