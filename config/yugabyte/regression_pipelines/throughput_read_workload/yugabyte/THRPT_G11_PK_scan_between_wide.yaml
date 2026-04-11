@@ -79,8 +79,8 @@ microbenchmark:
                         - query: select * from THRPT_G11_employees_pk_scan_100_cols where emp_id BETWEEN ? AND ?
                           bindings:
                               - util: RandomNumber
-                                params: [1, 899999]
+                                params: [1, 998000]
                                 referenceName: emp_id1
                               - util: ExpressionEval
                                 params:
-                                    - "emp_id1 + 100000"
+                                    - "emp_id1 + 2000"
