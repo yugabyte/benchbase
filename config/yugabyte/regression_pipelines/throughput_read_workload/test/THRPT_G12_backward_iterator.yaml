@@ -61,8 +61,11 @@ microbenchmark:
                   - name: THRPT_G12_idx_backward_scan
                     weight: 100
                     queries:
-                        - query: SELECT emp_id, name, department, hire_date, last_login FROM THRPT_G12_employees_idx_backward_scan WHERE department IN (?,?) AND is_active = true ORDER BY last_login DESC limit 50;
+                        - query: SELECT emp_id, name, department, hire_date, last_login FROM THRPT_G12_employees_idx_backward_scan WHERE department IN (?,?) AND is_active = ? AND last_login < ? ORDER BY last_login DESC limit 50;
                           bindings:
                               - util: OneStringFromArray
                                 count: 2
                                 params: [['Engineering', 'Sales','Marketing','Finance','IT','HR','Legal','Product']]
+                              - util: RandomBoolean
+                              - util: RandomTimestamp
+                                params: [10000000]
