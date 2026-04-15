@@ -21,13 +21,13 @@ microbenchmark:
     properties:
         setAutoCommit: true
         create:
-            - DROP TABLE IF EXISTS THRPT_G13_employees_aggregate_pushdown;
-            - CREATE TABLE THRPT_G13_employees_aggregate_pushdown (emp_id INT, name VARCHAR(10), email VARCHAR(20), salary INT, hire_date DATE, department VARCHAR(20), is_active BOOLEAN, last_login TIMESTAMP, primary key(emp_id asc)) SPLIT AT VALUES ((333333), (666666));
+            - DROP TABLE IF EXISTS THRPT_G12_employees;
+            - CREATE TABLE THRPT_G12_employees (emp_id INT, name VARCHAR(10), email VARCHAR(20), salary INT, hire_date DATE, department VARCHAR(20), is_active BOOLEAN, last_login TIMESTAMP, primary key(emp_id asc)) SPLIT AT VALUES ((333333), (666666));
         cleanup:
-            - DROP TABLE IF EXISTS THRPT_G13_employees_aggregate_pushdown;
+            - DROP TABLE IF EXISTS THRPT_G12_employees;
 
         loadRules:
-            - table: THRPT_G13_employees_aggregate_pushdown
+            - table: THRPT_G12_employees
               rows: 1000000
               columns:
                   - name: emp_id
@@ -55,12 +55,12 @@ microbenchmark:
                     params: [10000000]
 
         executeRules:
-            - workload: THRPT_G13_aggregate_pushdown
+            - workload: THRPT_G12_aggregate_pushdown
               run:
-                  - name: THRPT_G13_aggregate_pushdown
+                  - name: THRPT_G12_aggregate_pushdown
                     weight: 100
                     queries:
-                        - query: select sum(salary) from THRPT_G13_employees_aggregate_pushdown where department IN (?,?);
+                        - query: select sum(salary) from THRPT_G12_employees where department IN (?,?);
                           bindings:
                               - util: OneStringFromArray
                                 count: 2

@@ -1813,7 +1813,11 @@ public class DBWorkload {
                     cpuReading = flatReadings;
                 }
                 metaDataJson.put("cpu_utilization", cpuReading);
-                metaDataJson.put("avg_cpu", cpuReading.stream().mapToDouble(Double::doubleValue).average().orElse(0.0));
+                if(isYugabyteDatabase) {
+                    metaDataJson.put("avg_cpu", cpuReading.stream().mapToDouble(Double::doubleValue).average().orElse(0.0));
+                }else{
+                    metaDataJson.put("avg_cpu", lastEntry.get("max_cpu"));
+                }
                 metaDataJson.put("optimal_threads", optimalThreads);
                 Worker.featurebenchAdditionalResults.setMetaDataJson(metaDataJson);
                 LOG.info("Stored CPU utilization in metadata: avg_cpu={}, optimal_threads={}",

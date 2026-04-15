@@ -20,26 +20,26 @@ microbenchmark:
     properties:
         setAutoCommit: true
         create:
-            - DROP TABLE IF EXISTS THRPT_G15_inventory_bitmap_scan;
-            - CREATE TABLE THRPT_G15_inventory_bitmap_scan (id BIGSERIAL PRIMARY KEY, warehouse_id INT, category_id INT, qty INT, note TEXT);
-            - CREATE INDEX inventory_wh_idx ON THRPT_G15_inventory_bitmap_scan (warehouse_id);
-            - CREATE INDEX inventory_cat_idx ON THRPT_G15_inventory_bitmap_scan (category_id);
+            - DROP TABLE IF EXISTS THRPT_G14_inventory;
+            - CREATE TABLE THRPT_G14_inventory (id BIGSERIAL PRIMARY KEY, warehouse_id INT, category_id INT, qty INT, note TEXT);
+            - CREATE INDEX idx_thrpt_g14_inventory_warehouse ON THRPT_G14_inventory (warehouse_id);
+            - CREATE INDEX idx_thrpt_g14_inventory_category ON THRPT_G14_inventory (category_id);
         cleanup:
-            - DROP TABLE IF EXISTS THRPT_G15_inventory_bitmap_scan;
+            - DROP TABLE IF EXISTS THRPT_G14_inventory;
 
         loadRules:
-            - table: THRPT_G15_inventory_bitmap_scan
-              rows: 400000
+            - table: THRPT_G14_inventory
+              rows: 1000000
               columns:
                   - name: id
                     util: PrimaryIntGen
-                    params: [1, 400000]
+                    params: [1, 1000000]
                   - name: warehouse_id
                     util: CyclicSeqIntGen
-                    params: [1, 10000]
+                    params: [1, 25000]
                   - name: category_id
                     util: CyclicSeqIntGen
-                    params: [1, 2000]
+                    params: [1, 5000]
                   - name: qty
                     util: RandomNumber
                     params: [1, 10000]
@@ -48,14 +48,14 @@ microbenchmark:
                     params: [100, 100]
 
         executeRules:
-            - workload: THRPT_G15_bitmap_scan
+            - workload: THRPT_G14_bitmap_scan
               run:
-                  - name: THRPT_G15_bitmap_scan
+                  - name: THRPT_G14_bitmap_scan
                     weight: 100
                     queries:
-                        - query: SELECT * FROM THRPT_G15_inventory_bitmap_scan WHERE warehouse_id = ? OR category_id = ?;
+                        - query: SELECT * FROM THRPT_G14_inventory WHERE warehouse_id = ? OR category_id = ?;
                           bindings:
                               - util: RandomNumber
-                                params: [1, 10000]
+                                params: [1, 25000]
                               - util: RandomNumber
-                                params: [1, 2000]
+                                params: [1, 5000]
