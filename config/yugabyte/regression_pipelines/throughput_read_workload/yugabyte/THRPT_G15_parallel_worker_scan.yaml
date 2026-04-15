@@ -22,7 +22,7 @@ microbenchmark:
         setAutoCommit: true
         create:
             - DROP TABLE IF EXISTS THRPT_G15_events;
-            - CREATE TABLE THRPT_G15_events (id bigserial PRIMARY KEY, user_id int , event_type text , payload text, created_at timestamptz);
+            - CREATE TABLE THRPT_G15_events (id bigserial, user_id int , event_type text , payload text, created_at timestamptz, PRIMARY KEY(id asc)) SPLIT AT VALUES ((333333), (666666));
         cleanup:
             - DROP TABLE IF EXISTS THRPT_G15_events;
 
