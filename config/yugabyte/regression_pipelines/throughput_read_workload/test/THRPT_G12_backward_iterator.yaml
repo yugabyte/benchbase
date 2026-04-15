@@ -23,7 +23,7 @@ microbenchmark:
         create:
             - DROP TABLE IF EXISTS THRPT_G12_employees_idx_backward_scan;
             - CREATE TABLE THRPT_G12_employees_idx_backward_scan (emp_id INT, name VARCHAR(10), email VARCHAR(20), salary INT, hire_date DATE, department VARCHAR(20), is_active BOOLEAN, last_login TIMESTAMP, primary key(emp_id asc)) SPLIT AT VALUES ((333333), (666666));
-            - create index login_actvity on THRPT_G12_employees_idx_backward_scan(last_login asc, department, is_active) include(emp_id,name);
+            - create index login_actvity on THRPT_G12_employees_idx_backward_scan(department, is_active, last_login asc) include(emp_id,name);
         cleanup:
             - DROP TABLE IF EXISTS THRPT_G12_employees_idx_backward_scan;
 
@@ -61,11 +61,8 @@ microbenchmark:
                   - name: THRPT_G12_idx_backward_scan
                     weight: 100
                     queries:
-                        - query: SELECT emp_id, name, department, hire_date, last_login FROM THRPT_G12_employees_idx_backward_scan WHERE department IN (?,?) AND is_active = ? AND last_login < ? ORDER BY last_login DESC limit 50;
+                        - query: SELECT emp_id, name, department, hire_date, last_login FROM THRPT_G12_employees_idx_backward_scan WHERE department = ? AND is_active = ? ORDER BY last_login DESC limit 50;
                           bindings:
                               - util: OneStringFromArray
-                                count: 2
                                 params: [['Engineering', 'Sales','Marketing','Finance','IT','HR','Legal','Product']]
                               - util: RandomBoolean
-                              - util: RandomTimestamp
-                                params: [10000000]
