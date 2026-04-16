@@ -30,8 +30,7 @@ microbenchmark:
             - DROP TABLE IF EXISTS THRPT_G2_sales_orders;
 
         loadRules:
-            - table: THRPT_G2_sales_orders_
-              count: 1
+            - table: THRPT_G2_sales_orders
               rows: 1000000
               columns:
                   - name: id
