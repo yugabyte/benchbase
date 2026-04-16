@@ -23,8 +23,8 @@ microbenchmark:
         create:
             - DROP TABLE IF EXISTS THRPT_G14_inventory;
             - CREATE TABLE THRPT_G14_inventory (id bigserial, warehouse_id int, category_id int, qty int, note text, PRIMARY KEY(id asc)) SPLIT AT VALUES ((133333), (266666));
-            - CREATE INDEX idx_thrpt_g14_inventory_warehouse ON THRPT_G14_inventory (warehouse_id) SPLIT AT VALUES ((83333), (166666));
-            - CREATE INDEX idx_thrpt_g14_inventory_category ON THRPT_G14_inventory (category_id) SPLIT AT VALUES ((1666), (3333));
+            - CREATE INDEX idx_thrpt_g14_inventory_warehouse ON THRPT_G14_inventory (warehouse_id asc) SPLIT AT VALUES ((83333), (166666));
+            - CREATE INDEX idx_thrpt_g14_inventory_category ON THRPT_G14_inventory (category_id asc) SPLIT AT VALUES ((1666), (3333));
         cleanup:
             - DROP TABLE IF EXISTS THRPT_G14_inventory;
 
