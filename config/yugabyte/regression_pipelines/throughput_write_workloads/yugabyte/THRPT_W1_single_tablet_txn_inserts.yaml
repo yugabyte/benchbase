@@ -17,7 +17,7 @@ url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationNam
 username: {{username}}
 password: {{password}}
 batchsize: 128
-isolation: TRANSACTION_READ_COMMITTED
+isolation: TRANSACTION_REPEATABLE_READ
 loaderthreads: 1
 terminals: 1
 collect_pg_stat_statements: true
