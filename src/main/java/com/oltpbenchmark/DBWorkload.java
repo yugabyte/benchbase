@@ -723,7 +723,9 @@ public class DBWorkload {
                             LOG.info("Terminal for starting: {}", originalTerminals);
                             String workloadName = executeRules == null ? null : workloads.get(workCount - 1).getString("workload");
                             // Find optimal threads for this workload
-                            int optimalThreads = findOptimalThreadCount(benchList.get(0), minThreads, targetCPU, toleranceCPU, workloadName, workCount,samplingTime);
+                            double cpuScalingMinDeltaPercent = xmlConfig.getDouble("cpuScalingMinDeltaPercent", 5.0);
+                            int optimalThreads = findOptimalThreadCount(benchList.get(0), minThreads, targetCPU, toleranceCPU, workloadName, workCount, samplingTime,
+                                cpuScalingMinDeltaPercent);
 
                             // Sleep for 2 mins so system can stabilize
                             try {
@@ -814,7 +816,9 @@ public class DBWorkload {
                             LOG.info("Terminal for starting: {}", originalTerminals);
                             String workloadName = executeRules == null ? null : workloads.get(workCount - 1).getString("workload");
                             // Find optimal threads for this workload
-                            int optimalThreads = findOptimalThreadCount(benchList.get(0), minThreads, targetCPU, toleranceCPU, workloadName, workCount,samplingTime);
+                            double cpuScalingMinDeltaPercent = xmlConfig.getDouble("cpuScalingMinDeltaPercent", 5.0);
+                            int optimalThreads = findOptimalThreadCount(benchList.get(0), minThreads, targetCPU, toleranceCPU, workloadName, workCount, samplingTime,
+                                cpuScalingMinDeltaPercent);
 
                             // Sleep for 2 mins so system can stabilize
                             try {
@@ -1503,7 +1507,11 @@ public class DBWorkload {
         return "us-east-1"; // Default region
     }
 
-    private static int findOptimalThreadCount(BenchmarkModule bench, int minThreads, double targetCPU, double toleranceCPU, String workloadName, int workCount, int samplingTime) throws InterruptedException {
+    /** Consecutive thread up-scales with insufficient CPU increase before we stop and tag metadata {@code flatCPU}. */
+    private static final int FLAT_CPU_MAX_CONSECUTIVE_SCALING_STEPS = 3;
+
+    private static int findOptimalThreadCount(BenchmarkModule bench, int minThreads, double targetCPU, double toleranceCPU, String workloadName, int workCount, int samplingTime,
+            double cpuScalingMinDeltaPercent) throws InterruptedException {
         double minTargetCPU = targetCPU - toleranceCPU;
         double maxTargetCPU = targetCPU + toleranceCPU;
         LOG.info("minTargetCPU: {}, maxTargetCPU: {}", minTargetCPU, maxTargetCPU);
@@ -1533,6 +1541,11 @@ public class DBWorkload {
         int optimalThreads = threads;
         List<Map<String, Object>> jsonResults = new ArrayList<>();
         Map<Integer, Double> threadCpuMap = new HashMap<>();
+        Double cpuAtPreviousScalingStep = null;
+        int consecutiveFlatCpuScalingSteps = 0;
+        boolean flatCpuDetected = false;
+        LOG.info("Flat CPU detection: minDeltaPercent={}, consecutiveFlatLimit={}",
+            cpuScalingMinDeltaPercent, FLAT_CPU_MAX_CONSECUTIVE_SCALING_STEPS);
 
         // Detect database type and prepare RDS monitoring if needed
         boolean isYugabyteDatabase = isYugabyteDB(bench);
@@ -1781,6 +1794,36 @@ public class DBWorkload {
                         optimalThreads = newThreads;
                         break;
                     }
+                    if (newThreads > threads && cpuAtPreviousScalingStep != null) {
+                        double cpuDelta = avgMaxCPU - cpuAtPreviousScalingStep;
+                        if (cpuDelta < cpuScalingMinDeltaPercent) {
+                            consecutiveFlatCpuScalingSteps++;
+                            LOG.warn(
+                                "CPU utilization did not increase significantly when scaling threads (delta={}% vs min {}%). "
+                                    + "Consecutive flat scaling steps: {}/{}.",
+                                String.format("%.2f", cpuDelta),
+                                cpuScalingMinDeltaPercent,
+                                consecutiveFlatCpuScalingSteps,
+                                FLAT_CPU_MAX_CONSECUTIVE_SCALING_STEPS);
+                            if (consecutiveFlatCpuScalingSteps >= FLAT_CPU_MAX_CONSECUTIVE_SCALING_STEPS) {
+                                flatCpuDetected = true;
+                                optimalThreads = threads;
+                                LOG.info(
+                                    "Flat CPU plateau detected after {} consecutive thread increases (min delta {}% points). "
+                                        + "Stopping thread search; continuing run with {} threads and metadata flatCPU=true. "
+                                        + "Last max CPU {}%, previous step {}%.",
+                                    FLAT_CPU_MAX_CONSECUTIVE_SCALING_STEPS,
+                                    cpuScalingMinDeltaPercent,
+                                    optimalThreads,
+                                    String.format("%.2f", avgMaxCPU),
+                                    String.format("%.2f", cpuAtPreviousScalingStep));
+                                break;
+                            }
+                        } else {
+                            consecutiveFlatCpuScalingSteps = 0;
+                        }
+                    }
+                    cpuAtPreviousScalingStep = avgMaxCPU;
                     threads = newThreads;
                 }
 
@@ -1819,9 +1862,10 @@ public class DBWorkload {
                     metaDataJson.put("avg_cpu", lastEntry.get("max_cpu"));
                 }
                 metaDataJson.put("optimal_threads", optimalThreads);
+                metaDataJson.put("flatCPU", flatCpuDetected);
                 Worker.featurebenchAdditionalResults.setMetaDataJson(metaDataJson);
-                LOG.info("Stored CPU utilization in metadata: avg_cpu={}, optimal_threads={}",
-                    cpuReading.stream().mapToDouble(Double::doubleValue).average().orElse(0.0), optimalThreads);
+                LOG.info("Stored CPU utilization in metadata: avg_cpu={}, optimal_threads={}, flatCPU={}",
+                    cpuReading.stream().mapToDouble(Double::doubleValue).average().orElse(0.0), optimalThreads, flatCpuDetected);
             } catch (Exception e) {
                 LOG.error("Error storing CPU utilization in metadata", e);
             }
