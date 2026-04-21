@@ -1783,8 +1783,8 @@ public class DBWorkload {
                             optimalThreads = Math.max(1, threads);
                             break;
                         }
-                        newThreads = threads + 3;
-                        LOG.info("Adding 3 threads to the current threads. New threads: {}", threads);
+                        newThreads = threads + 6;
+                        LOG.info("Adding 6 threads to the current threads. New threads: {}", threads);
                     }else{
                         newThreads = (int) Math.ceil((threads * targetCPU) / avgMaxCPU);
                        
