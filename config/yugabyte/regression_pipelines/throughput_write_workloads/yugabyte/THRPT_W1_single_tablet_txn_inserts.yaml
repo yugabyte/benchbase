@@ -63,7 +63,7 @@ microbenchmark:
                     weight: 100
                     queries:
                         - query: INSERT INTO THRPT_WL_SINGLE_TABLET_TXN (id, c1, c2, payload) VALUES (?,?,?,?)
-                          count: 64
+                          count: 10
                           bindings:
                               - util: PrimaryIntGen
                                 params: [1000001, 2147483647]
