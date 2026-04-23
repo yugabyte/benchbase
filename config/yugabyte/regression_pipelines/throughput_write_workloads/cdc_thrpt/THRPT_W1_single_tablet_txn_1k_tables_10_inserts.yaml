@@ -1,0 +1,94 @@
+# Write workload: all inserts target a single presplit tablet (SPLIT INTO 1 TABLETS).
+#
+# Tuning for tablet-bound behavior (not CPU-bound):
+# - Prefer larger DB nodes (e.g. 16 vCPU or 32 vCPU) so the single tablet leader is more
+#   likely to be the bottleneck before client CPU is saturated.
+# - Adjust `terminals` / `active_terminals` up or down with instance size: fewer workers on
+#   smaller clients, more on 32c if you still see CPU headroom.
+# - Consider lowering automatic tablet splitting for the test universe if splits would
+#   change the one-tablet layout during the run.
+#
+# Transactions: `setAutoCommit: false` — each benchmark iteration runs one transaction
+# (batch of rows) then commits (see Worker.doWork + FeatureBenchWorker.executeWork).
+
+type: YUGABYTE
+driver: com.yugabyte.Driver
+url: jdbc:yugabytedb://10.9.14.186:5433/yugabyte
+username: yugabyte
+password: yugabyte
+batchsize: 128
+isolation: TRANSACTION_REPEATABLE_READ
+loaderthreads: 1
+terminals: 1
+collect_pg_stat_statements: true
+use_dist_in_explain: true
+yaml_version: v1.0
+works:
+    work:
+        time_secs: 180
+        active_terminals: 1
+        rate: unlimited
+        warmup: 60
+microbenchmark:
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
+    properties:
+        setAutoCommit: false
+        create:
+            - DO $$ DECLARE i INT; BEGIN FOR i IN 1..1000 LOOP EXECUTE format('DROP TABLE IF EXISTS THRPT_WL_SINGLE_TABLET_TXN_%s;', i); END LOOP; END $$;
+            - DO $$ DECLARE i INT; BEGIN FOR i IN 1..1000 LOOP EXECUTE format('CREATE TABLE THRPT_WL_SINGLE_TABLET_TXN_%s (id BIGINT PRIMARY KEY, c1 BIGINT, c2 BIGINT, payload VARCHAR(256)) SPLIT INTO 1 TABLETS;', i); END LOOP; END $$;
+            - |
+                CREATE OR REPLACE FUNCTION thrpt_insert_single_tablet(
+                    p_table_id INT,
+                    p_id BIGINT,
+                    p_c1 BIGINT,
+                    p_c2 BIGINT,
+                    p_payload VARCHAR
+                ) RETURNS VOID AS $$
+                BEGIN
+                    EXECUTE format(
+                        'INSERT INTO THRPT_WL_SINGLE_TABLET_TXN_%s (id, c1, c2, payload) VALUES ($1, $2, $3, $4)',
+                        p_table_id
+                    ) USING p_id, p_c1, p_c2, p_payload;
+                END;
+                $$ LANGUAGE plpgsql;
+        cleanup:
+            - DROP FUNCTION IF EXISTS thrpt_insert_single_tablet(INT, BIGINT, BIGINT, BIGINT, VARCHAR);
+            - DO $$ DECLARE i INT; BEGIN FOR i IN 1..1000 LOOP EXECUTE format('DROP TABLE IF EXISTS THRPT_WL_SINGLE_TABLET_TXN_%s;', i); END LOOP; END $$;
+
+        loadRules:
+            - table: THRPT_WL_SINGLE_TABLET_TXN_
+              count: 1000
+              rows: 1
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [0, 1]
+                  - name: c1
+                    util: RandomNumber
+                    params: [1, 1000000]
+                  - name: c2
+                    util: RandomNumber
+                    params: [1, 1000000]
+                  - name: payload
+                    util: RandomAString
+                    params: [128, 128]
+
+        executeRules:
+            - workload: THRPT_W1_single_tablet_txn_inserts
+              run:
+                  - name: THRPT_W1_single_tablet_txn_inserts
+                    weight: 100
+                    queries:
+                        - query: SELECT thrpt_insert_single_tablet(?, ?, ?, ?, ?)
+                          count: 10
+                          bindings:
+                              - util: CyclicSeqIntGenWithPeriod
+                                params: [1, 1000, 10]
+                              - util: PrimaryIntGen
+                                params: [1000001, 2147483647]
+                              - util: RandomNumber
+                                params: [1, 1000000000]
+                              - util: RandomNumber
+                                params: [1, 1000000000]
+                              - util: RandomAString
+                                params: [128, 128]
