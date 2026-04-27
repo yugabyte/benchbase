@@ -9,7 +9,7 @@ isolation: TRANSACTION_REPEATABLE_READ
 loaderthreads: 1
 terminals: 1
 collect_pg_stat_statements: true
-use_dist_in_explain : true
+use_dist_in_explain: true
 yaml_version: v1.0
 works:
     work:
@@ -22,39 +22,34 @@ microbenchmark:
     properties:
         setAutoCommit: true
         create:
-            - DROP TABLE IF EXISTS THRPT_G11_employees;
-            - CREATE TABLE THRPT_G11_employees (emp_id INT, name VARCHAR(10), email VARCHAR(20), salary INT, hire_date DATE, department VARCHAR(20), is_active BOOLEAN, last_login TIMESTAMP, primary key(emp_id asc));
-            - CREATE INDEX idx_thrpt_g11_employees_last_login_dept on THRPT_G11_employees(last_login asc, department, is_active) include(emp_id,name);
+            - DROP TABLE IF EXISTS THRPT_G11_user_activity;
+            - CREATE TABLE THRPT_G11_user_activity (activity_id BIGINT, segment_id INT, user_id INT, action_type TEXT, event_time TIMESTAMP, metadata TEXT, PRIMARY KEY(activity_id ASC));
+            - CREATE INDEX idx_user_activity_feed ON THRPT_G11_user_activity(segment_id ASC, event_time DESC) INCLUDE (user_id, action_type);
         cleanup:
-            - DROP TABLE IF EXISTS THRPT_G11_employees;
+            - DROP TABLE IF EXISTS THRPT_G11_user_activity;
 
         loadRules:
-            - table: THRPT_G11_employees
+            - table: THRPT_G11_user_activity
               rows: 1000000
               columns:
-                  - name: emp_id
+                  - name: activity_id
                     util: RandomUniqueIntGen
                     params: [1, 1000000]
-                  - name: name
+                  - name: segment_id
+                    util: RandomUniqueIntGen
+                    params: [1, 10000]
+                  - name: user_id
+                    util: RandomUniqueIntGen
+                    params: [1, 100000]
+                  - name: action_type
                     util: RandomAString
                     params: [10, 10]
-                  - name: email
-                    util: RandomAString
-                    params: [20, 20]
-                  - name: salary
-                    util: RandomNoWithDecimalPoints
-                    params: [1, 100000, 2]
-                  - name: hire_date
-                    util: RandomDateBtwYears
-                    params: [2000, 2025]
-                  - name: department
-                    util: OneStringFromArray
-                    params: [['Engineering', 'Sales', 'Marketing', 'Finance', 'IT', 'HR', 'Legal', 'Product']]
-                  - name: is_active
-                    util: RandomBoolean
-                  - name: last_login
+                  - name: event_time
                     util: RandomTimestamp
                     params: [10000000]
+                  - name: metadata
+                    util: RandomAString
+                    params: [100, 100]
 
         executeRules:
             - workload: THRPT_G11_idx_backward_scan
@@ -62,8 +57,7 @@ microbenchmark:
                   - name: THRPT_G11_idx_backward_scan
                     weight: 100
                     queries:
-                        - query: SELECT emp_id, name, department, hire_date, last_login FROM THRPT_G11_employees WHERE department IN (?,?) AND is_active = true ORDER BY last_login DESC LIMIT 50;
+                        - query: SELECT activity_id, user_id, action_type, event_time FROM THRPT_G11_user_activity WHERE segment_id = ? ORDER BY event_time ASC limit 50;
                           bindings:
-                              - util: OneStringFromArray
-                                count: 2
-                                params: [['Engineering', 'Sales','Marketing','Finance','IT','HR','Legal','Product']]
+                              - util: RandomInt
+                                params: [1, 10000]

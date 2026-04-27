@@ -240,6 +240,8 @@ public class ResultWriter {
         metadata.put("yaml_version", expConf.getString("yaml_version", "v1.0"));
         metadata.put("customTags", formatCustomTags(customTags));
         metadata.put("skipReport",skipReport);
+        metadata.put("executionStartEpoch", results.getExecutionStartEpoch());
+        metadata.put("executionEndEpoch", results.getExecutionEndEpoch());
         JSONObject additionalMetadata = results.getFeaturebenchAdditionalResults().getMetaDataJson();
         for (String key : additionalMetadata.keySet()) {
             metadata.put(key, additionalMetadata.get(key));

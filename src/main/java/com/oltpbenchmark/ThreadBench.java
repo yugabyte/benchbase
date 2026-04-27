@@ -117,6 +117,8 @@ public class ThreadBench implements Thread.UncaughtExceptionHandler {
         long warmupStart = System.nanoTime();
         long warmup = warmupStart;
         long measureEnd = -1;
+        long executionStartEpoch = -1;
+        long executionEndEpoch = -1;
         // used to determine the longest sleep interval
         int lowestRate = Integer.MAX_VALUE;
 
@@ -228,6 +230,7 @@ public class ThreadBench implements Thread.UncaughtExceptionHandler {
                                 lastEntry = true;
                                 testState.startCoolDown();
                                 measureEnd = now;
+                                executionEndEpoch = System.currentTimeMillis();
                                 LOG.info("{} :: Waiting for all terminals to finish ..", StringUtil.bold("TERMINATE"));
                             } else if (phase != null) {
                                 // Reset serial execution parameters.
@@ -277,6 +280,7 @@ public class ThreadBench implements Thread.UncaughtExceptionHandler {
                     interruptWorkers();
                 }
                 start = now;
+                executionStartEpoch = System.currentTimeMillis();
                 LOG.info("{} :: Warmup complete, starting measurements.", StringUtil.bold("MEASURE"));
                 // measureEnd = measureStart + measureSeconds * 1000000000L;
 
@@ -327,6 +331,12 @@ public class ThreadBench implements Thread.UncaughtExceptionHandler {
             }
 
             Results results = new Results(measureEnd - start, requests, stats, samples);
+            results.setExecutionStartEpoch(executionStartEpoch);
+            // If the measure phase end was never reached (e.g. early exit), fall back to "now".
+            if (executionEndEpoch < 0) {
+                executionEndEpoch = System.currentTimeMillis();
+            }
+            results.setExecutionEndEpoch(executionEndEpoch);
 
             // Compute transaction histogram
             Set<TransactionType> txnTypes = new HashSet<>();
