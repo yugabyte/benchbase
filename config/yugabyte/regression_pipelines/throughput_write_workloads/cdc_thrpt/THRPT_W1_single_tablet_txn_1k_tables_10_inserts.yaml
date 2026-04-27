@@ -36,23 +36,7 @@ microbenchmark:
         create:
             - DO $$ DECLARE i INT; BEGIN FOR i IN 1..1000 LOOP EXECUTE format('DROP TABLE IF EXISTS THRPT_WL_SINGLE_TABLET_TXN_%s;', i); END LOOP; END $$;
             - DO $$ DECLARE i INT; BEGIN FOR i IN 1..1000 LOOP EXECUTE format('CREATE TABLE THRPT_WL_SINGLE_TABLET_TXN_%s (id BIGINT PRIMARY KEY, c1 BIGINT, c2 BIGINT, payload VARCHAR(256)) SPLIT INTO 1 TABLETS;', i); END LOOP; END $$;
-            - |
-                CREATE OR REPLACE FUNCTION thrpt_insert_single_tablet(
-                    p_table_id INT,
-                    p_id BIGINT,
-                    p_c1 BIGINT,
-                    p_c2 BIGINT,
-                    p_payload VARCHAR
-                ) RETURNS VOID AS $$
-                BEGIN
-                    EXECUTE format(
-                        'INSERT INTO THRPT_WL_SINGLE_TABLET_TXN_%s (id, c1, c2, payload) VALUES ($1, $2, $3, $4)',
-                        p_table_id
-                    ) USING p_id, p_c1, p_c2, p_payload;
-                END;
-                $$ LANGUAGE plpgsql;
         cleanup:
-            - DROP FUNCTION IF EXISTS thrpt_insert_single_tablet(INT, BIGINT, BIGINT, BIGINT, VARCHAR);
             - DO $$ DECLARE i INT; BEGIN FOR i IN 1..1000 LOOP EXECUTE format('DROP TABLE IF EXISTS THRPT_WL_SINGLE_TABLET_TXN_%s;', i); END LOOP; END $$;
 
         loadRules:
@@ -79,11 +63,13 @@ microbenchmark:
                   - name: THRPT_W1_single_tablet_txn_inserts
                     weight: 100
                     queries:
-                        - query: SELECT thrpt_insert_single_tablet(?, ?, ?, ?, ?)
+                        - query: INSERT INTO THRPT_WL_SINGLE_TABLET_TXN_${tableId} (id, c1, c2, payload) VALUES (?, ?, ?, ?)
                           count: 10
                           bindings:
-                              - util: CyclicSeqIntGenWithPeriod
+                              - util: RandomUniqueCyclicIntGenWithPeriod
                                 params: [1, 1000, 10]
+                                referenceName: tableId
+                                identifier: true
                               - util: PrimaryIntGen
                                 params: [1000001, 2147483647]
                               - util: RandomNumber

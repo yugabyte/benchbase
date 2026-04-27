@@ -96,6 +96,13 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             preparedStatementsPerQuery = new HashMap<>();
             for (ExecuteRule executeRule : executeRules) {
                 for (Query query : executeRule.getQueries()) {
+                    // Queries with identifier bindings (e.g. dynamic table names) cannot
+                    // be prepared up-front because the SQL string still contains
+                    // `${name}` placeholders. Their PreparedStatements are built lazily
+                    // and cached per resolved SQL string in executeWork().
+                    if (query.hasIdentifierBindings()) {
+                        continue;
+                    }
                     String queryStmt = query.getQuery();
                     PreparedStatement stmt = conn.prepareStatement(queryStmt);
                     preparedStatementsPerQuery.put(queryStmt, stmt);
@@ -181,11 +188,35 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                     for (Query query : er.getQueries()) {
                         String querystmt = query.getQuery();
                         try {
-                            PreparedStatement stmt = conn.prepareStatement((query.isSelectQuery() ? explainSelect : query.isUpdateQuery() ? explainUpdate : explainOthers) + querystmt);
                             List<UtilToMethod> baseUtils = query.getBaseUtils();
-                             Object[] generatedValues = generateParameterValues(baseUtils);
-                            for (int j = 0; j < generatedValues.length; j++) {
-                                stmt.setObject(j + 1, generatedValues[j]);
+                            Object[] generatedValues = generateParameterValues(baseUtils);
+
+                            String explainPrefix = query.isSelectQuery()
+                                ? explainSelect
+                                : query.isUpdateQuery() ? explainUpdate : explainOthers;
+                            PreparedStatement stmt;
+                            if (query.hasIdentifierBindings()) {
+                                // Resolve `${name}` placeholders for one sample identifier
+                                // value so we can produce a valid SQL string for EXPLAIN.
+                                // The plan shape is identical across resolved variants
+                                // (same DDL on every templated table), so a single
+                                // representative plan is sufficient. The result is keyed
+                                // on the original template, matching how tearDown() looks
+                                // it up via `query.getQuery()`.
+                                String resolvedQuery = resolveIdentifierPlaceholders(querystmt, baseUtils, generatedValues);
+                                stmt = conn.prepareStatement(explainPrefix + resolvedQuery);
+                                int paramIdx = 1;
+                                for (int j = 0; j < generatedValues.length; j++) {
+                                    if (baseUtils.get(j).isIdentifier()) {
+                                        continue;
+                                    }
+                                    stmt.setObject(paramIdx++, generatedValues[j]);
+                                }
+                            } else {
+                                stmt = conn.prepareStatement(explainPrefix + querystmt);
+                                for (int j = 0; j < generatedValues.length; j++) {
+                                    stmt.setObject(j + 1, generatedValues[j]);
+                                }
                             }
                             explainDDLMap.put(query.getQuery(), stmt);
                         } catch (SQLException e) {
@@ -320,6 +351,37 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
         return generatedValues;
     }
 
+    /**
+     * Substitutes `${referenceName}` placeholders in the query template with
+     * the generated values of identifier-marked bindings. The returned string
+     * is a fully formed SQL statement that can be passed to
+     * {@link Connection#prepareStatement(String)}.
+     *
+     * Identifier bindings are spliced as `String.valueOf(value)` since they
+     * represent SQL identifier fragments (e.g. table-name suffixes, partition
+     * numbers), not user-supplied data, and are sourced from controlled
+     * generators (numbers / fixed strings).
+     */
+    private static String resolveIdentifierPlaceholders(String queryTemplate,
+                                                         List<UtilToMethod> baseUtils,
+                                                         Object[] generatedValues) {
+        String resolved = queryTemplate;
+        for (int j = 0; j < baseUtils.size(); j++) {
+            UtilToMethod util = baseUtils.get(j);
+            if (!util.isIdentifier()) {
+                continue;
+            }
+            String refName = util.getReferenceName();
+            if (refName == null || refName.isEmpty()) {
+                throw new RuntimeException("Identifier binding requires a non-empty `referenceName`");
+            }
+            String placeholder = "${" + refName + "}";
+            String replacement = String.valueOf(generatedValues[j]);
+            resolved = resolved.replace(placeholder, replacement);
+        }
+        return resolved;
+    }
+
     @Override
     protected TransactionStatus executeWork(Connection conn, TransactionType txnType) throws
         UserAbortException, SQLException {
@@ -339,19 +401,44 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             boolean zeroRowsTransaction = false;
             for (Query query : executeRule.getQueries()) {
                 String queryStmt = query.getQuery();
-                PreparedStatement stmt = this.preparedStatementsPerQuery.get(queryStmt);
                 List<UtilToMethod> baseUtils = query.getBaseUtils();
                 int count = query.getCount();
-                
+                boolean hasIdentifierBindings = query.hasIdentifierBindings();
+
+                // Non-templated path: one PreparedStatement is shared across iterations.
+                PreparedStatement stmt = hasIdentifierBindings
+                        ? null
+                        : this.preparedStatementsPerQuery.get(queryStmt);
+
                 for (int i = 0; i < count; i++) {
                     // Generate parameter values with expression evaluation
                     Object[] generatedValues = generateParameterValues(baseUtils);
-                    
-                    // Set all parameters in the prepared statement
-                    for (int j = 0; j < generatedValues.length; j++) {
-                        stmt.setObject(j + 1, generatedValues[j]);
+
+                    if (hasIdentifierBindings) {
+                        // Build the resolved SQL string by substituting `${referenceName}`
+                        // placeholders with the generated identifier values, then fetch
+                        // (or create + cache) the PreparedStatement for that resolved SQL.
+                        String resolvedQuery = resolveIdentifierPlaceholders(queryStmt, baseUtils, generatedValues);
+                        stmt = this.preparedStatementsPerQuery.get(resolvedQuery);
+                        if (stmt == null) {
+                            stmt = conn.prepareStatement(resolvedQuery);
+                            this.preparedStatementsPerQuery.put(resolvedQuery, stmt);
+                        }
+                        // Bind only non-identifier values, in their original order.
+                        int paramIdx = 1;
+                        for (int j = 0; j < generatedValues.length; j++) {
+                            if (baseUtils.get(j).isIdentifier()) {
+                                continue;
+                            }
+                            stmt.setObject(paramIdx++, generatedValues[j]);
+                        }
+                    } else {
+                        // Set all parameters in the prepared statement
+                        for (int j = 0; j < generatedValues.length; j++) {
+                            stmt.setObject(j + 1, generatedValues[j]);
+                        }
                     }
-                    
+
                     if (query.isSelectQuery() || stmt.toString().toUpperCase().contains(" RETURNING ")) {
                         ResultSet rs = stmt.executeQuery();
                         int countSet = 0;

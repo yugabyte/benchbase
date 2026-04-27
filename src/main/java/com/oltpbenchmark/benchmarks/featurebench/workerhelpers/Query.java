@@ -22,6 +22,23 @@ public class Query {
         return baseUtils;
     }
 
+    /**
+     * Returns true if any of this query's bindings is an identifier binding
+     * (its value is spliced into the SQL string at `${referenceName}` rather
+     * than bound as a JDBC `?` parameter).
+     */
+    public boolean hasIdentifierBindings() {
+        if (baseUtils == null) {
+            return false;
+        }
+        for (UtilToMethod u : baseUtils) {
+            if (u.isIdentifier()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void setBaseUtils(List<UtilToMethod> baseUtils) {
         if (this.pattern_count != -1) {
             this.baseUtils = repeatList(baseUtils, this.pattern_count);

@@ -724,14 +724,19 @@ public class DBWorkload {
                             String workloadName = executeRules == null ? null : workloads.get(workCount - 1).getString("workload");
                             // Find optimal threads for this workload
                             double cpuScalingMinDeltaPercent = xmlConfig.getDouble("cpuScalingMinDeltaPercent", 5.0);
+                            int threadIncrement = xmlConfig.getInt("threadIncrement", 3);
+                            int restingTimeSecs = xmlConfig.getInt("restingTimeSecs", 120);
                             int optimalThreads = findOptimalThreadCount(benchList.get(0), minThreads, targetCPU, toleranceCPU, workloadName, workCount, samplingTime,
-                                cpuScalingMinDeltaPercent);
+                                cpuScalingMinDeltaPercent, threadIncrement, restingTimeSecs);
 
-                            // Sleep for 2 mins so system can stabilize
-                            try {
-                                Thread.sleep(120000);
-                            } catch (InterruptedException e) {
-                                LOG.error("Error sleeping", e);
+                            // Sleep between optimal-threads search and the final measured run so system can stabilize
+                            if (restingTimeSecs > 0) {
+                                try {
+                                    LOG.info("Sleeping for {} seconds before the measured run so system can stabilize", restingTimeSecs);
+                                    Thread.sleep(restingTimeSecs * 1000L);
+                                } catch (InterruptedException e) {
+                                    LOG.error("Error sleeping", e);
+                                }
                             }
 
                             // Update the configuration with optimal thread count
@@ -817,14 +822,19 @@ public class DBWorkload {
                             String workloadName = executeRules == null ? null : workloads.get(workCount - 1).getString("workload");
                             // Find optimal threads for this workload
                             double cpuScalingMinDeltaPercent = xmlConfig.getDouble("cpuScalingMinDeltaPercent", 5.0);
+                            int threadIncrement = xmlConfig.getInt("threadIncrement", 3);
+                            int restingTimeSecs = xmlConfig.getInt("restingTimeSecs", 120);
                             int optimalThreads = findOptimalThreadCount(benchList.get(0), minThreads, targetCPU, toleranceCPU, workloadName, workCount, samplingTime,
-                                cpuScalingMinDeltaPercent);
+                                cpuScalingMinDeltaPercent, threadIncrement, restingTimeSecs);
 
-                            // Sleep for 2 mins so system can stabilize
-                            try {
-                                Thread.sleep(120000);
-                            } catch (InterruptedException e) {
-                                LOG.error("Error sleeping", e);
+                            // Sleep between optimal-threads search and the final measured run so system can stabilize
+                            if (restingTimeSecs > 0) {
+                                try {
+                                    LOG.info("Sleeping for {} seconds before the measured run so system can stabilize", restingTimeSecs);
+                                    Thread.sleep(restingTimeSecs * 1000L);
+                                } catch (InterruptedException e) {
+                                    LOG.error("Error sleeping", e);
+                                }
                             }
 
                             // Update the configuration with optimal thread count
@@ -1511,7 +1521,7 @@ public class DBWorkload {
     private static final int FLAT_CPU_MAX_CONSECUTIVE_SCALING_STEPS = 3;
 
     private static int findOptimalThreadCount(BenchmarkModule bench, int minThreads, double targetCPU, double toleranceCPU, String workloadName, int workCount, int samplingTime,
-            double cpuScalingMinDeltaPercent) throws InterruptedException {
+            double cpuScalingMinDeltaPercent, int threadIncrement, int restingTimeSecs) throws InterruptedException {
         double minTargetCPU = targetCPU - toleranceCPU;
         double maxTargetCPU = targetCPU + toleranceCPU;
         LOG.info("minTargetCPU: {}, maxTargetCPU: {}", minTargetCPU, maxTargetCPU);
@@ -1605,10 +1615,10 @@ public class DBWorkload {
 
         for(int iter=0; iter<max_iterations; iter++) {
 
-            // Sleep for 2 minute so that system is stable again
-            if(iter!=0) {
-                Thread.sleep(120 * 1000);
-                LOG.info("Sleeping for 2 minutes so that system is stable again");
+            // Sleep between iterations so the system is stable again
+            if(iter!=0 && restingTimeSecs > 0) {
+                LOG.info("Sleeping for {} seconds between iterations so that system is stable again", restingTimeSecs);
+                Thread.sleep(restingTimeSecs * 1000L);
             }
 
 
@@ -1783,8 +1793,8 @@ public class DBWorkload {
                             optimalThreads = Math.max(1, threads);
                             break;
                         }
-                        newThreads = threads + 3;
-                        LOG.info("Adding 3 threads to the current threads. New threads: {}", threads);
+                        newThreads = threads + threadIncrement;
+                        LOG.info("Adding {} threads to the current threads. New threads: {}", threadIncrement, newThreads);
                     }else{
                         newThreads = (int) Math.ceil((threads * targetCPU) / avgMaxCPU);
                        

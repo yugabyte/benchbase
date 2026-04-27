@@ -10,6 +10,13 @@ public class UtilToMethod {
     private BaseUtil clsInstance;
     private String referenceName = null;
     private boolean isExpression = false;
+    /**
+     * When true, the value produced by this util is NOT bound as a JDBC `?`
+     * parameter; instead it is substituted directly into the SQL string at
+     * `${referenceName}` placeholders before the statement is prepared.
+     * Useful for dynamic identifiers (e.g. table names).
+     */
+    private boolean isIdentifier = false;
 
     public boolean isExpression() {
         return isExpression;
@@ -17,6 +24,14 @@ public class UtilToMethod {
 
     public void setExpression(boolean isExpression) {
         this.isExpression = isExpression;
+    }
+
+    public boolean isIdentifier() {
+        return isIdentifier;
+    }
+
+    public void setIdentifier(boolean isIdentifier) {
+        this.isIdentifier = isIdentifier;
     }
 
     public String getReferenceName() {
