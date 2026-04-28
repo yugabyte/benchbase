@@ -1,8 +1,8 @@
 type: YUGABYTE
 driver: com.yugabyte.Driver
-url: jdbc:yugabytedb://10.9.14.186:5433/yugabyte
-username: yugabyte
-password: yugabyte
+url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true&load-balance=true
+username: {{ username }}
+password: {{ password }}
 batchsize: 128
 isolation: TRANSACTION_REPEATABLE_READ
 loaderthreads: 1
@@ -35,10 +35,10 @@ microbenchmark:
                     util: RandomUniqueIntGen
                     params: [1, 1000000]
                   - name: segment_id
-                    util: RandomUniqueIntGen
+                    util: CyclicSeqIntGen
                     params: [1, 10000]
                   - name: user_id
-                    util: RandomUniqueIntGen
+                    util: CyclicSeqIntGen
                     params: [1, 100000]
                   - name: action_type
                     util: RandomAString
@@ -56,7 +56,7 @@ microbenchmark:
                   - name: THRPT_G11_idx_backward_scan
                     weight: 100
                     queries:
-                        - query: SELECT activity_id, user_id, action_type, event_time FROM user_activity WHERE segment_id = ? ORDER BY event_time ASC limit 50;
+                        - query: SELECT activity_id, user_id, action_type, event_time FROM THRPT_G11_user_activity WHERE segment_id = ? ORDER BY event_time ASC limit 50;
                           bindings:
                               - util: RandomInt
                                 params: [1, 10000]
