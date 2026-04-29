@@ -1517,8 +1517,8 @@ public class DBWorkload {
         return "us-east-1"; // Default region
     }
 
-    /** Consecutive thread up-scales with insufficient CPU increase before we stop and tag metadata {@code flatCPU}. */
-    private static final int FLAT_CPU_MAX_CONSECUTIVE_SCALING_STEPS = 3;
+    /** Total thread up-scales with insufficient CPU increase before we stop and tag metadata {@code flatCPU}. */
+    private static final int FLAT_CPU_MAX_SCALING_STEPS = 3;
 
     private static int findOptimalThreadCount(BenchmarkModule bench, int minThreads, double targetCPU, double toleranceCPU, String workloadName, int workCount, int samplingTime,
             double cpuScalingMinDeltaPercent, int threadIncrement, int restingTimeSecs) throws InterruptedException {
@@ -1552,10 +1552,10 @@ public class DBWorkload {
         List<Map<String, Object>> jsonResults = new ArrayList<>();
         Map<Integer, Double> threadCpuMap = new HashMap<>();
         Double cpuAtPreviousScalingStep = null;
-        int consecutiveFlatCpuScalingSteps = 0;
+        int flatCpuScalingSteps = 0;
         boolean flatCpuDetected = false;
-        LOG.info("Flat CPU detection: minDeltaPercent={}, consecutiveFlatLimit={}",
-            cpuScalingMinDeltaPercent, FLAT_CPU_MAX_CONSECUTIVE_SCALING_STEPS);
+        LOG.info("Flat CPU detection: minDeltaPercent={}, flatStepsLimit={} (cumulative)",
+            cpuScalingMinDeltaPercent, FLAT_CPU_MAX_SCALING_STEPS);
 
         // Detect database type and prepare RDS monitoring if needed
         boolean isYugabyteDatabase = isYugabyteDB(bench);
@@ -1785,12 +1785,12 @@ public class DBWorkload {
                 }
                 else {
                     int newThreads = 0;
-                    if(avgMaxCPU<=targetCPU) optimalThreads=threads;
+                    if (avgMaxCPU <= targetCPU && !flatCpuDetected) optimalThreads = threads;
                     LOG.info("finding new threads for run....");
                     if(isYugabyteDatabase) {
                         if(avgMaxCPU > targetCPU) {
                             LOG.info("MaxCPU is greater than targetCPU. Breaking loop. Current threads: {}", threads);
-                            optimalThreads = Math.max(1, threads);
+                            if (!flatCpuDetected) optimalThreads = Math.max(1, threads);
                             break;
                         }
                         newThreads = threads + threadIncrement;
@@ -1801,36 +1801,44 @@ public class DBWorkload {
                     }
                     if (threadCpuMap.containsKey(newThreads)) {
                         LOG.info("newThreads={} already tested. Breaking loop to avoid duplicate testing.", newThreads);
-                        optimalThreads = newThreads;
+                        if (!flatCpuDetected) optimalThreads = newThreads;
                         break;
                     }
                     if (newThreads > threads && cpuAtPreviousScalingStep != null) {
                         double cpuDelta = avgMaxCPU - cpuAtPreviousScalingStep;
                         if (cpuDelta < cpuScalingMinDeltaPercent) {
-                            consecutiveFlatCpuScalingSteps++;
+                            flatCpuScalingSteps++;
                             LOG.warn(
                                 "CPU utilization did not increase significantly when scaling threads (delta={}% vs min {}%). "
-                                    + "Consecutive flat scaling steps: {}/{}.",
+                                    + "Flat scaling steps: {}/{} (cumulative).",
                                 String.format("%.2f", cpuDelta),
                                 cpuScalingMinDeltaPercent,
-                                consecutiveFlatCpuScalingSteps,
-                                FLAT_CPU_MAX_CONSECUTIVE_SCALING_STEPS);
-                            if (consecutiveFlatCpuScalingSteps >= FLAT_CPU_MAX_CONSECUTIVE_SCALING_STEPS) {
+                                flatCpuScalingSteps,
+                                FLAT_CPU_MAX_SCALING_STEPS);
+                            // Lock optimalThreads to the thread count of the 1st flat iteration
+                            // (the lowest thread count at which the plateau was observed).
+                            if (flatCpuScalingSteps == 1) {
                                 flatCpuDetected = true;
                                 optimalThreads = threads;
                                 LOG.info(
-                                    "Flat CPU plateau detected after {} consecutive thread increases (min delta {}% points). "
-                                        + "Stopping thread search; continuing run with {} threads and metadata flatCPU=true. "
-                                        + "Last max CPU {}%, previous step {}%.",
-                                    FLAT_CPU_MAX_CONSECUTIVE_SCALING_STEPS,
-                                    cpuScalingMinDeltaPercent,
+                                    "First flat CPU step detected. Locking optimalThreads={} (CPU={}%, prev step CPU={}%). "
+                                        + "Will continue scaling for up to {} flat steps total to confirm plateau.",
                                     optimalThreads,
                                     String.format("%.2f", avgMaxCPU),
-                                    String.format("%.2f", cpuAtPreviousScalingStep));
+                                    String.format("%.2f", cpuAtPreviousScalingStep),
+                                    FLAT_CPU_MAX_SCALING_STEPS);
+                            }
+                            if (flatCpuScalingSteps >= FLAT_CPU_MAX_SCALING_STEPS) {
+                                LOG.info(
+                                    "Flat CPU plateau confirmed after {} flat thread increases (min delta {}% points). "
+                                        + "Stopping thread search; continuing run with {} threads and metadata flatCPU=true. "
+                                        + "Last max CPU {}%.",
+                                    FLAT_CPU_MAX_SCALING_STEPS,
+                                    cpuScalingMinDeltaPercent,
+                                    optimalThreads,
+                                    String.format("%.2f", avgMaxCPU));
                                 break;
                             }
-                        } else {
-                            consecutiveFlatCpuScalingSteps = 0;
                         }
                     }
                     cpuAtPreviousScalingStep = avgMaxCPU;
