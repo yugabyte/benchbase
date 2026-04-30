@@ -11,6 +11,7 @@ isolation: TRANSACTION_REPEATABLE_READ
 loaderthreads: 1
 terminals: 1
 collect_pg_stat_statements: true
+analyze_on_all_tables: true
 use_dist_in_explain : true
 yaml_version: v1.0
 works:
