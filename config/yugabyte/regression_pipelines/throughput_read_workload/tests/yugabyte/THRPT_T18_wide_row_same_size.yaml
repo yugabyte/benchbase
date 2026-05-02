@@ -1,0 +1,54 @@
+type: YUGABYTE
+driver: com.yugabyte.Driver
+url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true&load-balance=true
+username: {{username}}
+password: {{password}}
+batchsize: 128
+isolation: TRANSACTION_REPEATABLE_READ
+loaderthreads: 1
+terminals: 1
+collect_pg_stat_statements: true
+use_dist_in_explain: true
+yaml_version: v1.0
+works:
+    work:
+        time_secs: 180
+        active_terminals: 1
+        rate: unlimited
+        warmup: 60
+microbenchmark:
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
+    properties:
+        setAutoCommit: true
+        # Wide row totalling ~10KB across many small columns, paired with T17 (single
+        # large column of equal payload size). Tests per-column overhead vs single-blob
+        # encode/decode for the same data volume.
+        create:
+            - DROP TABLE IF EXISTS THRPT_T18_wide_row;
+            - CREATE TABLE THRPT_T18_wide_row (id INT, c1 VARCHAR(100), c2 VARCHAR(100), c3 VARCHAR(100), c4 VARCHAR(100), c5 VARCHAR(100), c6 VARCHAR(100), c7 VARCHAR(100), c8 VARCHAR(100), c9 VARCHAR(100), c10 VARCHAR(100), c11 VARCHAR(100), c12 VARCHAR(100), c13 VARCHAR(100), c14 VARCHAR(100), c15 VARCHAR(100), c16 VARCHAR(100), c17 VARCHAR(100), c18 VARCHAR(100), c19 VARCHAR(100), c20 VARCHAR(100), c21 VARCHAR(100), c22 VARCHAR(100), c23 VARCHAR(100), c24 VARCHAR(100), c25 VARCHAR(100), c26 VARCHAR(100), c27 VARCHAR(100), c28 VARCHAR(100), c29 VARCHAR(100), c30 VARCHAR(100), c31 VARCHAR(100), c32 VARCHAR(100), c33 VARCHAR(100), c34 VARCHAR(100), c35 VARCHAR(100), c36 VARCHAR(100), c37 VARCHAR(100), c38 VARCHAR(100), c39 VARCHAR(100), c40 VARCHAR(100), c41 VARCHAR(100), c42 VARCHAR(100), c43 VARCHAR(100), c44 VARCHAR(100), c45 VARCHAR(100), c46 VARCHAR(100), c47 VARCHAR(100), c48 VARCHAR(100), c49 VARCHAR(100), c50 VARCHAR(100), c51 VARCHAR(100), c52 VARCHAR(100), c53 VARCHAR(100), c54 VARCHAR(100), c55 VARCHAR(100), c56 VARCHAR(100), c57 VARCHAR(100), c58 VARCHAR(100), c59 VARCHAR(100), c60 VARCHAR(100), c61 VARCHAR(100), c62 VARCHAR(100), c63 VARCHAR(100), c64 VARCHAR(100), c65 VARCHAR(100), c66 VARCHAR(100), c67 VARCHAR(100), c68 VARCHAR(100), c69 VARCHAR(100), c70 VARCHAR(100), c71 VARCHAR(100), c72 VARCHAR(100), c73 VARCHAR(100), c74 VARCHAR(100), c75 VARCHAR(100), c76 VARCHAR(100), c77 VARCHAR(100), c78 VARCHAR(100), c79 VARCHAR(100), c80 VARCHAR(100), c81 VARCHAR(100), c82 VARCHAR(100), c83 VARCHAR(100), c84 VARCHAR(100), c85 VARCHAR(100), c86 VARCHAR(100), c87 VARCHAR(100), c88 VARCHAR(100), c89 VARCHAR(100), c90 VARCHAR(100), c91 VARCHAR(100), c92 VARCHAR(100), c93 VARCHAR(100), c94 VARCHAR(100), c95 VARCHAR(100), c96 VARCHAR(100), c97 VARCHAR(100), c98 VARCHAR(100), c99 VARCHAR(100), c100 VARCHAR(100), PRIMARY KEY(id ASC)) SPLIT AT VALUES ((33333), (66666));
+
+        cleanup:
+            - DROP TABLE IF EXISTS THRPT_T18_wide_row;
+
+        loadRules:
+            - table: THRPT_T18_wide_row
+              rows: 100000
+              columns:
+                  - name: id
+                    util: RandomUniqueIntGen
+                    params: [1, 100000]
+                  - name: c
+                    count: 100
+                    util: RandomAString
+                    params: [100, 100]
+
+        executeRules:
+            - workload: THRPT_T18_wide_row_same_size
+              run:
+                  - name: THRPT_T18_wide_row_same_size
+                    weight: 100
+                    queries:
+                        - query: SELECT * FROM THRPT_T18_wide_row WHERE id = ?;
+                          bindings:
+                              - util: RandomNumber
+                                params: [1, 100000]

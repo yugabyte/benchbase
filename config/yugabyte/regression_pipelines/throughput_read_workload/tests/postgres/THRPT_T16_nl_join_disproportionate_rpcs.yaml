@@ -1,0 +1,85 @@
+type: postgres
+driver: org.postgresql.Driver
+url: jdbc:postgresql://{{endpoint}}:5432/postgres?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
+username: {{username}}
+password: {{password}}
+batchsize: 128
+isolation: TRANSACTION_REPEATABLE_READ
+loaderThreads: 1
+terminals: 1
+collect_pg_stat_statements: true
+yaml_version: v1.0
+works:
+    work:
+        time_secs: 180
+        active_terminals: 1
+        rate: unlimited
+        warmup: 60
+microbenchmark:
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
+    properties:
+        setAutoCommit: true
+        # Nested-Loop join with many inner index probes vs few result rows. PG variant of T16.
+        # Forces NestLoop via pg_hint_plan; in PG the equivalent of YB RPCs is buffer reads.
+        create:
+            - DROP TABLE IF EXISTS THRPT_T16_items;
+            - DROP TABLE IF EXISTS THRPT_T16_orders;
+            - CREATE TABLE THRPT_T16_orders(order_id INT, region_id INT, customer_id INT, created_date DATE, PRIMARY KEY(order_id));
+            - CREATE INDEX idx_THRPT_T16_orders_region ON THRPT_T16_orders (region_id, order_id);
+            - CREATE TABLE THRPT_T16_items(item_id INT, order_id INT, sku_id INT, amount INT, qty INT, PRIMARY KEY(item_id));
+            - CREATE INDEX idx_THRPT_T16_items_order ON THRPT_T16_items (order_id);
+
+        cleanup:
+            - DROP TABLE IF EXISTS THRPT_T16_items;
+            - DROP TABLE IF EXISTS THRPT_T16_orders;
+
+        loadRules:
+            - table: THRPT_T16_orders
+              rows: 100000
+              columns:
+                  - name: order_id
+                    util: RandomUniqueIntGen
+                    params: [1, 100000]
+                  - name: region_id
+                    util: RandomNumber
+                    params: [1, 100]
+                  - name: customer_id
+                    util: RandomNumber
+                    params: [1, 50000]
+                  - name: created_date
+                    util: RandomDateBtwYears
+                    params: [2000, 2025]
+
+            - table: THRPT_T16_items
+              rows: 1000000
+              columns:
+                  - name: item_id
+                    util: RandomUniqueIntGen
+                    params: [1, 1000000]
+                  - name: order_id
+                    util: RandomNumber
+                    params: [1, 100000]
+                  - name: sku_id
+                    util: RandomNumber
+                    params: [1, 10000]
+                  - name: amount
+                    util: RandomNumber
+                    params: [1, 100000]
+                  - name: qty
+                    util: RandomNumber
+                    params: [1, 100]
+
+        executeRules:
+            - workload: THRPT_T16_nl_join_disproportionate_rpcs
+              run:
+                  - name: THRPT_T16_nl_join_disproportionate_rpcs
+                    weight: 100
+                    queries:
+                        - query: /*+ NestLoop(o i) IndexScan(o idx_THRPT_T16_orders_region) IndexScan(i idx_THRPT_T16_items_order) */ SELECT o.order_id, i.item_id, i.amount FROM THRPT_T16_orders o JOIN THRPT_T16_items i ON o.order_id = i.order_id WHERE o.region_id BETWEEN ? AND ? AND i.amount > 99000;
+                          bindings:
+                              -   util: RandomNumber
+                                  params: [1, 91]
+                                  referenceName: r1
+                              -   util: ExpressionEval
+                                  params:
+                                      - "r1 + 9"

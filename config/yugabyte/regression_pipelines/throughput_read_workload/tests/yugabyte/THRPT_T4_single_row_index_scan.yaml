@@ -1,0 +1,68 @@
+type: YUGABYTE
+driver: com.yugabyte.Driver
+url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true&load-balance=true
+username: {{username}}
+password: {{password}}
+batchsize: 128
+isolation: TRANSACTION_REPEATABLE_READ
+loaderthreads: 1
+terminals: 1
+collect_pg_stat_statements: true
+use_dist_in_explain: true
+yaml_version: v1.0
+works:
+    work:
+        time_secs: 180
+        active_terminals: 1
+        rate: unlimited
+        warmup: 60
+microbenchmark:
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
+    properties:
+        setAutoCommit: true
+        # Single-row lookup via secondary unique index.
+        # Forces an index probe followed by a table probe (2 RPCs in YB) to fetch the row.
+        create:
+            - DROP TABLE IF EXISTS THRPT_T4_orders;
+            - CREATE TABLE THRPT_T4_orders(id INT, ext_id INT, region_id INT, category_id INT, amount INT, quantity INT, status_code INT, PRIMARY KEY(id ASC)) SPLIT AT VALUES ((333333), (666666));
+            - CREATE UNIQUE INDEX idx_THRPT_T4_orders_ext_id ON THRPT_T4_orders (ext_id ASC) SPLIT AT VALUES ((333333), (666666));
+
+        cleanup:
+            - DROP TABLE IF EXISTS THRPT_T4_orders;
+
+        loadRules:
+            - table: THRPT_T4_orders
+              rows: 1000000
+              columns:
+                  - name: id
+                    util: RandomUniqueIntGen
+                    params: [1, 1000000]
+                  - name: ext_id
+                    util: RandomUniqueIntGen
+                    params: [1, 1000000]
+                  - name: region_id
+                    util: RandomNumber
+                    params: [1, 5000]
+                  - name: category_id
+                    util: RandomNumber
+                    params: [1, 50]
+                  - name: amount
+                    util: RandomNumber
+                    params: [1, 100000]
+                  - name: quantity
+                    util: RandomNumber
+                    params: [1, 100000]
+                  - name: status_code
+                    util: RandomNumber
+                    params: [1, 5]
+
+        executeRules:
+            - workload: THRPT_T4_single_row_index_scan
+              run:
+                  - name: THRPT_T4_single_row_index_scan
+                    weight: 100
+                    queries:
+                        - query: SELECT * FROM THRPT_T4_orders WHERE ext_id = ?;
+                          bindings:
+                              - util: RandomNumber
+                                params: [1, 1000000]

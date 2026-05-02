@@ -1,0 +1,63 @@
+type: postgres
+driver: org.postgresql.Driver
+url: jdbc:postgresql://{{endpoint}}:5432/postgres?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
+username: {{username}}
+password: {{password}}
+batchsize: 128
+isolation: TRANSACTION_REPEATABLE_READ
+loaderThreads: 4
+terminals: 1
+collect_pg_stat_statements: true
+yaml_version: v1.0
+works:
+    work:
+        time_secs: 180
+        active_terminals: 1
+        rate: unlimited
+        warmup: 60
+microbenchmark:
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
+    properties:
+        setAutoCommit: true
+        create:
+            - DROP TABLE IF EXISTS THRPT_WL_SEC_IDX_BETWEEN_10K;
+            - ALTER DATABASE postgres SET enable_seqscan=off;
+            - ALTER DATABASE postgres SET enable_bitmapscan=off;
+            - CREATE TABLE THRPT_WL_SEC_IDX_BETWEEN_10K (id INT, c1 int, c2 int, payload text, PRIMARY KEY(id));
+            - CREATE INDEX idx_c2 ON THRPT_WL_SEC_IDX_BETWEEN_10K (c2);
+
+        cleanup:
+            - ALTER DATABASE postgres SET enable_seqscan TO DEFAULT;
+            - ALTER DATABASE postgres SET enable_bitmapscan TO DEFAULT;
+            - DROP TABLE IF EXISTS THRPT_WL_SEC_IDX_BETWEEN_10K;
+
+        loadRules:
+            - table: THRPT_WL_SEC_IDX_BETWEEN_10K
+              rows: 1000000
+              columns:
+                  - name: id
+                    util: RandomUniqueIntGen
+                    params: [1, 1000000]
+                  - name: c1
+                    util: RandomUniqueIntGen
+                    params: [1, 1000000]
+                  - name: c2
+                    util: RandomUniqueIntGen
+                    params: [1, 1000000]
+                  - name: payload
+                    util: RandomAString
+                    params: [1024, 1024]
+        executeRules:
+            - workload: THRPT_WL_sec_idx_between_10k
+              run:
+                  - name: THRPT_WL_sec_idx_between_10k
+                    weight: 100
+                    queries:
+                        - query: SELECT * FROM THRPT_WL_SEC_IDX_BETWEEN_10K WHERE c2 between ? and ?;
+                          bindings:
+                              - util: RandomNumber
+                                params: [1, 990000]
+                                referenceName: c2
+                              - util: ExpressionEval
+                                params:
+                                    - "c2 + 10000"

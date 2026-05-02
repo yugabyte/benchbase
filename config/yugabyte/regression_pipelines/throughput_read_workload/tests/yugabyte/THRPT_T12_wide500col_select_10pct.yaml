@@ -1,0 +1,52 @@
+type: YUGABYTE
+driver: com.yugabyte.Driver
+url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true&load-balance=true
+username: {{username}}
+password: {{password}}
+batchsize: 128
+isolation: TRANSACTION_REPEATABLE_READ
+loaderthreads: 1
+terminals: 1
+collect_pg_stat_statements: true
+use_dist_in_explain: true
+yaml_version: v1.0
+works:
+    work:
+        time_secs: 180
+        active_terminals: 1
+        rate: unlimited
+        warmup: 60
+microbenchmark:
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
+    properties:
+        setAutoCommit: true
+        # Wide-table read: 500-column table, single-row PK lookup selecting 50 columns (~10% of 500).
+        create:
+            - DROP TABLE IF EXISTS THRPT_T12_wide;
+            - CREATE TABLE THRPT_T12_wide (id INT, c1 INT, c2 INT, c3 INT, c4 INT, c5 INT, c6 INT, c7 INT, c8 INT, c9 INT, c10 INT, c11 INT, c12 INT, c13 INT, c14 INT, c15 INT, c16 INT, c17 INT, c18 INT, c19 INT, c20 INT, c21 INT, c22 INT, c23 INT, c24 INT, c25 INT, c26 INT, c27 INT, c28 INT, c29 INT, c30 INT, c31 INT, c32 INT, c33 INT, c34 INT, c35 INT, c36 INT, c37 INT, c38 INT, c39 INT, c40 INT, c41 INT, c42 INT, c43 INT, c44 INT, c45 INT, c46 INT, c47 INT, c48 INT, c49 INT, c50 INT, c51 INT, c52 INT, c53 INT, c54 INT, c55 INT, c56 INT, c57 INT, c58 INT, c59 INT, c60 INT, c61 INT, c62 INT, c63 INT, c64 INT, c65 INT, c66 INT, c67 INT, c68 INT, c69 INT, c70 INT, c71 INT, c72 INT, c73 INT, c74 INT, c75 INT, c76 INT, c77 INT, c78 INT, c79 INT, c80 INT, c81 INT, c82 INT, c83 INT, c84 INT, c85 INT, c86 INT, c87 INT, c88 INT, c89 INT, c90 INT, c91 INT, c92 INT, c93 INT, c94 INT, c95 INT, c96 INT, c97 INT, c98 INT, c99 INT, c100 INT, c101 INT, c102 INT, c103 INT, c104 INT, c105 INT, c106 INT, c107 INT, c108 INT, c109 INT, c110 INT, c111 INT, c112 INT, c113 INT, c114 INT, c115 INT, c116 INT, c117 INT, c118 INT, c119 INT, c120 INT, c121 INT, c122 INT, c123 INT, c124 INT, c125 INT, c126 INT, c127 INT, c128 INT, c129 INT, c130 INT, c131 INT, c132 INT, c133 INT, c134 INT, c135 INT, c136 INT, c137 INT, c138 INT, c139 INT, c140 INT, c141 INT, c142 INT, c143 INT, c144 INT, c145 INT, c146 INT, c147 INT, c148 INT, c149 INT, c150 INT, c151 INT, c152 INT, c153 INT, c154 INT, c155 INT, c156 INT, c157 INT, c158 INT, c159 INT, c160 INT, c161 INT, c162 INT, c163 INT, c164 INT, c165 INT, c166 INT, c167 INT, c168 INT, c169 INT, c170 INT, c171 INT, c172 INT, c173 INT, c174 INT, c175 INT, c176 INT, c177 INT, c178 INT, c179 INT, c180 INT, c181 INT, c182 INT, c183 INT, c184 INT, c185 INT, c186 INT, c187 INT, c188 INT, c189 INT, c190 INT, c191 INT, c192 INT, c193 INT, c194 INT, c195 INT, c196 INT, c197 INT, c198 INT, c199 INT, c200 INT, c201 INT, c202 INT, c203 INT, c204 INT, c205 INT, c206 INT, c207 INT, c208 INT, c209 INT, c210 INT, c211 INT, c212 INT, c213 INT, c214 INT, c215 INT, c216 INT, c217 INT, c218 INT, c219 INT, c220 INT, c221 INT, c222 INT, c223 INT, c224 INT, c225 INT, c226 INT, c227 INT, c228 INT, c229 INT, c230 INT, c231 INT, c232 INT, c233 INT, c234 INT, c235 INT, c236 INT, c237 INT, c238 INT, c239 INT, c240 INT, c241 INT, c242 INT, c243 INT, c244 INT, c245 INT, c246 INT, c247 INT, c248 INT, c249 INT, c250 INT, c251 INT, c252 INT, c253 INT, c254 INT, c255 INT, c256 INT, c257 INT, c258 INT, c259 INT, c260 INT, c261 INT, c262 INT, c263 INT, c264 INT, c265 INT, c266 INT, c267 INT, c268 INT, c269 INT, c270 INT, c271 INT, c272 INT, c273 INT, c274 INT, c275 INT, c276 INT, c277 INT, c278 INT, c279 INT, c280 INT, c281 INT, c282 INT, c283 INT, c284 INT, c285 INT, c286 INT, c287 INT, c288 INT, c289 INT, c290 INT, c291 INT, c292 INT, c293 INT, c294 INT, c295 INT, c296 INT, c297 INT, c298 INT, c299 INT, c300 INT, c301 INT, c302 INT, c303 INT, c304 INT, c305 INT, c306 INT, c307 INT, c308 INT, c309 INT, c310 INT, c311 INT, c312 INT, c313 INT, c314 INT, c315 INT, c316 INT, c317 INT, c318 INT, c319 INT, c320 INT, c321 INT, c322 INT, c323 INT, c324 INT, c325 INT, c326 INT, c327 INT, c328 INT, c329 INT, c330 INT, c331 INT, c332 INT, c333 INT, c334 INT, c335 INT, c336 INT, c337 INT, c338 INT, c339 INT, c340 INT, c341 INT, c342 INT, c343 INT, c344 INT, c345 INT, c346 INT, c347 INT, c348 INT, c349 INT, c350 INT, c351 INT, c352 INT, c353 INT, c354 INT, c355 INT, c356 INT, c357 INT, c358 INT, c359 INT, c360 INT, c361 INT, c362 INT, c363 INT, c364 INT, c365 INT, c366 INT, c367 INT, c368 INT, c369 INT, c370 INT, c371 INT, c372 INT, c373 INT, c374 INT, c375 INT, c376 INT, c377 INT, c378 INT, c379 INT, c380 INT, c381 INT, c382 INT, c383 INT, c384 INT, c385 INT, c386 INT, c387 INT, c388 INT, c389 INT, c390 INT, c391 INT, c392 INT, c393 INT, c394 INT, c395 INT, c396 INT, c397 INT, c398 INT, c399 INT, c400 INT, c401 INT, c402 INT, c403 INT, c404 INT, c405 INT, c406 INT, c407 INT, c408 INT, c409 INT, c410 INT, c411 INT, c412 INT, c413 INT, c414 INT, c415 INT, c416 INT, c417 INT, c418 INT, c419 INT, c420 INT, c421 INT, c422 INT, c423 INT, c424 INT, c425 INT, c426 INT, c427 INT, c428 INT, c429 INT, c430 INT, c431 INT, c432 INT, c433 INT, c434 INT, c435 INT, c436 INT, c437 INT, c438 INT, c439 INT, c440 INT, c441 INT, c442 INT, c443 INT, c444 INT, c445 INT, c446 INT, c447 INT, c448 INT, c449 INT, c450 INT, c451 INT, c452 INT, c453 INT, c454 INT, c455 INT, c456 INT, c457 INT, c458 INT, c459 INT, c460 INT, c461 INT, c462 INT, c463 INT, c464 INT, c465 INT, c466 INT, c467 INT, c468 INT, c469 INT, c470 INT, c471 INT, c472 INT, c473 INT, c474 INT, c475 INT, c476 INT, c477 INT, c478 INT, c479 INT, c480 INT, c481 INT, c482 INT, c483 INT, c484 INT, c485 INT, c486 INT, c487 INT, c488 INT, c489 INT, c490 INT, c491 INT, c492 INT, c493 INT, c494 INT, c495 INT, c496 INT, c497 INT, c498 INT, c499 INT, c500 INT, PRIMARY KEY(id ASC)) SPLIT AT VALUES ((33333), (66666));
+
+        cleanup:
+            - DROP TABLE IF EXISTS THRPT_T12_wide;
+
+        loadRules:
+            - table: THRPT_T12_wide
+              rows: 100000
+              columns:
+                  - name: id
+                    util: RandomUniqueIntGen
+                    params: [1, 100000]
+                  - name: c
+                    count: 500
+                    util: RandomNumber
+                    params: [1, 1000000]
+
+        executeRules:
+            - workload: THRPT_T12_wide500col_select_10pct
+              run:
+                  - name: THRPT_T12_wide500col_select_10pct
+                    weight: 100
+                    queries:
+                        - query: SELECT c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15, c16, c17, c18, c19, c20, c21, c22, c23, c24, c25, c26, c27, c28, c29, c30, c31, c32, c33, c34, c35, c36, c37, c38, c39, c40, c41, c42, c43, c44, c45, c46, c47, c48, c49, c50 FROM THRPT_T12_wide WHERE id = ?;
+                          bindings:
+                              - util: RandomNumber
+                                params: [1, 100000]

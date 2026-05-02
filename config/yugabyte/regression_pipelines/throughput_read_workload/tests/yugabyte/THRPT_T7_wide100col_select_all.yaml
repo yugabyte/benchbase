@@ -1,0 +1,52 @@
+type: YUGABYTE
+driver: com.yugabyte.Driver
+url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true&load-balance=true
+username: {{username}}
+password: {{password}}
+batchsize: 128
+isolation: TRANSACTION_REPEATABLE_READ
+loaderthreads: 1
+terminals: 1
+collect_pg_stat_statements: true
+use_dist_in_explain: true
+yaml_version: v1.0
+works:
+    work:
+        time_secs: 180
+        active_terminals: 1
+        rate: unlimited
+        warmup: 60
+microbenchmark:
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
+    properties:
+        setAutoCommit: true
+        # Wide-table read: 100-column table, single-row PK lookup selecting all 100 columns.
+        create:
+            - DROP TABLE IF EXISTS THRPT_T7_wide;
+            - CREATE TABLE THRPT_T7_wide (id INT, c1 INT, c2 INT, c3 INT, c4 INT, c5 INT, c6 INT, c7 INT, c8 INT, c9 INT, c10 INT, c11 INT, c12 INT, c13 INT, c14 INT, c15 INT, c16 INT, c17 INT, c18 INT, c19 INT, c20 INT, c21 INT, c22 INT, c23 INT, c24 INT, c25 INT, c26 INT, c27 INT, c28 INT, c29 INT, c30 INT, c31 INT, c32 INT, c33 INT, c34 INT, c35 INT, c36 INT, c37 INT, c38 INT, c39 INT, c40 INT, c41 INT, c42 INT, c43 INT, c44 INT, c45 INT, c46 INT, c47 INT, c48 INT, c49 INT, c50 INT, c51 INT, c52 INT, c53 INT, c54 INT, c55 INT, c56 INT, c57 INT, c58 INT, c59 INT, c60 INT, c61 INT, c62 INT, c63 INT, c64 INT, c65 INT, c66 INT, c67 INT, c68 INT, c69 INT, c70 INT, c71 INT, c72 INT, c73 INT, c74 INT, c75 INT, c76 INT, c77 INT, c78 INT, c79 INT, c80 INT, c81 INT, c82 INT, c83 INT, c84 INT, c85 INT, c86 INT, c87 INT, c88 INT, c89 INT, c90 INT, c91 INT, c92 INT, c93 INT, c94 INT, c95 INT, c96 INT, c97 INT, c98 INT, c99 INT, c100 INT, PRIMARY KEY(id ASC)) SPLIT AT VALUES ((33333), (66666));
+
+        cleanup:
+            - DROP TABLE IF EXISTS THRPT_T7_wide;
+
+        loadRules:
+            - table: THRPT_T7_wide
+              rows: 100000
+              columns:
+                  - name: id
+                    util: RandomUniqueIntGen
+                    params: [1, 100000]
+                  - name: c
+                    count: 100
+                    util: RandomNumber
+                    params: [1, 1000000]
+
+        executeRules:
+            - workload: THRPT_T7_wide100col_select_all
+              run:
+                  - name: THRPT_T7_wide100col_select_all
+                    weight: 100
+                    queries:
+                        - query: SELECT * FROM THRPT_T7_wide WHERE id = ?;
+                          bindings:
+                              - util: RandomNumber
+                                params: [1, 100000]
