@@ -14,7 +14,7 @@ works:
     work:
         time_secs: 180
         rate: unlimited
-        warmup: 60
+        warmup: 120
 microbenchmark:
     class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
     properties:
@@ -133,6 +133,7 @@ microbenchmark:
                                   params: [ 1, 2000000 ]
 
             - workload: CW3_6_select_for_update_with_join
+              time_secs: 600
               run:
                   - name: statement1_insert
                     weight: 100
