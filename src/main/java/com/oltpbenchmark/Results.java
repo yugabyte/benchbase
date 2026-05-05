@@ -33,6 +33,8 @@ public final class Results {
     private final int measuredRequests;
     private final DistributionStatistics distributionStatistics;
     private final List<LatencyRecord.Sample> latencySamples;
+    private long executionStartEpoch = -1;
+    private long executionEndEpoch = -1;
     private final Histogram<TransactionType> unknown = new Histogram<>(false);
     private final Histogram<TransactionType> success = new Histogram<>(true);
     private final Histogram<TransactionType> abort = new Histogram<>(false);
@@ -113,6 +115,22 @@ public final class Results {
 
     public int getMeasuredRequests() {
         return measuredRequests;
+    }
+
+    public long getExecutionStartEpoch() {
+        return executionStartEpoch;
+    }
+
+    public void setExecutionStartEpoch(long executionStartEpoch) {
+        this.executionStartEpoch = executionStartEpoch;
+    }
+
+    public long getExecutionEndEpoch() {
+        return executionEndEpoch;
+    }
+
+    public void setExecutionEndEpoch(long executionEndEpoch) {
+        this.executionEndEpoch = executionEndEpoch;
     }
 
     @Override
