@@ -1517,7 +1517,12 @@ public class DBWorkload {
         return "us-east-1"; // Default region
     }
 
-    /** Total thread up-scales with insufficient CPU increase before we stop and tag metadata {@code flatCPU}. */
+    /**
+     * Number of <b>consecutive</b> thread up-scales with insufficient CPU increase before we
+     * confirm a plateau, stop the search, and tag metadata {@code flatCPU}. The counter resets
+     * to zero as soon as any single up-scale produces a CPU delta &ge; {@code cpuScalingMinDeltaPercent},
+     * so a single noisy low-CPU sample early in the sweep no longer poisons the result.
+     */
     private static final int FLAT_CPU_MAX_SCALING_STEPS = 3;
 
     private static int findOptimalThreadCount(BenchmarkModule bench, int minThreads, double targetCPU, double toleranceCPU, String workloadName, int workCount, int samplingTime,
@@ -1552,9 +1557,15 @@ public class DBWorkload {
         List<Map<String, Object>> jsonResults = new ArrayList<>();
         Map<Integer, Double> threadCpuMap = new HashMap<>();
         Double cpuAtPreviousScalingStep = null;
-        int flatCpuScalingSteps = 0;
+        // Counts <b>consecutive</b> flat scaling steps. Reset to 0 whenever a non-flat
+        // step is observed, so an isolated low-CPU sample does not lock the search.
+        int consecutiveFlatCpuSteps = 0;
+        // Thread count at the start of the current consecutive flat run. Captured the moment
+        // {@code consecutiveFlatCpuSteps} transitions from 0 -> 1, and used as the final
+        // {@code optimalThreads} value if the plateau is later confirmed.
+        int flatRunStartThreads = 0;
         boolean flatCpuDetected = false;
-        LOG.info("Flat CPU detection: minDeltaPercent={}, flatStepsLimit={} (cumulative)",
+        LOG.info("Flat CPU detection: minDeltaPercent={}, requires {} consecutive flat steps to confirm plateau",
             cpuScalingMinDeltaPercent, FLAT_CPU_MAX_SCALING_STEPS);
 
         // Detect database type and prepare RDS monitoring if needed
@@ -1785,12 +1796,12 @@ public class DBWorkload {
                 }
                 else {
                     int newThreads = 0;
-                    if (avgMaxCPU <= targetCPU && !flatCpuDetected) optimalThreads = threads;
+                    if (avgMaxCPU <= targetCPU) optimalThreads = threads;
                     LOG.info("finding new threads for run....");
                     if(isYugabyteDatabase) {
                         if(avgMaxCPU > targetCPU) {
                             LOG.info("MaxCPU is greater than targetCPU. Breaking loop. Current threads: {}", threads);
-                            if (!flatCpuDetected) optimalThreads = Math.max(1, threads);
+                            optimalThreads = Math.max(1, threads);
                             break;
                         }
                         newThreads = threads + threadIncrement;
@@ -1801,37 +1812,35 @@ public class DBWorkload {
                     }
                     if (threadCpuMap.containsKey(newThreads)) {
                         LOG.info("newThreads={} already tested. Breaking loop to avoid duplicate testing.", newThreads);
-                        if (!flatCpuDetected) optimalThreads = newThreads;
+                        optimalThreads = newThreads;
                         break;
                     }
                     if (newThreads > threads && cpuAtPreviousScalingStep != null) {
                         double cpuDelta = avgMaxCPU - cpuAtPreviousScalingStep;
                         if (cpuDelta < cpuScalingMinDeltaPercent) {
-                            flatCpuScalingSteps++;
+                            consecutiveFlatCpuSteps++;
+                            if (consecutiveFlatCpuSteps == 1) {
+                                // Remember the thread count at the very start of this run of consecutive
+                                // flat steps. If the plateau is later confirmed, this is the lowest thread
+                                // count at which the plateau was observed and becomes optimalThreads.
+                                flatRunStartThreads = threads;
+                            }
                             LOG.warn(
                                 "CPU utilization did not increase significantly when scaling threads (delta={}% vs min {}%). "
-                                    + "Flat scaling steps: {}/{} (cumulative).",
+                                    + "Consecutive flat steps: {}/{} (run started at threads={}).",
                                 String.format("%.2f", cpuDelta),
                                 cpuScalingMinDeltaPercent,
-                                flatCpuScalingSteps,
-                                FLAT_CPU_MAX_SCALING_STEPS);
-                            // Lock optimalThreads to the thread count of the 1st flat iteration
-                            // (the lowest thread count at which the plateau was observed).
-                            if (flatCpuScalingSteps == 1) {
+                                consecutiveFlatCpuSteps,
+                                FLAT_CPU_MAX_SCALING_STEPS,
+                                flatRunStartThreads);
+                            if (consecutiveFlatCpuSteps >= FLAT_CPU_MAX_SCALING_STEPS) {
+                                // Plateau confirmed: only now do we commit optimalThreads to the
+                                // thread count where the consecutive flat run began.
                                 flatCpuDetected = true;
-                                optimalThreads = threads;
+                                optimalThreads = flatRunStartThreads;
                                 LOG.info(
-                                    "First flat CPU step detected. Locking optimalThreads={} (CPU={}%, prev step CPU={}%). "
-                                        + "Will continue scaling for up to {} flat steps total to confirm plateau.",
-                                    optimalThreads,
-                                    String.format("%.2f", avgMaxCPU),
-                                    String.format("%.2f", cpuAtPreviousScalingStep),
-                                    FLAT_CPU_MAX_SCALING_STEPS);
-                            }
-                            if (flatCpuScalingSteps >= FLAT_CPU_MAX_SCALING_STEPS) {
-                                LOG.info(
-                                    "Flat CPU plateau confirmed after {} flat thread increases (min delta {}% points). "
-                                        + "Stopping thread search; continuing run with {} threads and metadata flatCPU=true. "
+                                    "Flat CPU plateau confirmed after {} consecutive flat thread increases (min delta {}% points). "
+                                        + "Stopping thread search; continuing run with {} threads (start of flat run) and metadata flatCPU=true. "
                                         + "Last max CPU {}%.",
                                     FLAT_CPU_MAX_SCALING_STEPS,
                                     cpuScalingMinDeltaPercent,
@@ -1839,6 +1848,18 @@ public class DBWorkload {
                                     String.format("%.2f", avgMaxCPU));
                                 break;
                             }
+                        } else if (consecutiveFlatCpuSteps > 0) {
+                            // CPU rose again -> the plateau wasn't real (likely sampling noise).
+                            // Reset the consecutive counter so we don't break early on a false positive.
+                            LOG.info(
+                                "CPU utilization recovered (delta={}% >= min {}%). Resetting consecutive flat-step counter "
+                                    + "(was {}, started at threads={}).",
+                                String.format("%.2f", cpuDelta),
+                                cpuScalingMinDeltaPercent,
+                                consecutiveFlatCpuSteps,
+                                flatRunStartThreads);
+                            consecutiveFlatCpuSteps = 0;
+                            flatRunStartThreads = 0;
                         }
                     }
                     cpuAtPreviousScalingStep = avgMaxCPU;
