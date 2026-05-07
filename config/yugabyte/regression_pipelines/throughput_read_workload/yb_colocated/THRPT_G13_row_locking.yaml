@@ -24,6 +24,7 @@ microbenchmark:
         create:
             - DROP TABLE IF EXISTS THRPT_G13_employees;
             - CREATE TABLE THRPT_G13_employees (emp_id INT, name VARCHAR(10), email VARCHAR(20), salary INT, hire_date DATE, department VARCHAR(20), is_active BOOLEAN, last_login TIMESTAMP, primary key(emp_id asc));
+            - CREATE INDEX idx_THRPT_G13_employees_dept_emp ON THRPT_G13_employees (department ASC, emp_id ASC);
         cleanup:
             - DROP TABLE IF EXISTS THRPT_G13_employees;
 

@@ -22,61 +22,53 @@ microbenchmark:
     properties:
         setAutoCommit: true
         create:
-            - DROP TABLE IF EXISTS THRPT_G2_sales_orders;
-            - CREATE TABLE THRPT_G2_sales_orders(id INT, region_id INT, category_id INT, subcategory_id INT, date_created DATE, status_code INT, priority_level INT, amount INT, quantity INT, PRIMARY KEY(id ASC));
-            - CREATE INDEX idx_THRPT_G2_sales_orders_region_category_incl ON THRPT_G2_sales_orders (region_id, category_id, id) INCLUDE (amount, quantity, status_code);
-            - CREATE INDEX idx_THRPT_G2_sales_orders_partial ON THRPT_G2_sales_orders (region_id, category_id, date_created, id) WHERE status_code IN (1, 2, 3) and priority_level IN (1, 2, 3);
-            - CREATE INDEX idx_THRPT_G2_sales_orders_region_category_incl_asc on THRPT_G2_sales_orders (region_id ASC, category_id ASC, id ASC) INCLUDE (amount, quantity, status_code);
+            - DROP TABLE IF EXISTS THRPT_G2_payments;
+            - CREATE TABLE THRPT_G2_payments(payment_id BIGSERIAL, txn_id BIGINT, user_id BIGINT, merchant_id BIGINT, amount INT, status INT, created_at TIMESTAMP, updated_at TIMESTAMP, PRIMARY KEY(payment_id ASC)) SPLIT AT VALUES ((333333), (666666));
+            - CREATE INDEX idx_payments_txn_covering ON THRPT_G2_payments (txn_id ASC) INCLUDE (amount, status, user_id) SPLIT AT VALUES ((333333), (666666));
 
         cleanup:
-            - DROP TABLE IF EXISTS THRPT_G2_sales_orders;
+            - DROP TABLE IF EXISTS THRPT_G2_payments;
 
         loadRules:
-              - table: THRPT_G2_sales_orders
-                rows: 1000000
-                columns:
-                    - name: id
-                      util: RandomUniqueIntGen
-                      params: [ 1, 1000000 ]
-                    - name: region_id
-                      util: RandomNumber
-                      params: [ 1, 100 ]
-                    - name: category_id
-                      util: RandomNumber
-                      params: [ 1, 50 ]
-                    - name: subcategory_id
-                      util: RandomNumber
-                      params: [ 1, 500 ]
-                    - name: date_created
-                      util: RandomDateBtwYears
-                      params: [2000, 2025]
-                    - name: status_code
-                      util: RandomNumber
-                      params: [ 1, 5 ]
-                    - name: priority_level
-                      util: RandomNumber
-                      params: [ 1, 10 ]
-                    - name: amount
-                      util: RandomNumber
-                      params: [ 1, 100000 ]
-                    - name: quantity
-                      util: RandomNumber
-                      params: [ 1, 100000 ]
+            - table: THRPT_G2_payments
+              rows: 1000000
+              columns:
+                  - name: payment_id
+                    util: RandomUniqueIntGen
+                    params: [1, 1000000]
+                  - name: txn_id
+                    util: PrimaryIntGen
+                    params: [1, 1000000]
+                  - name: user_id
+                    util: RandomNumber
+                    params: [1, 100000]
+                  - name: merchant_id
+                    util: RandomNumber
+                    params: [1, 10000]
+                  - name: amount
+                    util: RandomNumber
+                    params: [1, 100000]
+                  - name: status
+                    util: RandomNumber
+                    params: [1, 5]
+                  - name: created_at
+                    util: RandomTimestamp
+                    params: [10000000]
+                  - name: updated_at
+                    util: RandomTimestamp
+                    params: [10000000]
 
         executeRules:
-
             - workload: THRPT_G2_index_BETWEEN
               run:
                   - name: THRPT_G2_index_BETWEEN
                     weight: 100
                     queries:
-                        - query: SELECT * FROM THRPT_G2_sales_orders WHERE region_id BETWEEN ? AND ? and category_id = ?;
+                        - query: SELECT * FROM THRPT_G2_payments WHERE txn_id BETWEEN ? AND ?;
                           bindings:
                               -   util: RandomNumber
-                                  params: [1, 95]
-                                  referenceName: region1
+                                  params: [1, 990000]
+                                  referenceName: txn_id_1
                               -   util: ExpressionEval
                                   params:
-                                      - "region1 + 1"
-                              - util: RandomNumber
-                                params: [1, 50]
+                                      - "txn_id_1 + 10000"

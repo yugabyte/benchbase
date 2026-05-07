@@ -21,9 +21,14 @@ microbenchmark:
         setAutoCommit: true
         create:
             - DROP TABLE IF EXISTS THRPT_G13_employees;
+            - ALTER DATABASE postgres SET enable_seqscan=off;
+            - ALTER DATABASE postgres SET enable_bitmapscan=off;
             - CREATE TABLE THRPT_G13_employees (emp_id INT, name VARCHAR(10), email VARCHAR(20), salary INT, hire_date DATE, department VARCHAR(20), is_active BOOLEAN, last_login TIMESTAMP, PRIMARY KEY(emp_id));
+            - CREATE INDEX idx_THRPT_G13_employees_dept_emp ON THRPT_G13_employees (department, emp_id);
         cleanup:
             - DROP TABLE IF EXISTS THRPT_G13_employees;
+            - ALTER DATABASE postgres SET enable_seqscan TO DEFAULT;
+            - ALTER DATABASE postgres SET enable_bitmapscan TO DEFAULT;
 
         loadRules:
             - table: THRPT_G13_employees
