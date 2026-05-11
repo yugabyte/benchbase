@@ -1,0 +1,123 @@
+type: YUGABYTE
+driver: com.yugabyte.Driver
+url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true&load-balance=false
+username: {{username}}
+password: {{password}}
+batchsize: 128
+isolation: TRANSACTION_REPEATABLE_READ
+loaderthreads: 10
+terminals: 24
+collect_pg_stat_statements: true
+use_dist_in_explain: true
+yaml_version: v1.0
+works:
+    work:
+        time_secs: 600
+        rate: unlimited
+        warmup: 60
+microbenchmark:
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
+    properties:
+        setAutoCommit: false
+        create:
+            - DROP TABLE IF EXISTS orders;
+            - create table orders(id int, user_id int, region varchar(20), amount numeric(10,2), status varchar(20), updated_at date, primary key(id asc)) split at values ((16666666), (33333333));
+            - create index idx_orders_user_id on orders(user_id asc) split at values ((1666666), (3333333));
+
+        cleanup:
+            - DROP TABLE IF EXISTS orders;
+
+        loadRules:
+            - table: orders
+              rows: 50000000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 50000000]
+                  - name: user_id
+                    util: CyclicSeqIntGen
+                    params: [1, 5000000]
+                  - name: region
+                    util: RandomAString
+                    params: ["us-east-1","us-west-2","eu-west-1","eu-central-1","ap-south-1","ap-southeast-1","ap-northeast-1","sa-east-1","ca-central-1","me-south-1"]
+                  - name: amount
+                    util: RandomNoWithDecimalPoints
+                    params: [1, 1000000, 2]
+                  - name: status
+                    util: OneStringFromArray
+                    params: ["created","processing","completed","failed","refunded","cancelled","pending","on_hold"]
+                  - name: updated_at
+                    util: RandomDateBtwYears
+                    params: [2020, 2026]
+
+        executeRules:
+            - workload: PGO_BOLT_rs_orders_txn
+              run:
+                  - name: orders_mixed_transaction
+                    weight: 100
+                    queries:
+                        - query: UPDATE orders SET status = ?, updated_at = CURRENT_DATE WHERE id = ?
+                          bindings:
+                              - util: OneStringFromArray
+                                params: ["created","processing","completed","failed","refunded","cancelled","pending","on_hold"]
+                              - util: RandomNumber
+                                params: [1, 50000000]
+
+                        - query: SELECT * FROM orders WHERE id BETWEEN ? AND ?
+                          bindings:
+                              - util: RandomNumber
+                                params: [1, 49999990]
+                                referenceName: id1
+                              - util: ExpressionEval
+                                params:
+                                    - "id1 + 10"
+
+                        - query: UPDATE orders SET status = ?, updated_at = CURRENT_DATE WHERE user_id = ?
+                          bindings:
+                              - util: OneStringFromArray
+                                params: ["created","processing","completed","failed","refunded","cancelled","pending","on_hold"]
+                              - util: RandomNumber
+                                params: [1, 5000000]
+
+                        - query: INSERT INTO orders (id, user_id, region, amount, status, updated_at) VALUES (?, ?, ?, ?, ?, CURRENT_DATE)
+                          bindings:
+                              - util: PrimaryIntGen
+                                params: [50000001, 100000000]
+                              - util: CyclicSeqIntGen
+                                params: [1, 5000000]
+                              - util: OneStringFromArray
+                                params: ["us-east-1","us-west-2","eu-west-1","eu-central-1","ap-south-1","ap-southeast-1","ap-northeast-1","sa-east-1","ca-central-1","me-south-1"]
+                              - util: RandomNoWithDecimalPoints
+                                params: [1, 1000000, 2]
+                              - util: OneStringFromArray
+                                params: ["created","processing","completed","failed","refunded","cancelled","pending","on_hold"]
+
+                        - query: SELECT * FROM orders WHERE user_id BETWEEN ? AND ?
+                          bindings:
+                              - util: RandomNumber
+                                params: [1, 4999990]
+                                referenceName: user_id1
+                              - util: ExpressionEval
+                                params:
+                                    - "user_id1 + 10"
+
+                        - query: UPDATE orders SET amount = amount * 1.05, updated_at = CURRENT_DATE WHERE id = ?
+                          bindings:
+                              - util: RandomNumber
+                                params: [1, 50000000]
+
+                        - query: UPDATE orders SET status = ?, updated_at = CURRENT_DATE WHERE user_id = ?
+                          bindings:
+                              - util: OneStringFromArray
+                                params: ["created","processing","completed","failed","refunded","cancelled","pending","on_hold"]
+                              - util: RandomNumber
+                                params: [1, 5000000]
+
+                        - query: SELECT * FROM orders WHERE id BETWEEN ? AND ?
+                          bindings:
+                              - util: RandomNumber
+                                params: [1, 4999990]
+                                referenceName: id2
+                              - util: ExpressionEval
+                                params:
+                                    - "id2 + 10"
