@@ -1,14 +1,13 @@
-type: YUGABYTE
-driver: com.yugabyte.Driver
-url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true&load-balance=true
+type: POSTGRES
+driver: org.postgresql.Driver
+url: jdbc:postgresql://{{endpoint}}:5432/postgres?sslmode=require
 username: {{username}}
 password: {{password}}
 batchsize: 128
 isolation: TRANSACTION_REPEATABLE_READ
-loaderthreads: 10
-terminals: 24
+loaderthreads: 1
+terminals: 1
 collect_pg_stat_statements: true
-use_dist_in_explain: true
 yaml_version: v1.0
 works:
     work:
@@ -21,8 +20,8 @@ microbenchmark:
         setAutoCommit: false
         create:
             - DROP TABLE IF EXISTS orders;
-            - create table orders(id int, user_id int, region varchar(20), amount numeric(10,2), status varchar(20), updated_at date, payload text, primary key(id asc)) split at values ((16666666), (33333333));
-            - create index idx_orders_user_id on orders(user_id asc) split at values ((1666666), (3333333));
+            - create table orders(id int primary key, user_id int, region varchar(20), amount numeric(10,2), status varchar(20), updated_at date, payload text);
+            - create index idx_orders_user_id on orders(user_id);
 
         cleanup:
             - DROP TABLE IF EXISTS orders;

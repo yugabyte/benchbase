@@ -24,6 +24,7 @@ import com.oltpbenchmark.api.Worker;
 import com.oltpbenchmark.types.State;
 import com.oltpbenchmark.util.StringUtil;
 import org.apache.commons.collections4.map.ListOrderedMap;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -362,6 +363,17 @@ public class ThreadBench implements Thread.UncaughtExceptionHandler {
                 results.getRetryDifferent().putHistogram(w.getTransactionRetryDifferentHistogram());
                 results.getZeroRows().putHistogram(w.getTransactionZeroRowsHistogram());
                 results.getFeaturebenchAdditionalResults().setJsonResultsList(w.featurebenchAdditionalResults.getJsonResultsList());
+            }
+
+            // Optimal-threads (DBWorkload.findOptimalThreadCount) updates Worker's static metadata
+            // (cpu_utilization, avg_cpu, optimal_threads, flatCPU). ResultWriter merges metadata from
+            // Results — copy static keys so featurebench output.json includes them.
+            JSONObject staticMeta = Worker.featurebenchAdditionalResults.getMetaDataJson();
+            if (staticMeta != null && staticMeta.length() > 0) {
+                JSONObject resultMeta = results.getFeaturebenchAdditionalResults().getMetaDataJson();
+                for (String key : staticMeta.keySet()) {
+                    resultMeta.put(key, staticMeta.get(key));
+                }
             }
 
             return (results);
