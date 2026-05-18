@@ -21,13 +21,13 @@ microbenchmark:
     properties:
         setAutoCommit: true
         create:
-            - DROP TABLE IF EXISTS THRPT_G12_employees;
-            - CREATE TABLE THRPT_G12_employees (emp_id INT, name VARCHAR(10), email VARCHAR(20), salary INT, hire_date DATE, department VARCHAR(20), is_active BOOLEAN, last_login TIMESTAMP, primary key(emp_id asc)) SPLIT AT VALUES ((333333), (666666));
+            - DROP TABLE IF EXISTS THRPT_G8_employees;
+            - CREATE TABLE THRPT_G8_employees (emp_id INT, name VARCHAR(10), email VARCHAR(20), salary FLOAT, hire_date DATE, department VARCHAR(20), payload JSON, details TEXT, is_active BOOLEAN, last_login TIMESTAMP, primary key(emp_id asc)) SPLIT AT VALUES ((333333), (666666));
         cleanup:
-            - DROP TABLE IF EXISTS THRPT_G12_employees;
+            - DROP TABLE IF EXISTS THRPT_G8_employees;
 
         loadRules:
-            - table: THRPT_G12_employees
+            - table: THRPT_G8_employees
               rows: 1000000
               columns:
                   - name: emp_id
@@ -48,6 +48,12 @@ microbenchmark:
                   - name: department
                     util: OneStringFromArray
                     params: [['Engineering', 'Sales', 'Marketing', 'Finance', 'IT', 'HR', 'Legal', 'Product']]
+                  - name: payload
+                    util: RandomJson
+                    params: [8, 64]
+                  - name: details
+                    util: RandomAString
+                    params: [512, 512]
                   - name: is_active
                     util: RandomBoolean
                   - name: last_login
@@ -55,12 +61,12 @@ microbenchmark:
                     params: [10000000]
 
         executeRules:
-            - workload: THRPT_G12_aggregate_pushdown
+            - workload: THRPT_G8_aggregate_pushdown
               run:
-                  - name: THRPT_G12_aggregate_pushdown
+                  - name: THRPT_G8_aggregate_pushdown
                     weight: 100
                     queries:
-                        - query: select sum(salary) from THRPT_G12_employees where department IN (?,?);
+                        - query: select sum(salary) from THRPT_G8_employees where department IN (?,?);
                           bindings:
                               - util: OneStringFromArray
                                 count: 2

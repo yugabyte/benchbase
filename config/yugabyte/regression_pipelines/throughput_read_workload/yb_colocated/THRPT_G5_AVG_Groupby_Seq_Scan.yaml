@@ -22,17 +22,14 @@ microbenchmark:
     properties:
         setAutoCommit: true
         create:
-            - DROP TABLE IF EXISTS THRPT_G8_sales_orders;
-            - CREATE TABLE THRPT_G8_sales_orders(id INT, region_id INT, category_id INT, subcategory_id INT, date_created DATE, status_code INT, priority_level INT, amount INT, quantity INT, PRIMARY KEY(id ASC));
-            - CREATE INDEX idx_THRPT_G8_sales_orders_region_category_incl ON THRPT_G8_sales_orders (region_id, category_id, id) INCLUDE (amount, quantity, status_code);
-            - CREATE INDEX idx_THRPT_G8_sales_orders_partial ON THRPT_G8_sales_orders (region_id, category_id, date_created, id) WHERE status_code IN (1, 2, 3) and priority_level IN (1, 2, 3);
-            - CREATE INDEX idx_THRPT_G8_sales_orders_region_category_incl_asc on THRPT_G8_sales_orders (region_id ASC, category_id ASC, id ASC) INCLUDE (amount, quantity, status_code);
+            - DROP TABLE IF EXISTS THRPT_G5_sales_orders;
+            - CREATE TABLE THRPT_G5_sales_orders(id INT, region_id INT, category_id INT, subcategory_id INT, date_created DATE, status_code INT, priority_level INT, amount FLOAT, quantity DOUBLE PRECISION, payload JSON, details TEXT, PRIMARY KEY(id ASC));
 
         cleanup:
-            - DROP TABLE IF EXISTS THRPT_G8_sales_orders;
+            - DROP TABLE IF EXISTS THRPT_G5_sales_orders;
 
         loadRules:
-              - table: THRPT_G8_sales_orders
+              - table: THRPT_G5_sales_orders
                 rows: 1000000
                 columns:
                     - name: id
@@ -57,20 +54,32 @@ microbenchmark:
                       util: RandomNumber
                       params: [ 1, 10 ]
                     - name: amount
-                      util: RandomNumber
-                      params: [ 1, 100000 ]
+                      util: RandomFloat
+                      params: [ 1, 100000, 2 ]
                     - name: quantity
-                      util: RandomNumber
-                      params: [ 1, 100000 ]
+                      util: RandomNoWithDecimalPoints
+                      params: [ 1, 100000, 2 ]
+                    - name: payload
+                      util: RandomJson
+                      params: [ 8, 64 ]
+                    - name: details
+                      util: RandomAString
+                      params: [ 512, 512 ]
 
         executeRules:
 
-            -   workload: THRPT_G8_DISTINCT_Index_Sq
-                run:
-                    -   name: THRPT_G8_DISTINCT_Index_Sq
-                        weight: 100
-                        queries:
-                            -   query: SELECT region_id, category_id, subcategory_id, COUNT(*) FROM THRPT_G8_sales_orders WHERE region_id = ? and category_id < 25 GROUP BY region_id, category_id, subcategory_id;
-                                bindings:
-                                   -   util: RandomNumber
-                                       params: [ 1, 100 ]
+            - workload: THRPT_G5_AVG_Groupby_Seq
+              run:
+                  - name: THRPT_G5_AVG_Groupby_Seq
+                    weight: 100
+                    queries:
+                        - query: SELECT region_id, category_id, subcategory_id, priority_level, AVG(amount) as avg_amount, AVG(quantity) as avg_quantity, COUNT(*) as record_count FROM THRPT_G5_sales_orders WHERE priority_level = ? AND status_code IN (?,?) AND date_created >= '2020-01-01' GROUP BY region_id, category_id, subcategory_id, priority_level;
+                          bindings:
+                           -   util: RandomNumber
+                               params: [ 1, 10 ]
+                           -   util: RandomNumber
+                               params: [ 1, 4 ]
+                               referenceName: status_start
+                           -   util: ExpressionEval
+                               params:
+                                   - "status_start + 1"

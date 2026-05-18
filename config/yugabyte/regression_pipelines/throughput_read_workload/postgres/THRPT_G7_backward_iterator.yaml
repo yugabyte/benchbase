@@ -20,14 +20,14 @@ microbenchmark:
     properties:
         setAutoCommit: true
         create:
-            - DROP TABLE IF EXISTS THRPT_G11_user_activity;
-            - CREATE TABLE THRPT_G11_user_activity (activity_id BIGINT, segment_id INT, user_id INT, action_type TEXT, event_time TIMESTAMP, metadata TEXT, PRIMARY KEY(activity_id));
-            - CREATE INDEX idx_user_activity_feed ON THRPT_G11_user_activity(segment_id, event_time DESC) INCLUDE (user_id, action_type);
+            - DROP TABLE IF EXISTS THRPT_G7_user_activity;
+            - CREATE TABLE THRPT_G7_user_activity (activity_id BIGINT, segment_id INT, user_id INT, action_type TEXT, event_time TIMESTAMP, metadata TEXT, PRIMARY KEY(activity_id));
+            - CREATE INDEX idx_user_activity_feed ON THRPT_G7_user_activity(segment_id, event_time DESC) INCLUDE (user_id, action_type);
         cleanup:
-            - DROP TABLE IF EXISTS THRPT_G11_user_activity;
+            - DROP TABLE IF EXISTS THRPT_G7_user_activity;
 
         loadRules:
-            - table: THRPT_G11_user_activity
+            - table: THRPT_G7_user_activity
               rows: 1000000
               columns:
                   - name: activity_id
@@ -47,15 +47,15 @@ microbenchmark:
                     params: [10000000]
                   - name: metadata
                     util: RandomAString
-                    params: [100, 100]
+                    params: [1000, 1000]
 
         executeRules:
-            - workload: THRPT_G11_idx_backward_scan
+            - workload: THRPT_G7_idx_backward_scan
               run:
-                  - name: THRPT_G11_idx_backward_scan
+                  - name: THRPT_G7_idx_backward_scan
                     weight: 100
                     queries:
-                        - query: SELECT activity_id, user_id, action_type, event_time FROM THRPT_G11_user_activity WHERE segment_id = ? ORDER BY event_time ASC limit 50;
+                        - query: SELECT activity_id, user_id, action_type, event_time FROM THRPT_G7_user_activity WHERE segment_id = ? ORDER BY event_time ASC limit 50;
                           bindings:
                               - util: RandomInt
                                 params: [1, 10000]

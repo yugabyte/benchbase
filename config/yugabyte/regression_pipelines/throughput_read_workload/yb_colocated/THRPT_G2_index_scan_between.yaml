@@ -23,8 +23,8 @@ microbenchmark:
         setAutoCommit: true
         create:
             - DROP TABLE IF EXISTS THRPT_G2_payments;
-            - CREATE TABLE THRPT_G2_payments(payment_id BIGSERIAL, txn_id BIGINT, user_id BIGINT, merchant_id BIGINT, amount INT, status INT, created_at TIMESTAMP, updated_at TIMESTAMP, PRIMARY KEY(payment_id ASC)) SPLIT AT VALUES ((333333), (666666));
-            - CREATE INDEX idx_payments_txn_covering ON THRPT_G2_payments (txn_id ASC) INCLUDE (amount, status, user_id) SPLIT AT VALUES ((333333), (666666));
+            - CREATE TABLE THRPT_G2_payments(payment_id INT, txn_id INT, user_id INT, merchant_id INT, amount FLOAT, status INT, created_at DATE, updated_at TIMESTAMP, payload JSON, details TEXT, PRIMARY KEY(payment_id));
+            - CREATE INDEX idx_payments_txn_covering ON THRPT_G2_payments (txn_id ASC) INCLUDE (amount, status, user_id);
 
         cleanup:
             - DROP TABLE IF EXISTS THRPT_G2_payments;
@@ -46,17 +46,23 @@ microbenchmark:
                     util: RandomNumber
                     params: [1, 10000]
                   - name: amount
-                    util: RandomNumber
-                    params: [1, 100000]
+                    util: RandomFloat
+                    params: [1, 100000, 2]
                   - name: status
                     util: RandomNumber
                     params: [1, 5]
                   - name: created_at
-                    util: RandomTimestamp
-                    params: [10000000]
+                    util: RandomDateBtwYears
+                    params: [2000, 2025]
                   - name: updated_at
                     util: RandomTimestamp
                     params: [10000000]
+                  - name: payload
+                    util: RandomJson
+                    params: [8, 64]
+                  - name: details
+                    util: RandomAString
+                    params: [512, 512]
 
         executeRules:
             - workload: THRPT_G2_index_BETWEEN
@@ -67,8 +73,8 @@ microbenchmark:
                         - query: SELECT * FROM THRPT_G2_payments WHERE txn_id BETWEEN ? AND ?;
                           bindings:
                               -   util: RandomNumber
-                                  params: [1, 990000]
+                                  params: [1, 999900]
                                   referenceName: txn_id_1
                               -   util: ExpressionEval
                                   params:
-                                      - "txn_id_1 + 10000"
+                                      - "txn_id_1 + 100"

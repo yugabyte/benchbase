@@ -1,15 +1,13 @@
-type: YUGABYTE
-driver: com.yugabyte.Driver
-url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true&load-balance=false
-createdb: drop database if exists yb_colocated; create database yb_colocated with colocated=true
+type: postgres
+driver: org.postgresql.Driver
+url: jdbc:postgresql://{{endpoint}}:5432/postgres?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
 username: {{username}}
 password: {{password}}
 batchsize: 128
 isolation: TRANSACTION_REPEATABLE_READ
-loaderthreads: 1
+loaderThreads: 1
 terminals: 1
 collect_pg_stat_statements: true
-use_dist_in_explain : true
 yaml_version: v1.0
 works:
     work:
@@ -22,14 +20,18 @@ microbenchmark:
     properties:
         setAutoCommit: true
         create:
-            - DROP TABLE IF EXISTS THRPT_G13_employees;
-            - CREATE TABLE THRPT_G13_employees (emp_id INT, name VARCHAR(10), email VARCHAR(20), salary INT, hire_date DATE, department VARCHAR(20), is_active BOOLEAN, last_login TIMESTAMP, primary key(emp_id asc));
-            - CREATE INDEX idx_THRPT_G13_employees_dept_emp ON THRPT_G13_employees (department ASC, emp_id ASC);
+            - DROP TABLE IF EXISTS THRPT_G9_employees;
+            - ALTER DATABASE postgres SET enable_seqscan=off;
+            - ALTER DATABASE postgres SET enable_bitmapscan=off;
+            - CREATE TABLE THRPT_G9_employees (emp_id INT, name VARCHAR(10), email VARCHAR(20), salary FLOAT, hire_date DATE, department VARCHAR(20), payload JSON, details TEXT, is_active BOOLEAN, last_login TIMESTAMP, PRIMARY KEY(emp_id));
+            - CREATE INDEX idx_THRPT_G9_employees_dept_emp ON THRPT_G9_employees (department, emp_id);
         cleanup:
-            - DROP TABLE IF EXISTS THRPT_G13_employees;
+            - DROP TABLE IF EXISTS THRPT_G9_employees;
+            - ALTER DATABASE postgres SET enable_seqscan TO DEFAULT;
+            - ALTER DATABASE postgres SET enable_bitmapscan TO DEFAULT;
 
         loadRules:
-            - table: THRPT_G13_employees
+            - table: THRPT_G9_employees
               rows: 1000000
               columns:
                   - name: emp_id
@@ -50,6 +52,12 @@ microbenchmark:
                   - name: department
                     util: OneStringFromArray
                     params: [['Engineering', 'Sales', 'Marketing', 'Finance', 'IT', 'HR', 'Legal', 'Product']]
+                  - name: payload
+                    util: RandomJson
+                    params: [8, 64]
+                  - name: details
+                    util: RandomAString
+                    params: [512, 512]
                   - name: is_active
                     util: RandomBoolean
                   - name: last_login
@@ -57,12 +65,12 @@ microbenchmark:
                     params: [10000000]
 
         executeRules:
-            - workload: THRPT_G13_row_locking
+            - workload: THRPT_G9_row_locking
               run:
-                  - name: THRPT_G13_row_locking
+                  - name: THRPT_G9_row_locking
                     weight: 100
                     queries:
-                        - query: SELECT * FROM THRPT_G13_employees WHERE department = ? and emp_id between ? and ? ORDER BY hire_date FOR UPDATE SKIP LOCKED;
+                        - query: SELECT * FROM THRPT_G9_employees WHERE department = ? and emp_id between ? and ? ORDER BY hire_date FOR UPDATE SKIP LOCKED;
                           bindings:
                               - util: OneStringFromArray
                                 params: [['Engineering', 'Sales','Marketing','Finance','IT','HR','Legal','Product']]

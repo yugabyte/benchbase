@@ -22,14 +22,14 @@ microbenchmark:
     properties:
         setAutoCommit: true
         create:
-            - DROP TABLE IF EXISTS THRPT_G10_employees_wide;
-            - CREATE TABLE THRPT_G10_employees_wide (emp_id INT, name VARCHAR(10), email VARCHAR(20), salary INT, hire_date DATE, department VARCHAR(20), col_b1 BIGINT, col_b2 BIGINT, col_b3 BIGINT, col_b4 BIGINT, col_b5 BIGINT, col_b6 BIGINT, col_b7 BIGINT, col_b8 BIGINT, col_b9 BIGINT, col_b10 BIGINT, col_v1 VARCHAR(50), col_v2 VARCHAR(50), col_v3 VARCHAR(50), col_v4 VARCHAR(50), col_v5 VARCHAR(50), col_v6 VARCHAR(50), col_v7 VARCHAR(50), col_v8 VARCHAR(50), col_v9 VARCHAR(50), col_v10 VARCHAR(50), col_v11 VARCHAR(50), col_v12 VARCHAR(50), col_v13 VARCHAR(50), col_v14 VARCHAR(50), col_v15 VARCHAR(50), col_v16 VARCHAR(50), col_v17 VARCHAR(50), col_v18 VARCHAR(50), col_v19 VARCHAR(50), col_v20 VARCHAR(50), col_t1 TEXT, col_t2 TEXT, col_t3 TEXT, col_t4 TEXT, col_t5 TEXT, col_t6 TEXT, col_t7 TEXT, col_t8 TEXT, col_t9 TEXT, col_t10 TEXT, col_t11 TEXT, col_t12 TEXT, col_t13 TEXT, col_t14 TEXT, col_t15 TEXT, col_t16 TEXT, col_t17 TEXT, col_t18 TEXT, col_t19 TEXT, col_t20 TEXT, col_f1 FLOAT, col_f2 FLOAT, col_f3 FLOAT, col_f4 FLOAT, col_f5 FLOAT, col_f6 FLOAT, col_f7 FLOAT, col_f8 FLOAT, col_f9 FLOAT, col_f10 FLOAT, col_f11 FLOAT, col_f12 FLOAT, col_f13 FLOAT, col_f14 FLOAT, col_f15 FLOAT, col_f16 FLOAT, col_f17 FLOAT, col_f18 FLOAT, col_f19 FLOAT, col_f20 FLOAT, col_o1 INT, col_o2 INT, col_o3 INT, col_o4 INT, col_o5 INT, col_o6 INT, col_o7 INT, col_o8 INT, col_o9 INT, col_o10 INT, col_o11 INT, col_o12 INT, col_o13 INT, col_o14 INT, col_o15 INT, col_o16 INT, col_o17 INT, col_o18 INT, col_o19 INT, col_o20 INT, col_o21 INT, col_o22 INT, col_o23 INT, col_o24 INT, col_o25 INT, col_o26 INT, col_o27 INT, col_o28 INT, col_o29 INT, col_o30 INT, PRIMARY KEY(emp_id asc));
+            - DROP TABLE IF EXISTS THRPT_G6_employees_wide;
+            - CREATE TABLE THRPT_G6_employees_wide (emp_id INT, name VARCHAR(10), email VARCHAR(20), salary FLOAT, hire_date DATE, department VARCHAR(20), payload JSON, details TEXT, is_active BOOLEAN, last_login TIMESTAMP, col_b1 BIGINT, col_b2 BIGINT, col_b3 BIGINT, col_b4 BIGINT, col_b5 BIGINT, col_b6 BIGINT, col_b7 BIGINT, col_b8 BIGINT, col_b9 BIGINT, col_b10 BIGINT, col_v1 VARCHAR(50), col_v2 VARCHAR(50), col_v3 VARCHAR(50), col_v4 VARCHAR(50), col_v5 VARCHAR(50), col_v6 VARCHAR(50), col_v7 VARCHAR(50), col_v8 VARCHAR(50), col_v9 VARCHAR(50), col_v10 VARCHAR(50), col_v11 VARCHAR(50), col_v12 VARCHAR(50), col_v13 VARCHAR(50), col_v14 VARCHAR(50), col_v15 VARCHAR(50), col_v16 VARCHAR(50), col_v17 VARCHAR(50), col_v18 VARCHAR(50), col_v19 VARCHAR(50), col_v20 VARCHAR(50), col_t1 TEXT, col_t2 TEXT, col_t3 TEXT, col_t4 TEXT, col_t5 TEXT, col_t6 TEXT, col_t7 TEXT, col_t8 TEXT, col_t9 TEXT, col_t10 TEXT, col_t11 TEXT, col_t12 TEXT, col_t13 TEXT, col_t14 TEXT, col_t15 TEXT, col_t16 TEXT, col_t17 TEXT, col_t18 TEXT, col_t19 TEXT, col_t20 TEXT, col_f1 FLOAT, col_f2 FLOAT, col_f3 FLOAT, col_f4 FLOAT, col_f5 FLOAT, col_f6 FLOAT, col_f7 FLOAT, col_f8 FLOAT, col_f9 FLOAT, col_f10 FLOAT, col_f11 FLOAT, col_f12 FLOAT, col_f13 FLOAT, col_f14 FLOAT, col_f15 FLOAT, col_f16 FLOAT, col_f17 FLOAT, col_f18 FLOAT, col_f19 FLOAT, col_f20 FLOAT, col_o1 INT, col_o2 INT, col_o3 INT, col_o4 INT, col_o5 INT, col_o6 INT, col_o7 INT, col_o8 INT, col_o9 INT, col_o10 INT, col_o11 INT, col_o12 INT, col_o13 INT, col_o14 INT, col_o15 INT, col_o16 INT, col_o17 INT, col_o18 INT, col_o19 INT, col_o20 INT, col_o21 INT, col_o22 INT, col_o23 INT, col_o24 INT, col_o25 INT, col_o26 INT, col_o27 INT, col_o28 INT, col_o29 INT, col_o30 INT, PRIMARY KEY(emp_id asc));
 
         cleanup:
-            - DROP TABLE IF EXISTS THRPT_G10_employees_wide;
+            - DROP TABLE IF EXISTS THRPT_G6_employees_wide;
 
         loadRules:
-            - table: THRPT_G10_employees_wide
+            - table: THRPT_G6_employees_wide
               rows: 1000000
               columns:
                   - name: emp_id
@@ -48,8 +48,19 @@ microbenchmark:
                     util: RandomDateBtwYears
                     params: [2000, 2025]
                   - name: department
+                    util: OneStringFromArray
+                    params: [['Engineering', 'Sales', 'Marketing', 'Finance', 'IT', 'HR', 'Legal', 'Product']]
+                  - name: payload
+                    util: RandomJson
+                    params: [8, 64]
+                  - name: details
                     util: RandomAString
-                    params: [20, 20]
+                    params: [512, 512]
+                  - name: is_active
+                    util: RandomBoolean
+                  - name: last_login
+                    util: RandomTimestamp
+                    params: [10000000]
                   - name: col_b
                     count: 10
                     util: RandomNumber
@@ -72,12 +83,12 @@ microbenchmark:
                     params: [100000, 999999]
 
         executeRules:
-            - workload: THRPT_G10_PK_scan_between_wide
+            - workload: THRPT_G6_PK_scan_between_wide
               run:
-                  - name: THRPT_G10_PK_scan_between_wide
+                  - name: THRPT_G6_PK_scan_between_wide
                     weight: 100
                     queries:
-                        - query: select * from THRPT_G10_employees_wide where emp_id BETWEEN ? AND ?
+                        - query: select * from THRPT_G6_employees_wide where emp_id BETWEEN ? AND ?
                           bindings:
                               - util: RandomNumber
                                 params: [1, 998000]
