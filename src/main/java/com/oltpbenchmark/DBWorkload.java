@@ -1560,10 +1560,12 @@ public class DBWorkload {
         List<Map<String, Object>> jsonResults = new ArrayList<>();
         Map<Integer, Double> threadCpuMap = new HashMap<>();
         Double cpuAtPreviousScalingStep = null;
+        // Thread count from the previous scaling iteration to be used if flatCPU confirmed
+        Integer threadsAtPreviousScalingStep = null;
         // Counts <b>consecutive</b> flat scaling steps. Reset to 0 whenever a non-flat
         // step is observed, so an isolated low-CPU sample does not lock the search.
         int consecutiveFlatCpuSteps = 0;
-        // Thread count at the start of the current consecutive flat run. Captured the moment
+        // Thread count from BEFORE the current consecutive flat run started -- i.e. the last iteration where the CPU was still climbing meaningfully. Captured the moment
         // {@code consecutiveFlatCpuSteps} transitions from 0 -> 1, and used as the final
         // {@code optimalThreads} value if the plateau is later confirmed.
         int flatRunStartThreads = 0;
@@ -1823,28 +1825,29 @@ public class DBWorkload {
                         if (cpuDelta < cpuScalingMinDeltaPercent) {
                             consecutiveFlatCpuSteps++;
                             if (consecutiveFlatCpuSteps == 1) {
-                                // Remember the thread count at the very start of this run of consecutive
-                                // flat steps. If the plateau is later confirmed, this is the lowest thread
-                                // count at which the plateau was observed and becomes optimalThreads.
-                                flatRunStartThreads = threads;
+                                // To be used to Roll back to the thread count from BEFORE the plateau formed
+                                flatRunStartThreads = threadsAtPreviousScalingStep;
                             }
                             LOG.warn(
-                                "CPU utilization did not increase significantly when scaling threads (delta={}% vs min {}%). "
-                                    + "Consecutive flat steps: {}/{} (run started at threads={}).",
+                                "CPU utilization did not increase significantly when scaling threads "
+                                    + "({} threads -> {} threads, delta={}% vs min {}%). "
+                                    + "Consecutive flat steps: {}/{}. Candidate optimalThreads (last good before plateau): {}.",
+                                threadsAtPreviousScalingStep,
+                                threads,
                                 String.format("%.2f", cpuDelta),
                                 cpuScalingMinDeltaPercent,
                                 consecutiveFlatCpuSteps,
                                 flatCpuMaxScalingSteps,
                                 flatRunStartThreads);
                             if (consecutiveFlatCpuSteps >= flatCpuMaxScalingSteps) {
-                                // Plateau confirmed: only now do we commit optimalThreads to the
-                                // thread count where the consecutive flat run began.
+                                // Plateau confirmed: commit optimalThreads to the thread count
+                                // from immediately BEFORE the consecutive flat run began.
                                 flatCpuDetected = true;
                                 optimalThreads = flatRunStartThreads;
                                 LOG.info(
                                     "Flat CPU plateau confirmed after {} consecutive flat thread increases (min delta {}% points). "
-                                        + "Stopping thread search; continuing run with {} threads (start of flat run) and metadata flatCPU=true. "
-                                        + "Last max CPU {}%.",
+                                        + "Stopping thread search; rolling back and continuing run with {} threads (last good before plateau) "
+                                        + "and metadata flatCPU=true. Last max CPU {}%.",
                                     flatCpuMaxScalingSteps,
                                     cpuScalingMinDeltaPercent,
                                     optimalThreads,
@@ -1856,7 +1859,7 @@ public class DBWorkload {
                             // Reset the consecutive counter so we don't break early on a false positive.
                             LOG.info(
                                 "CPU utilization recovered (delta={}% >= min {}%). Resetting consecutive flat-step counter "
-                                    + "(was {}, started at threads={}).",
+                                    + "(was {}, candidate optimalThreads was {}).",
                                 String.format("%.2f", cpuDelta),
                                 cpuScalingMinDeltaPercent,
                                 consecutiveFlatCpuSteps,
@@ -1866,6 +1869,7 @@ public class DBWorkload {
                         }
                     }
                     cpuAtPreviousScalingStep = avgMaxCPU;
+                    threadsAtPreviousScalingStep = threads;
                     threads = newThreads;
                 }
 
