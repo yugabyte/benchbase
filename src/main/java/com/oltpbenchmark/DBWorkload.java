@@ -726,8 +726,9 @@ public class DBWorkload {
                             double cpuScalingMinDeltaPercent = xmlConfig.getDouble("cpuScalingMinDeltaPercent", 5.0);
                             int threadIncrement = xmlConfig.getInt("threadIncrement", 3);
                             int restingTimeSecs = xmlConfig.getInt("restingTimeSecs", 120);
+                            int flatCpuMaxScalingSteps = xmlConfig.getInt("flatCpuMaxScalingSteps", DEFAULT_FLAT_CPU_MAX_SCALING_STEPS);
                             int optimalThreads = findOptimalThreadCount(benchList.get(0), minThreads, targetCPU, toleranceCPU, workloadName, workCount, samplingTime,
-                                cpuScalingMinDeltaPercent, threadIncrement, restingTimeSecs);
+                                cpuScalingMinDeltaPercent, threadIncrement, restingTimeSecs, flatCpuMaxScalingSteps);
 
                             // Sleep between optimal-threads search and the final measured run so system can stabilize
                             if (restingTimeSecs > 0) {
@@ -824,8 +825,9 @@ public class DBWorkload {
                             double cpuScalingMinDeltaPercent = xmlConfig.getDouble("cpuScalingMinDeltaPercent", 5.0);
                             int threadIncrement = xmlConfig.getInt("threadIncrement", 3);
                             int restingTimeSecs = xmlConfig.getInt("restingTimeSecs", 120);
+                            int flatCpuMaxScalingSteps = xmlConfig.getInt("flatCpuMaxScalingSteps", DEFAULT_FLAT_CPU_MAX_SCALING_STEPS);
                             int optimalThreads = findOptimalThreadCount(benchList.get(0), minThreads, targetCPU, toleranceCPU, workloadName, workCount, samplingTime,
-                                cpuScalingMinDeltaPercent, threadIncrement, restingTimeSecs);
+                                cpuScalingMinDeltaPercent, threadIncrement, restingTimeSecs, flatCpuMaxScalingSteps);
 
                             // Sleep between optimal-threads search and the final measured run so system can stabilize
                             if (restingTimeSecs > 0) {
@@ -1518,15 +1520,16 @@ public class DBWorkload {
     }
 
     /**
-     * Number of <b>consecutive</b> thread up-scales with insufficient CPU increase before we
+     * Default number of <b>consecutive</b> thread up-scales with insufficient CPU increase before we
      * confirm a plateau, stop the search, and tag metadata {@code flatCPU}. The counter resets
      * to zero as soon as any single up-scale produces a CPU delta &ge; {@code cpuScalingMinDeltaPercent},
      * so a single noisy low-CPU sample early in the sweep no longer poisons the result.
+     * Can be overridden via the YAML config key {@code flatCpuMaxScalingSteps}.
      */
-    private static final int FLAT_CPU_MAX_SCALING_STEPS = 3;
+    private static final int DEFAULT_FLAT_CPU_MAX_SCALING_STEPS = 3;
 
     private static int findOptimalThreadCount(BenchmarkModule bench, int minThreads, double targetCPU, double toleranceCPU, String workloadName, int workCount, int samplingTime,
-            double cpuScalingMinDeltaPercent, int threadIncrement, int restingTimeSecs) throws InterruptedException {
+            double cpuScalingMinDeltaPercent, int threadIncrement, int restingTimeSecs, int flatCpuMaxScalingSteps) throws InterruptedException {
         double minTargetCPU = targetCPU - toleranceCPU;
         double maxTargetCPU = targetCPU + toleranceCPU;
         LOG.info("minTargetCPU: {}, maxTargetCPU: {}", minTargetCPU, maxTargetCPU);
@@ -1566,7 +1569,7 @@ public class DBWorkload {
         int flatRunStartThreads = 0;
         boolean flatCpuDetected = false;
         LOG.info("Flat CPU detection: minDeltaPercent={}, requires {} consecutive flat steps to confirm plateau",
-            cpuScalingMinDeltaPercent, FLAT_CPU_MAX_SCALING_STEPS);
+            cpuScalingMinDeltaPercent, flatCpuMaxScalingSteps);
 
         // Detect database type and prepare RDS monitoring if needed
         boolean isYugabyteDatabase = isYugabyteDB(bench);
@@ -1831,9 +1834,9 @@ public class DBWorkload {
                                 String.format("%.2f", cpuDelta),
                                 cpuScalingMinDeltaPercent,
                                 consecutiveFlatCpuSteps,
-                                FLAT_CPU_MAX_SCALING_STEPS,
+                                flatCpuMaxScalingSteps,
                                 flatRunStartThreads);
-                            if (consecutiveFlatCpuSteps >= FLAT_CPU_MAX_SCALING_STEPS) {
+                            if (consecutiveFlatCpuSteps >= flatCpuMaxScalingSteps) {
                                 // Plateau confirmed: only now do we commit optimalThreads to the
                                 // thread count where the consecutive flat run began.
                                 flatCpuDetected = true;
@@ -1842,7 +1845,7 @@ public class DBWorkload {
                                     "Flat CPU plateau confirmed after {} consecutive flat thread increases (min delta {}% points). "
                                         + "Stopping thread search; continuing run with {} threads (start of flat run) and metadata flatCPU=true. "
                                         + "Last max CPU {}%.",
-                                    FLAT_CPU_MAX_SCALING_STEPS,
+                                    flatCpuMaxScalingSteps,
                                     cpuScalingMinDeltaPercent,
                                     optimalThreads,
                                     String.format("%.2f", avgMaxCPU));
