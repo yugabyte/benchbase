@@ -1,0 +1,68 @@
+type: postgres
+driver: org.postgresql.Driver
+url: jdbc:postgresql://{{endpoint}}:5432/postgres?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
+username: {{username}}
+password: {{password}}
+batchsize: 128
+isolation: TRANSACTION_REPEATABLE_READ
+loaderThreads: 4
+terminals: 1
+collect_pg_stat_statements: true
+yaml_version: v1.0
+works:
+    work:
+        time_secs: 180
+        active_terminals: 1
+        rate: unlimited
+        warmup: 60
+microbenchmark:
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
+    properties:
+        setAutoCommit: true
+        create:
+            - DROP TABLE IF EXISTS THRPT_WL_500_COL_BETWEEN;
+            - ALTER DATABASE postgres SET enable_seqscan=off;
+            - ALTER DATABASE postgres SET enable_bitmapscan=off;
+            - CREATE TABLE THRPT_WL_500_COL_BETWEEN (id INT, c1 INT, c2 INT, payload1 JSON, payload2 JSON, payload3 JSON, payload4 JSON, payload5 JSON, payload6 JSON, payload7 JSON, payload8 JSON, payload9 JSON, payload10 JSON, payload11 JSON, payload12 JSON, payload13 JSON, payload14 JSON, payload15 JSON, payload16 JSON, payload17 JSON, payload18 JSON, payload19 JSON, payload20 JSON, payload21 JSON, payload22 JSON, payload23 JSON, payload24 JSON, payload25 JSON, payload26 JSON, payload27 JSON, payload28 JSON, payload29 JSON, payload30 JSON, payload31 JSON, payload32 JSON, payload33 JSON, payload34 JSON, payload35 JSON, payload36 JSON, payload37 JSON, payload38 JSON, payload39 JSON, payload40 JSON, payload41 JSON, payload42 JSON, payload43 JSON, payload44 JSON, payload45 JSON, payload46 JSON, payload47 JSON, payload48 JSON, payload49 JSON, payload50 JSON, payload51 JSON, payload52 JSON, payload53 JSON, payload54 JSON, payload55 JSON, payload56 JSON, payload57 JSON, payload58 JSON, payload59 JSON, payload60 JSON, payload61 JSON, payload62 JSON, payload63 JSON, payload64 JSON, payload65 JSON, payload66 JSON, payload67 JSON, payload68 JSON, payload69 JSON, payload70 JSON, payload71 JSON, payload72 JSON, payload73 JSON, payload74 JSON, payload75 JSON, payload76 JSON, payload77 JSON, payload78 JSON, payload79 JSON, payload80 JSON, payload81 JSON, payload82 JSON, payload83 JSON, payload84 JSON, payload85 JSON, payload86 JSON, payload87 JSON, payload88 JSON, payload89 JSON, payload90 JSON, payload91 JSON, payload92 JSON, payload93 JSON, payload94 JSON, payload95 JSON, payload96 JSON, payload97 JSON, payload98 JSON, payload99 JSON, payload100 JSON, payload101 JSON, payload102 JSON, payload103 JSON, payload104 JSON, payload105 JSON, payload106 JSON, payload107 JSON, payload108 JSON, payload109 JSON, payload110 JSON, payload111 JSON, payload112 JSON, payload113 JSON, payload114 JSON, payload115 JSON, payload116 JSON, payload117 JSON, payload118 JSON, payload119 JSON, payload120 JSON, payload121 JSON, payload122 JSON, payload123 JSON, payload124 JSON, payload125 JSON, payload126 JSON, payload127 JSON, payload128 JSON, payload129 JSON, payload130 JSON, payload131 JSON, payload132 JSON, payload133 JSON, payload134 JSON, payload135 JSON, payload136 JSON, payload137 JSON, payload138 JSON, payload139 JSON, payload140 JSON, payload141 JSON, payload142 JSON, payload143 JSON, payload144 JSON, payload145 JSON, payload146 JSON, payload147 JSON, payload148 JSON, payload149 JSON, payload150 JSON, payload151 JSON, payload152 JSON, payload153 JSON, payload154 JSON, payload155 JSON, payload156 JSON, payload157 JSON, payload158 JSON, payload159 JSON, payload160 JSON, payload161 JSON, payload162 JSON, payload163 JSON, payload164 JSON, payload165 JSON, payload166 JSON, payload167 JSON, payload168 JSON, payload169 JSON, payload170 JSON, payload171 JSON, payload172 JSON, payload173 JSON, payload174 JSON, payload175 JSON, payload176 JSON, payload177 JSON, payload178 JSON, payload179 JSON, payload180 JSON, payload181 JSON, payload182 JSON, payload183 JSON, payload184 JSON, payload185 JSON, payload186 JSON, payload187 JSON, payload188 JSON, payload189 JSON, payload190 JSON, payload191 JSON, payload192 JSON, payload193 JSON, payload194 JSON, payload195 JSON, payload196 JSON, payload197 JSON, payload198 JSON, payload199 JSON, payload200 JSON, payload201 JSON, payload202 JSON, payload203 JSON, payload204 JSON, payload205 JSON, payload206 JSON, payload207 JSON, payload208 JSON, payload209 JSON, payload210 JSON, payload211 JSON, payload212 JSON, payload213 JSON, payload214 JSON, payload215 JSON, payload216 JSON, payload217 JSON, payload218 JSON, payload219 JSON, payload220 JSON, payload221 JSON, payload222 JSON, payload223 JSON, payload224 JSON, payload225 JSON, payload226 JSON, payload227 JSON, payload228 JSON, payload229 JSON, payload230 JSON, payload231 JSON, payload232 JSON, payload233 JSON, payload234 JSON, payload235 JSON, payload236 JSON, payload237 JSON, payload238 JSON, payload239 JSON, payload240 JSON, payload241 JSON, payload242 JSON, payload243 JSON, payload244 JSON, payload245 JSON, payload246 JSON, payload247 JSON, payload248 JSON, payload249 JSON, payload250 JSON, data1 TEXT, data2 TEXT, data3 TEXT, data4 TEXT, data5 TEXT, data6 TEXT, data7 TEXT, data8 TEXT, data9 TEXT, data10 TEXT, data11 TEXT, data12 TEXT, data13 TEXT, data14 TEXT, data15 TEXT, data16 TEXT, data17 TEXT, data18 TEXT, data19 TEXT, data20 TEXT, data21 TEXT, data22 TEXT, data23 TEXT, data24 TEXT, data25 TEXT, data26 TEXT, data27 TEXT, data28 TEXT, data29 TEXT, data30 TEXT, data31 TEXT, data32 TEXT, data33 TEXT, data34 TEXT, data35 TEXT, data36 TEXT, data37 TEXT, data38 TEXT, data39 TEXT, data40 TEXT, data41 TEXT, data42 TEXT, data43 TEXT, data44 TEXT, data45 TEXT, data46 TEXT, data47 TEXT, data48 TEXT, data49 TEXT, data50 TEXT, data51 TEXT, data52 TEXT, data53 TEXT, data54 TEXT, data55 TEXT, data56 TEXT, data57 TEXT, data58 TEXT, data59 TEXT, data60 TEXT, data61 TEXT, data62 TEXT, data63 TEXT, data64 TEXT, data65 TEXT, data66 TEXT, data67 TEXT, data68 TEXT, data69 TEXT, data70 TEXT, data71 TEXT, data72 TEXT, data73 TEXT, data74 TEXT, data75 TEXT, data76 TEXT, data77 TEXT, data78 TEXT, data79 TEXT, data80 TEXT, data81 TEXT, data82 TEXT, data83 TEXT, data84 TEXT, data85 TEXT, data86 TEXT, data87 TEXT, data88 TEXT, data89 TEXT, data90 TEXT, data91 TEXT, data92 TEXT, data93 TEXT, data94 TEXT, data95 TEXT, data96 TEXT, data97 TEXT, data98 TEXT, data99 TEXT, data100 TEXT, data101 TEXT, data102 TEXT, data103 TEXT, data104 TEXT, data105 TEXT, data106 TEXT, data107 TEXT, data108 TEXT, data109 TEXT, data110 TEXT, data111 TEXT, data112 TEXT, data113 TEXT, data114 TEXT, data115 TEXT, data116 TEXT, data117 TEXT, data118 TEXT, data119 TEXT, data120 TEXT, data121 TEXT, data122 TEXT, data123 TEXT, data124 TEXT, data125 TEXT, data126 TEXT, data127 TEXT, data128 TEXT, data129 TEXT, data130 TEXT, data131 TEXT, data132 TEXT, data133 TEXT, data134 TEXT, data135 TEXT, data136 TEXT, data137 TEXT, data138 TEXT, data139 TEXT, data140 TEXT, data141 TEXT, data142 TEXT, data143 TEXT, data144 TEXT, data145 TEXT, data146 TEXT, data147 TEXT, data148 TEXT, data149 TEXT, data150 TEXT, data151 TEXT, data152 TEXT, data153 TEXT, data154 TEXT, data155 TEXT, data156 TEXT, data157 TEXT, data158 TEXT, data159 TEXT, data160 TEXT, data161 TEXT, data162 TEXT, data163 TEXT, data164 TEXT, data165 TEXT, data166 TEXT, data167 TEXT, data168 TEXT, data169 TEXT, data170 TEXT, data171 TEXT, data172 TEXT, data173 TEXT, data174 TEXT, data175 TEXT, data176 TEXT, data177 TEXT, data178 TEXT, data179 TEXT, data180 TEXT, data181 TEXT, data182 TEXT, data183 TEXT, data184 TEXT, data185 TEXT, data186 TEXT, data187 TEXT, data188 TEXT, data189 TEXT, data190 TEXT, data191 TEXT, data192 TEXT, data193 TEXT, data194 TEXT, data195 TEXT, data196 TEXT, data197 TEXT, data198 TEXT, data199 TEXT, data200 TEXT, data201 TEXT, data202 TEXT, data203 TEXT, data204 TEXT, data205 TEXT, data206 TEXT, data207 TEXT, data208 TEXT, data209 TEXT, data210 TEXT, data211 TEXT, data212 TEXT, data213 TEXT, data214 TEXT, data215 TEXT, data216 TEXT, data217 TEXT, data218 TEXT, data219 TEXT, data220 TEXT, data221 TEXT, data222 TEXT, data223 TEXT, data224 TEXT, data225 TEXT, data226 TEXT, data227 TEXT, data228 TEXT, data229 TEXT, data230 TEXT, data231 TEXT, data232 TEXT, data233 TEXT, data234 TEXT, data235 TEXT, data236 TEXT, data237 TEXT, data238 TEXT, data239 TEXT, data240 TEXT, data241 TEXT, data242 TEXT, data243 TEXT, data244 TEXT, data245 TEXT, data246 TEXT, data247 TEXT, data248 TEXT, data249 TEXT, data250 TEXT, PRIMARY KEY (id));
+
+        cleanup:
+            - DROP TABLE IF EXISTS THRPT_WL_500_COL_BETWEEN;
+            - ALTER DATABASE postgres SET enable_seqscan TO DEFAULT;
+            - ALTER DATABASE postgres SET enable_bitmapscan TO DEFAULT;
+
+        loadRules:
+            - table: THRPT_WL_500_COL_BETWEEN
+              rows: 100000
+              columns:
+                  - name: id
+                    util: RandomUniqueIntGen
+                    params: [1, 100000]
+                  - name: c1
+                    util: RandomUniqueIntGen
+                    params: [1, 100000]
+                  - name: c2
+                    util: RandomUniqueIntGen
+                    params: [1, 100000]
+                  - name: payload
+                    count: 250
+                    util: RandomJson
+                    params: [20, 10]
+                  - name: data
+                    count: 250
+                    util: RandomAString
+                    params: [200, 200]
+
+        executeRules:
+            - workload: THRPT_WL_500_COL_BETWEEN
+              run:
+                  - name: THRPT_WL_500_COL_BETWEEN
+                    weight: 100
+                    queries:
+                        - query: SELECT * FROM THRPT_WL_500_COL_BETWEEN WHERE id between ? and ?;
+                          bindings:
+                              - util: RandomNumber
+                                params: [1, 99000]
+                                referenceName: id1
+                              - util: ExpressionEval
+                                params:
+                                    - "id1 + 1000"

@@ -22,25 +22,25 @@ microbenchmark:
         setAutoCommit: true
         create:
             - DROP TABLE IF EXISTS THRPT_WL_SEC_IDX_IN_CLAUSE_1K;
-            - CREATE TABLE THRPT_WL_SEC_IDX_IN_CLAUSE_1K (id INT, c1 int, c2 int, payload text, PRIMARY KEY(id asc)) split at values ((333333), (666666));
-            - CREATE INDEX idx_c2 ON THRPT_WL_SEC_IDX_IN_CLAUSE_1K (c2 asc) split at values ((333333), (666666));
+            - CREATE TABLE THRPT_WL_SEC_IDX_IN_CLAUSE_1K (id INT, c1 int, c2 int, payload text, PRIMARY KEY(id asc)) split at values ((3333333), (6666666));
+            - CREATE INDEX idx_c2 ON THRPT_WL_SEC_IDX_IN_CLAUSE_1K (c2 asc) split at values ((3333333), (6666666));
 
         cleanup:
             - DROP TABLE IF EXISTS THRPT_WL_SEC_IDX_IN_CLAUSE_1K;
 
         loadRules:
             - table: THRPT_WL_SEC_IDX_IN_CLAUSE_1K
-              rows: 1000000
+              rows: 10000000
               columns:
                   - name: id
                     util: RandomUniqueIntGen
-                    params: [1, 1000000]
+                    params: [1, 10000000]
                   - name: c1
                     util: RandomUniqueIntGen
-                    params: [1, 1000000]
+                    params: [1, 10000000]
                   - name: c2
                     util: RandomUniqueIntGen
-                    params: [1, 1000000]
+                    params: [1, 10000000]
                   - name: payload
                     util: RandomAString
                     params: [1024, 1024]
@@ -54,4 +54,4 @@ microbenchmark:
                           bindings:
                               - util: RandomNumber
                                 count: 1000
-                                params: [1, 1000000]
+                                params: [1, 10000000]

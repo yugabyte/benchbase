@@ -28,17 +28,17 @@ microbenchmark:
 
         loadRules:
             - table: THRPT_WL_IN_CLAUSE_10
-              rows: 1000000
+              rows: 10000000
               columns:
                   - name: id
                     util: RandomUniqueIntGen
-                    params: [1, 1000000]
+                    params: [1, 10000000]
                   - name: c1
                     util: RandomUniqueIntGen
-                    params: [1, 1000000]
+                    params: [1, 10000000]
                   - name: c2
                     util: RandomUniqueIntGen
-                    params: [1, 1000000]
+                    params: [1, 10000000]
                   - name: payload
                     util: RandomAString
                     params: [1024, 1024]
@@ -52,4 +52,4 @@ microbenchmark:
                           bindings:
                               - util: RandomNumber
                                 count: 10
-                                params: [1, 1000000]
+                                params: [1, 10000000]
