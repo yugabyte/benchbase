@@ -724,11 +724,12 @@ public class DBWorkload {
                             String workloadName = executeRules == null ? null : workloads.get(workCount - 1).getString("workload");
                             // Find optimal threads for this workload
                             double cpuScalingMinDeltaPercent = xmlConfig.getDouble("cpuScalingMinDeltaPercent", 5.0);
+                            boolean linearPGthread = xmlConfig.getBoolean("linearPGthread", false);
                             int threadIncrement = xmlConfig.getInt("threadIncrement", 3);
                             int restingTimeSecs = xmlConfig.getInt("restingTimeSecs", 120);
                             int flatCpuMaxScalingSteps = xmlConfig.getInt("flatCpuMaxScalingSteps", DEFAULT_FLAT_CPU_MAX_SCALING_STEPS);
                             int optimalThreads = findOptimalThreadCount(benchList.get(0), minThreads, targetCPU, toleranceCPU, workloadName, workCount, samplingTime,
-                                cpuScalingMinDeltaPercent, threadIncrement, restingTimeSecs, flatCpuMaxScalingSteps);
+                                cpuScalingMinDeltaPercent, threadIncrement, restingTimeSecs, flatCpuMaxScalingSteps, linearPGthread);
 
                             // Sleep between optimal-threads search and the final measured run so system can stabilize
                             if (restingTimeSecs > 0) {
@@ -823,11 +824,12 @@ public class DBWorkload {
                             String workloadName = executeRules == null ? null : workloads.get(workCount - 1).getString("workload");
                             // Find optimal threads for this workload
                             double cpuScalingMinDeltaPercent = xmlConfig.getDouble("cpuScalingMinDeltaPercent", 5.0);
+                            boolean linearPGthread = xmlConfig.getBoolean("linearPGthread", false);
                             int threadIncrement = xmlConfig.getInt("threadIncrement", 3);
                             int restingTimeSecs = xmlConfig.getInt("restingTimeSecs", 120);
                             int flatCpuMaxScalingSteps = xmlConfig.getInt("flatCpuMaxScalingSteps", DEFAULT_FLAT_CPU_MAX_SCALING_STEPS);
                             int optimalThreads = findOptimalThreadCount(benchList.get(0), minThreads, targetCPU, toleranceCPU, workloadName, workCount, samplingTime,
-                                cpuScalingMinDeltaPercent, threadIncrement, restingTimeSecs, flatCpuMaxScalingSteps);
+                                cpuScalingMinDeltaPercent, threadIncrement, restingTimeSecs, flatCpuMaxScalingSteps, linearPGthread);
 
                             // Sleep between optimal-threads search and the final measured run so system can stabilize
                             if (restingTimeSecs > 0) {
@@ -1529,7 +1531,7 @@ public class DBWorkload {
     private static final int DEFAULT_FLAT_CPU_MAX_SCALING_STEPS = 3;
 
     private static int findOptimalThreadCount(BenchmarkModule bench, int minThreads, double targetCPU, double toleranceCPU, String workloadName, int workCount, int samplingTime,
-            double cpuScalingMinDeltaPercent, int threadIncrement, int restingTimeSecs, int flatCpuMaxScalingSteps) throws InterruptedException {
+            double cpuScalingMinDeltaPercent, int threadIncrement, int restingTimeSecs, int flatCpuMaxScalingSteps, boolean linearPGthread) throws InterruptedException {
         double minTargetCPU = targetCPU - toleranceCPU;
         double maxTargetCPU = targetCPU + toleranceCPU;
         LOG.info("minTargetCPU: {}, maxTargetCPU: {}", minTargetCPU, maxTargetCPU);
@@ -1812,8 +1814,13 @@ public class DBWorkload {
                         newThreads = threads + threadIncrement;
                         LOG.info("Adding {} threads to the current threads. New threads: {}", threadIncrement, newThreads);
                     }else{
-                        newThreads = (int) Math.ceil((threads * targetCPU) / avgMaxCPU);
-                       
+                        if(linearPGthread) {
+                            newThreads = threads + threadIncrement;
+                            LOG.info("Adding {} threads to the current threads (linearly). New threads: {}", threadIncrement, newThreads);
+                        }else{
+                            newThreads = (int) Math.ceil((threads * targetCPU) / avgMaxCPU);
+                            LOG.info("Calculating new threads using (threads * targetCPU) / avgMaxCPU formula. New threads: {}", newThreads);
+                        }
                     }
                     if (threadCpuMap.containsKey(newThreads)) {
                         LOG.info("newThreads={} already tested. Breaking loop to avoid duplicate testing.", newThreads);
