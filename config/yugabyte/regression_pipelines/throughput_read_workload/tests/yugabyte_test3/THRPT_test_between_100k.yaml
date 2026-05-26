@@ -22,24 +22,24 @@ microbenchmark:
         setAutoCommit: true
         create:
             - DROP TABLE IF EXISTS THRPT_WL_BETWEEN_100K;
-            - CREATE TABLE THRPT_WL_BETWEEN_100K (id INT, c1 int, c2 int, payload text, PRIMARY KEY(id asc)) split at values ((3333333), (6666666));
+            - CREATE TABLE THRPT_WL_BETWEEN_100K (id INT, c1 int, c2 int, payload text, PRIMARY KEY(id asc)) split at values ((333333), (666666));
 
         cleanup:
             - DROP TABLE IF EXISTS THRPT_WL_BETWEEN_100K;
 
         loadRules:
             - table: THRPT_WL_BETWEEN_100K
-              rows: 10000000
+              rows: 1000000
               columns:
                   - name: id
                     util: RandomUniqueIntGen
-                    params: [1, 10000000]
+                    params: [1, 1000000]
                   - name: c1
                     util: RandomUniqueIntGen
-                    params: [1, 10000000]
+                    params: [1, 1000000]
                   - name: c2
                     util: RandomUniqueIntGen
-                    params: [1, 10000000]
+                    params: [1, 1000000]
                   - name: payload
                     util: RandomAString
                     params: [1024, 1024]
@@ -52,7 +52,7 @@ microbenchmark:
                         - query: SELECT * FROM THRPT_WL_BETWEEN_100K WHERE id between ? and ?;
                           bindings:
                               - util: RandomNumber
-                                params: [1, 9900000]
+                                params: [1, 900000]
                                 referenceName: id1
                               - util: ExpressionEval
                                 params:

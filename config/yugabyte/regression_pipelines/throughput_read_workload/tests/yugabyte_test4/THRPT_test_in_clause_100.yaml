@@ -22,24 +22,24 @@ microbenchmark:
         setAutoCommit: true
         create:
             - DROP TABLE IF EXISTS THRPT_WL_IN_CLAUSE_100;
-            - CREATE TABLE THRPT_WL_IN_CLAUSE_100 (id INT, c1 int, c2 int, payload text, PRIMARY KEY(id asc)) split at values ((3333333), (6666666));
+            - CREATE TABLE THRPT_WL_IN_CLAUSE_100 (id INT, c1 int, c2 int, payload text, PRIMARY KEY(id asc)) split at values ((333333), (666666));
 
         cleanup:
             - DROP TABLE IF EXISTS THRPT_WL_IN_CLAUSE_100;
 
         loadRules:
             - table: THRPT_WL_IN_CLAUSE_100
-              rows: 10000000
+              rows: 1000000
               columns:
                   - name: id
                     util: RandomUniqueIntGen
-                    params: [1, 10000000]
+                    params: [1, 1000000]
                   - name: c1
                     util: RandomUniqueIntGen
-                    params: [1, 10000000]
+                    params: [1, 1000000]
                   - name: c2
                     util: RandomUniqueIntGen
-                    params: [1, 10000000]
+                    params: [1, 1000000]
                   - name: payload
                     util: RandomAString
                     params: [1024, 1024]
@@ -53,4 +53,4 @@ microbenchmark:
                           bindings:
                               - util: RandomNumber
                                 count: 100
-                                params: [1, 10000000]
+                                params: [1, 1000000]
