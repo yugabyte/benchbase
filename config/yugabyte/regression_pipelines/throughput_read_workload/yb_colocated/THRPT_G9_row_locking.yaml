@@ -9,7 +9,7 @@ isolation: TRANSACTION_REPEATABLE_READ
 loaderthreads: 1
 terminals: 1
 collect_pg_stat_statements: true
-use_dist_in_explain : true
+use_dist_in_explain: true
 yaml_version: v1.0
 works:
     work:
@@ -23,18 +23,18 @@ microbenchmark:
         setAutoCommit: true
         create:
             - DROP TABLE IF EXISTS THRPT_G9_employees;
-            - CREATE TABLE THRPT_G9_employees (emp_id INT, name VARCHAR(10), email VARCHAR(20), salary FLOAT, hire_date DATE, department VARCHAR(20), payload JSON, details TEXT, is_active BOOLEAN, last_login TIMESTAMP, primary key(emp_id asc));
+            - CREATE TABLE THRPT_G9_employees (emp_id INT, name VARCHAR(10), email VARCHAR(20), salary FLOAT, hire_date DATE, department VARCHAR(20), payload JSON, details TEXT, is_active BOOLEAN, last_login TIMESTAMP, PRIMARY KEY(emp_id ASC));
             - CREATE INDEX idx_THRPT_G9_employees_dept_emp ON THRPT_G9_employees (department ASC, emp_id ASC);
         cleanup:
             - DROP TABLE IF EXISTS THRPT_G9_employees;
 
         loadRules:
             - table: THRPT_G9_employees
-              rows: 1000000
+              rows: 10000000
               columns:
                   - name: emp_id
                     util: RandomUniqueIntGen
-                    params: [1, 1000000]
+                    params: [1, 10000000]
                   - name: name
                     util: RandomAString
                     params: [10, 10]
@@ -73,7 +73,7 @@ microbenchmark:
                               - util: OneStringFromArray
                                 params: [['Engineering', 'Sales','Marketing','Finance','IT','HR','Legal','Product']]
                               - util: RandomNumber
-                                params: [1, 990000]
+                                params: [1, 9990000]
                                 referenceName: emp_id1
                               - util: ExpressionEval
                                 params:

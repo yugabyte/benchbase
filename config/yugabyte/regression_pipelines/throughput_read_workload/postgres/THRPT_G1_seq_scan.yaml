@@ -28,20 +28,20 @@ microbenchmark:
 
         loadRules:
               - table: THRPT_G1_sales_orders
-                rows: 1000000
+                rows: 10000000
                 columns:
                     - name: id
                       util: RandomUniqueIntGen
-                      params: [ 1, 1000000 ]
+                      params: [ 1, 10000000 ]
                     - name: region_id
                       util: RandomNumber
-                      params: [ 1, 100 ]
+                      params: [ 1, 1000 ]
                     - name: category_id
                       util: RandomNumber
-                      params: [ 1, 50 ]
+                      params: [ 1, 500 ]
                     - name: subcategory_id
                       util: RandomNumber
-                      params: [ 1, 500 ]
+                      params: [ 1, 5000 ]
                     - name: date_created
                       util: RandomDateBtwYears
                       params: [2000, 2025]
@@ -53,10 +53,10 @@ microbenchmark:
                       params: [ 1, 10 ]
                     - name: amount
                       util: CyclicSeqIntGen
-                      params: [ 1, 100000 ]
+                      params: [ 1, 1000000 ]
                     - name: quantity
                       util: RandomNoWithDecimalPoints
-                      params: [ 1, 100000, 2 ]
+                      params: [ 1, 1000000, 2 ]
                     - name: payload
                       util: RandomJson
                       params: [ 8, 64 ]
@@ -75,7 +75,7 @@ microbenchmark:
                               - util: RandomNumber
                                 params:
                                     - 1
-                                    - 99950
+                                    - 999950
                                 referenceName: amount1
                               - util: ExpressionEval
                                 params:

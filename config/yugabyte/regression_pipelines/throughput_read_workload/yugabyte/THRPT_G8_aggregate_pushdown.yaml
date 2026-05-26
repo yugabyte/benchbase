@@ -22,17 +22,17 @@ microbenchmark:
         setAutoCommit: true
         create:
             - DROP TABLE IF EXISTS THRPT_G8_employees;
-            - CREATE TABLE THRPT_G8_employees (emp_id INT, name VARCHAR(10), email VARCHAR(20), salary FLOAT, hire_date DATE, department VARCHAR(20), payload JSON, details TEXT, is_active BOOLEAN, last_login TIMESTAMP, primary key(emp_id asc)) SPLIT AT VALUES ((333333), (666666));
+            - CREATE TABLE THRPT_G8_employees (emp_id INT, name VARCHAR(10), email VARCHAR(20), salary FLOAT, hire_date DATE, department VARCHAR(20), payload JSON, details TEXT, is_active BOOLEAN, last_login TIMESTAMP, PRIMARY KEY(emp_id ASC)) SPLIT AT VALUES ((3333333), (6666666));
         cleanup:
             - DROP TABLE IF EXISTS THRPT_G8_employees;
 
         loadRules:
             - table: THRPT_G8_employees
-              rows: 1000000
+              rows: 10000000
               columns:
                   - name: emp_id
                     util: RandomUniqueIntGen
-                    params: [1, 1000000]
+                    params: [1, 10000000]
                   - name: name
                     util: RandomAString
                     params: [10, 10]

@@ -27,11 +27,11 @@ microbenchmark:
 
         loadRules:
             - table: THRPT_G8_employees
-              rows: 1000000
+              rows: 10000000
               columns:
                   - name: emp_id
                     util: RandomUniqueIntGen
-                    params: [1, 1000000]
+                    params: [1, 10000000]
                   - name: name
                     util: RandomAString
                     params: [10, 10]

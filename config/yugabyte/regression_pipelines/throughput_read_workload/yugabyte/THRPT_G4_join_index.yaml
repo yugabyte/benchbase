@@ -23,80 +23,69 @@ microbenchmark:
         create:
             - DROP TABLE IF EXISTS THRPT_G4_sales_orders;
             - DROP TABLE IF EXISTS REGION_1;
-            - CREATE TABLE THRPT_G4_sales_orders(id INT, region_id INT, category_id INT, subcategory_id INT, date_created DATE, status_code INT, priority_level INT, amount FLOAT, quantity DOUBLE PRECISION, payload JSON, details TEXT, PRIMARY KEY(id ASC)) SPLIT AT VALUES ((333333), (666666));
-            - CREATE INDEX idx_THRPT_G4_sales_orders_region_category_incl_asc on THRPT_G4_sales_orders (region_id ASC, category_id ASC, id ASC) INCLUDE (amount, quantity, status_code)  SPLIT AT VALUES ((333), (666));
-            - CREATE TABLE REGION_1 ( region_id INT, region_name TEXT, region_manager TEXT, is_active BOOLEAN, PRIMARY KEY(region_id ASC) ) SPLIT AT VALUES ((333), (666));
+            - CREATE TABLE THRPT_G4_sales_orders(id INT, region_id INT, category_id INT, subcategory_id INT, date_created DATE, status_code INT, priority_level INT, amount FLOAT, quantity DOUBLE PRECISION, payload JSON, details TEXT, PRIMARY KEY(id ASC)) SPLIT AT VALUES ((3333333), (6666666));
+            - CREATE INDEX idx_THRPT_G4_sales_orders_region_category_incl_asc on THRPT_G4_sales_orders (region_id ASC, category_id ASC, id ASC) INCLUDE (amount, quantity, status_code) SPLIT AT VALUES ((3333), (6666));
+            - CREATE TABLE REGION_1 ( region_id INT, region_name TEXT, region_manager TEXT, is_active BOOLEAN, PRIMARY KEY(region_id ASC) ) SPLIT AT VALUES ((3333), (6666));
 
         cleanup:
             - DROP TABLE IF EXISTS THRPT_G4_sales_orders;
             - DROP TABLE IF EXISTS REGION_1;
 
         loadRules:
-            - table: REGION_1
-              rows: 1000
-              columns:
-                  - name: region_id
-                    util: RandomUniqueIntGen
-                    params: [1, 1000]
-                  - name: region_name
-                    util: PrimaryStringGen
-                    params: [1, 10]
-                  - name: region_manager
-                    util: OneStringFromArray
-                    params:
-                        [
-                            "id-1000001",
-                            "id-1000002",
-                            "id-1000003",
-                            "id-1000004",
-                            "id-1000005",
-                            "id-1000006",
-                            "id-1000007",
-                            "id-1000008",
-                            "id-1000009",
-                            "id-1000010",
-                        ]
-                  - name: is_active
-                    util: RandomBoolean
+              - table: REGION_1
+                rows: 10000
+                columns:
+                    - name: region_id
+                      util: RandomUniqueIntGen
+                      params: [ 1, 10000 ]
+                    - name: region_name
+                      util: PrimaryStringGen
+                      params: [ 1, 100 ]
+                    - name: region_manager
+                      util: OneStringFromArray
+                      params: [ "id-1000001","id-1000002","id-1000003","id-1000004","id-1000005","id-1000006","id-1000007","id-1000008","id-1000009","id-1000010"]
+                    - name: is_active
+                      util: RandomBoolean
 
-            - table: THRPT_G4_sales_orders
-              rows: 1000000
-              columns:
-                  - name: id
-                    util: RandomUniqueIntGen
-                    params: [ 1, 1000000 ]
-                  - name: region_id
-                    util: RandomNumber
-                    params: [ 1, 1000 ]
-                  - name: category_id
-                    util: RandomNumber
-                    params: [ 1, 50 ]
-                  - name: subcategory_id
-                    util: RandomNumber
-                    params: [ 1, 500 ]
-                  - name: date_created
-                    util: RandomDateBtwYears
-                    params: [2000, 2025]
-                  - name: status_code
-                    util: RandomNumber
-                    params: [ 1, 5 ]
-                  - name: priority_level
-                    util: RandomNumber
-                    params: [ 1, 10 ]
-                  - name: amount
-                    util: RandomFloat
-                    params: [ 1, 100000, 2 ]
-                  - name: quantity
-                    util: RandomNoWithDecimalPoints
-                    params: [ 1, 100000, 2 ]
-                  - name: payload
-                    util: RandomJson
-                    params: [ 8, 64 ]
-                  - name: details
-                    util: RandomAString
-                    params: [ 512, 512 ]
+              - table: THRPT_G4_sales_orders
+                rows: 10000000
+                columns:
+                    - name: id
+                      util: RandomUniqueIntGen
+                      params: [ 1, 10000000 ]
+                    - name: region_id
+                      util: RandomNumber
+                      params: [ 1, 10000 ]
+                    - name: category_id
+                      util: RandomNumber
+                      params: [ 1, 500 ]
+                    - name: subcategory_id
+                      util: RandomNumber
+                      params: [ 1, 5000 ]
+                    - name: date_created
+                      util: RandomDateBtwYears
+                      params: [2000, 2025]
+                    - name: status_code
+                      util: RandomNumber
+                      params: [ 1, 5 ]
+                    - name: priority_level
+                      util: RandomNumber
+                      params: [ 1, 10 ]
+                    - name: amount
+                      util: RandomFloat
+                      params: [ 1, 1000000, 2 ]
+                    - name: quantity
+                      util: RandomNoWithDecimalPoints
+                      params: [ 1, 1000000, 2 ]
+                    - name: payload
+                      util: RandomJson
+                      params: [ 8, 64 ]
+                    - name: details
+                      util: RandomAString
+                      params: [ 512, 512 ]
 
         executeRules:
+
             - workload: THRPT_G4_join_index
               run:
                   - name: THRPT_G4_join_index

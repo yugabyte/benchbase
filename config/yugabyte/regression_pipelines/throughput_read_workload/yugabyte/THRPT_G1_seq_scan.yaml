@@ -22,48 +22,48 @@ microbenchmark:
         setAutoCommit: true
         create:
             - DROP TABLE IF EXISTS THRPT_G1_sales_orders;
-            - CREATE TABLE THRPT_G1_sales_orders(id INT, region_id INT, category_id INT, subcategory_id INT, date_created DATE, status_code INT, priority_level INT, amount FLOAT, quantity DOUBLE PRECISION, payload JSON, details TEXT, PRIMARY KEY(id ASC)) SPLIT AT VALUES ((333333), (666666));
+            - CREATE TABLE THRPT_G1_sales_orders(id INT, region_id INT, category_id INT, subcategory_id INT, date_created DATE, status_code INT, priority_level INT, amount FLOAT, quantity DOUBLE PRECISION, payload JSON, details TEXT, PRIMARY KEY(id ASC)) SPLIT AT VALUES ((3333333), (6666666));
 
         cleanup:
             - DROP TABLE IF EXISTS THRPT_G1_sales_orders;
 
         loadRules:
-            - table: THRPT_G1_sales_orders
-              rows: 1000000
-              columns:
-                  - name: id
-                    util: RandomUniqueIntGen
-                    params: [ 1, 1000000 ]
-                  - name: region_id
-                    util: RandomNumber
-                    params: [ 1, 100 ]
-                  - name: category_id
-                    util: RandomNumber
-                    params: [ 1, 50 ]
-                  - name: subcategory_id
-                    util: RandomNumber
-                    params: [ 1, 500 ]
-                  - name: date_created
-                    util: RandomDateBtwYears
-                    params: [2000, 2025]
-                  - name: status_code
-                    util: RandomNumber
-                    params: [ 1, 5 ]
-                  - name: priority_level
-                    util: RandomNumber
-                    params: [ 1, 10 ]
-                  - name: amount
-                    util: CyclicSeqIntGen
-                    params: [ 1, 100000 ]
-                  - name: quantity
-                    util: RandomNoWithDecimalPoints
-                    params: [ 1, 100000, 2 ]
-                  - name: payload
-                    util: RandomJson
-                    params: [ 8, 64 ]
-                  - name: details
-                    util: RandomAString
-                    params: [ 512, 512 ]
+              - table: THRPT_G1_sales_orders
+                rows: 10000000
+                columns:
+                    - name: id
+                      util: RandomUniqueIntGen
+                      params: [ 1, 10000000 ]
+                    - name: region_id
+                      util: RandomNumber
+                      params: [ 1, 1000 ]
+                    - name: category_id
+                      util: RandomNumber
+                      params: [ 1, 500 ]
+                    - name: subcategory_id
+                      util: RandomNumber
+                      params: [ 1, 5000 ]
+                    - name: date_created
+                      util: RandomDateBtwYears
+                      params: [2000, 2025]
+                    - name: status_code
+                      util: RandomNumber
+                      params: [ 1, 5 ]
+                    - name: priority_level
+                      util: RandomNumber
+                      params: [ 1, 10 ]
+                    - name: amount
+                      util: CyclicSeqIntGen
+                      params: [ 1, 1000000 ]
+                    - name: quantity
+                      util: RandomNoWithDecimalPoints
+                      params: [ 1, 1000000, 2 ]
+                    - name: payload
+                      util: RandomJson
+                      params: [ 8, 64 ]
+                    - name: details
+                      util: RandomAString
+                      params: [ 512, 512 ]
 
         executeRules:
             - workload: THRPT_G1_seq_scan_BETWEEN
@@ -74,7 +74,9 @@ microbenchmark:
                         - query: select * from THRPT_G1_sales_orders where amount BETWEEN ? AND ?
                           bindings:
                               - util: RandomNumber
-                                params: [1, 99950]
+                                params:
+                                    - 1
+                                    - 999950
                                 referenceName: amount1
                               - util: ExpressionEval
                                 params:

@@ -39,14 +39,14 @@ microbenchmark:
 
         loadRules:
               - table: REGION_1
-                rows: 1000
+                rows: 10000
                 columns:
                     - name: region_id
                       util: RandomUniqueIntGen
-                      params: [ 1, 1000 ]
+                      params: [ 1, 10000 ]
                     - name: region_name
                       util: PrimaryStringGen
-                      params: [ 1, 10 ]
+                      params: [ 1, 100 ]
                     - name: region_manager
                       util: OneStringFromArray
                       params: [ "id-1000001","id-1000002","id-1000003","id-1000004","id-1000005","id-1000006","id-1000007","id-1000008","id-1000009","id-1000010"]
@@ -54,20 +54,20 @@ microbenchmark:
                       util: RandomBoolean
 
               - table: THRPT_G4_sales_orders
-                rows: 1000000
+                rows: 10000000
                 columns:
                     - name: id
                       util: RandomUniqueIntGen
-                      params: [ 1, 1000000 ]
+                      params: [ 1, 10000000 ]
                     - name: region_id
                       util: RandomNumber
-                      params: [ 1, 1000 ]
+                      params: [ 1, 10000 ]
                     - name: category_id
                       util: RandomNumber
-                      params: [ 1, 50 ]
+                      params: [ 1, 500 ]
                     - name: subcategory_id
                       util: RandomNumber
-                      params: [ 1, 500 ]
+                      params: [ 1, 5000 ]
                     - name: date_created
                       util: RandomDateBtwYears
                       params: [2000, 2025]
@@ -79,10 +79,10 @@ microbenchmark:
                       params: [ 1, 10 ]
                     - name: amount
                       util: RandomFloat
-                      params: [ 1, 100000, 2 ]
+                      params: [ 1, 1000000, 2 ]
                     - name: quantity
                       util: RandomNoWithDecimalPoints
-                      params: [ 1, 100000, 2 ]
+                      params: [ 1, 1000000, 2 ]
                     - name: payload
                       util: RandomJson
                       params: [ 8, 64 ]

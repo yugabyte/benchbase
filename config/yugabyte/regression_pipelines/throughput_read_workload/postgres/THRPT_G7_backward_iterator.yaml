@@ -28,17 +28,17 @@ microbenchmark:
 
         loadRules:
             - table: THRPT_G7_user_activity
-              rows: 1000000
+              rows: 10000000
               columns:
                   - name: activity_id
                     util: RandomUniqueIntGen
-                    params: [1, 1000000]
+                    params: [1, 10000000]
                   - name: segment_id
                     util: CyclicSeqIntGen
-                    params: [1, 10000]
+                    params: [1, 100000]
                   - name: user_id
                     util: CyclicSeqIntGen
-                    params: [1, 100000]
+                    params: [1, 1000000]
                   - name: action_type
                     util: RandomAString
                     params: [10, 10]
@@ -58,4 +58,4 @@ microbenchmark:
                         - query: SELECT activity_id, user_id, action_type, event_time FROM THRPT_G7_user_activity WHERE segment_id = ? ORDER BY event_time ASC limit 50;
                           bindings:
                               - util: RandomInt
-                                params: [1, 10000]
+                                params: [1, 100000]

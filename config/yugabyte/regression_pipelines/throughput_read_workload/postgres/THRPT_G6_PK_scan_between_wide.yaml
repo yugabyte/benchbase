@@ -28,11 +28,11 @@ microbenchmark:
 
         loadRules:
             - table: THRPT_G6_employees_wide
-              rows: 1000000
+              rows: 10000000
               columns:
                   - name: emp_id
                     util: RandomUniqueIntGen
-                    params: [1, 1000000]
+                    params: [1, 10000000]
                   - name: name
                     util: RandomAString
                     params: [10, 10]
@@ -89,8 +89,8 @@ microbenchmark:
                         - query: select * from THRPT_G6_employees_wide where emp_id BETWEEN ? AND ?
                           bindings:
                               - util: RandomNumber
-                                params: [1, 998000]
+                                params: [1, 9999000]
                                 referenceName: emp_id1
                               - util: ExpressionEval
                                 params:
-                                    - "emp_id1 + 1"
+                                    - "emp_id1 + 1000"

@@ -22,24 +22,24 @@ microbenchmark:
         setAutoCommit: true
         create:
             - DROP TABLE IF EXISTS THRPT_G7_user_activity;
-            - CREATE TABLE THRPT_G7_user_activity (activity_id BIGINT, segment_id INT, user_id INT, action_type TEXT, event_time TIMESTAMP, metadata TEXT, PRIMARY KEY(activity_id ASC)) SPLIT at values ((333333),(666666));
-            - CREATE INDEX idx_user_activity_feed ON THRPT_G7_user_activity(segment_id ASC, event_time DESC) INCLUDE (user_id, action_type) split at values ((3333),(6666));
+            - CREATE TABLE THRPT_G7_user_activity (activity_id BIGINT, segment_id INT, user_id INT, action_type TEXT, event_time TIMESTAMP, metadata TEXT, PRIMARY KEY(activity_id ASC)) SPLIT AT VALUES ((3333333), (6666666));
+            - CREATE INDEX idx_user_activity_feed ON THRPT_G7_user_activity(segment_id ASC, event_time DESC) INCLUDE (user_id, action_type) SPLIT AT VALUES ((33333), (66666));
         cleanup:
             - DROP TABLE IF EXISTS THRPT_G7_user_activity;
 
         loadRules:
             - table: THRPT_G7_user_activity
-              rows: 1000000
+              rows: 10000000
               columns:
                   - name: activity_id
                     util: RandomUniqueIntGen
-                    params: [1, 1000000]
+                    params: [1, 10000000]
                   - name: segment_id
                     util: CyclicSeqIntGen
-                    params: [1, 10000]
+                    params: [1, 100000]
                   - name: user_id
                     util: CyclicSeqIntGen
-                    params: [1, 100000]
+                    params: [1, 1000000]
                   - name: action_type
                     util: RandomAString
                     params: [10, 10]
@@ -59,4 +59,4 @@ microbenchmark:
                         - query: SELECT activity_id, user_id, action_type, event_time FROM THRPT_G7_user_activity WHERE segment_id = ? ORDER BY event_time ASC limit 50;
                           bindings:
                               - util: RandomInt
-                                params: [1, 10000]
+                                params: [1, 100000]

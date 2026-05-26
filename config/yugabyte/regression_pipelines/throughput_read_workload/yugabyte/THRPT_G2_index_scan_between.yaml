@@ -22,31 +22,31 @@ microbenchmark:
         setAutoCommit: true
         create:
             - DROP TABLE IF EXISTS THRPT_G2_payments;
-            - CREATE TABLE THRPT_G2_payments(payment_id INT, txn_id INT, user_id INT, merchant_id INT, amount FLOAT, status INT, created_at DATE, updated_at TIMESTAMP, payload JSON, details TEXT, PRIMARY KEY(payment_id ASC)) SPLIT AT VALUES ((333333), (666666));
-            - CREATE INDEX idx_payments_txn_covering ON THRPT_G2_payments (txn_id ASC) INCLUDE (amount, status, user_id) SPLIT AT VALUES ((333333), (666666));
+            - CREATE TABLE THRPT_G2_payments(payment_id INT, txn_id INT, user_id INT, merchant_id INT, amount FLOAT, status INT, created_at DATE, updated_at TIMESTAMP, payload JSON, details TEXT, PRIMARY KEY(payment_id ASC)) SPLIT AT VALUES ((3333333), (6666666));
+            - CREATE INDEX idx_payments_txn_covering ON THRPT_G2_payments (txn_id ASC) INCLUDE (amount, status, user_id) SPLIT AT VALUES ((3333333), (6666666));
 
         cleanup:
             - DROP TABLE IF EXISTS THRPT_G2_payments;
 
         loadRules:
             - table: THRPT_G2_payments
-              rows: 1000000
+              rows: 10000000
               columns:
                   - name: payment_id
                     util: RandomUniqueIntGen
-                    params: [1, 1000000]
+                    params: [1, 10000000]
                   - name: txn_id
                     util: PrimaryIntGen
-                    params: [1, 1000000]
+                    params: [1, 10000000]
                   - name: user_id
                     util: RandomNumber
-                    params: [1, 100000]
+                    params: [1, 1000000]
                   - name: merchant_id
                     util: RandomNumber
-                    params: [1, 10000]
+                    params: [1, 100000]
                   - name: amount
                     util: RandomFloat
-                    params: [1, 100000, 2]
+                    params: [1, 1000000, 2]
                   - name: status
                     util: RandomNumber
                     params: [1, 5]
@@ -72,7 +72,7 @@ microbenchmark:
                         - query: SELECT * FROM THRPT_G2_payments WHERE txn_id BETWEEN ? AND ?;
                           bindings:
                               -   util: RandomNumber
-                                  params: [1, 999900]
+                                  params: [1, 9999900]
                                   referenceName: txn_id_1
                               -   util: ExpressionEval
                                   params:
