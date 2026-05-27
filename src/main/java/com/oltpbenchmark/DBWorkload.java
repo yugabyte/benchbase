@@ -1781,6 +1781,7 @@ public class DBWorkload {
                     List<Double> rdsReadings = allNodeReadings.get(0);
                     for (int i = 0; i < 3; i++) {
                         logLine.append(",").append(rdsReadings.get(i));
+                        Thread.sleep(interval_gap * 1000);
                     }
                     logLine.append(",").append(avgMaxCPU).append(",").append(avgMaxCPU).append("\n");
 
@@ -1891,12 +1892,19 @@ public class DBWorkload {
         } catch (Exception e) {
             LOG.error("Error writing optimal threads JSON log", e);
         }
-        // Store last CPU reading into metadata for the output JSON
+        // Store the CPU reading for the selected optimal thread count into metadata.
         if (!jsonResults.isEmpty()) {
             try {
-                Map<String, Object> lastEntry = jsonResults.get(jsonResults.size() - 1);
+                Map<String, Object> selectedEntry = jsonResults.get(jsonResults.size() - 1);
+                for (Map<String, Object> entry : jsonResults) {
+                    Object entryThreads = entry.get("threads");
+                    if (entryThreads instanceof Number && ((Number) entryThreads).intValue() == optimalThreads) {
+                        selectedEntry = entry;
+                        break;
+                    }
+                }
                 JSONObject metaDataJson = Worker.featurebenchAdditionalResults.getMetaDataJson();
-                Object readings = lastEntry.get("readings");
+                Object readings = selectedEntry.get("readings");
                 List<Double> cpuReading;
                 if (readings instanceof List && !((List<?>) readings).isEmpty()
                         && ((List<?>) readings).get(0) instanceof List) {
@@ -1909,16 +1917,18 @@ public class DBWorkload {
                     cpuReading = flatReadings;
                 }
                 metaDataJson.put("cpu_utilization", cpuReading);
+                double metadataAvgCpu;
                 if(isYugabyteDatabase) {
-                    metaDataJson.put("avg_cpu", cpuReading.stream().mapToDouble(Double::doubleValue).average().orElse(0.0));
+                    metadataAvgCpu = cpuReading.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
                 }else{
-                    metaDataJson.put("avg_cpu", lastEntry.get("max_cpu"));
+                    metadataAvgCpu = ((Number) selectedEntry.get("max_cpu")).doubleValue();
                 }
+                metaDataJson.put("avg_cpu", metadataAvgCpu);
                 metaDataJson.put("optimal_threads", optimalThreads);
                 metaDataJson.put("flatCPU", flatCpuDetected);
                 Worker.featurebenchAdditionalResults.setMetaDataJson(metaDataJson);
                 LOG.info("Stored CPU utilization in metadata: avg_cpu={}, optimal_threads={}, flatCPU={}",
-                    cpuReading.stream().mapToDouble(Double::doubleValue).average().orElse(0.0), optimalThreads, flatCpuDetected);
+                    metadataAvgCpu, optimalThreads, flatCpuDetected);
             } catch (Exception e) {
                 LOG.error("Error storing CPU utilization in metadata", e);
             }
