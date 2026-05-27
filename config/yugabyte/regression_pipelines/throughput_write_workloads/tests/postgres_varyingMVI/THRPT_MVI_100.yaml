@@ -3,7 +3,7 @@ driver: org.postgresql.Driver
 url: jdbc:postgresql://{{endpoint}}:5432/postgres?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
 username: {{username}}
 password: {{password}}
-batchsize: 128
+batchsize: 1
 isolation: TRANSACTION_REPEATABLE_READ
 loaderThreads: 4
 terminals: 1
@@ -18,12 +18,14 @@ works:
 microbenchmark:
     class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
     properties:
-        setAutoCommit: false
+        setAutoCommit: true
         create:
             - DROP TABLE IF EXISTS THRPT_MVI_100;
+            - ALTER DATABASE postgres SET synchronous_commit=off;
             - CREATE TABLE THRPT_MVI_100 (dept_id INT, emp_id INT, name VARCHAR(10), email VARCHAR(20), salary FLOAT, hire_date DATE, department VARCHAR(20), payload JSON, details TEXT, is_active BOOLEAN, last_login TIMESTAMP, primary key(dept_id, emp_id));
         cleanup:
             - DROP TABLE IF EXISTS THRPT_MVI_100;
+            - ALTER DATABASE postgres SET synchronous_commit=on;
 
         loadRules:
             - table: THRPT_MVI_100
