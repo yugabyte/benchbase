@@ -29,16 +29,16 @@ microbenchmark:
     properties:
         setAutoCommit: true
         create:
-            - DROP TABLE IF EXISTS Indexed1M_1;
-            - CREATE TABLE Indexed1M_1(col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_1 bigint, col_bigint_2 bigint, col_bigint_3 bigint, col_bigint_4 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1 ASC));
-            - CREATE INDEX ON Indexed1M_1(col_bigint_id_2 ASC);
-            - CREATE INDEX ON Indexed1M_1(col_varchar10_id_1 ASC);
-            - CREATE INDEX ON Indexed1M_1(col_varchar500_id_1 ASC);
-            - CREATE INDEX ON Indexed1M_1(col_float5_1 ASC);
+            - DROP TABLE IF EXISTS aggrg3_Indexed1M_1;
+            - CREATE TABLE aggrg3_Indexed1M_1(col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_1 bigint, col_bigint_2 bigint, col_bigint_3 bigint, col_bigint_4 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1 ASC));
+            - CREATE INDEX ON aggrg3_Indexed1M_1(col_bigint_id_2 ASC);
+            - CREATE INDEX ON aggrg3_Indexed1M_1(col_varchar10_id_1 ASC);
+            - CREATE INDEX ON aggrg3_Indexed1M_1(col_varchar500_id_1 ASC);
+            - CREATE INDEX ON aggrg3_Indexed1M_1(col_float5_1 ASC);
         cleanup:
-            - DROP TABLE IF EXISTS Indexed1M_1;
+            - DROP TABLE IF EXISTS aggrg3_Indexed1M_1;
         loadRules:
-              - table: Indexed1M_
+              - table: aggrg3_Indexed1M_
                 count: 1
                 rows: 1000000
                 columns:
@@ -80,32 +80,32 @@ microbenchmark:
                   - name: yb_count_bigint_on_all_tupples_columns
                     weight: 100
                     queries:
-                        - query: select count(*) from Indexed1M_1
+                        - query: select count(*) from aggrg3_Indexed1M_1
             - workload: AGGRG3_count_bigint_on_indexed
               customTags: schematype=regular,partition=range,pkey=asc,columndatatype=bigint,aggregate=count,cardinality=single,projection=aggregate,aggregateon=rangeskey
               run:
                   - name: yb_count_on_indexed_bigint
                     weight: 100
                     queries:
-                        - query: select count(col_bigint_id_2) from Indexed1M_1
+                        - query: select count(col_bigint_id_2) from aggrg3_Indexed1M_1
             - workload: AGGRG3_count_on_indexed_float
               customTags: customer=1,schematype=regular,partition=range,pkey=asc,columndatatype=float,aggregate=count,cardinality=single,projection=aggregate,aggregateon=rangeskey
               run:
                   - name: yb_count_on_indexed_varchar10
                     weight: 100
                     queries:
-                        - query: select count(col_float5_1) from Indexed1M_1
+                        - query: select count(col_float5_1) from aggrg3_Indexed1M_1
             - workload: AGGRG3_count_on_indexed_varchar10
               customTags: customer=1,schematype=regular,partition=range,pkey=asc,columndatatype=varchar,aggregate=count,cardinality=single,projection=aggregate,aggregateon=rangeskey
               run:
                   - name: yb_count_on_indexed_varchar10
                     weight: 100
                     queries:
-                        - query: select count(col_varchar10_id_1) from Indexed1M_1
+                        - query: select count(col_varchar10_id_1) from aggrg3_Indexed1M_1
             - workload: AGGRG3_count_on_indexed_varchar500
               customTags: schematype=regular,partition=range,pkey=asc,columndatatype=varchar,aggregate=count,cardinality=single,projection=aggregate,aggregateon=rangeskey
               run:
                   - name: yb_count_on_indexed_varchar500
                     weight: 100
                     queries:
-                        - query: select count(col_varchar500_id_1) from Indexed1M_1
+                        - query: select count(col_varchar500_id_1) from aggrg3_Indexed1M_1

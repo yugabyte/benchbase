@@ -20,22 +20,22 @@ microbenchmark:
     properties:
         setAutoCommit: true
         create:
-          - DROP TABLE IF EXISTS pkeyBigint1M_1;
-          - DROP TABLE IF EXISTS pkeyBigint1M_2;
-          - DROP TABLE IF EXISTS pkeyBigint1M_3;
-          - CREATE TABLE pkeyBigint1M_1(col_bigint_card1_1 bigint, col_bigint_card2_1 bigint, col_bigint_card3_1 bigint, col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1, col_bigint_id_2, col_bigint_id_3, col_bigint_card1_1));
-          - CREATE TABLE pkeyBigint1M_2(col_bigint_card1_1 bigint, col_bigint_card2_1 bigint, col_bigint_card3_1 bigint, col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1, col_bigint_id_2, col_bigint_id_3, col_bigint_card1_1));
-          - CREATE TABLE pkeyBigint1M_3(col_bigint_card1_1 bigint, col_bigint_card2_1 bigint, col_bigint_card3_1 bigint, col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1, col_bigint_id_2, col_bigint_id_3, col_bigint_card1_1));
-          - CREATE INDEX ON pkeyBigint1M_1(col_bigint_card2_1);
-          - CREATE INDEX ON pkeyBigint1M_2(col_bigint_card2_1);
-          - CREATE INDEX ON pkeyBigint1M_3(col_bigint_card2_1);
+          - DROP TABLE IF EXISTS joing9_pkeyBigint1M_1;
+          - DROP TABLE IF EXISTS joing9_pkeyBigint1M_2;
+          - DROP TABLE IF EXISTS joing9_pkeyBigint1M_3;
+          - CREATE TABLE joing9_pkeyBigint1M_1(col_bigint_card1_1 bigint, col_bigint_card2_1 bigint, col_bigint_card3_1 bigint, col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1, col_bigint_id_2, col_bigint_id_3, col_bigint_card1_1));
+          - CREATE TABLE joing9_pkeyBigint1M_2(col_bigint_card1_1 bigint, col_bigint_card2_1 bigint, col_bigint_card3_1 bigint, col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1, col_bigint_id_2, col_bigint_id_3, col_bigint_card1_1));
+          - CREATE TABLE joing9_pkeyBigint1M_3(col_bigint_card1_1 bigint, col_bigint_card2_1 bigint, col_bigint_card3_1 bigint, col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1, col_bigint_id_2, col_bigint_id_3, col_bigint_card1_1));
+          - CREATE INDEX ON joing9_pkeyBigint1M_1(col_bigint_card2_1);
+          - CREATE INDEX ON joing9_pkeyBigint1M_2(col_bigint_card2_1);
+          - CREATE INDEX ON joing9_pkeyBigint1M_3(col_bigint_card2_1);
 
         cleanup:
-            - DROP TABLE IF EXISTS pkeyBigint1M_1;
-            - DROP TABLE IF EXISTS pkeyBigint1M_2;
-            - DROP TABLE IF EXISTS pkeyBigint1M_3;
+            - DROP TABLE IF EXISTS joing9_pkeyBigint1M_1;
+            - DROP TABLE IF EXISTS joing9_pkeyBigint1M_2;
+            - DROP TABLE IF EXISTS joing9_pkeyBigint1M_3;
         loadRules:
-              - table: pkeyBigint1M_
+              - table: joing9_pkeyBigint1M_
                 count: 3
                 rows: 1000000
                 columns:
@@ -86,7 +86,7 @@ microbenchmark:
                   - name: join_on_pk_3tbl
                     weight: 100
                     queries:
-                        - query: select pkeyBigint1M_1.col_bigint_id_1, pkeyBigint1M_2.col_bigint_id_1, pkeyBigint1M_3.col_bigint_id_1 from pkeyBigint1M_1,pkeyBigint1M_2,pkeyBigint1M_3 where pkeyBigint1M_1.col_bigint_card1_1 in (1000500) and pkeyBigint1M_1.col_bigint_id_1=pkeyBigint1M_2.col_bigint_id_1 and pkeyBigint1M_1.col_bigint_id_1=pkeyBigint1M_3.col_bigint_id_1
+                        - query: select joing9_pkeyBigint1M_1.col_bigint_id_1, joing9_pkeyBigint1M_2.col_bigint_id_1, joing9_pkeyBigint1M_3.col_bigint_id_1 from joing9_pkeyBigint1M_1,joing9_pkeyBigint1M_2,joing9_pkeyBigint1M_3 where joing9_pkeyBigint1M_1.col_bigint_card1_1 in (1000500) and joing9_pkeyBigint1M_1.col_bigint_id_1=joing9_pkeyBigint1M_2.col_bigint_id_1 and joing9_pkeyBigint1M_1.col_bigint_id_1=joing9_pkeyBigint1M_3.col_bigint_id_1
 
             - workload: JOING9_2_join_on_3tbls_withfilter_onskey
               customTags: schematype=regular,partition=hash,pkey=composite,cardinality=multiple,projection=indexed,filtercount=one,filteron=hashskey,filtertype=IN,queryshape=join,joinon=hashpkey,jointables=three,joinconditions=two
@@ -94,7 +94,7 @@ microbenchmark:
                   - name: join_on_pk_3tbl
                     weight: 100
                     queries:
-                        - query: select pkeyBigint1M_1.col_bigint_id_1, pkeyBigint1M_2.col_bigint_id_1, pkeyBigint1M_3.col_bigint_id_1 from pkeyBigint1M_1,pkeyBigint1M_2,pkeyBigint1M_3 where pkeyBigint1M_1.col_bigint_card2_1 in (1000500) and pkeyBigint1M_1.col_bigint_id_1=pkeyBigint1M_2.col_bigint_id_1 and pkeyBigint1M_1.col_bigint_id_1=pkeyBigint1M_3.col_bigint_id_1
+                        - query: select joing9_pkeyBigint1M_1.col_bigint_id_1, joing9_pkeyBigint1M_2.col_bigint_id_1, joing9_pkeyBigint1M_3.col_bigint_id_1 from joing9_pkeyBigint1M_1,joing9_pkeyBigint1M_2,joing9_pkeyBigint1M_3 where joing9_pkeyBigint1M_1.col_bigint_card2_1 in (1000500) and joing9_pkeyBigint1M_1.col_bigint_id_1=joing9_pkeyBigint1M_2.col_bigint_id_1 and joing9_pkeyBigint1M_1.col_bigint_id_1=joing9_pkeyBigint1M_3.col_bigint_id_1
 
             - workload: JOING9_3_join_on_3tbls_withfilter_onpkey_subquery
               customTags: schematype=regular,partition=hash,pkey=composite,cardinality=multiple,projection=indexed,filtercount=one,filteron=rangepkey,filtertype=subquery,queryshape=join,joinon=hashpkey,jointables=three,joinconditions=two
@@ -102,7 +102,7 @@ microbenchmark:
                   - name: join_on_pk_3tbl
                     weight: 100
                     queries:
-                        - query: select pkeyBigint1M_1.col_bigint_id_1, pkeyBigint1M_2.col_bigint_id_1, pkeyBigint1M_3.col_bigint_id_1 from pkeyBigint1M_1,pkeyBigint1M_2,pkeyBigint1M_3 where pkeyBigint1M_2.col_bigint_card1_1 IN (select distinct(col_bigint_card1_1) from pkeyBigint1M_1 where col_bigint_card1_1 in (1000500)) and pkeyBigint1M_1.col_bigint_id_1=pkeyBigint1M_2.col_bigint_id_1 and pkeyBigint1M_1.col_bigint_id_1=pkeyBigint1M_3.col_bigint_id_1
+                        - query: select joing9_pkeyBigint1M_1.col_bigint_id_1, joing9_pkeyBigint1M_2.col_bigint_id_1, joing9_pkeyBigint1M_3.col_bigint_id_1 from joing9_pkeyBigint1M_1,joing9_pkeyBigint1M_2,joing9_pkeyBigint1M_3 where joing9_pkeyBigint1M_2.col_bigint_card1_1 IN (select distinct(col_bigint_card1_1) from joing9_pkeyBigint1M_1 where col_bigint_card1_1 in (1000500)) and joing9_pkeyBigint1M_1.col_bigint_id_1=joing9_pkeyBigint1M_2.col_bigint_id_1 and joing9_pkeyBigint1M_1.col_bigint_id_1=joing9_pkeyBigint1M_3.col_bigint_id_1
 
             - workload: JOING9_4_join_on_3tbls_withfilter_onskey_subquery
               customTags: schematype=regular,partition=hash,pkey=composite,cardinality=multiple,projection=indexed,filtercount=one,filteron=hashskey,filtertype=subquery,queryshape=join,joinon=hashpkey,jointables=three,joinconditions=two
@@ -110,7 +110,7 @@ microbenchmark:
                   - name: join_on_pk_3tbl
                     weight: 100
                     queries:
-                        - query: select pkeyBigint1M_1.col_bigint_id_1, pkeyBigint1M_2.col_bigint_id_1, pkeyBigint1M_3.col_bigint_id_1 from pkeyBigint1M_1,pkeyBigint1M_2,pkeyBigint1M_3 where pkeyBigint1M_2.col_bigint_card2_1 IN (select distinct(col_bigint_card2_1) from pkeyBigint1M_1 where col_bigint_card1_1 in (1000500)) and pkeyBigint1M_1.col_bigint_id_1=pkeyBigint1M_2.col_bigint_id_1 and pkeyBigint1M_1.col_bigint_id_1=pkeyBigint1M_3.col_bigint_id_1
+                        - query: select joing9_pkeyBigint1M_1.col_bigint_id_1, joing9_pkeyBigint1M_2.col_bigint_id_1, joing9_pkeyBigint1M_3.col_bigint_id_1 from joing9_pkeyBigint1M_1,joing9_pkeyBigint1M_2,joing9_pkeyBigint1M_3 where joing9_pkeyBigint1M_2.col_bigint_card2_1 IN (select distinct(col_bigint_card2_1) from joing9_pkeyBigint1M_1 where col_bigint_card1_1 in (1000500)) and joing9_pkeyBigint1M_1.col_bigint_id_1=joing9_pkeyBigint1M_2.col_bigint_id_1 and joing9_pkeyBigint1M_1.col_bigint_id_1=joing9_pkeyBigint1M_3.col_bigint_id_1
 
             - workload: JOING9_5_cascade_join_3tbls_withfilter_onpkey
               customTags: schematype=regular,partition=hash,pkey=composite,cardinality=multiple,projection=indexed,filtercount=one,filteron=rangepkey,filtertype=IN,queryshape=join,joinon=hashpkey,jointables=three,joinconditions=two
@@ -118,7 +118,7 @@ microbenchmark:
                   - name: join_on_pk_3tbl
                     weight: 100
                     queries:
-                        - query: select pkeyBigint1M_1.col_bigint_id_1, pkeyBigint1M_2.col_bigint_id_1, pkeyBigint1M_3.col_bigint_id_1 from pkeyBigint1M_1 JOIN pkeyBigint1M_2 on pkeyBigint1M_1.col_bigint_id_1=pkeyBigint1M_2.col_bigint_id_1  JOIN pkeyBigint1M_3 on pkeyBigint1M_2.col_bigint_id_1=pkeyBigint1M_3.col_bigint_id_1 where pkeyBigint1M_1.col_bigint_card1_1 in (1000500)
+                        - query: select joing9_pkeyBigint1M_1.col_bigint_id_1, joing9_pkeyBigint1M_2.col_bigint_id_1, joing9_pkeyBigint1M_3.col_bigint_id_1 from joing9_pkeyBigint1M_1 JOIN joing9_pkeyBigint1M_2 on joing9_pkeyBigint1M_1.col_bigint_id_1=joing9_pkeyBigint1M_2.col_bigint_id_1  JOIN joing9_pkeyBigint1M_3 on joing9_pkeyBigint1M_2.col_bigint_id_1=joing9_pkeyBigint1M_3.col_bigint_id_1 where joing9_pkeyBigint1M_1.col_bigint_card1_1 in (1000500)
 
             -   workload: JOING9_6_join_on_pkey_2ndpart_3tbls_withfilter_onskey
                 customTags: schematype=regular,partition=hash,pkey=composite,cardinality=multiple,projection=indexed,filtercount=one,filteron=rangepkey,filtertype=IN,queryshape=join,joinon=mixedpkey,jointables=three,joinconditions=two
@@ -126,7 +126,7 @@ microbenchmark:
                     -   name: join_on_pk_3tbl
                         weight: 100
                         queries:
-                            -   query: select pkeyBigint1M_1.col_bigint_id_1, pkeyBigint1M_2.col_bigint_id_1, pkeyBigint1M_3.col_bigint_id_1 from pkeyBigint1M_1 JOIN pkeyBigint1M_2 on pkeyBigint1M_1.col_bigint_id_1=pkeyBigint1M_2.col_bigint_id_1  JOIN pkeyBigint1M_3 on pkeyBigint1M_2.col_bigint_card1_1=pkeyBigint1M_3.col_bigint_card1_1 where pkeyBigint1M_1.col_bigint_card1_1 in (1000500)
+                            -   query: select joing9_pkeyBigint1M_1.col_bigint_id_1, joing9_pkeyBigint1M_2.col_bigint_id_1, joing9_pkeyBigint1M_3.col_bigint_id_1 from joing9_pkeyBigint1M_1 JOIN joing9_pkeyBigint1M_2 on joing9_pkeyBigint1M_1.col_bigint_id_1=joing9_pkeyBigint1M_2.col_bigint_id_1  JOIN joing9_pkeyBigint1M_3 on joing9_pkeyBigint1M_2.col_bigint_card1_1=joing9_pkeyBigint1M_3.col_bigint_card1_1 where joing9_pkeyBigint1M_1.col_bigint_card1_1 in (1000500)
 
             -   workload: JOING9_7_join_cte_on_3tbls_withfilter_onpkey_subquery
                 customTags: schematype=regular,partition=hash,pkey=composite,cardinality=multiple,projection=indexed,filtercount=one,filteron=rangepkey,filtertype=subquery,queryshape=join,joinon=mixedpkey,jointables=three,joinconditions=two
@@ -134,4 +134,4 @@ microbenchmark:
                     -   name: join_on_pk_3tbl
                         weight: 100
                         queries:
-                            -   query: With v1 as (select pkeyBigint1M_1.col_bigint_id_1, pkeyBigint1M_2.col_bigint_id_2 from pkeyBigint1M_1,pkeyBigint1M_2 where pkeyBigint1M_2.col_bigint_card1_1 IN (select distinct(col_bigint_card1_1) from pkeyBigint1M_1 where col_bigint_card1_1 in (1000500)) and pkeyBigint1M_1.col_bigint_id_1=pkeyBigint1M_2.col_bigint_id_1), v2 as (select pkeyBigint1M_3.col_bigint_id_1, pkeyBigint1M_3.col_bigint_id_2 from pkeyBigint1M_1,pkeyBigint1M_3 where pkeyBigint1M_1.col_bigint_id_1=pkeyBigint1M_3.col_bigint_id_1) select v1.col_bigint_id_1, v1.col_bigint_id_2, v2.col_bigint_id_1, v2.col_bigint_id_2  from v1 join v2 on v1.col_bigint_id_1=v2.col_bigint_id_1
+                            -   query: With v1 as (select joing9_pkeyBigint1M_1.col_bigint_id_1, joing9_pkeyBigint1M_2.col_bigint_id_2 from joing9_pkeyBigint1M_1,joing9_pkeyBigint1M_2 where joing9_pkeyBigint1M_2.col_bigint_card1_1 IN (select distinct(col_bigint_card1_1) from joing9_pkeyBigint1M_1 where col_bigint_card1_1 in (1000500)) and joing9_pkeyBigint1M_1.col_bigint_id_1=joing9_pkeyBigint1M_2.col_bigint_id_1), v2 as (select joing9_pkeyBigint1M_3.col_bigint_id_1, joing9_pkeyBigint1M_3.col_bigint_id_2 from joing9_pkeyBigint1M_1,joing9_pkeyBigint1M_3 where joing9_pkeyBigint1M_1.col_bigint_id_1=joing9_pkeyBigint1M_3.col_bigint_id_1) select v1.col_bigint_id_1, v1.col_bigint_id_2, v2.col_bigint_id_1, v2.col_bigint_id_2  from v1 join v2 on v1.col_bigint_id_1=v2.col_bigint_id_1

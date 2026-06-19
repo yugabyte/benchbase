@@ -23,36 +23,36 @@ microbenchmark:
     properties:
         setAutoCommit: false
         create:
-            - DROP TABLE IF EXISTS employees_with_fk_on_pk;
-            - DROP TABLE IF EXISTS employees_with_fk_on_uniqueCol;
-            - DROP TABLE IF EXISTS employees_with_2_fk_1_parent;
-            - DROP TABLE IF EXISTS employees_without_fk;
+            - DROP TABLE IF EXISTS fk_g1_employees_with_fk_on_pk;
+            - DROP TABLE IF EXISTS fk_g1_employees_with_fk_on_uniqueCol;
+            - DROP TABLE IF EXISTS fk_g1_employees_with_2_fk_1_parent;
+            - DROP TABLE IF EXISTS fk_g1_employees_without_fk;
 
-            - DROP TABLE IF EXISTS projects_with_pk;
-            - DROP TABLE IF EXISTS projects_with_uniqueCol;
-            - DROP TABLE IF EXISTS projects_with_2_fk;
+            - DROP TABLE IF EXISTS fk_g1_projects_with_pk;
+            - DROP TABLE IF EXISTS fk_g1_projects_with_uniqueCol;
+            - DROP TABLE IF EXISTS fk_g1_projects_with_2_fk;
 
-            - create table projects_with_pk(id int primary key, name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2));
-            - create table projects_with_uniqueCol(id int primary key, uid int unique, name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2));
-            - create table projects_with_2_fk(id int primary key, uid int unique, name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2));
+            - create table fk_g1_projects_with_pk(id int primary key, name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2));
+            - create table fk_g1_projects_with_uniqueCol(id int primary key, uid int unique, name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2));
+            - create table fk_g1_projects_with_2_fk(id int primary key, uid int unique, name varchar(20) not null, start_date date not null, end_date date, budget decimal(10,2));
 
-            - create table employees_with_fk_on_pk(id int primary key,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(10,2), project_id int not null);
-            - create table employees_with_fk_on_uniqueCol(id int primary key,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(10,2), project_id int not null);
-            - create table employees_with_2_fk_1_parent(id int primary key,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(10,2), project_id1 int not null, project_id2 int not null);
-            - create table employees_without_fk(id int primary key,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(10,2), project_id int not null);
+            - create table fk_g1_employees_with_fk_on_pk(id int primary key,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(10,2), project_id int not null);
+            - create table fk_g1_employees_with_fk_on_uniqueCol(id int primary key,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(10,2), project_id int not null);
+            - create table fk_g1_employees_with_2_fk_1_parent(id int primary key,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(10,2), project_id1 int not null, project_id2 int not null);
+            - create table fk_g1_employees_without_fk(id int primary key,name varchar(20) not null, email varchar(100) not null, phone varchar(15), position varchar(10), salary decimal(10,2), project_id int not null);
 
         cleanup:
-            - DROP TABLE IF EXISTS employees_with_fk_on_pk;
-            - DROP TABLE IF EXISTS employees_with_fk_on_uniqueCol;
-            - DROP TABLE IF EXISTS employees_with_2_fk_1_parent;
-            - DROP TABLE IF EXISTS employees_without_fk;
+            - DROP TABLE IF EXISTS fk_g1_employees_with_fk_on_pk;
+            - DROP TABLE IF EXISTS fk_g1_employees_with_fk_on_uniqueCol;
+            - DROP TABLE IF EXISTS fk_g1_employees_with_2_fk_1_parent;
+            - DROP TABLE IF EXISTS fk_g1_employees_without_fk;
 
-            - DROP TABLE IF EXISTS projects_with_pk;
-            - DROP TABLE IF EXISTS projects_with_uniqueCol;
-            - DROP TABLE IF EXISTS projects_with_2_fk;
+            - DROP TABLE IF EXISTS fk_g1_projects_with_pk;
+            - DROP TABLE IF EXISTS fk_g1_projects_with_uniqueCol;
+            - DROP TABLE IF EXISTS fk_g1_projects_with_2_fk;
 
         loadRules:
-            - table: projects_with_pk
+            - table: fk_g1_projects_with_pk
               rows: 100000
               columns:
                   - name: id
@@ -71,29 +71,7 @@ microbenchmark:
                     util: RandomNoWithDecimalPoints
                     params: [1, 1000000, 2]
 
-            - table: projects_with_uniqueCol
-              rows: 100000
-              columns:
-                  - name: id
-                    util: PrimaryIntGen
-                    params: [1, 100000]
-                  - name: uid
-                    util: PrimaryIntGen
-                    params: [1, 100000]
-                  - name: name
-                    util: RandomAString
-                    params: [1, 20]
-                  - name: start_date
-                    util: RandomDateBtwYears
-                    params: [2000, 2025]
-                  - name: end_date
-                    util: RandomDateBtwYears
-                    params: [2000, 2025]
-                  - name: budget
-                    util: RandomNoWithDecimalPoints
-                    params: [1, 1000000, 2]
-
-            - table: projects_with_2_fk
+            - table: fk_g1_projects_with_uniqueCol
               rows: 100000
               columns:
                   - name: id
@@ -115,7 +93,29 @@ microbenchmark:
                     util: RandomNoWithDecimalPoints
                     params: [1, 1000000, 2]
 
-            - table: employees_without_fk
+            - table: fk_g1_projects_with_2_fk
+              rows: 100000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 100000]
+                  - name: uid
+                    util: PrimaryIntGen
+                    params: [1, 100000]
+                  - name: name
+                    util: RandomAString
+                    params: [1, 20]
+                  - name: start_date
+                    util: RandomDateBtwYears
+                    params: [2000, 2025]
+                  - name: end_date
+                    util: RandomDateBtwYears
+                    params: [2000, 2025]
+                  - name: budget
+                    util: RandomNoWithDecimalPoints
+                    params: [1, 1000000, 2]
+
+            - table: fk_g1_employees_without_fk
               rows: 1000000
               columns:
                   - name: id
@@ -140,7 +140,7 @@ microbenchmark:
                     util: RandomInt
                     params: [1,100000]
               
-            - table: employees_with_fk_on_pk
+            - table: fk_g1_employees_with_fk_on_pk
               rows: 1000000
               columns:
                   - name: id
@@ -165,7 +165,7 @@ microbenchmark:
                     util: RandomInt
                     params: [1,100000]
 
-            - table: employees_with_fk_on_uniqueCol
+            - table: fk_g1_employees_with_fk_on_uniqueCol
               rows: 1000000
               columns:
                   - name: id
@@ -190,7 +190,7 @@ microbenchmark:
                     util: RandomInt
                     params: [1,100000]
 
-            - table: employees_with_2_fk_1_parent
+            - table: fk_g1_employees_with_2_fk_1_parent
               rows: 1000000
               columns:
                   - name: id
@@ -219,10 +219,10 @@ microbenchmark:
                     params: [1,100000]
 
         afterLoad:
-            - ALTER TABLE employees_with_fk_on_pk add CONSTRAINT fk_project FOREIGN KEY (project_id) REFERENCES projects_with_pk(id);
-            - ALTER TABLE employees_with_fk_on_uniqueCol add CONSTRAINT fk_project FOREIGN KEY (project_id) REFERENCES projects_with_uniqueCol(uid);
-            - ALTER TABLE employees_with_2_fk_1_parent add CONSTRAINT fk_project1 FOREIGN KEY (project_id1) REFERENCES projects_with_2_fk(id);
-            - ALTER TABLE employees_with_2_fk_1_parent add CONSTRAINT fk_project2 FOREIGN KEY (project_id2) REFERENCES projects_with_2_fk(uid);
+            - ALTER TABLE fk_g1_employees_with_fk_on_pk add CONSTRAINT fk_project FOREIGN KEY (project_id) REFERENCES fk_g1_projects_with_pk(id);
+            - ALTER TABLE fk_g1_employees_with_fk_on_uniqueCol add CONSTRAINT fk_project FOREIGN KEY (project_id) REFERENCES fk_g1_projects_with_uniqueCol(uid);
+            - ALTER TABLE fk_g1_employees_with_2_fk_1_parent add CONSTRAINT fk_project1 FOREIGN KEY (project_id1) REFERENCES fk_g1_projects_with_2_fk(id);
+            - ALTER TABLE fk_g1_employees_with_2_fk_1_parent add CONSTRAINT fk_project2 FOREIGN KEY (project_id2) REFERENCES fk_g1_projects_with_2_fk(uid);
             
         executeRules:
 
@@ -231,7 +231,7 @@ microbenchmark:
                   - name: FK_G1_1_fk-on-pk_insert
                     weight: 100
                     queries:
-                        - query: insert into employees_with_fk_on_pk values(?,?,?,?,?,?,?);
+                        - query: insert into fk_g1_employees_with_fk_on_pk values(?,?,?,?,?,?,?);
                           bindings:
                               - util: PrimaryIntGen
                                 params: [1000001, 9000000]
@@ -253,7 +253,7 @@ microbenchmark:
                   - name: FK_G1_2_fk-on-pk_update
                     weight: 100
                     queries:
-                        - query: update employees_with_fk_on_pk set project_id=? where id=?;
+                        - query: update fk_g1_employees_with_fk_on_pk set project_id=? where id=?;
                           bindings:
                             - util: RandomInt
                               params: [1, 100000]
@@ -265,7 +265,7 @@ microbenchmark:
                   - name: FK_G1_3_fk-on-uniqueCol_insert
                     weight: 100
                     queries:
-                        - query: insert into employees_with_fk_on_uniqueCol values(?,?,?,?,?,?,?);
+                        - query: insert into fk_g1_employees_with_fk_on_uniqueCol values(?,?,?,?,?,?,?);
                           bindings:
                               - util: PrimaryIntGen
                                 params: [1000001, 9000000]
@@ -287,7 +287,7 @@ microbenchmark:
                   - name: FK_G1_4_fk-on-uniqueCol_update
                     weight: 100
                     queries:
-                        - query: update employees_with_fk_on_uniqueCol set project_id=? where id=?;
+                        - query: update fk_g1_employees_with_fk_on_uniqueCol set project_id=? where id=?;
                           bindings:
                             - util: RandomInt
                               params: [1, 100000]
@@ -299,7 +299,7 @@ microbenchmark:
                   - name: FK_G1_5_no-fk_insert
                     weight: 100
                     queries:
-                        - query: insert into employees_without_fk values(?,?,?,?,?,?,?);
+                        - query: insert into fk_g1_employees_without_fk values(?,?,?,?,?,?,?);
                           bindings:
                               - util: PrimaryIntGen
                                 params: [1000001, 9000000]
@@ -321,7 +321,7 @@ microbenchmark:
                   - name: FK_G1_6_no-fk_update
                     weight: 100
                     queries:
-                        - query: update employees_without_fk set project_id=? where id=?;
+                        - query: update fk_g1_employees_without_fk set project_id=? where id=?;
                           bindings:
                             - util: RandomInt
                               params: [1, 100000]
@@ -333,7 +333,7 @@ microbenchmark:
                   - name: FK_G1_7_2fk_insert
                     weight: 100
                     queries:
-                        - query: insert into employees_with_2_fk_1_parent values(?,?,?,?,?,?,?,?);
+                        - query: insert into fk_g1_employees_with_2_fk_1_parent values(?,?,?,?,?,?,?,?);
                           bindings:
                               - util: PrimaryIntGen
                                 params: [1000001, 9000000]
@@ -357,7 +357,7 @@ microbenchmark:
                   - name: FK_G1_8_2fk_update
                     weight: 100
                     queries:
-                        - query: update employees_with_2_fk_1_parent set project_id1=?, project_id2=? where id=?;
+                        - query: update fk_g1_employees_with_2_fk_1_parent set project_id1=?, project_id2=? where id=?;
                           bindings:
                             - util: RandomInt
                               params: [1, 100000]

@@ -26,15 +26,15 @@ microbenchmark:
     properties:
         setAutoCommit: true
         create:
-            - DROP TABLE IF EXISTS Indexed1M_1;
-            - CREATE TABLE Indexed1M_1(col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_bigint_1 bigint, col_bigint_2 bigint, col_bigint_3 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1));
-            - CREATE INDEX ON Indexed1M_1(col_bigint_id_2);
+            - DROP TABLE IF EXISTS aggrg7_Indexed1M_1;
+            - CREATE TABLE aggrg7_Indexed1M_1(col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_bigint_1 bigint, col_bigint_2 bigint, col_bigint_3 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1));
+            - CREATE INDEX ON aggrg7_Indexed1M_1(col_bigint_id_2);
 
         cleanup:
-            - DROP TABLE IF EXISTS Indexed1M_1;
+            - DROP TABLE IF EXISTS aggrg7_Indexed1M_1;
 
         loadRules:
-              - table: Indexed1M_
+              - table: aggrg7_Indexed1M_
                 count: 1
                 rows: 1000000
                 columns:
@@ -77,18 +77,18 @@ microbenchmark:
                   - name: yb_count_bigint_non_indexed_column_with_filter_condition
                     weight: 100
                     queries:
-                        - query: select count(col_bigint_id_3) from Indexed1M_1 where col_bigint_id_3>1
+                        - query: select count(col_bigint_id_3) from aggrg7_Indexed1M_1 where col_bigint_id_3>1
             - workload: AGGRG7_count_bigint_pkey_column_with_filter_condition
               customTags: customer=2
               run:
                   - name: yb_count_bigint_non_indexed_column_with_filter_condition
                     weight: 100
                     queries:
-                        - query: select count(col_bigint_id_1) from Indexed1M_1 where col_bigint_id_1>1
+                        - query: select count(col_bigint_id_1) from aggrg7_Indexed1M_1 where col_bigint_id_1>1
             - workload: AGGRG7_count_bigint_secondary_indexed_column_with_filter_condition
               customTags: customer=2
               run:
                   - name: yb_count_bigint_non_indexed_column_with_filter_condition
                     weight: 100
                     queries:
-                        - query: select count(col_bigint_id_2) from Indexed1M_1 where col_bigint_id_2>1
+                        - query: select count(col_bigint_id_2) from aggrg7_Indexed1M_1 where col_bigint_id_2>1

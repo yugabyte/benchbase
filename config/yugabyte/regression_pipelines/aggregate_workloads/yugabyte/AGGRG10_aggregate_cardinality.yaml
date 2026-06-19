@@ -21,13 +21,13 @@ microbenchmark:
     properties:
         setAutoCommit: true
         create:
-          - DROP TABLE IF EXISTS pkeyBigint1M_1;
-          - CREATE TABLE pkeyBigint1M_1(col_bigint_card1_1 bigint, col_bigint_card2_1 bigint, col_bigint_card3_1 bigint, col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_card1_1, col_bigint_card2_1, col_bigint_card3_1, col_bigint_id_1));
+          - DROP TABLE IF EXISTS aggrg10_pkeyBigint1M_1;
+          - CREATE TABLE aggrg10_pkeyBigint1M_1(col_bigint_card1_1 bigint, col_bigint_card2_1 bigint, col_bigint_card3_1 bigint, col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_card1_1, col_bigint_card2_1, col_bigint_card3_1, col_bigint_id_1));
         cleanup:
-            - DROP TABLE IF EXISTS pkeyBigint1M_1;
+            - DROP TABLE IF EXISTS aggrg10_pkeyBigint1M_1;
 
         loadRules:
-              - table: pkeyBigint1M_
+              - table: aggrg10_pkeyBigint1M_
                 count: 1
                 rows: 1000000
                 columns:
@@ -78,7 +78,7 @@ microbenchmark:
                   - name: count_bigint_non_indexed_column
                     weight: 100
                     queries:
-                        - query: select count(col_bigint_card2_1) from pkeyBigint1M_1 where col_bigint_card2_1 = 1000014
+                        - query: select count(col_bigint_card2_1) from aggrg10_pkeyBigint1M_1 where col_bigint_card2_1 = 1000014
 
             - workload: AGGRG10_2_count_point_select_multiple_values_IN
               customTags: schematype=regular,pkey=composite,partition=hash,aggregate=count,cardinality=multiple,projection=aggregate,aggregateon=rangepkey,queryshape=aggregate,filteron=rangepkey,filtertype=IN
@@ -86,7 +86,7 @@ microbenchmark:
                   - name: count_bigint_non_indexed_column
                     weight: 100
                     queries:
-                        - query: select count(col_bigint_card2_1) from pkeyBigint1M_1 where col_bigint_card2_1 in (1000014,1000018)
+                        - query: select count(col_bigint_card2_1) from aggrg10_pkeyBigint1M_1 where col_bigint_card2_1 in (1000014,1000018)
 
             - workload: AGGRG10_3_count_point_select_multiple_values_IN_groupby
               customTags: schematype=regular,pkey=composite,partition=hash,aggregate=count,cardinality=multiple,projection=aggregate,aggregateon=rangepkey,queryshape=aggregate,filteron=rangepkey,filtertype=IN,groupby=rangepkey
@@ -94,7 +94,7 @@ microbenchmark:
                   - name: count_bigint_non_indexed_column
                     weight: 100
                     queries:
-                        - query: select count(col_bigint_card2_1) from pkeyBigint1M_1 where col_bigint_card2_1 in (1000014,1000018) group by col_bigint_card2_1
+                        - query: select count(col_bigint_card2_1) from aggrg10_pkeyBigint1M_1 where col_bigint_card2_1 in (1000014,1000018) group by col_bigint_card2_1
 
             - workload: AGGRG10_4_count_indexed_col_multiple_values_groupby
               customTags: schematype=regular,pkey=composite,partition=hash,aggregate=count,cardinality=multiple,projection=aggregate,aggregateon=rangepkey,queryshape=aggregate,groupby=rangepkey
@@ -102,7 +102,7 @@ microbenchmark:
                   - name: count_bigint_non_indexed_column
                     weight: 100
                     queries:
-                        - query: select col_bigint_card2_1,count(col_bigint_card2_1) from pkeyBigint1M_1 group by col_bigint_card2_1
+                        - query: select col_bigint_card2_1,count(col_bigint_card2_1) from aggrg10_pkeyBigint1M_1 group by col_bigint_card2_1
 
             - workload: AGGRG10_5_count_indexed_col_multiple_values_groupby_orderby
               customTags: schematype=regular,pkey=composite,partition=hash,aggregate=count,cardinality=multiple,projection=aggregate,aggregateon=rangepkey,queryshape=aggregate,groupby=rangepkey,orderbyon=rangepkey
@@ -110,7 +110,7 @@ microbenchmark:
                   - name: count_bigint_non_indexed_column
                     weight: 100
                     queries:
-                        - query: select col_bigint_card2_1,count(col_bigint_card2_1) from pkeyBigint1M_1 group by col_bigint_card2_1 order by col_bigint_card2_1
+                        - query: select col_bigint_card2_1,count(col_bigint_card2_1) from aggrg10_pkeyBigint1M_1 group by col_bigint_card2_1 order by col_bigint_card2_1
 
             - workload: AGGRG10_6_distinct_indexed_col_multiple_values_orderby
               customTags: schematype=regular,partition=hash,aggregate=count,cardinality=multiple,projection=aggregate,aggregateon=rangepkey,queryshape=aggregate,orderbyon=rangepkey
@@ -118,4 +118,4 @@ microbenchmark:
                   - name: count_bigint_non_indexed_column
                     weight: 100
                     queries:
-                        - query: select distinct(col_bigint_card2_1) from pkeyBigint1M_1 order by col_bigint_card2_1
+                        - query: select distinct(col_bigint_card2_1) from aggrg10_pkeyBigint1M_1 order by col_bigint_card2_1

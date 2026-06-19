@@ -28,18 +28,18 @@ microbenchmark:
     properties:
         setAutoCommit: true
         create:
-            - DROP TABLE IF EXISTS pkeyBigint1M_1;
-            - DROP TABLE IF EXISTS pkeyBigint1L_1;
-            - DROP TABLE IF EXISTS pkeyBigint10M_1;
-            - CREATE TABLE pkeyBigint1L_1(col_bigint_id_1 bigint, col_bigint_1 bigint, col_bigint_2 bigint, col_bigint_3 bigint, col_bigint_4 bigint, col_bigint_5 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1));
-            - CREATE TABLE pkeyBigint1M_1(col_bigint_id_1 bigint, col_bigint_1 bigint, col_bigint_2 bigint, col_bigint_3 bigint, col_bigint_4 bigint, col_bigint_5 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1));
-            - CREATE TABLE pkeyBigint10M_1(col_bigint_id_1 bigint, col_bigint_1 bigint, col_bigint_2 bigint, col_bigint_3 bigint, col_bigint_4 bigint, col_bigint_5 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1));
+            - DROP TABLE IF EXISTS aggrg2_pkeyBigint1M_1;
+            - DROP TABLE IF EXISTS aggrg2_pkeyBigint1L_1;
+            - DROP TABLE IF EXISTS aggrg2_pkeyBigint10M_1;
+            - CREATE TABLE aggrg2_pkeyBigint1L_1(col_bigint_id_1 bigint, col_bigint_1 bigint, col_bigint_2 bigint, col_bigint_3 bigint, col_bigint_4 bigint, col_bigint_5 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1));
+            - CREATE TABLE aggrg2_pkeyBigint1M_1(col_bigint_id_1 bigint, col_bigint_1 bigint, col_bigint_2 bigint, col_bigint_3 bigint, col_bigint_4 bigint, col_bigint_5 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1));
+            - CREATE TABLE aggrg2_pkeyBigint10M_1(col_bigint_id_1 bigint, col_bigint_1 bigint, col_bigint_2 bigint, col_bigint_3 bigint, col_bigint_4 bigint, col_bigint_5 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1));
         cleanup:
-            - DROP TABLE IF EXISTS pkeyBigint1M_1;
-            - DROP TABLE IF EXISTS pkeyBigint1L_1;
-            - DROP TABLE IF EXISTS pkeyBigint10M_1;
+            - DROP TABLE IF EXISTS aggrg2_pkeyBigint1M_1;
+            - DROP TABLE IF EXISTS aggrg2_pkeyBigint1L_1;
+            - DROP TABLE IF EXISTS aggrg2_pkeyBigint10M_1;
         loadRules:
-              - table: pkeyBigint1L_
+              - table: aggrg2_pkeyBigint1L_
                 count: 1
                 rows: 100000
                 columns:
@@ -74,7 +74,7 @@ microbenchmark:
                       count: 1
                       util: PrimaryStringGen
                       params: [1, 500]
-              - table: pkeyBigint1M_
+              - table: aggrg2_pkeyBigint1M_
                 count: 1
                 rows: 1000000
                 columns:
@@ -109,7 +109,7 @@ microbenchmark:
                       count: 1
                       util: PrimaryStringGen
                       params: [1, 500]
-              - table: pkeyBigint10M_
+              - table: aggrg2_pkeyBigint10M_
                 count: 1
                 rows: 10000000
                 columns:
@@ -151,18 +151,18 @@ microbenchmark:
                   - name: ybc_count_bigint_non_indexed_column
                     weight: 100
                     queries:
-                        - query: select count(col_bigint_id_1) from pkeyBigint1L_1
+                        - query: select count(col_bigint_id_1) from aggrg2_pkeyBigint1L_1
             - workload: AGGRG2_count_bigint_1M_table_rows
               customTags: schematype=colocated,partition=range,pkey=asc,aggregate=count,cardinality=single,projection=aggregate,aggregateon=rangepkey
               run:
                   - name: ybc_count_bigint_1M_table_rows
                     weight: 100
                     queries:
-                        - query: select count(col_bigint_id_1) from pkeyBigint1M_1
+                        - query: select count(col_bigint_id_1) from aggrg2_pkeyBigint1M_1
             - workload: AGGRG2_count_bigint_10M_table_rows
               customTags: schematype=colocated,partition=range,pkey=asc,aggregate=count,cardinality=single,projection=aggregate,aggregateon=rangepkey
               run:
                   - name: ybc_count_bigint_10M_table_rows
                     weight: 100
                     queries:
-                        - query: select count(col_bigint_id_1) from pkeyBigint10M_1
+                        - query: select count(col_bigint_id_1) from aggrg2_pkeyBigint10M_1

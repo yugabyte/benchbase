@@ -20,24 +20,24 @@ microbenchmark:
     properties:
         setAutoCommit: false
         create:
-            - drop table if exists index_test_1;
-            - drop table if exists index_test_2;
-            - drop table if exists index_test_3;
-            - drop table if exists index_test_4;
-            - create table index_test_1 (id bigint, col_int_1 int, col_int_2 int, col_int_3 int, col_int_4 int, col_int_5 int, col_int_6 int, col_int_7 int, col_int_8 int, col_int_9 int, col_int_10 int, col_varchar_1 varchar(20), col_varchar_2 varchar(20), col_varchar_3 varchar(20), col_date text, col_boolean boolean, primary key (id asc))
-            - create table index_test_2 (id bigint, col_int_1 int, col_int_2 int, col_int_3 int, col_int_4 int, col_int_5 int, col_int_6 int, col_int_7 int, col_int_8 int, col_int_9 int, col_int_10 int, col_varchar_1 varchar(20), col_varchar_2 varchar(20), col_varchar_3 varchar(20), col_date text, col_boolean boolean, primary key (id asc))
-            - create table index_test_3 (id bigint, col_int_1 int, col_int_2 int, col_int_3 int, col_int_4 int, col_int_5 int, col_int_6 int, col_int_7 int, col_int_8 int, col_int_9 int, col_int_10 int, col_varchar_1 varchar(20), col_varchar_2 varchar(20), col_varchar_3 varchar(20), col_date text, col_boolean boolean, primary key (id asc))
-            - create table index_test_4 (id bigint, col_int_1 int, col_int_2 int, col_int_3 int, col_int_4 int, col_int_5 int, col_int_6 int, col_int_7 int, col_int_8 int, col_int_9 int, col_int_10 int, col_varchar_1 varchar(20), col_varchar_2 varchar(20), col_varchar_3 varchar(20), col_date text, col_boolean boolean, primary key (id asc))
-            - create index index_test_2_idx1 on index_test_2(col_int_1 asc);
-            - create index index_test_3_idx1 on index_test_3(col_int_1 asc, col_int_2 asc);
-            - create index index_test_4_idx1 on index_test_4(col_int_1 asc, col_int_2 asc, col_int_3 asc, col_int_4 asc, col_int_5 asc);
+            - drop table if exists rw_g1_index_test_1;
+            - drop table if exists rw_g1_index_test_2;
+            - drop table if exists rw_g1_index_test_3;
+            - drop table if exists rw_g1_index_test_4;
+            - create table rw_g1_index_test_1 (id bigint, col_int_1 int, col_int_2 int, col_int_3 int, col_int_4 int, col_int_5 int, col_int_6 int, col_int_7 int, col_int_8 int, col_int_9 int, col_int_10 int, col_varchar_1 varchar(20), col_varchar_2 varchar(20), col_varchar_3 varchar(20), col_date text, col_boolean boolean, primary key (id asc))
+            - create table rw_g1_index_test_2 (id bigint, col_int_1 int, col_int_2 int, col_int_3 int, col_int_4 int, col_int_5 int, col_int_6 int, col_int_7 int, col_int_8 int, col_int_9 int, col_int_10 int, col_varchar_1 varchar(20), col_varchar_2 varchar(20), col_varchar_3 varchar(20), col_date text, col_boolean boolean, primary key (id asc))
+            - create table rw_g1_index_test_3 (id bigint, col_int_1 int, col_int_2 int, col_int_3 int, col_int_4 int, col_int_5 int, col_int_6 int, col_int_7 int, col_int_8 int, col_int_9 int, col_int_10 int, col_varchar_1 varchar(20), col_varchar_2 varchar(20), col_varchar_3 varchar(20), col_date text, col_boolean boolean, primary key (id asc))
+            - create table rw_g1_index_test_4 (id bigint, col_int_1 int, col_int_2 int, col_int_3 int, col_int_4 int, col_int_5 int, col_int_6 int, col_int_7 int, col_int_8 int, col_int_9 int, col_int_10 int, col_varchar_1 varchar(20), col_varchar_2 varchar(20), col_varchar_3 varchar(20), col_date text, col_boolean boolean, primary key (id asc))
+            - create index rw_g1_index_test_2_idx1 on rw_g1_index_test_2(col_int_1 asc);
+            - create index rw_g1_index_test_3_idx1 on rw_g1_index_test_3(col_int_1 asc, col_int_2 asc);
+            - create index rw_g1_index_test_4_idx1 on rw_g1_index_test_4(col_int_1 asc, col_int_2 asc, col_int_3 asc, col_int_4 asc, col_int_5 asc);
         cleanup:
-            - drop table if exists index_test_1;
-            - drop table if exists index_test_2;
-            - drop table if exists index_test_3;
-            - drop table if exists index_test_4;
+            - drop table if exists rw_g1_index_test_1;
+            - drop table if exists rw_g1_index_test_2;
+            - drop table if exists rw_g1_index_test_3;
+            - drop table if exists rw_g1_index_test_4;
         loadRules:
-            -   table: index_test_
+            -   table: rw_g1_index_test_
                 count: 4
 
                 rows: 1000000
@@ -72,7 +72,7 @@ microbenchmark:
                     -   name: Insert_0_column_composite_index_test
                         weight: 100
                         queries:
-                            -   query: INSERT INTO index_test_1 (id, col_int_1, col_int_2, col_int_3, col_int_4, col_int_5, col_int_6, col_int_7, col_int_8, col_int_9, col_int_10, col_varchar_1, col_varchar_2, col_varchar_3, col_date, col_boolean) values (?, ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                            -   query: INSERT INTO rw_g1_index_test_1 (id, col_int_1, col_int_2, col_int_3, col_int_4, col_int_5, col_int_6, col_int_7, col_int_8, col_int_9, col_int_10, col_varchar_1, col_varchar_2, col_varchar_3, col_date, col_boolean) values (?, ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
                                 bindings:
                                     -   util: PrimaryIntGen
                                         params: [ 1000001, 100000000 ]
@@ -88,7 +88,7 @@ microbenchmark:
                     -   name: Insert_1_column_composite_index_test
                         weight: 100
                         queries:
-                            -   query: INSERT INTO index_test_2 (id, col_int_1, col_int_2, col_int_3, col_int_4, col_int_5, col_int_6, col_int_7, col_int_8, col_int_9, col_int_10, col_varchar_1, col_varchar_2, col_varchar_3, col_date, col_boolean) values (?, ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                            -   query: INSERT INTO rw_g1_index_test_2 (id, col_int_1, col_int_2, col_int_3, col_int_4, col_int_5, col_int_6, col_int_7, col_int_8, col_int_9, col_int_10, col_varchar_1, col_varchar_2, col_varchar_3, col_date, col_boolean) values (?, ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
                                 bindings:
                                     -   util: PrimaryIntGen
                                         params: [ 1000001, 100000000 ]
@@ -104,7 +104,7 @@ microbenchmark:
                     -   name: Insert_column_composite_index_test
                         weight: 100
                         queries:
-                            -   query: INSERT INTO index_test_3 (id, col_int_1, col_int_2, col_int_3, col_int_4, col_int_5, col_int_6, col_int_7, col_int_8, col_int_9, col_int_10, col_varchar_1, col_varchar_2, col_varchar_3, col_date, col_boolean) values (?, ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                            -   query: INSERT INTO rw_g1_index_test_3 (id, col_int_1, col_int_2, col_int_3, col_int_4, col_int_5, col_int_6, col_int_7, col_int_8, col_int_9, col_int_10, col_varchar_1, col_varchar_2, col_varchar_3, col_date, col_boolean) values (?, ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
                                 bindings:
                                     -   util: PrimaryIntGen
                                         params: [ 1000001, 100000000 ]
@@ -120,7 +120,7 @@ microbenchmark:
                     -   name: Insert_column_composite_index_test
                         weight: 100
                         queries:
-                            -   query: INSERT INTO index_test_4 (id, col_int_1, col_int_2, col_int_3, col_int_4, col_int_5, col_int_6, col_int_7, col_int_8, col_int_9, col_int_10, col_varchar_1, col_varchar_2, col_varchar_3, col_date, col_boolean) values (?, ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                            -   query: INSERT INTO rw_g1_index_test_4 (id, col_int_1, col_int_2, col_int_3, col_int_4, col_int_5, col_int_6, col_int_7, col_int_8, col_int_9, col_int_10, col_varchar_1, col_varchar_2, col_varchar_3, col_date, col_boolean) values (?, ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
                                 bindings:
                                     -   util: PrimaryIntGen
                                         params: [ 1000001, 100000000 ]

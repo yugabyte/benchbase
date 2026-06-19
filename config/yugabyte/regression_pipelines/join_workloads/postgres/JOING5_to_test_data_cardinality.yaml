@@ -24,19 +24,19 @@ microbenchmark:
     properties:
         setAutoCommit: true
         create:
-          - DROP TABLE IF EXISTS pkeyBigint1M_1;
-          - DROP TABLE IF EXISTS pkeyBigint1M_2;
-          - DROP TABLE IF EXISTS pkeyBigint10k_1;
-          - CREATE TABLE pkeyBigint1M_1(col_bigint_card1_1 bigint, col_bigint_card2_1 bigint, col_bigint_card3_1 bigint, col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_card1_1, col_bigint_card2_1, col_bigint_card3_1, col_bigint_id_1));
-          - CREATE TABLE pkeyBigint1M_2(col_bigint_card1_1 bigint, col_bigint_card2_1 bigint, col_bigint_card3_1 bigint, col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_card1_1, col_bigint_card2_1, col_bigint_card3_1, col_bigint_id_1));
-          - CREATE TABLE pkeyBigint10k_1(col_bigint_card1_1 bigint, col_bigint_card2_1 bigint, col_bigint_card3_1 bigint, col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_card1_1, col_bigint_card2_1, col_bigint_card3_1, col_bigint_id_1));
+          - DROP TABLE IF EXISTS joing5_pkeyBigint1M_1;
+          - DROP TABLE IF EXISTS joing5_pkeyBigint1M_2;
+          - DROP TABLE IF EXISTS joing5_pkeyBigint10k_1;
+          - CREATE TABLE joing5_pkeyBigint1M_1(col_bigint_card1_1 bigint, col_bigint_card2_1 bigint, col_bigint_card3_1 bigint, col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_card1_1, col_bigint_card2_1, col_bigint_card3_1, col_bigint_id_1));
+          - CREATE TABLE joing5_pkeyBigint1M_2(col_bigint_card1_1 bigint, col_bigint_card2_1 bigint, col_bigint_card3_1 bigint, col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_card1_1, col_bigint_card2_1, col_bigint_card3_1, col_bigint_id_1));
+          - CREATE TABLE joing5_pkeyBigint10k_1(col_bigint_card1_1 bigint, col_bigint_card2_1 bigint, col_bigint_card3_1 bigint, col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_card1_1, col_bigint_card2_1, col_bigint_card3_1, col_bigint_id_1));
         cleanup:
-            - DROP TABLE IF EXISTS pkeyBigint1M_1;
-            - DROP TABLE IF EXISTS pkeyBigint1M_2;
-            - DROP TABLE IF EXISTS pkeyBigint10k_1;
+            - DROP TABLE IF EXISTS joing5_pkeyBigint1M_1;
+            - DROP TABLE IF EXISTS joing5_pkeyBigint1M_2;
+            - DROP TABLE IF EXISTS joing5_pkeyBigint10k_1;
 
         loadRules:
-              - table: pkeyBigint1M_
+              - table: joing5_pkeyBigint1M_
                 count: 2
                 rows: 1000000
                 columns:
@@ -81,7 +81,7 @@ microbenchmark:
                       params: [1, 500]
 
               #Table3	1*10k	100*100	    1000*10
-              - table: pkeyBigint10k_
+              - table: joing5_pkeyBigint10k_
                 count: 1
                 rows: 10000
                 columns:
@@ -133,14 +133,14 @@ microbenchmark:
                   - name: hashtbl_index_scan_using_sec_index
                     weight: 100
                     queries:
-                        - query: select * from pkeyBigint1M_1 as a join pkeyBigint1M_2 as b on a.col_bigint_card1_1=b.col_bigint_card1_1 and a.col_bigint_card3_1=b.col_bigint_card3_1 where b.col_bigint_card1_1=1000000 and  b.col_bigint_card2_1 in (1000058);
+                        - query: select * from joing5_pkeyBigint1M_1 as a join joing5_pkeyBigint1M_2 as b on a.col_bigint_card1_1=b.col_bigint_card1_1 and a.col_bigint_card3_1=b.col_bigint_card3_1 where b.col_bigint_card1_1=1000000 and  b.col_bigint_card2_1 in (1000058);
 
             - workload: JoinG5_2_1Mtbl_join_1Mtbl_two_conditions_indexscan_two_filters
               run:
                   - name: hashtbl_index_scan_using_sec_index
                     weight: 100
                     queries:
-                        - query: select * from pkeyBigint1M_1 as a join pkeyBigint1M_2 as b on a.col_bigint_card1_1=b.col_bigint_card1_1 and a.col_bigint_card2_1=b.col_bigint_card2_1 where b.col_bigint_card1_1=1000000 and  b.col_bigint_card3_1 in (1000058);
+                        - query: select * from joing5_pkeyBigint1M_1 as a join joing5_pkeyBigint1M_2 as b on a.col_bigint_card1_1=b.col_bigint_card1_1 and a.col_bigint_card2_1=b.col_bigint_card2_1 where b.col_bigint_card1_1=1000000 and  b.col_bigint_card3_1 in (1000058);
 
             - workload: JoinG5_3_1Mtbl_join_1Mtbl_two_conditions_indexscan_two_filters
               customTags: customer=7
@@ -148,7 +148,7 @@ microbenchmark:
                   - name: hashtbl_index_scan_using_sec_index
                     weight: 100
                     queries:
-                        - query: select * from pkeyBigint1M_1 as a join pkeyBigint1M_2 as b on a.col_bigint_card1_1=b.col_bigint_card1_1 and a.col_bigint_card2_1=b.col_bigint_card2_1 where b.col_bigint_card1_1=1000000 and  b.col_bigint_card2_1 in (1000058);
+                        - query: select * from joing5_pkeyBigint1M_1 as a join joing5_pkeyBigint1M_2 as b on a.col_bigint_card1_1=b.col_bigint_card1_1 and a.col_bigint_card2_1=b.col_bigint_card2_1 where b.col_bigint_card1_1=1000000 and  b.col_bigint_card2_1 in (1000058);
 
 
             - workload: JoinG5_4_1Mtbl_join_1Mtbl_two_conditions_seqscan_two_filters
@@ -156,7 +156,7 @@ microbenchmark:
                   - name: hashtbl_index_scan_using_sec_index
                     weight: 100
                     queries:
-                        - query: select * from pkeyBigint1M_1 as a join pkeyBigint1M_2 as b on a.col_bigint_card2_1=b.col_bigint_card2_1 and a.col_bigint_card3_1=b.col_bigint_card3_1 where b.col_bigint_card2_1 in (1000058);
+                        - query: select * from joing5_pkeyBigint1M_1 as a join joing5_pkeyBigint1M_2 as b on a.col_bigint_card2_1=b.col_bigint_card2_1 and a.col_bigint_card3_1=b.col_bigint_card3_1 where b.col_bigint_card2_1 in (1000058);
 
 
             -   workload: JoinG5_5_1Mtbl_join_10ktbl_two_conditions_indexscan_two_filters
@@ -165,7 +165,7 @@ microbenchmark:
                     -   name: hashtbl_index_scan_using_sec_index
                         weight: 100
                         queries:
-                            -   query: select * from pkeyBigint1M_1 as a join pkeyBigint10k_1 as b on a.col_bigint_card1_1=b.col_bigint_card1_1 and a.col_bigint_card3_1=b.col_bigint_card3_1 where b.col_bigint_card1_1=1000000 and  b.col_bigint_card2_1 in (1000058);
+                            -   query: select * from joing5_pkeyBigint1M_1 as a join joing5_pkeyBigint10k_1 as b on a.col_bigint_card1_1=b.col_bigint_card1_1 and a.col_bigint_card3_1=b.col_bigint_card3_1 where b.col_bigint_card1_1=1000000 and  b.col_bigint_card2_1 in (1000058);
 
             -   workload: JoinG5_6_1Mtbl_join_10ktbl_two_conditions_indexscan_two_filters
                 customTags: customer=3
@@ -173,7 +173,7 @@ microbenchmark:
                     -   name: hashtbl_index_scan_using_sec_index
                         weight: 100
                         queries:
-                            -   query: select * from pkeyBigint1M_1 as a join pkeyBigint10k_1 as b on a.col_bigint_card1_1=b.col_bigint_card1_1 and a.col_bigint_card2_1=b.col_bigint_card2_1 where b.col_bigint_card1_1=1000000 and  b.col_bigint_card3_1 in (1000058);
+                            -   query: select * from joing5_pkeyBigint1M_1 as a join joing5_pkeyBigint10k_1 as b on a.col_bigint_card1_1=b.col_bigint_card1_1 and a.col_bigint_card2_1=b.col_bigint_card2_1 where b.col_bigint_card1_1=1000000 and  b.col_bigint_card3_1 in (1000058);
 
             -   workload: JoinG5_7_1Mtbl_join_10ktbl_two_conditions_indexscan_two_filters
                 customTags: customer=8
@@ -181,7 +181,7 @@ microbenchmark:
                     -   name: hashtbl_index_scan_using_sec_index
                         weight: 100
                         queries:
-                            -   query: select * from pkeyBigint1M_1 as a join pkeyBigint10k_1 as b on a.col_bigint_card1_1=b.col_bigint_card1_1 and a.col_bigint_card2_1=b.col_bigint_card2_1 where b.col_bigint_card1_1=1000000 and  b.col_bigint_card2_1 in (1000058);
+                            -   query: select * from joing5_pkeyBigint1M_1 as a join joing5_pkeyBigint10k_1 as b on a.col_bigint_card1_1=b.col_bigint_card1_1 and a.col_bigint_card2_1=b.col_bigint_card2_1 where b.col_bigint_card1_1=1000000 and  b.col_bigint_card2_1 in (1000058);
 
 
             -   workload: JoinG5_8_1Mtbl_join_10ktbl_two_conditions_seqscan_two_filters
@@ -189,4 +189,4 @@ microbenchmark:
                     -   name: hashtbl_index_scan_using_sec_index
                         weight: 100
                         queries:
-                            -   query: select * from pkeyBigint1M_1 as a join pkeyBigint10k_1 as b on a.col_bigint_card2_1=b.col_bigint_card2_1 and a.col_bigint_card3_1=b.col_bigint_card3_1 where b.col_bigint_card2_1 in (1000058);
+                            -   query: select * from joing5_pkeyBigint1M_1 as a join joing5_pkeyBigint10k_1 as b on a.col_bigint_card2_1=b.col_bigint_card2_1 and a.col_bigint_card3_1=b.col_bigint_card3_1 where b.col_bigint_card2_1 in (1000058);
