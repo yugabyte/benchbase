@@ -1,6 +1,6 @@
 type: YUGABYTE
 driver: com.yugabyte.Driver
-url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true&load-balance=true
+url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true&load-balance=false
 username: {{username}}
 password: {{password}}
 batchsize: 128
@@ -22,7 +22,7 @@ microbenchmark:
         setAutoCommit: true
         create:
             - DROP TABLE IF EXISTS THRPT_WL_IN_CLAUSE_100;
-            - CREATE TABLE THRPT_WL_IN_CLAUSE_100 (id INT, c1 int, c2 int, payload text, PRIMARY KEY(id asc)) split at values ((333333), (666666));
+            - CREATE TABLE THRPT_WL_IN_CLAUSE_100 (id INT, c1 int, c2 int, payload text, PRIMARY KEY(id asc));
 
         cleanup:
             - DROP TABLE IF EXISTS THRPT_WL_IN_CLAUSE_100;
