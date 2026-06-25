@@ -20,7 +20,7 @@ microbenchmark:
     properties:
         setAutoCommit: false
         create:
-            - ALTER DATABASE yugabyte SET yb_explicit_row_lock_skip_locked_max_read_ahead={{max_read_ahead}};
+            - ALTER DATABASE yugabyte SET yb_explicit_row_lock_skip_locked_max_read_ahead TO {{max_read_ahead}};
             - CREATE TABLE SL_jobs (id INT, status INT, priority INT, created_at TIMESTAMP, payload TEXT, primary key (id asc)) split at values ((333333), (666666));
 
         cleanup:
