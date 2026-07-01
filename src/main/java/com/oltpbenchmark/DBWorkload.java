@@ -723,13 +723,15 @@ public class DBWorkload {
                             LOG.info("Terminal for starting: {}", originalTerminals);
                             String workloadName = executeRules == null ? null : workloads.get(workCount - 1).getString("workload");
                             // Find optimal threads for this workload
-                            double cpuScalingMinDeltaPercent = xmlConfig.getDouble("cpuScalingMinDeltaPercent", 5.0);
+                            double scalingMinDeltaPercent = xmlConfig.getDouble("scalingMinDeltaPercent", DEFAULT_SCALING_MIN_DELTA_PERCENT);
                             boolean linearPGthread = xmlConfig.getBoolean("linearPGthread", false);
                             int threadIncrement = xmlConfig.getInt("threadIncrement", 3);
                             int restingTimeSecs = xmlConfig.getInt("restingTimeSecs", 120);
-                            int flatCpuMaxScalingSteps = xmlConfig.getInt("flatCpuMaxScalingSteps", DEFAULT_FLAT_CPU_MAX_SCALING_STEPS);
+                            int flatMaxScalingSteps = xmlConfig.getInt("flatMaxScalingSteps", DEFAULT_FLAT_MAX_SCALING_STEPS);
+                            boolean useThroughputThreshold = xmlConfig.getBoolean("useThroughputThreshold", false);
                             int optimalThreads = findOptimalThreadCount(benchList.get(0), minThreads, targetCPU, toleranceCPU, workloadName, workCount, samplingTime,
-                                cpuScalingMinDeltaPercent, threadIncrement, restingTimeSecs, flatCpuMaxScalingSteps, linearPGthread);
+                                scalingMinDeltaPercent, threadIncrement, restingTimeSecs, flatMaxScalingSteps, linearPGthread,
+                                useThroughputThreshold);
 
                             // Sleep between optimal-threads search and the final measured run so system can stabilize
                             if (restingTimeSecs > 0) {
@@ -823,13 +825,15 @@ public class DBWorkload {
                             LOG.info("Terminal for starting: {}", originalTerminals);
                             String workloadName = executeRules == null ? null : workloads.get(workCount - 1).getString("workload");
                             // Find optimal threads for this workload
-                            double cpuScalingMinDeltaPercent = xmlConfig.getDouble("cpuScalingMinDeltaPercent", 5.0);
+                            double scalingMinDeltaPercent = xmlConfig.getDouble("scalingMinDeltaPercent", DEFAULT_SCALING_MIN_DELTA_PERCENT);
                             boolean linearPGthread = xmlConfig.getBoolean("linearPGthread", false);
                             int threadIncrement = xmlConfig.getInt("threadIncrement", 3);
                             int restingTimeSecs = xmlConfig.getInt("restingTimeSecs", 120);
-                            int flatCpuMaxScalingSteps = xmlConfig.getInt("flatCpuMaxScalingSteps", DEFAULT_FLAT_CPU_MAX_SCALING_STEPS);
+                            int flatMaxScalingSteps = xmlConfig.getInt("flatMaxScalingSteps", DEFAULT_FLAT_MAX_SCALING_STEPS);
+                            boolean useThroughputThreshold = xmlConfig.getBoolean("useThroughputThreshold", false);
                             int optimalThreads = findOptimalThreadCount(benchList.get(0), minThreads, targetCPU, toleranceCPU, workloadName, workCount, samplingTime,
-                                cpuScalingMinDeltaPercent, threadIncrement, restingTimeSecs, flatCpuMaxScalingSteps, linearPGthread);
+                                scalingMinDeltaPercent, threadIncrement, restingTimeSecs, flatMaxScalingSteps, linearPGthread,
+                                useThroughputThreshold);
 
                             // Sleep between optimal-threads search and the final measured run so system can stabilize
                             if (restingTimeSecs > 0) {
@@ -1522,16 +1526,25 @@ public class DBWorkload {
     }
 
     /**
-     * Default number of <b>consecutive</b> thread up-scales with insufficient CPU increase before we
-     * confirm a plateau, stop the search, and tag metadata {@code flatCPU}. The counter resets
-     * to zero as soon as any single up-scale produces a CPU delta &ge; {@code cpuScalingMinDeltaPercent},
-     * so a single noisy low-CPU sample early in the sweep no longer poisons the result.
-     * Can be overridden via the YAML config key {@code flatCpuMaxScalingSteps}.
+     * Default number of <b>consecutive</b> thread up-scales with insufficient metric increase
+     * (CPU or throughput, depending on mode) before we confirm a plateau and stop the search.
+     * The counter resets to zero as soon as any single up-scale produces a delta &ge;
+     * {@code scalingMinDeltaPercent}, so a single noisy sample early in the sweep no longer
+     * poisons the result. Can be overridden via the YAML config key {@code flatMaxScalingSteps}.
      */
-    private static final int DEFAULT_FLAT_CPU_MAX_SCALING_STEPS = 3;
+    private static final int DEFAULT_FLAT_MAX_SCALING_STEPS = 3;
+
+    /**
+     * Default minimum delta percentage for a scaling step to be considered non-flat.
+     * In CPU mode this is an absolute percentage-point increase in CPU utilization;
+     * in throughput mode it is a relative percentage increase in req/s.
+     * Can be overridden via the YAML config key {@code scalingMinDeltaPercent}.
+     */
+    private static final double DEFAULT_SCALING_MIN_DELTA_PERCENT = 5.0;
 
     private static int findOptimalThreadCount(BenchmarkModule bench, int minThreads, double targetCPU, double toleranceCPU, String workloadName, int workCount, int samplingTime,
-            double cpuScalingMinDeltaPercent, int threadIncrement, int restingTimeSecs, int flatCpuMaxScalingSteps, boolean linearPGthread) throws InterruptedException {
+            double scalingMinDeltaPercent, int threadIncrement, int restingTimeSecs, int flatMaxScalingSteps, boolean linearPGthread,
+            boolean useThroughputThreshold) throws InterruptedException {
         double minTargetCPU = targetCPU - toleranceCPU;
         double maxTargetCPU = targetCPU + toleranceCPU;
         LOG.info("minTargetCPU: {}, maxTargetCPU: {}", minTargetCPU, maxTargetCPU);
@@ -1572,8 +1585,20 @@ public class DBWorkload {
         // {@code optimalThreads} value if the plateau is later confirmed.
         int flatRunStartThreads = 0;
         boolean flatCpuDetected = false;
-        LOG.info("Flat CPU detection: minDeltaPercent={}, requires {} consecutive flat steps to confirm plateau",
-            cpuScalingMinDeltaPercent, flatCpuMaxScalingSteps);
+        Double throughputAtPreviousScalingStep = null;
+        Integer threadsAtPreviousThroughputStep = null;
+        int consecutiveFlatThroughputSteps = 0;
+        int flatThroughputRunStartThreads = 0;
+        boolean flatThroughputDetected = false;
+        Map<Integer, Double> threadThroughputMap = new HashMap<>();
+        if (useThroughputThreshold) {
+            LOG.info("Throughput threshold mode ENABLED: will grow threads until throughput plateaus "
+                + "(scalingMinDeltaPercent={}%, flatMaxScalingSteps={})",
+                scalingMinDeltaPercent, flatMaxScalingSteps);
+        } else {
+            LOG.info("CPU threshold mode: scalingMinDeltaPercent={}, flatMaxScalingSteps={}",
+                scalingMinDeltaPercent, flatMaxScalingSteps);
+        }
 
         // Detect database type and prepare RDS monitoring if needed
         boolean isYugabyteDatabase = isYugabyteDB(bench);
@@ -1672,9 +1697,10 @@ public class DBWorkload {
                     LOG.error("No phases found in workload configuration");
                     break;
                 }
+                final Results[] iterationResults = new Results[1];
                 Thread workloadThread = new Thread(() -> {
                     try {
-                        runWorkload(Collections.singletonList(bench), 0, workCount);
+                        iterationResults[0] = runWorkload(Collections.singletonList(bench), 0, workCount);
                     } catch (Exception e) {
                         LOG.error("Error running workload for thread test", e);
                         throw new RuntimeException(e);
@@ -1793,11 +1819,81 @@ public class DBWorkload {
                     jsonResults.add(entry);
                 }
 
+                // Throughput will be captured after workloadThread.join() from iterationResults
+
                 Files.write(Paths.get(logFile), logLine.toString().getBytes(), java.nio.file.StandardOpenOption.APPEND);
 
                 workloadThread.join();
                 threadCpuMap.put(threads, avgMaxCPU);
-                if (avgMaxCPU >= minTargetCPU && avgMaxCPU <= maxTargetCPU) {
+
+                double iterationThroughput = 0.0;
+                if (iterationResults[0] != null) {
+                    iterationThroughput = iterationResults[0].requestsPerSecondGoodput();
+                    threadThroughputMap.put(threads, iterationThroughput);
+                    LOG.info("Iteration throughput (goodput) for {} threads: {} req/s", threads, String.format("%.2f", iterationThroughput));
+                    if (!jsonResults.isEmpty()) {
+                        jsonResults.get(jsonResults.size() - 1).put("throughput", iterationThroughput);
+                    }
+                }
+
+                if (useThroughputThreshold) {
+                    optimalThreads = threads;
+                    int newThreads = threads + threadIncrement;
+                    LOG.info("Throughput threshold mode: adding {} threads. New threads: {}", threadIncrement, newThreads);
+
+                    if (threadThroughputMap.containsKey(newThreads)) {
+                        LOG.info("newThreads={} already tested. Breaking loop to avoid duplicate testing.", newThreads);
+                        optimalThreads = newThreads;
+                        break;
+                    }
+
+                    if (throughputAtPreviousScalingStep != null && throughputAtPreviousScalingStep > 0) {
+                        double throughputDeltaPercent = ((iterationThroughput - throughputAtPreviousScalingStep) / throughputAtPreviousScalingStep) * 100.0;
+                        if (throughputDeltaPercent < scalingMinDeltaPercent) {
+                            consecutiveFlatThroughputSteps++;
+                            if (consecutiveFlatThroughputSteps == 1) {
+                                flatThroughputRunStartThreads = threadsAtPreviousThroughputStep;
+                            }
+                            LOG.warn(
+                                "Throughput did not increase significantly when scaling threads "
+                                    + "({} threads -> {} threads, delta={}% vs min {}%). "
+                                    + "Consecutive flat steps: {}/{}. Candidate optimalThreads (last good before plateau): {}.",
+                                threadsAtPreviousThroughputStep,
+                                threads,
+                                String.format("%.2f", throughputDeltaPercent),
+                                scalingMinDeltaPercent,
+                                consecutiveFlatThroughputSteps,
+                                flatMaxScalingSteps,
+                                flatThroughputRunStartThreads);
+                            if (consecutiveFlatThroughputSteps >= flatMaxScalingSteps) {
+                                flatThroughputDetected = true;
+                                optimalThreads = flatThroughputRunStartThreads;
+                                LOG.info(
+                                    "Flat throughput plateau confirmed after {} consecutive flat thread increases (min delta {}%). "
+                                        + "Stopping thread search; rolling back to {} threads (last good before plateau) "
+                                        + "and metadata flatThroughput=true. Last throughput {} req/s.",
+                                    flatMaxScalingSteps,
+                                    scalingMinDeltaPercent,
+                                    optimalThreads,
+                                    String.format("%.2f", iterationThroughput));
+                                break;
+                            }
+                        } else if (consecutiveFlatThroughputSteps > 0) {
+                            LOG.info(
+                                "Throughput recovered (delta={}% >= min {}%). Resetting consecutive flat-step counter "
+                                    + "(was {}, candidate optimalThreads was {}).",
+                                String.format("%.2f", throughputDeltaPercent),
+                                scalingMinDeltaPercent,
+                                consecutiveFlatThroughputSteps,
+                                flatThroughputRunStartThreads);
+                            consecutiveFlatThroughputSteps = 0;
+                            flatThroughputRunStartThreads = 0;
+                        }
+                    }
+                    throughputAtPreviousScalingStep = iterationThroughput;
+                    threadsAtPreviousThroughputStep = threads;
+                    threads = newThreads;
+                } else if (avgMaxCPU >= minTargetCPU && avgMaxCPU <= maxTargetCPU) {
                     optimalThreads = threads;
                     LOG.info("Found optimal threads: {} with MaxCPU: {}", optimalThreads, avgMaxCPU);
                     break;
@@ -1830,10 +1926,9 @@ public class DBWorkload {
                     }
                     if (newThreads > threads && cpuAtPreviousScalingStep != null) {
                         double cpuDelta = avgMaxCPU - cpuAtPreviousScalingStep;
-                        if (cpuDelta < cpuScalingMinDeltaPercent) {
+                        if (cpuDelta < scalingMinDeltaPercent) {
                             consecutiveFlatCpuSteps++;
                             if (consecutiveFlatCpuSteps == 1) {
-                                // To be used to Roll back to the thread count from BEFORE the plateau formed
                                 flatRunStartThreads = threadsAtPreviousScalingStep;
                             }
                             LOG.warn(
@@ -1843,33 +1938,29 @@ public class DBWorkload {
                                 threadsAtPreviousScalingStep,
                                 threads,
                                 String.format("%.2f", cpuDelta),
-                                cpuScalingMinDeltaPercent,
+                                scalingMinDeltaPercent,
                                 consecutiveFlatCpuSteps,
-                                flatCpuMaxScalingSteps,
+                                flatMaxScalingSteps,
                                 flatRunStartThreads);
-                            if (consecutiveFlatCpuSteps >= flatCpuMaxScalingSteps) {
-                                // Plateau confirmed: commit optimalThreads to the thread count
-                                // from immediately BEFORE the consecutive flat run began.
+                            if (consecutiveFlatCpuSteps >= flatMaxScalingSteps) {
                                 flatCpuDetected = true;
                                 optimalThreads = flatRunStartThreads;
                                 LOG.info(
                                     "Flat CPU plateau confirmed after {} consecutive flat thread increases (min delta {}% points). "
                                         + "Stopping thread search; rolling back and continuing run with {} threads (last good before plateau) "
                                         + "and metadata flatCPU=true. Last max CPU {}%.",
-                                    flatCpuMaxScalingSteps,
-                                    cpuScalingMinDeltaPercent,
+                                    flatMaxScalingSteps,
+                                    scalingMinDeltaPercent,
                                     optimalThreads,
                                     String.format("%.2f", avgMaxCPU));
                                 break;
                             }
                         } else if (consecutiveFlatCpuSteps > 0) {
-                            // CPU rose again -> the plateau wasn't real (likely sampling noise).
-                            // Reset the consecutive counter so we don't break early on a false positive.
                             LOG.info(
                                 "CPU utilization recovered (delta={}% >= min {}%). Resetting consecutive flat-step counter "
                                     + "(was {}, candidate optimalThreads was {}).",
                                 String.format("%.2f", cpuDelta),
-                                cpuScalingMinDeltaPercent,
+                                scalingMinDeltaPercent,
                                 consecutiveFlatCpuSteps,
                                 flatRunStartThreads);
                             consecutiveFlatCpuSteps = 0;
@@ -1926,9 +2017,14 @@ public class DBWorkload {
                 metaDataJson.put("avg_cpu", metadataAvgCpu);
                 metaDataJson.put("optimal_threads", optimalThreads);
                 metaDataJson.put("flatCPU", flatCpuDetected);
+                metaDataJson.put("flatThroughput", flatThroughputDetected);
+                metaDataJson.put("useThroughputThreshold", useThroughputThreshold);
+                if (selectedEntry.containsKey("throughput")) {
+                    metaDataJson.put("throughput", ((Number) selectedEntry.get("throughput")).doubleValue());
+                }
                 Worker.featurebenchAdditionalResults.setMetaDataJson(metaDataJson);
-                LOG.info("Stored CPU utilization in metadata: avg_cpu={}, optimal_threads={}, flatCPU={}",
-                    metadataAvgCpu, optimalThreads, flatCpuDetected);
+                LOG.info("Stored in metadata: avg_cpu={}, optimal_threads={}, flatCPU={}, flatThroughput={}, useThroughputThreshold={}",
+                    metadataAvgCpu, optimalThreads, flatCpuDetected, flatThroughputDetected, useThroughputThreshold);
             } catch (Exception e) {
                 LOG.error("Error storing CPU utilization in metadata", e);
             }
