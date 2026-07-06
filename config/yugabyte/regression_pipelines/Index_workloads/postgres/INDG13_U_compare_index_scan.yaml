@@ -65,22 +65,6 @@ microbenchmark:
                       params: [1, 500]
 
         executeRules:
-            - workload: INDG13_1_indexscan_using_pkey
-              customTags: schematype=regular,partition=range,pkey=asc,cardinality=single,projection=indexed,queryshape=join,joinon=rangepkey
-              run:
-                  - name: join_on_pk_of_range_tbl
-                    weight: 100
-                    queries:
-                        - query: select col_bigint_id_1 from INDG13_U_rangetbl_1 where col_bigint_id_1>0
-
-            -   workload: INDG13_2_indexonlyscan_using_skey
-                customTags: schematype=regular,partition=range,pkey=asc,cardinality=single,projection=indexed,queryshape=join,joinon=rangepkey
-                run:
-                    -   name: join_on_pk_of_range_tbl
-                        weight: 100
-                        queries:
-                            -   query: select col_bigint_id_2 from INDG13_U_rangetbl_1 where col_bigint_id_2>0
-
             -   workload: INDG13_3_indexscan_using_skey
                 customTags: schematype=regular,partition=range,pkey=asc,cardinality=single,projection=indexed,queryshape=join,joinon=rangepkey
                 run:

@@ -30,7 +30,6 @@ public class YBDefaultMicroBenchmark extends YBMicroBenchmark {
             return;
         }
 
-        LOG.info("Executing executeOnce queries from YAML config");
         Statement stmtObj = conn.createStatement();
         long start = System.currentTimeMillis();
 

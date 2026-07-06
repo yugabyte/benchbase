@@ -1,6 +1,5 @@
 #Impact of increasing rows on orderby clause
 #Orderby on 0.1M rows
-#Orderby on 1M rows
 #Orderby on 10M rows
 type: YUGABYTE
 driver: com.yugabyte.Driver
@@ -28,15 +27,12 @@ microbenchmark:
 
         create:
           - DROP TABLE IF EXISTS pkeyBigint1L_1;
-          - DROP TABLE IF EXISTS pkeyBigint1M_1;
           - DROP TABLE IF EXISTS pkeyBigint10M_1;
           - CREATE TABLE pkeyBigint1L_1(col_bigint_id_1 bigint, col_bigint_1 bigint, col_bigint_2 bigint, col_bigint_3 bigint, col_bigint_4 bigint, col_bigint_5 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1));
-          - CREATE TABLE pkeyBigint1M_1(col_bigint_id_1 bigint, col_bigint_1 bigint, col_bigint_2 bigint, col_bigint_3 bigint, col_bigint_4 bigint, col_bigint_5 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1));
           - CREATE TABLE pkeyBigint10M_1(col_bigint_id_1 bigint, col_bigint_1 bigint, col_bigint_2 bigint, col_bigint_3 bigint, col_bigint_4 bigint, col_bigint_5 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_id_1));
 
         cleanup:
           - DROP TABLE IF EXISTS pkeyBigint1L_1;
-          - DROP TABLE IF EXISTS pkeyBigint1M_1;
           - DROP TABLE IF EXISTS pkeyBigint10M_1;
 
         loadRules:
@@ -60,41 +56,6 @@ microbenchmark:
                       count: 2
                       util: RandomNoWithDecimalPoints
                       params: [ 1, 100000, 5 ]
-                    - name: col_boolean_
-                      count: 1
-                      util: RandomBoolean
-                    - name: col_varchar10_id_
-                      count: 1
-                      util: PrimaryStringGen
-                      params: [1, 10]
-                    - name: col_varchar100_id_
-                      count: 2
-                      util: PrimaryStringGen
-                      params: [1, 100]
-                    - name: col_varchar500_id_
-                      count: 1
-                      util: PrimaryStringGen
-                      params: [1, 500]
-              - table: pkeyBigint1M_
-                count: 1
-                rows: 1000000
-                columns:
-                    - name: col_bigint_id_
-                      count: 1
-                      util: PrimaryIntGen
-                      params: [ 1, 1000000 ]
-                    - name: col_bigint_
-                      count: 5
-                      util: RandomNumber
-                      params: [ 1, 1000000 ]
-                    - name: col_float2_
-                      count: 2
-                      util: RandomNoWithDecimalPoints
-                      params: [ 1, 1000000, 2 ]
-                    - name: col_float5_
-                      count: 2
-                      util: RandomNoWithDecimalPoints
-                      params: [ 1, 1000000, 5 ]
                     - name: col_boolean_
                       count: 1
                       util: RandomBoolean
@@ -154,13 +115,6 @@ microbenchmark:
                     weight: 100
                     queries:
                         - query: select col_bigint_id_1 from pkeyBigint1L_1 order by col_bigint_id_1
-            - workload: ORDG6_increasing_rows_1M
-              customTags: schematype=colocated,partition=range,pkey=asc,cardinality=single,projection=indexed,queryshape=orderby,orderbyon=rangepkey
-              run:
-                  - name: increasing_rows_1M
-                    weight: 100
-                    queries:
-                        - query: select col_bigint_id_1 from pkeyBigint1M_1 order by col_bigint_id_1
             - workload: ORDG6_increasing_rows_10M
               customTags: schematype=colocated,partition=range,pkey=asc,cardinality=single,projection=indexed,queryshape=orderby,orderbyon=rangepkey
               run:
