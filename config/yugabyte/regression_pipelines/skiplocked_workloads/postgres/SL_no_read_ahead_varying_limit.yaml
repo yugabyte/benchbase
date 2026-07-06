@@ -1,0 +1,106 @@
+type: POSTGRES
+driver: org.postgresql.Driver
+url: jdbc:postgresql://{{endpoint}}:5432/postgres?sslmode=require
+username: {{username}}
+password: {{password}}
+batchsize: 128
+isolation: TRANSACTION_REPEATABLE_READ
+loaderThreads: 1
+terminals: 10
+collect_pg_stat_statements: true
+yaml_version: v1.0
+works:
+    work:
+        time_secs: 120
+        rate: unlimited
+        warmup: 30
+microbenchmark:
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
+    properties:
+        setAutoCommit: false
+        create:
+            - CREATE TABLE SL_jobs (id INT, status INT, priority INT, created_at TIMESTAMP, payload TEXT, primary key (id asc)) split at values ((333333), (666666));
+
+        cleanup:
+            - DROP TABLE IF EXISTS SL_jobs;
+
+        loadRules:
+            - table: SL_jobs
+              rows: 1000000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 1000000]
+                  - name: status
+                    util: CyclicSeqIntGen
+                    params: [1, 10]
+                  - name: priority
+                    util: RandomInt
+                    params: [1, 100]
+                  - name: created_at
+                    util: RandomTimestamp
+                    params: [10000000]
+                  - name: payload
+                    util: RandomAString
+                    params: [1000, 1000]
+
+        executeRules:
+            - workload: SL_limit_1_without_contention
+              run:
+                  - name: SL_limit_1_without_contention
+                    weight: 100
+                    queries:
+                        - query: SELECT * FROM SL_jobs where status = ? and id between ? and ? FOR UPDATE SKIP LOCKED LIMIT 1;
+                          bindings:
+                              - util: RandomInt
+                                params: [1, 10]
+                              - util: RangeDivider
+                                params: [1000000]
+                                referenceName: start_range
+                              - util: ExpressionEval
+                                params: ["start_range + 199999"]
+
+            - workload: SL_limit_10_without_contention
+              run:
+                  - name: SL_limit_10_without_contention
+                    weight: 100
+                    queries:
+                        - query: SELECT * FROM SL_jobs where status = ? and id between ? and ? FOR UPDATE SKIP LOCKED LIMIT 10;
+                          bindings:
+                              - util: RandomInt
+                                params: [1, 10]
+                              - util: RangeDivider
+                                params: [1000000]
+                                referenceName: start_range
+                              - util: ExpressionEval
+                                params: ["start_range + 199999"]
+
+            - workload: SL_limit_100_without_contention
+              run:
+                  - name: SL_limit_100_without_contention
+                    weight: 100
+                    queries:
+                        - query: SELECT * FROM SL_jobs where status = ? and id between ? and ? FOR UPDATE SKIP LOCKED LIMIT 100;
+                          bindings:
+                              - util: RandomInt
+                                params: [1, 10]
+                              - util: RangeDivider
+                                params: [1000000]
+                                referenceName: start_range
+                              - util: ExpressionEval
+                                params: ["start_range + 199999"]
+
+            - workload: SL_limit_1000_without_contention
+              run:
+                  - name: SL_limit_1000_without_contention
+                    weight: 100
+                    queries:
+                        - query: SELECT * FROM SL_jobs where status = ? and id between ? and ? FOR UPDATE SKIP LOCKED LIMIT 1000;
+                          bindings:
+                              - util: RandomInt
+                                params: [1, 10]
+                              - util: RangeDivider
+                                params: [1000000]
+                                referenceName: start_range
+                              - util: ExpressionEval
+                                params: ["start_range + 199999"]
