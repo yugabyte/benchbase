@@ -262,4 +262,12 @@ public class WorkloadState {
         return benchmarkState.getTestStartNs();
     }
 
+    public long getMeasurementStartNs() {
+        return benchmarkState.getMeasurementStartNs();
+    }
+
+    public BenchmarkState getBenchmarkState() {
+        return benchmarkState;
+    }
+
 }

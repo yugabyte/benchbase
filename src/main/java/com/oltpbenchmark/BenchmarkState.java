@@ -32,6 +32,7 @@ public final class BenchmarkState {
     private final CountDownLatch startBarrier;
     private final AtomicInteger notDoneCount;
     private volatile State state = State.WARMUP;
+    private volatile long measurementStartNs = -1;
 
     /**
      * @param numThreads number of threads involved in the test: including the
@@ -49,6 +50,10 @@ public final class BenchmarkState {
 
     public long getTestStartNs() {
         return testStartNs;
+    }
+
+    public long getMeasurementStartNs() {
+        return measurementStartNs;
     }
 
     public State getState() {
@@ -74,6 +79,9 @@ public final class BenchmarkState {
 
     public void startMeasure() {
         state = State.MEASURE;
+        if (measurementStartNs == -1) {
+            measurementStartNs = System.nanoTime();
+        }
     }
 
     public void startColdQuery() {
@@ -82,6 +90,9 @@ public final class BenchmarkState {
 
     public void startHotQuery() {
         state = State.MEASURE;
+        if (measurementStartNs == -1) {
+            measurementStartNs = System.nanoTime();
+        }
     }
 
     public void signalLatencyComplete() {
