@@ -30,10 +30,10 @@ microbenchmark:
               rows: 1000000
               columns:
                   - name: dept_id
-                    util: RandomUniqueCyclicIntGenWithPeriod
+                    util: RandomUniqueCyclicIntGen
                     params: [1,9,1]
                   - name: emp_id
-                    util: PrimaryIntGen
+                    util: PrimaryIntGenThroughput
                     params: [1, 1000000]
                   - name: name
                     util: RandomAString
@@ -71,9 +71,9 @@ microbenchmark:
                         - query: INSERT INTO THRPT_MVI_1k VALUES [(?,?,?,?,?,?,?,?::json,?,?,?)][pattern_count]
                           pattern_count: 1000
                           bindings:
-                              - util: RandomUniqueCyclicIntGenWithPeriod
+                              - util: RandomUniqueCyclicIntGen
                                 params: [1,9,1]
-                              - util: PrimaryIntGen
+                              - util: PrimaryIntGenThroughput
                                 params: [1000001, 100000000]
                               - util: RandomAString
                                 params: [10, 10]

@@ -49,7 +49,7 @@ The 2-arg (legacy / non-worker) constructor remains fully per-instance:
 it owns its own shuffled list and reshuffles it on exhaust independently.
 */
 
-public class RandomUniqueCyclicIntGenWithPeriod implements BaseUtil {
+public class RandomUniqueCyclicIntGen implements BaseUtil {
 
     /*
      * Shared, JVM-wide shuffle state keyed by the original
@@ -120,15 +120,15 @@ public class RandomUniqueCyclicIntGenWithPeriod implements BaseUtil {
     private int currentValue;
     private int currentPeriod;
 
-    public RandomUniqueCyclicIntGenWithPeriod(List<Object> values) {
-        if (values.size() != 3) {
+    public RandomUniqueCyclicIntGen(List<Object> values) {
+        if (!(values.size() >= 2 && values.size() <= 3)) {
             throw new RuntimeException("Incorrect number of parameters for util function "
                 + this.getClass());
         }
 
         int lower = ((Number) values.get(0)).intValue();
         int upper = ((Number) values.get(1)).intValue();
-        this.period = ((Number) values.get(2)).intValue();
+        this.period = values.size() == 3 ? ((Number) values.get(2)).intValue() : 1;
         validate(lower, upper, this.period);
 
         this.localShuffled = new ArrayList<>(upper - lower + 1);
@@ -145,15 +145,15 @@ public class RandomUniqueCyclicIntGenWithPeriod implements BaseUtil {
         this.currentPeriod = this.period;
     }
 
-    public RandomUniqueCyclicIntGenWithPeriod(List<Object> values, int workerId, int totalWorkers) {
-        if (values.size() != 3) {
+    public RandomUniqueCyclicIntGen(List<Object> values, int workerId, int totalWorkers) {
+        if (!(values.size() >= 2 && values.size() <= 3)) {
             throw new RuntimeException("Incorrect number of parameters for util function "
                 + this.getClass());
         }
 
         int lower = ((Number) values.get(0)).intValue();
         int upper = ((Number) values.get(1)).intValue();
-        this.period = ((Number) values.get(2)).intValue();
+        this.period = values.size() == 3 ? ((Number) values.get(2)).intValue() : 1;
         validate(lower, upper, this.period);
 
         /*
