@@ -1,0 +1,60 @@
+type: postgres
+driver: org.postgresql.Driver
+url: jdbc:postgresql://{{endpoint}}:5432/postgres?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
+username: {{username}}
+password: {{password}}
+batchsize: 128
+isolation: TRANSACTION_REPEATABLE_READ
+loaderThreads: 4
+terminals: 1
+collect_pg_stat_statements: true
+yaml_version: v1.0
+works:
+    work:
+        time_secs: 180
+        active_terminals: 1
+        rate: unlimited
+        warmup: 60
+microbenchmark:
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
+    properties:
+        setAutoCommit: true
+        create:
+            - DROP TABLE IF EXISTS THRPT_sec_idx_in_1_option;
+            - ALTER DATABASE postgres SET enable_seqscan=off;
+            - ALTER DATABASE postgres SET enable_bitmapscan=off;
+            - CREATE TABLE THRPT_sec_idx_in_1_option (id INT, c1 int, c2 int, payload text, PRIMARY KEY(id));
+            - CREATE INDEX idx_c2 ON THRPT_sec_idx_in_1_option (c2);
+
+        cleanup:
+            - ALTER DATABASE postgres SET enable_seqscan TO DEFAULT;
+            - ALTER DATABASE postgres SET enable_bitmapscan TO DEFAULT;
+            - DROP TABLE IF EXISTS THRPT_sec_idx_in_1_option;
+
+        loadRules:
+            - table: THRPT_sec_idx_in_1_option
+              rows: 1000000
+              columns:
+                  - name: id
+                    util: RandomUniqueIntGen
+                    params: [1, 1000000]
+                  - name: c1
+                    util: RandomUniqueIntGen
+                    params: [1, 1000000]
+                  - name: c2
+                    util: RandomUniqueIntGen
+                    params: [1, 1000000]
+                  - name: payload
+                    util: RandomAString
+                    params: [1024, 1024]
+        executeRules:
+            - workload: THRPT_seek_sec_idx_in_1_values
+              run:
+                  - name: THRPT_seek_sec_idx_in_1_values
+                    weight: 100
+                    queries:
+                        - query: SELECT * FROM THRPT_sec_idx_in_1_option WHERE c2 IN (?);
+                          bindings:
+                              - util: RandomNumber
+                                count: 1
+                                params: [1, 1000000]

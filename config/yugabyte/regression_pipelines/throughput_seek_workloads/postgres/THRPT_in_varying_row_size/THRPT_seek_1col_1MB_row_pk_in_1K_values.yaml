@@ -1,0 +1,56 @@
+type: postgres
+driver: org.postgresql.Driver
+url: jdbc:postgresql://{{endpoint}}:5432/postgres?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
+username: {{username}}
+password: {{password}}
+batchsize: 1
+isolation: TRANSACTION_REPEATABLE_READ
+loaderThreads: 4
+terminals: 1
+collect_pg_stat_statements: true
+yaml_version: v1.0
+works:
+    work:
+        time_secs: 180
+        active_terminals: 1
+        rate: unlimited
+        warmup: 60
+microbenchmark:
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
+    properties:
+        setAutoCommit: true
+        create:
+            - DROP TABLE IF EXISTS THRPT_in_1mb_row;
+            - ALTER DATABASE postgres SET enable_seqscan=off;
+            - ALTER DATABASE postgres SET enable_bitmapscan=off;
+            - CREATE TABLE THRPT_in_1mb_row (id INT, lookup_key INT, payload TEXT, PRIMARY KEY(id));
+
+        cleanup:
+            - DROP TABLE IF EXISTS THRPT_in_1mb_row;
+            - ALTER DATABASE postgres SET enable_seqscan TO DEFAULT;
+            - ALTER DATABASE postgres SET enable_bitmapscan TO DEFAULT;
+            
+        loadRules:
+            - table: THRPT_in_1mb_row
+              rows: 10000
+              columns:
+                  - name: id
+                    util: RandomUniqueIntGen
+                    params: [1, 10000]
+                  - name: lookup_key
+                    util: RandomUniqueIntGen
+                    params: [1, 10000]
+                  - name: payload
+                    util: RandomAString
+                    params: [1048576, 1048576]
+        executeRules:
+            - workload: THRPT_seek_1col_1MB_row_pk_in_1K_values
+              run:
+                  - name: THRPT_seek_1col_1MB_row_pk_in_1K_values
+                    weight: 100
+                    queries:
+                        - query: SELECT * FROM THRPT_in_1mb_row WHERE id IN (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
+                          bindings:
+                              - util: RandomNumber
+                                count: 100
+                                params: [1, 10000]
