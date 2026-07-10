@@ -1,0 +1,60 @@
+type: YUGABYTE
+driver: com.yugabyte.Driver
+url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true&load-balance=true
+username: {{username}}
+password: {{password}}
+batchsize: 128
+isolation: TRANSACTION_REPEATABLE_READ
+loaderThreads: 4
+terminals: 1
+collect_pg_stat_statements: true
+use_dist_in_explain: true
+yaml_version: v1.0
+works:
+    work:
+        time_secs: 180
+        active_terminals: 1
+        rate: unlimited
+        warmup: 60
+microbenchmark:
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
+    properties:
+        setAutoCommit: true
+        create:
+            - DROP TABLE IF EXISTS THRPT_sec_idx_between_range_10;
+            - CREATE TABLE THRPT_sec_idx_between_range_10 (id INT, c1 int, c2 int, payload text, PRIMARY KEY(id asc)) split at values ((333333), (666666));
+            - CREATE INDEX idx_c2 ON THRPT_sec_idx_between_range_10 (c2 asc) split at values ((333333), (666666));
+
+        cleanup:
+            - DROP TABLE IF EXISTS THRPT_sec_idx_between_range_10;
+
+        loadRules:
+            - table: THRPT_sec_idx_between_range_10
+              rows: 1000000
+              columns:
+                  - name: id
+                    util: RandomUniqueIntGen
+                    params: [1, 1000000]
+                  - name: c1
+                    util: RandomUniqueIntGen
+                    params: [1, 1000000]
+                  - name: c2
+                    util: RandomUniqueIntGen
+                    params: [1, 1000000]
+                  - name: payload
+                    util: RandomAString
+                    params: [1024, 1024]
+        executeRules:
+            - workload: THRPT_next_sec_idx_btwn_10
+              run:
+                  - name: THRPT_next_sec_idx_btwn_10
+                    weight: 100
+                    queries:
+                        - query: SELECT * FROM THRPT_sec_idx_between_range_10 WHERE c2 between ? and ?;
+                          bindings:
+                              - util: RandomNumber
+                                params: [1, 999990]
+                                referenceName: c2
+                              - util: ExpressionEval
+                                params:
+                                    - "c2 + 10"
