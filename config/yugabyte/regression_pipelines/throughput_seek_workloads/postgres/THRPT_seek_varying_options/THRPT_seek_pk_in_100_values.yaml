@@ -9,6 +9,12 @@ loaderThreads: 4
 terminals: 1
 collect_pg_stat_statements: true
 yaml_version: v1.0
+targetCPU: 75
+toleranceCPU: 5
+optimalThreads: true
+samplingTime: 120
+time: 600
+flatMaxScalingSteps: 2
 works:
     work:
         time_secs: 180
