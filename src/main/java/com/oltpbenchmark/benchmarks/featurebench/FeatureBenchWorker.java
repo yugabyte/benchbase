@@ -219,8 +219,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             int countResultSetGen = 0;
             boolean distOptionPresent = true;
             while (countResultSetGen < 3) {
-                try {
-                    ddl.executeQuery();
+                try (ResultSet ignored = ddl.executeQuery()) {
                     if(!conn.getAutoCommit())
                         conn.commit();
                 } catch (PSQLException e) {
@@ -242,13 +241,14 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             }
             jsonObject.put("SQL", ddl);
             double explainStart = System.currentTimeMillis();
-            ResultSet rs = ddl.executeQuery();
-            if(!conn.getAutoCommit())
-                conn.commit();
             StringBuilder data = new StringBuilder();
-            while (rs.next()) {
-                data.append(rs.getString(1));
-                data.append("\n");
+            try (ResultSet rs = ddl.executeQuery()) {
+                if(!conn.getAutoCommit())
+                    conn.commit();
+                while (rs.next()) {
+                    data.append(rs.getString(1));
+                    data.append("\n");
+                }
             }
             double explainEnd = System.currentTimeMillis();
             jsonObject.put("ResultSet", data.toString());
@@ -286,37 +286,49 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, 
                    InstantiationException, IllegalAccessException {
         
-        Object[] generatedValues = new Object[baseUtils.size()];
-        Map<String, Object> context = new HashMap<>();
-        
+        int size = baseUtils.size();
+        Object[] generatedValues = new Object[size];
+        // Allocated lazily: most queries have neither reference names nor expressions,
+        // so we avoid a throwaway HashMap on every execution in the worker hot loop.
+        Map<String, Object> context = null;
+        boolean hasExpression = false;
+
         // First pass: generate all non-expression values and build context
-        for (int j = 0; j < baseUtils.size(); j++) {
-            if (baseUtils.get(j).isExpression()) {
+        for (int j = 0; j < size; j++) {
+            UtilToMethod util = baseUtils.get(j);
+            if (util.isExpression()) {
                 // Skip expressions in first pass
+                hasExpression = true;
                 continue;
             }
-            Object value = baseUtils.get(j).get();
+            Object value = util.get();
             generatedValues[j] = value;
-            
+
             // Add to context if it has a reference name
-            if (baseUtils.get(j).getReferenceName() != null) {
-                context.put(baseUtils.get(j).getReferenceName(), value);
+            if (util.getReferenceName() != null) {
+                if (context == null) {
+                    context = new HashMap<>();
+                }
+                context.put(util.getReferenceName(), value);
             }
         }
-        
-        // Second pass: evaluate expressions with context
-        for (int j = 0; j < baseUtils.size(); j++) {
-            if (baseUtils.get(j).isExpression()) {
-                // This is an expression - evaluate it
-                BaseUtil util = baseUtils.get(j).getInstance();
-                if (util instanceof ExpressionEval) {
-                    ((ExpressionEval) util).setContext(context);
-                    Object value = baseUtils.get(j).get();
-                    generatedValues[j] = value;
+
+        // Second pass: evaluate expressions with context (skipped entirely when none)
+        if (hasExpression) {
+            Map<String, Object> ctx = (context != null) ? context : Collections.emptyMap();
+            for (int j = 0; j < size; j++) {
+                UtilToMethod utilMethod = baseUtils.get(j);
+                if (utilMethod.isExpression()) {
+                    // This is an expression - evaluate it
+                    BaseUtil util = utilMethod.getInstance();
+                    if (util instanceof ExpressionEval) {
+                        ((ExpressionEval) util).setContext(ctx);
+                        generatedValues[j] = utilMethod.get();
+                    }
                 }
             }
         }
-        
+
         return generatedValues;
     }
 
@@ -352,11 +364,15 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                         stmt.setObject(j + 1, generatedValues[j]);
                     }
                     
-                    if (query.isSelectQuery() || stmt.toString().toUpperCase().contains(" RETURNING ")) {
-                        ResultSet rs = stmt.executeQuery();
-                        int countSet = 0;
-                        while (rs.next()) countSet++;
-                        if (countSet == 0) zeroRowsTransaction = true;
+                    if (query.isSelectQuery() || query.isReturningQuery()) {
+                        // try-with-resources so the (possibly large) result set is
+                        // released as soon as we finish counting rows, rather than
+                        // lingering on the cached PreparedStatement until its next reuse.
+                        try (ResultSet rs = stmt.executeQuery()) {
+                            long countSet = 0;
+                            while (rs.next()) countSet++;
+                            if (countSet == 0) zeroRowsTransaction = true;
+                        }
                     } else {
                         int updatedRows = stmt.executeUpdate();
                         if (updatedRows == 0) zeroRowsTransaction = true;
@@ -391,13 +407,10 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
 
                 List<JSONObject> jsonResultsList = new ArrayList<>();
                 JSONObject pgStatOutputs = null;
-                JSONObject pgPreparedStatementOutputs = null;
                 JSONArray pgStatUserIndexesOutputs = null;
                 try {
                     LOG.info("Collecting pg_stat_statements for workload : " + this.workloadName);
                     pgStatOutputs = callPGStats();
-                    /*TODO: remove collecting prepared_statements*/
-                    pgPreparedStatementOutputs = collectPgPreparedStatements();
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }
@@ -420,8 +433,6 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                     if (entry.getValue() != -1)
                         inner.put("explainPlanRcValidationSuccess", Integer.parseInt((String) queryToExplainMap.getOrDefault(entry.getKey(), new JSONObject()).get("ExplainPlanRows")) == entry.getValue());
                     inner.put("explain", queryToExplainMap.getOrDefault(entry.getKey(), new JSONObject()));
-                    /*TODO: remove prepared_statements*/
-                    inner.put("prepared_statements", pgPreparedStatementOutputs == null ? new JSONObject() : pgPreparedStatementOutputs);
                     jsonResultsList.add(inner);
                 }
                 if (pgStatUserIndexesOutputs != null) {
@@ -454,20 +465,21 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
 
     private JSONObject callPGStats() throws SQLException{
         String pgStatQuery = "select * from pg_stat_statements;";
-        Statement stmt = this.conn.createStatement();
-        ResultSet resultSet = stmt.executeQuery(pgStatQuery);
-        if(!conn.getAutoCommit())
-            conn.commit();
-        ResultSetMetaData rsmd = resultSet.getMetaData();
-        int resultSetCount = 0;
         JSONObject pgStatOutputs = new JSONObject();
-        while (resultSet.next()) {
-            JSONObject pgStatOutputPerRecord = new JSONObject();
-            for ( int i = 1; i <= rsmd.getColumnCount(); i++) {
-                pgStatOutputPerRecord.put(rsmd.getColumnName(i), resultSet.getString(i));
+        try (Statement stmt = this.conn.createStatement();
+             ResultSet resultSet = stmt.executeQuery(pgStatQuery)) {
+            if(!conn.getAutoCommit())
+                conn.commit();
+            ResultSetMetaData rsmd = resultSet.getMetaData();
+            int resultSetCount = 0;
+            while (resultSet.next()) {
+                JSONObject pgStatOutputPerRecord = new JSONObject();
+                for ( int i = 1; i <= rsmd.getColumnCount(); i++) {
+                    pgStatOutputPerRecord.put(rsmd.getColumnName(i), resultSet.getString(i));
+                }
+                pgStatOutputs.put("Record_" + resultSetCount, pgStatOutputPerRecord);
+                resultSetCount++;
             }
-            pgStatOutputs.put("Record_" + resultSetCount, pgStatOutputPerRecord);
-            resultSetCount++;
         }
         return pgStatOutputs;
     }
@@ -548,44 +560,24 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
         return matchedKey != null ? (JSONObject) pgStatOutputs.get(matchedKey) : null;
     }
 
-    /*TODO: remove collectPgPreparedStatements*/
-    private JSONObject collectPgPreparedStatements() throws SQLException{
-        String pgPreparedStatements = "select * from pg_prepared_statements;";
-        Statement stmt = this.conn.createStatement();
-        ResultSet resultSet = stmt.executeQuery(pgPreparedStatements);
-        if(!conn.getAutoCommit())
-            conn.commit();
-        ResultSetMetaData rsmd = resultSet.getMetaData();
-        int resultSetCount = 0;
-        JSONObject pgPreparedStatementOutputs = new JSONObject();
-        while (resultSet.next()) {
-            JSONObject pgPreparedStatementOutputPerRecord = new JSONObject();
-            for ( int i = 1; i <= rsmd.getColumnCount(); i++) {
-                pgPreparedStatementOutputPerRecord.put(rsmd.getColumnName(i), resultSet.getString(i));
-            }
-            pgPreparedStatementOutputs.put("Record_" + resultSetCount, pgPreparedStatementOutputPerRecord);
-            resultSetCount++;
-        }
-        return pgPreparedStatementOutputs;
-    }
-
     private JSONArray callPGStatUserIndexes() throws SQLException{
         String pgStatUserIndexes = "SELECT relname AS table_name, seq_scan, idx_scan, seq_tup_read, idx_tup_fetch FROM pg_stat_user_tables;";
-        Statement stmt = this.conn.createStatement();
-        ResultSet resultSet = stmt.executeQuery(pgStatUserIndexes);
-        if(!conn.getAutoCommit())
-            conn.commit();
-        ResultSetMetaData rsmd = resultSet.getMetaData();
         JSONArray pgStatUserIndexesOutputs = new JSONArray();
-        while (resultSet.next()) {
-            JSONObject pgStatUserIndexesOutputPerRecord = new JSONObject();
-            for (int i = 1; i <= rsmd.getColumnCount(); i++) {
-                pgStatUserIndexesOutputPerRecord.put(
-                    rsmd.getColumnName(i),
-                    resultSet.getString(i)
-                );
+        try (Statement stmt = this.conn.createStatement();
+             ResultSet resultSet = stmt.executeQuery(pgStatUserIndexes)) {
+            if(!conn.getAutoCommit())
+                conn.commit();
+            ResultSetMetaData rsmd = resultSet.getMetaData();
+            while (resultSet.next()) {
+                JSONObject pgStatUserIndexesOutputPerRecord = new JSONObject();
+                for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+                    pgStatUserIndexesOutputPerRecord.put(
+                        rsmd.getColumnName(i),
+                        resultSet.getString(i)
+                    );
+                }
+                pgStatUserIndexesOutputs.put(pgStatUserIndexesOutputPerRecord);
             }
-            pgStatUserIndexesOutputs.put(pgStatUserIndexesOutputPerRecord);
         }
         return pgStatUserIndexesOutputs;
     }
