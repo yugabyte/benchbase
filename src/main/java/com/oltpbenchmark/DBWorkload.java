@@ -729,9 +729,12 @@ public class DBWorkload {
                             int restingTimeSecs = xmlConfig.getInt("restingTimeSecs", 120);
                             int flatMaxScalingSteps = xmlConfig.getInt("flatMaxScalingSteps", DEFAULT_FLAT_MAX_SCALING_STEPS);
                             boolean useThroughputThreshold = xmlConfig.getBoolean("useThroughputThreshold", false);
+                            boolean truncateBetweenIterations = xmlConfig.getBoolean("truncateBetweenIterations", false);
+                            List<String> iterationCleanupDDLs = xmlConfig.containsKey("microbenchmark/properties/iterationCleanup")
+                                ? xmlConfig.getList(String.class, "microbenchmark/properties/iterationCleanup") : null;
                             int optimalThreads = findOptimalThreadCount(benchList.get(0), minThreads, targetCPU, toleranceCPU, workloadName, workCount, samplingTime,
                                 scalingMinDeltaPercent, threadIncrement, restingTimeSecs, flatMaxScalingSteps, linearPGthread,
-                                useThroughputThreshold);
+                                useThroughputThreshold, truncateBetweenIterations, iterationCleanupDDLs);
 
                             // Sleep between optimal-threads search and the final measured run so system can stabilize
                             if (restingTimeSecs > 0) {
@@ -831,9 +834,12 @@ public class DBWorkload {
                             int restingTimeSecs = xmlConfig.getInt("restingTimeSecs", 120);
                             int flatMaxScalingSteps = xmlConfig.getInt("flatMaxScalingSteps", DEFAULT_FLAT_MAX_SCALING_STEPS);
                             boolean useThroughputThreshold = xmlConfig.getBoolean("useThroughputThreshold", false);
+                            boolean truncateBetweenIterations = xmlConfig.getBoolean("truncateBetweenIterations", false);
+                            List<String> iterationCleanupDDLs = xmlConfig.containsKey("microbenchmark/properties/iterationCleanup")
+                                ? xmlConfig.getList(String.class, "microbenchmark/properties/iterationCleanup") : null;
                             int optimalThreads = findOptimalThreadCount(benchList.get(0), minThreads, targetCPU, toleranceCPU, workloadName, workCount, samplingTime,
                                 scalingMinDeltaPercent, threadIncrement, restingTimeSecs, flatMaxScalingSteps, linearPGthread,
-                                useThroughputThreshold);
+                                useThroughputThreshold, truncateBetweenIterations, iterationCleanupDDLs);
 
                             // Sleep between optimal-threads search and the final measured run so system can stabilize
                             if (restingTimeSecs > 0) {
@@ -1544,7 +1550,7 @@ public class DBWorkload {
 
     private static int findOptimalThreadCount(BenchmarkModule bench, int minThreads, double targetCPU, double toleranceCPU, String workloadName, int workCount, int samplingTime,
             double scalingMinDeltaPercent, int threadIncrement, int restingTimeSecs, int flatMaxScalingSteps, boolean linearPGthread,
-            boolean useThroughputThreshold) throws InterruptedException {
+            boolean useThroughputThreshold, boolean truncateBetweenIterations, List<String> iterationCleanupDDLs) throws InterruptedException {
         double minTargetCPU = targetCPU - toleranceCPU;
         double maxTargetCPU = targetCPU + toleranceCPU;
         LOG.info("minTargetCPU: {}, maxTargetCPU: {}", minTargetCPU, maxTargetCPU);
@@ -1657,6 +1663,52 @@ public class DBWorkload {
     );
 
         for(int iter=0; iter<max_iterations; iter++) {
+
+            // Truncate/clean tables between iterations so the next run starts fresh
+            if (iter != 0 && truncateBetweenIterations) {
+                if (iterationCleanupDDLs != null && !iterationCleanupDDLs.isEmpty()) {
+                    LOG.info("Running {} iterationCleanup DDL(s) between optimal-thread iterations", iterationCleanupDDLs.size());
+                    try (Connection cleanupConn = bench.makeConnection();
+                         Statement cleanupStmt = cleanupConn.createStatement()) {
+                        for (String ddl : iterationCleanupDDLs) {
+                            LOG.info("iterationCleanup: {}", ddl);
+                            cleanupStmt.execute(ddl);
+                        }
+                    } catch (SQLException e) {
+                        LOG.error("Error executing iterationCleanup DDLs between optimal-thread iterations", e);
+                    }
+                } else {
+                    HierarchicalConfiguration<ImmutableNode> xmlConfig = bench.getWorkloadConfiguration().getXmlConfig();
+                    List<HierarchicalConfiguration<ImmutableNode>> loadRulesConfig =
+                        xmlConfig.configurationsAt("microbenchmark/properties/loadRules");
+                    if (loadRulesConfig != null && !loadRulesConfig.isEmpty()) {
+                        LOG.info("Auto-truncating tables derived from loadRules between optimal-thread iterations");
+                        try (Connection cleanupConn = bench.makeConnection();
+                             Statement cleanupStmt = cleanupConn.createStatement()) {
+                            for (HierarchicalConfiguration<ImmutableNode> lr : loadRulesConfig) {
+                                String[] tableNames = lr.getString("table").split(",");
+                                int count = lr.containsKey("count") ? lr.getInt("count") : 0;
+                                for (String tableName : tableNames) {
+                                    if (count > 0) {
+                                        for (int c = 1; c <= count; c++) {
+                                            String fullName = tableName.strip() + c;
+                                            LOG.info("TRUNCATE TABLE {}", fullName);
+                                            cleanupStmt.execute("TRUNCATE TABLE " + fullName);
+                                        }
+                                    } else {
+                                        LOG.info("TRUNCATE TABLE {}", tableName.strip());
+                                        cleanupStmt.execute("TRUNCATE TABLE " + tableName.strip());
+                                    }
+                                }
+                            }
+                        } catch (SQLException e) {
+                            LOG.error("Error auto-truncating tables between optimal-thread iterations", e);
+                        }
+                    } else {
+                        LOG.warn("truncateBetweenIterations is true but no iterationCleanup DDLs or loadRules found; skipping cleanup");
+                    }
+                }
+            }
 
             // Sleep between iterations so the system is stable again
             if(iter!=0 && restingTimeSecs > 0) {
