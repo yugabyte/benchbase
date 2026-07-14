@@ -1605,7 +1605,7 @@ public class DBWorkload {
         String rdsInstanceIdentifier = null;
         String awsRegion = null;
 
-        // Remove: Set start 3 for yugabyteDB
+        // Set start 3 for yugabyteDB
         if (isYugabyteDatabase) {
             threads = 3;
         }
@@ -1708,10 +1708,21 @@ public class DBWorkload {
                 });
                 workloadThread.start();
 
-                // Wait for measurement phase to actually start
+                // Wait for measurement phase to actually start. Bound the wait so we don't hang forever if the workload thread dies before reaching MEASURE.
+                final long measureWaitTimeoutMs = totalTime * 1000L + 120_000L;
+                final long measureWaitStart = System.currentTimeMillis();
                 WorkloadState workloadState = bench.getWorkloadConfiguration().getWorkloadState();
 
-                while(workloadState == null || workloadState.getBenchmarkState().getState() != State.MEASURE) {
+                while (workloadState == null || workloadState.getBenchmarkState().getState() != State.MEASURE) {
+                    if (!workloadThread.isAlive()) {
+                        throw new RuntimeException(
+                            "Workload thread died before reaching MEASURE state (threads=" + threads + ")");
+                    }
+                    if (System.currentTimeMillis() - measureWaitStart > measureWaitTimeoutMs) {
+                        throw new RuntimeException(
+                            "Timed out waiting for MEASURE state after "
+                                + (measureWaitTimeoutMs / 1000) + "s (threads=" + threads + ")");
+                    }
                     Thread.sleep(2000);
                     workloadState = bench.getWorkloadConfiguration().getWorkloadState();
                 }                

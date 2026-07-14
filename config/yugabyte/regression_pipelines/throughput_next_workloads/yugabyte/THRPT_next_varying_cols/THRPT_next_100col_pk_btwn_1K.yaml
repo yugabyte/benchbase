@@ -1,0 +1,65 @@
+type: YUGABYTE
+driver: com.yugabyte.Driver
+url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true&load-balance=true
+username: {{username}}
+password: {{password}}
+batchsize: 128
+isolation: TRANSACTION_REPEATABLE_READ
+loaderThreads: 4
+terminals: 1
+collect_pg_stat_statements: true
+use_dist_in_explain: true
+yaml_version: v1.0
+targetCPU: 75
+toleranceCPU: 5
+optimalThreads: true
+samplingTime: 120
+time: 600
+works:
+    work:
+        time_secs: 180
+        active_terminals: 1
+        rate: unlimited
+        warmup: 60
+microbenchmark:
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
+    properties:
+        setAutoCommit: true
+        create:
+            - DROP TABLE IF EXISTS THRPT_between_100_cols;
+            - CREATE TABLE THRPT_between_100_cols (id INT, c1 int, c2 int, payload1 text, payload2 text, payload3 text, payload4 text, payload5 text, payload6 text, payload7 text, payload8 text, payload9 text, payload10 text, payload11 text, payload12 text, payload13 text, payload14 text, payload15 text, payload16 text, payload17 text, payload18 text, payload19 text, payload20 text, payload21 text, payload22 text, payload23 text, payload24 text, payload25 text, payload26 text, payload27 text, payload28 text, payload29 text, payload30 text, payload31 text, payload32 text, payload33 text, payload34 text, payload35 text, payload36 text, payload37 text, payload38 text, payload39 text, payload40 text, payload41 text, payload42 text, payload43 text, payload44 text, payload45 text, payload46 text, payload47 text, payload48 text, payload49 text, payload50 text, payload51 text, payload52 text, payload53 text, payload54 text, payload55 text, payload56 text, payload57 text, payload58 text, payload59 text, payload60 text, payload61 text, payload62 text, payload63 text, payload64 text, payload65 text, payload66 text, payload67 text, payload68 text, payload69 text, payload70 text, payload71 text, payload72 text, payload73 text, payload74 text, payload75 text, payload76 text, payload77 text, payload78 text, payload79 text, payload80 text, payload81 text, payload82 text, payload83 text, payload84 text, payload85 text, payload86 text, payload87 text, payload88 text, payload89 text, payload90 text, payload91 text, payload92 text, payload93 text, payload94 text, payload95 text, payload96 text, payload97 text, payload98 text, payload99 text, payload100 text, PRIMARY KEY(id asc)) split at values ((333333), (666666));
+
+        cleanup:
+            - DROP TABLE IF EXISTS THRPT_between_100_cols;
+
+        loadRules:
+            - table: THRPT_between_100_cols
+              rows: 1000000
+              columns:
+                  - name: id
+                    util: RandomUniqueIntGen
+                    params: [1, 1000000]
+                  - name: c1
+                    util: RandomUniqueIntGen
+                    params: [1, 1000000]
+                  - name: c2
+                    util: RandomUniqueIntGen
+                    params: [1, 1000000]
+                  - name: payload
+                    count: 100
+                    util: RandomAString
+                    params: [10, 10]
+        executeRules:
+            - workload: THRPT_next_100col_pk_btwn_1K
+              run:
+                  - name: THRPT_next_100col_pk_btwn_1K
+                    weight: 100
+                    queries:
+                        - query: SELECT * FROM THRPT_between_100_cols WHERE id between ? and ?;
+                          bindings:
+                              - util: RandomNumber
+                                params: [1, 999000]
+                                referenceName: id1
+                              - util: ExpressionEval
+                                params:
+                                    - "id1 + 1000"

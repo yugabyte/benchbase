@@ -1,0 +1,100 @@
+type: postgres
+driver: org.postgresql.Driver
+url: jdbc:postgresql://{{endpoint}}:5432/postgres?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
+username: {{username}}
+password: {{password}}
+batchsize: 1
+isolation: TRANSACTION_REPEATABLE_READ
+loaderThreads: 4
+terminals: 1
+collect_pg_stat_statements: true
+yaml_version: v1.0
+targetCPU: 75
+toleranceCPU: 5
+optimalThreads: true
+samplingTime: 120
+time: 600
+flatMaxScalingSteps: 2
+works:
+    work:
+        time_secs: 180
+        active_terminals: 1
+        rate: unlimited
+        warmup: 60
+microbenchmark:
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
+    properties:
+        setAutoCommit: false
+        create:
+            - DROP TABLE IF EXISTS THRPT_MVI_10KB_row_size;
+            - CREATE TABLE THRPT_MVI_10KB_row_size (dept_id INT, emp_id INT, name VARCHAR(10), email VARCHAR(20), salary FLOAT, hire_date DATE, department VARCHAR(20), payload JSON, details TEXT, is_active BOOLEAN, last_login TIMESTAMP, primary key(dept_id, emp_id));
+        cleanup:
+            - DROP TABLE IF EXISTS THRPT_MVI_10KB_row_size;
+
+        loadRules:
+            - table: THRPT_MVI_10KB_row_size
+              rows: 100000
+              columns:
+                  - name: dept_id
+                    util: RandomUniqueCyclicIntGen
+                    params: [1,9,1]
+                  - name: emp_id
+                    util: PrimaryIntGenThroughput
+                    params: [1, 1000000]
+                  - name: name
+                    util: RandomAString
+                    params: [10, 10]
+                  - name: email
+                    util: RandomAString
+                    params: [20, 20]
+                  - name: salary
+                    util: RandomFloat
+                    params: [1, 100000, 2]
+                  - name: hire_date
+                    util: RandomDate
+                    params: [2000, 2026]
+                  - name: department
+                    util: RandomAString
+                    params: [20, 20]
+                  - name: payload
+                    util: RandomJson
+                    params: [8, 640]
+                  - name: details
+                    util: RandomAString
+                    params: [5120, 5120]
+                  - name: is_active
+                    util: RandomBoolean
+                  - name: last_login
+                    util: RandomTimestamp
+                    params: [10000000]
+
+        executeRules:
+            - workload: THRPT_multivalue_insert_10KB_row
+              run:
+                  - name: THRPT_multivalue_insert_10KB_row
+                    weight: 100
+                    queries:
+                        - query: INSERT INTO THRPT_MVI_10KB_row_size VALUES [(?,?,?,?,?,?,?,?::json,?,?,?)][pattern_count]
+                          pattern_count: 10
+                          bindings:
+                              - util: RandomUniqueCyclicIntGen
+                                params: [1,9,1]
+                              - util: PrimaryIntGenThroughput
+                                params: [1000001, 100000000]
+                              - util: RandomAString
+                                params: [10, 10]
+                              - util: RandomAString
+                                params: [20, 20]
+                              - util: RandomFloat
+                                params: [1, 100000, 2]
+                              - util: RandomDate
+                                params: [2000, 2026]
+                              - util: RandomAString
+                                params: [20, 20]
+                              - util: RandomJson
+                                params: [8, 640]
+                              - util: RandomAString
+                                params: [5120, 5120]
+                              - util: RandomBoolean
+                              - util: RandomTimestamp
+                                params: [10000000]
