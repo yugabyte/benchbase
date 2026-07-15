@@ -28,13 +28,13 @@ microbenchmark:
         setAutoCommit: true
         create:
             - DROP TABLE IF EXISTS THRPT_MVI_1_sysbench;
-            - CREATE TABLE THRPT_MVI_1_sysbench (k INTEGER, id INTEGER, c CHAR(120), pad CHAR(60), PRIMARY KEY (k ASC, id ASC)) SPLIT AT VALUES ((3), (6));
+            - CREATE TABLE THRPT_MVI_1_sysbench (k INTEGER, id INTEGER, c CHAR(900), pad CHAR(60), PRIMARY KEY (k ASC, id ASC)) SPLIT AT VALUES ((3), (6));
         cleanup:
             - DROP TABLE IF EXISTS THRPT_MVI_1_sysbench;
 
         iterationCleanup:
             - DROP TABLE IF EXISTS THRPT_MVI_1_sysbench;
-            - CREATE TABLE THRPT_MVI_1_sysbench (k INTEGER, id INTEGER, c CHAR(120), pad CHAR(60), PRIMARY KEY (k ASC, id ASC)) SPLIT AT VALUES ((3), (6));
+            - CREATE TABLE THRPT_MVI_1_sysbench (k INTEGER, id INTEGER, c CHAR(900), pad CHAR(60), PRIMARY KEY (k ASC, id ASC)) SPLIT AT VALUES ((3), (6));
 
         loadRules:
             - table: THRPT_MVI_1_sysbench
@@ -48,7 +48,7 @@ microbenchmark:
                     params: [1, 1000000]
                   - name: c
                     util: RandomAString
-                    params: [120, 120]
+                    params: [900, 900]
                   - name: pad
                     util: RandomAString
                     params: [60, 60]
@@ -67,6 +67,6 @@ microbenchmark:
                               - util: PrimaryIntGenThroughput
                                 params: [1000001, 100000000]
                               - util: RandomAString
-                                params: [120, 120]
+                                params: [900, 900]
                               - util: RandomAString
                                 params: [60, 60]
