@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.Statement;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
@@ -38,7 +39,12 @@ import java.util.*;
 
 public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
     private static final Logger LOG = LoggerFactory.getLogger(FeatureBenchLoader.class);
-    static int numberOfGeneratorFinished = 0;
+    // Incremented by each loader thread at the end of its load(), and read in afterLoad()
+    // (which the framework runs per thread, concurrently, in a finally block) to detect the
+    // last finisher that should trigger the afterLoad DDLs. Must be atomic: with a plain int,
+    // concurrent loader threads (loaderthreads > 1) lose increments, the counter never reaches
+    // sizeOfLoadRule, and the afterLoad phase silently never runs.
+    static AtomicInteger numberOfGeneratorFinished = new AtomicInteger(0);
     public String workloadClass = null;
     public HierarchicalConfiguration<ImmutableNode> config = null;
     public YBMicroBenchmark ybm = null;
@@ -228,7 +234,7 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
                 throw new RuntimeException(e);
             }
 
-            numberOfGeneratorFinished += 1;
+            numberOfGeneratorFinished.incrementAndGet();
         }
 
         private void typeCastDataTypes(StringBuilder valueString, int index) {
@@ -286,7 +292,7 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
 
         @Override
         public void afterLoad() {
-            if (numberOfGeneratorFinished != sizeOfLoadRule) return;
+            if (numberOfGeneratorFinished.get() != sizeOfLoadRule) return;
             afterLoadPhaseYaml();
         }
     }

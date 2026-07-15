@@ -60,7 +60,19 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
     private YBMicroBenchmark ybm;
     private final List<ExecuteRule> executeRules;
     private final String workloadName;
-    private HashMap<String, PreparedStatement> preparedStatementsPerQuery;
+    // The "execute" flag and whether any executeRules exist are constant for the life of a
+    // worker, so resolve them once here instead of re-parsing the HierarchicalConfiguration
+    // key path on every executeWork() call (the per-transaction hot loop). Both are per-worker
+    // final state, so this is safe at any terminal count.
+    private final boolean executeCustom;
+    private final boolean hasExecuteRules;
+    // Keyed by the Query object (identity semantics -- Query does not override equals/hashCode)
+    // rather than by the SQL text, so each lookup in the hot loop is an identity hash + reference
+    // compare instead of a full String.equals() over the (potentially very long) SQL. Each worker
+    // owns a distinct Query graph (see FeatureBenchBenchmark.configToExecuteRules, called per
+    // worker), and this map + its statements are bound to this worker's connection, so it stays
+    // private per worker.
+    private Map<Query, PreparedStatement> preparedStatementsPerQuery;
     public static Map<String,JSONObject> queryToExplainMap = new HashMap<>();
 
     static AtomicBoolean isInitializeDone = new AtomicBoolean(false);
@@ -85,6 +97,8 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
         this.executeRules = executeRules;
         this.config = workerConfig;
         this.workloadName = workloadName;
+        this.executeCustom = config.containsKey("execute") && config.getBoolean("execute");
+        this.hasExecuteRules = executeRules != null && !executeRules.isEmpty();
         // NOTE: per-workload shared state is reset once in
         // FeatureBenchBenchmark.makeWorkersImpl (via resetSharedState()) before any
         // worker is constructed -- not here -- so the "run once" guards do not depend
@@ -114,12 +128,11 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
 
     protected void initialize() {
         try {
-            preparedStatementsPerQuery = new HashMap<>();
+            preparedStatementsPerQuery = new IdentityHashMap<>();
             for (ExecuteRule executeRule : executeRules) {
                 for (Query query : executeRule.getQueries()) {
-                    String queryStmt = query.getQuery();
-                    PreparedStatement stmt = conn.prepareStatement(queryStmt);
-                    preparedStatementsPerQuery.put(queryStmt, stmt);
+                    PreparedStatement stmt = conn.prepareStatement(query.getQuery());
+                    preparedStatementsPerQuery.put(query, stmt);
                 }
             }
         } catch (Exception e) {
@@ -390,10 +403,10 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
     protected TransactionStatus executeWork(Connection conn, TransactionType txnType) throws
         UserAbortException, SQLException {
         try {
-            if (config.containsKey("execute") && config.getBoolean("execute")) {
+            if (executeCustom) {
                 ybm.execute(conn);
                 return TransactionStatus.SUCCESS;
-            } else if (executeRules == null || executeRules.size() == 0) {
+            } else if (!hasExecuteRules) {
                 if (this.configuration.getWorkloadState().getGlobalState() == State.MEASURE) {
                     ybm.executeOnce(conn, this.getBenchmark());
                 }
@@ -404,8 +417,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             ExecuteRule executeRule = executeRules.get(executeRuleIndex);
             boolean zeroRowsTransaction = false;
             for (Query query : executeRule.getQueries()) {
-                String queryStmt = query.getQuery();
-                PreparedStatement stmt = this.preparedStatementsPerQuery.get(queryStmt);
+                PreparedStatement stmt = this.preparedStatementsPerQuery.get(query);
                 List<UtilToMethod> baseUtils = query.getBaseUtils();
                 int count = query.getCount();
                 
@@ -505,7 +517,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                 isPGStatStatementCollected.set(true);
             }
 
-            if (((config.containsKey("execute") && config.getBoolean("execute")) || (executeRules == null || executeRules.isEmpty())) && !isCleanUpDone.get()) {
+            if ((executeCustom || !hasExecuteRules) && !isCleanUpDone.get()) {
                 try {
                     ybm.cleanUp(conn);
                 } catch (SQLException e) {
