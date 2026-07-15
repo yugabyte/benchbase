@@ -52,6 +52,10 @@ import java.util.regex.Pattern;
  */
 public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
     private static final Logger LOG = LoggerFactory.getLogger(FeatureBenchWorker.class);
+    // SQL strings and explain plans are collected verbatim and can balloon the detailed results
+    // JSON (e.g. multi-row INSERTs inline every value). Beyond this length they are trimmed, since
+    // only the standard SQL structure is of interest, not the actual bound values.
+    private static final int MAX_COLLECTED_STRING_LENGTH = 1000;
     static AtomicBoolean isCleanUpDone = new AtomicBoolean(false);
     private final String workloadClass;
     private final HierarchicalConfiguration<ImmutableNode> config;
@@ -240,7 +244,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                 }
                 countResultSetGen++;
             }
-            jsonObject.put("SQL", ddl);
+            jsonObject.put("SQL", trimToMaxLength(ddl.toString()));
             double explainStart = System.currentTimeMillis();
             ResultSet rs = ddl.executeQuery();
             if(!conn.getAutoCommit())
@@ -548,6 +552,20 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
         return matchedKey != null ? (JSONObject) pgStatOutputs.get(matchedKey) : null;
     }
 
+    /**
+     * Trims a collected SQL/explain string to {@link #MAX_COLLECTED_STRING_LENGTH} characters so the
+     * detailed results JSON stays small. The bound values (e.g. the VALUES (...) list of a multi-row
+     * INSERT) are not of interest — only the standard SQL structure is — so anything beyond the limit
+     * is dropped and replaced with a truncation marker noting how many characters were removed.
+     */
+    private static String trimToMaxLength(String value) {
+        if (value == null || value.length() <= MAX_COLLECTED_STRING_LENGTH) {
+            return value;
+        }
+        int trimmed = value.length() - MAX_COLLECTED_STRING_LENGTH;
+        return value.substring(0, MAX_COLLECTED_STRING_LENGTH) + "...[truncated " + trimmed + " chars]";
+    }
+
     /*TODO: remove collectPgPreparedStatements*/
     private JSONObject collectPgPreparedStatements() throws SQLException{
         String pgPreparedStatements = "select * from pg_prepared_statements;";
@@ -561,7 +579,17 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
         while (resultSet.next()) {
             JSONObject pgPreparedStatementOutputPerRecord = new JSONObject();
             for ( int i = 1; i <= rsmd.getColumnCount(); i++) {
-                pgPreparedStatementOutputPerRecord.put(rsmd.getColumnName(i), resultSet.getString(i));
+                String columnName = rsmd.getColumnName(i);
+                // parameter_types can be very large for multi-row prepared statements; drop it entirely.
+                if (columnName.equals("parameter_types")) {
+                    continue;
+                }
+                String value = resultSet.getString(i);
+                // statement can be very large for multi-row INSERTs; trim it to the standard structure.
+                if (columnName.equals("statement")) {
+                    value = trimToMaxLength(value);
+                }
+                pgPreparedStatementOutputPerRecord.put(columnName, value);
             }
             pgPreparedStatementOutputs.put("Record_" + resultSetCount, pgPreparedStatementOutputPerRecord);
             resultSetCount++;
