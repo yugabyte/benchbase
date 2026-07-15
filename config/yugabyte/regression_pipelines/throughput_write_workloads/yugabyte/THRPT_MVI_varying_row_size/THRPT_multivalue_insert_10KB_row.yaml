@@ -15,21 +15,28 @@ toleranceCPU: 5
 optimalThreads: true
 samplingTime: 120
 time: 600
+useThroughputThreshold: true
+truncateBetweenIterations: true
+scalingMinDeltaPercent: 3
+restingTimeSecs: 180
 works:
     work:
         time_secs: 180
-        active_terminals: 1
         rate: unlimited
         warmup: 60
 microbenchmark:
     class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
     properties:
-        setAutoCommit: false
+        setAutoCommit: true
         create:
             - DROP TABLE IF EXISTS THRPT_MVI_10KB_row_size;
-            - CREATE TABLE THRPT_MVI_10KB_row_size (dept_id INT, emp_id INT, name VARCHAR(10), email VARCHAR(20), salary FLOAT, hire_date DATE, department VARCHAR(20), payload JSON, details TEXT, is_active BOOLEAN, last_login TIMESTAMP, primary key(dept_id asc, emp_id asc)) SPLIT AT VALUES ((3), (6));
+            - CREATE TABLE THRPT_MVI_10KB_row_size (dept_id INT, emp_id INT, name VARCHAR(10), email VARCHAR(20), salary FLOAT, hire_date DATE, department VARCHAR(20), details TEXT, is_active BOOLEAN, last_login TIMESTAMP, primary key(dept_id asc, emp_id asc)) SPLIT AT VALUES ((4), (7));
         cleanup:
             - DROP TABLE IF EXISTS THRPT_MVI_10KB_row_size;
+        
+        iterativeCleanup:
+            - DROP TABLE IF EXISTS THRPT_MVI_10KB_row_size;
+            - CREATE TABLE THRPT_MVI_10KB_row_size (dept_id INT, emp_id INT, name VARCHAR(10), email VARCHAR(20), salary FLOAT, hire_date DATE, department VARCHAR(20), details TEXT, is_active BOOLEAN, last_login TIMESTAMP, primary key(dept_id asc, emp_id asc)) SPLIT AT VALUES ((4), (7));
 
         loadRules:
             - table: THRPT_MVI_10KB_row_size
@@ -56,12 +63,9 @@ microbenchmark:
                   - name: department
                     util: RandomAString
                     params: [20, 20]
-                  - name: payload
-                    util: RandomJson
-                    params: [8, 640]
                   - name: details
                     util: RandomAString
-                    params: [5120, 5120]
+                    params: [10240, 10240]
                   - name: is_active
                     util: RandomBoolean
                   - name: last_login
@@ -74,7 +78,7 @@ microbenchmark:
                   - name: THRPT_multivalue_insert_10KB_row
                     weight: 100
                     queries:
-                        - query: INSERT INTO THRPT_MVI_10KB_row_size VALUES [(?,?,?,?,?,?,?,?::json,?,?,?)][pattern_count]
+                        - query: INSERT INTO THRPT_MVI_10KB_row_size VALUES [(?,?,?,?,?,?,?,?,?,?)][pattern_count]
                           pattern_count: 10
                           bindings:
                               - util: RandomUniqueCyclicIntGen
@@ -91,10 +95,8 @@ microbenchmark:
                                 params: [2000, 2026]
                               - util: RandomAString
                                 params: [20, 20]
-                              - util: RandomJson
-                                params: [8, 640]
                               - util: RandomAString
-                                params: [5120, 5120]
+                                params: [10240, 10240]
                               - util: RandomBoolean
                               - util: RandomTimestamp
                                 params: [10000000]

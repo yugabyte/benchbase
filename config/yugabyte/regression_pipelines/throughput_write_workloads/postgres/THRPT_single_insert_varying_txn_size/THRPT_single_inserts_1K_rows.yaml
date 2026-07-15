@@ -3,7 +3,7 @@ driver: org.postgresql.Driver
 url: jdbc:postgresql://{{endpoint}}:5432/postgres?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
 username: {{username}}
 password: {{password}}
-batchsize: 128
+batchsize: 1
 isolation: TRANSACTION_REPEATABLE_READ
 loaderThreads: 4
 terminals: 1
@@ -15,10 +15,13 @@ optimalThreads: true
 samplingTime: 120
 time: 600
 flatMaxScalingSteps: 2
+useThroughputThreshold: true
+truncateBetweenIterations: true
+scalingMinDeltaPercent: 3
+restingTimeSecs: 180
 works:
     work:
         time_secs: 180
-        active_terminals: 1
         rate: unlimited
         warmup: 60
 microbenchmark:
@@ -27,9 +30,13 @@ microbenchmark:
         setAutoCommit: false
         create:
             - DROP TABLE IF EXISTS THRPT_1K_single_inserts;
-            - CREATE TABLE THRPT_1K_single_inserts (dept_id INT, emp_id INT, name VARCHAR(10), email VARCHAR(20), salary FLOAT, hire_date DATE, department VARCHAR(20), payload JSON, details TEXT, is_active BOOLEAN, last_login TIMESTAMP, primary key(dept_id, emp_id));
+            - CREATE TABLE THRPT_1K_single_inserts (dept_id INT, emp_id INT, name VARCHAR(10), email VARCHAR(20), salary FLOAT, hire_date DATE, department VARCHAR(20), details TEXT, is_active BOOLEAN, last_login TIMESTAMP, primary key(dept_id, emp_id));
         cleanup:
             - DROP TABLE IF EXISTS THRPT_1K_single_inserts;
+
+        iterativeCleanup:
+            - DROP TABLE IF EXISTS THRPT_1K_single_inserts;
+            - CREATE TABLE THRPT_1K_single_inserts (dept_id INT, emp_id INT, name VARCHAR(10), email VARCHAR(20), salary FLOAT, hire_date DATE, department VARCHAR(20), details TEXT, is_active BOOLEAN, last_login TIMESTAMP, primary key(dept_id, emp_id));
 
         loadRules:
             - table: THRPT_1K_single_inserts
@@ -56,12 +63,9 @@ microbenchmark:
                   - name: department
                     util: RandomAString
                     params: [20, 20]
-                  - name: payload
-                    util: RandomJson
-                    params: [8, 64]
                   - name: details
                     util: RandomAString
-                    params: [512, 512]
+                    params: [1024, 1024]
                   - name: is_active
                     util: RandomBoolean
                   - name: last_login
@@ -74,7 +78,7 @@ microbenchmark:
                   - name: THRPT_single_inserts_1K_rows
                     weight: 100
                     queries:
-                        - query: INSERT INTO THRPT_1K_single_inserts VALUES (?,?,?,?,?,?,?,?::json,?,?,?);
+                        - query: INSERT INTO THRPT_1K_single_inserts VALUES (?,?,?,?,?,?,?,?,?,?);
                           count: 1000
                           bindings:
                               - util: RandomUniqueCyclicIntGen
@@ -91,10 +95,8 @@ microbenchmark:
                                 params: [2000, 2026]
                               - util: RandomAString
                                 params: [20, 20]
-                              - util: RandomJson
-                                params: [8, 64]
                               - util: RandomAString
-                                params: [512, 512]
+                                params: [1024, 1024]
                               - util: RandomBoolean
                               - util: RandomTimestamp
                                 params: [10000000]

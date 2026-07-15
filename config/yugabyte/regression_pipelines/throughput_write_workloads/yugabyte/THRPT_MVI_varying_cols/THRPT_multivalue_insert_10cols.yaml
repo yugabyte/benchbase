@@ -3,7 +3,7 @@ driver: com.yugabyte.Driver
 url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true&load-balance=true
 username: {{username}}
 password: {{password}}
-batchsize: 128
+batchsize: 1
 isolation: TRANSACTION_REPEATABLE_READ
 loaderthreads: 1
 terminals: 1
@@ -15,21 +15,28 @@ toleranceCPU: 5
 optimalThreads: true
 samplingTime: 120
 time: 600
+useThroughputThreshold: true
+truncateBetweenIterations: true
+scalingMinDeltaPercent: 3
+restingTimeSecs: 180
 works:
     work:
         time_secs: 180
-        active_terminals: 1
         rate: unlimited
         warmup: 60
 microbenchmark:
     class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
     properties:
-        setAutoCommit: false
+        setAutoCommit: true
         create:
             - DROP TABLE IF EXISTS THRPT_MVI_10_col;
-            - CREATE TABLE THRPT_MVI_10_col (dept_id INT, emp_id INT, payload1 TEXT, payload2 TEXT, payload3 TEXT, payload4 TEXT, payload5 TEXT, payload6 TEXT, payload7 TEXT, payload8 TEXT, payload9 TEXT, payload10 TEXT, PRIMARY KEY(dept_id ASC, emp_id ASC)) SPLIT AT VALUES ((3), (6));
+            - CREATE TABLE THRPT_MVI_10_col (dept_id INT, emp_id INT, payload1 TEXT, payload2 TEXT, payload3 TEXT, payload4 TEXT, payload5 TEXT, payload6 TEXT, payload7 TEXT, payload8 TEXT, payload9 TEXT, payload10 TEXT, PRIMARY KEY(dept_id ASC, emp_id ASC)) SPLIT AT VALUES ((4), (7));
         cleanup:
             - DROP TABLE IF EXISTS THRPT_MVI_10_col;
+        
+        iterativeCleanup:
+            - DROP TABLE IF EXISTS THRPT_MVI_10_col;
+            - CREATE TABLE THRPT_MVI_10_col (dept_id INT, emp_id INT, payload1 TEXT, payload2 TEXT, payload3 TEXT, payload4 TEXT, payload5 TEXT, payload6 TEXT, payload7 TEXT, payload8 TEXT, payload9 TEXT, payload10 TEXT, PRIMARY KEY(dept_id ASC, emp_id ASC)) SPLIT AT VALUES ((4), (7));
 
         loadRules:
             - table: THRPT_MVI_10_col
