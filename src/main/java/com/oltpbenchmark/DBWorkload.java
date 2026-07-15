@@ -1613,7 +1613,7 @@ public class DBWorkload {
 
         // Set start 3 for yugabyteDB
         if (isYugabyteDatabase) {
-            threads = 3;
+            threads = Math.max(3, minThreads);
         }
         
 

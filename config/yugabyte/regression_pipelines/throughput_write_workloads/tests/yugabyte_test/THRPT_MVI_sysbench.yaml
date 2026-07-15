@@ -3,7 +3,7 @@ driver: com.yugabyte.Driver
 url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true&load-balance=true
 username: {{username}}
 password: {{password}}
-batchsize: 1
+batchsize: 128
 isolation: TRANSACTION_REPEATABLE_READ
 loaderthreads: 1
 terminals: 1
@@ -16,7 +16,6 @@ optimalThreads: true
 samplingTime: 120
 time: 600
 useThroughputThreshold: true
-truncateBetweenIterations: true
 works:
     work:
         time_secs: 180
@@ -28,24 +27,24 @@ microbenchmark:
         setAutoCommit: true
         create:
             - DROP TABLE IF EXISTS THRPT_MVI_1_sysbench;
-            - CREATE TABLE THRPT_MVI_1_sysbench (k INTEGER, id INTEGER, c CHAR(120), pad CHAR(60), PRIMARY KEY (k ASC, id ASC)) SPLIT AT VALUES ((3), (6));
+            - CREATE TABLE THRPT_MVI_1_sysbench (k INTEGER, id INTEGER, c CHAR(120), pad CHAR(60), PRIMARY KEY (k ASC, id ASC)) SPLIT AT VALUES ((4), (7));
         cleanup:
             - DROP TABLE IF EXISTS THRPT_MVI_1_sysbench;
 
         iterationCleanup:
             - DROP TABLE IF EXISTS THRPT_MVI_1_sysbench;
-            - CREATE TABLE THRPT_MVI_1_sysbench (k INTEGER, id INTEGER, c CHAR(120), pad CHAR(60), PRIMARY KEY (k ASC, id ASC)) SPLIT AT VALUES ((3), (6));
+            - CREATE TABLE THRPT_MVI_1_sysbench (k INTEGER, id INTEGER, c CHAR(120), pad CHAR(60), PRIMARY KEY (k ASC, id ASC)) SPLIT AT VALUES ((4), (7));
 
         loadRules:
             - table: THRPT_MVI_1_sysbench
-              rows: 1000000
+              rows: 10000000
               columns:
                   - name: k
                     util: RandomUniqueCyclicIntGen
                     params: [1, 9, 1]
                   - name: id
                     util: PrimaryIntGen
-                    params: [1, 1000000]
+                    params: [1, 10000000]
                   - name: c
                     util: RandomAString
                     params: [120, 120]
@@ -65,7 +64,7 @@ microbenchmark:
                               - util: RandomUniqueCyclicIntGen
                                 params: [1, 9, 1]
                               - util: PrimaryIntGenThroughput
-                                params: [1000001, 100000000]
+                                params: [10000001, 2147483646]
                               - util: RandomAString
                                 params: [120, 120]
                               - util: RandomAString
