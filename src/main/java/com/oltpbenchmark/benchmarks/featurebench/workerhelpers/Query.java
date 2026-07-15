@@ -16,7 +16,7 @@ public class Query {
     public List<UtilToMethod> baseUtils;
     public boolean isSelectQuery = false;
     public boolean isUpdateQuery = false;
-    public List<String> referenceNames;
+    public boolean isReturningQuery = false;
 
     public List<UtilToMethod> getBaseUtils() {
         return baseUtils;
@@ -52,10 +52,20 @@ public class Query {
 
     public void setQuery(String query) {
         this.query = processQuery(query);
+        // Precompute once whether this statement returns a result set via a RETURNING
+        // clause (e.g. INSERT/UPDATE/DELETE ... RETURNING). Computing it here avoids
+        // calling PreparedStatement.toString() -- which rebuilds the full parameterized
+        // SQL string -- on every execution in the worker hot loop.
+        this.isReturningQuery = this.query != null
+            && this.query.toUpperCase().contains(" RETURNING ");
     }
 
     public boolean isSelectQuery() {
         return isSelectQuery;
+    }
+
+    public boolean isReturningQuery() {
+        return isReturningQuery;
     }
 
     public void setSelectQuery(boolean selectQuery) {
@@ -76,15 +86,6 @@ public class Query {
 
     public void setPattern_count(int pattern_count) {
         this.pattern_count = pattern_count;
-    }
-
-
-    public void setReferenceNames(List<String> referenceNames) {
-        this.referenceNames = referenceNames;
-    }
-
-    public List<String> getReferenceNames() {
-        return referenceNames;
     }
 
     public String processQuery(String query) {
