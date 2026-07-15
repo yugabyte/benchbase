@@ -400,7 +400,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                 try {
                     LOG.info("Collecting pg_stat_statements for workload : " + this.workloadName);
                     pgStatOutputs = callPGStats();
-                    /*TODO: remove collecting prepared_statements*/
+                    
                     pgPreparedStatementOutputs = collectPgPreparedStatements();
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
@@ -424,7 +424,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                     if (entry.getValue() != -1)
                         inner.put("explainPlanRcValidationSuccess", Integer.parseInt((String) queryToExplainMap.getOrDefault(entry.getKey(), new JSONObject()).get("ExplainPlanRows")) == entry.getValue());
                     inner.put("explain", queryToExplainMap.getOrDefault(entry.getKey(), new JSONObject()));
-                    /*TODO: remove prepared_statements*/
+                    
                     inner.put("prepared_statements", pgPreparedStatementOutputs == null ? new JSONObject() : pgPreparedStatementOutputs);
                     jsonResultsList.add(inner);
                 }
@@ -566,7 +566,6 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
         return value.substring(0, MAX_COLLECTED_STRING_LENGTH) + "...[truncated " + trimmed + " chars]";
     }
 
-    /*TODO: remove collectPgPreparedStatements*/
     private JSONObject collectPgPreparedStatements() throws SQLException{
         String pgPreparedStatements = "select * from pg_prepared_statements;";
         Statement stmt = this.conn.createStatement();
