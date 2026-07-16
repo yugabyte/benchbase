@@ -64,6 +64,6 @@ microbenchmark:
                               - util: RandomUniqueCyclicIntGen
                                 params: [1,9,1]
                               - util: PrimaryIntGenThroughput
-                                params: [1000001, 100000000]
+                                params: [1000001, 10000000000]
                               - util: RandomAString
                                 params: [1000, 1000]
