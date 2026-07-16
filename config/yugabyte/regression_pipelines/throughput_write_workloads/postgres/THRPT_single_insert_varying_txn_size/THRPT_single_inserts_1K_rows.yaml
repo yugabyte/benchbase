@@ -12,16 +12,14 @@ yaml_version: v1.0
 targetCPU: 75
 toleranceCPU: 5
 optimalThreads: true
-samplingTime: 120
-time: 600
+samplingTime: 180
 flatMaxScalingSteps: 2
 useThroughputThreshold: true
-truncateBetweenIterations: true
 scalingMinDeltaPercent: 3
 restingTimeSecs: 180
 works:
     work:
-        time_secs: 180
+        time_secs: 900
         rate: unlimited
         warmup: 60
 microbenchmark:
@@ -34,20 +32,16 @@ microbenchmark:
         cleanup:
             - DROP TABLE IF EXISTS THRPT_1K_single_inserts;
 
-        iterativeCleanup:
-            - DROP TABLE IF EXISTS THRPT_1K_single_inserts;
-            - CREATE TABLE THRPT_1K_single_inserts (dept_id INT, emp_id INT, name VARCHAR(10), email VARCHAR(20), salary FLOAT, hire_date DATE, department VARCHAR(20), details TEXT, is_active BOOLEAN, last_login TIMESTAMP, primary key(dept_id, emp_id));
-
         loadRules:
             - table: THRPT_1K_single_inserts
-              rows: 1000000
+              rows: 10000000
               columns:
                   - name: dept_id
                     util: RandomUniqueCyclicIntGen
                     params: [1,9,1]
                   - name: emp_id
                     util: PrimaryIntGenThroughput
-                    params: [1, 1000000]
+                    params: [1, 10000000]
                   - name: name
                     util: RandomAString
                     params: [10, 10]
@@ -84,7 +78,7 @@ microbenchmark:
                               - util: RandomUniqueCyclicIntGen
                                 params: [1,9,1]
                               - util: PrimaryIntGenThroughput
-                                params: [1000001, 10000000000]
+                                params: [10000001, 2147483646]
                               - util: RandomAString
                                 params: [10, 10]
                               - util: RandomAString
