@@ -1846,6 +1846,19 @@ public class DBWorkload {
                 }
 
                 if (useThroughputThreshold) {
+                    if (avgMaxCPU >= minTargetCPU && avgMaxCPU <= maxTargetCPU) {
+                        optimalThreads = threads;
+                        LOG.info(
+                            "Throughput threshold mode: CPU {}% is within target range [{}, {}]. "
+                                + "Stopping thread search early; using {} threads (best throughput so far: {} req/s @ {} threads).",
+                            String.format("%.2f", avgMaxCPU),
+                            minTargetCPU, maxTargetCPU,
+                            optimalThreads,
+                            String.format("%.2f", bestThroughput),
+                            bestThroughputThreads);
+                        break;
+                    }
+
                     int newThreads = threads + threadIncrement;
                     LOG.info("Throughput threshold mode: adding {} threads. New threads: {}", threadIncrement, newThreads);
 
