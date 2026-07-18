@@ -3,7 +3,7 @@ driver: com.yugabyte.Driver
 url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true&load-balance=true
 username: {{username}}
 password: {{password}}
-batchsize: 1
+batchsize: 256
 isolation: TRANSACTION_REPEATABLE_READ
 loaderthreads: 1
 terminals: 1
@@ -31,6 +31,9 @@ microbenchmark:
             - CREATE TABLE THRPT_1K_single_inserts (dept_id INT, emp_id INT, name VARCHAR(10), email VARCHAR(20), salary FLOAT, hire_date DATE, department VARCHAR(20), details TEXT, is_active BOOLEAN, last_login TIMESTAMP, primary key(dept_id asc, emp_id asc)) SPLIT AT VALUES ((4), (7));
         cleanup:
             - DROP TABLE IF EXISTS THRPT_1K_single_inserts;
+        iterationCleanup:
+            - DROP TABLE IF EXISTS THRPT_1K_single_inserts;
+            - CREATE TABLE THRPT_1K_single_inserts (dept_id INT, emp_id INT, name VARCHAR(10), email VARCHAR(20), salary FLOAT, hire_date DATE, department VARCHAR(20), details TEXT, is_active BOOLEAN, last_login TIMESTAMP, primary key(dept_id asc, emp_id asc)) SPLIT AT VALUES ((4), (7));
 
         loadRules:
             - table: THRPT_1K_single_inserts
