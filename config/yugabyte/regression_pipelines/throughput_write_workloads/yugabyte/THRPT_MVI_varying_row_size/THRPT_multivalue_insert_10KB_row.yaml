@@ -30,9 +30,6 @@ microbenchmark:
             - CREATE TABLE THRPT_MVI_10KB_row_size (dept_id INT, emp_id INT, name VARCHAR(10), email VARCHAR(20), salary FLOAT, hire_date DATE, department VARCHAR(20), payload TEXT, details TEXT, is_active BOOLEAN, last_login TIMESTAMP, primary key(dept_id asc, emp_id asc)) SPLIT AT VALUES ((4), (7));
         cleanup:
             - DROP TABLE IF EXISTS THRPT_MVI_10KB_row_size;
-        iterationCleanup:
-            - DROP TABLE IF EXISTS THRPT_MVI_10KB_row_size;
-            - CREATE TABLE THRPT_MVI_10KB_row_size (dept_id INT, emp_id INT, name VARCHAR(10), email VARCHAR(20), salary FLOAT, hire_date DATE, department VARCHAR(20), payload TEXT, details TEXT, is_active BOOLEAN, last_login TIMESTAMP, primary key(dept_id asc, emp_id asc)) SPLIT AT VALUES ((4), (7));
 
         loadRules:
             - table: THRPT_MVI_10KB_row_size

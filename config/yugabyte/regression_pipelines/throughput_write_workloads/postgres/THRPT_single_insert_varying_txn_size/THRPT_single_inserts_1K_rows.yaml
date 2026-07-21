@@ -30,10 +30,6 @@ microbenchmark:
         cleanup:
             - DROP TABLE IF EXISTS THRPT_1K_single_inserts;
 
-        iterationCleanup:
-            - DROP TABLE IF EXISTS THRPT_1K_single_inserts;
-            - CREATE TABLE THRPT_1K_single_inserts (dept_id INT, emp_id INT, name VARCHAR(10), email VARCHAR(20), salary FLOAT, hire_date DATE, department VARCHAR(20), payload TEXT, details TEXT, is_active BOOLEAN, last_login TIMESTAMP, primary key(dept_id, emp_id));
-
         loadRules:
             - table: THRPT_1K_single_inserts
               rows: 10000000

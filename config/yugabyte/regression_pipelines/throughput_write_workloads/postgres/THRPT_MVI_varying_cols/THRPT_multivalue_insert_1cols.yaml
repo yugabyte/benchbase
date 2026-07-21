@@ -30,10 +30,6 @@ microbenchmark:
         cleanup:
             - DROP TABLE IF EXISTS THRPT_MVI_1_col;
 
-        iterationCleanup:
-            - DROP TABLE IF EXISTS THRPT_MVI_1_col;
-            - CREATE TABLE THRPT_MVI_1_col (dept_id INT, emp_id INT, payload TEXT, primary key(dept_id, emp_id));
-
         loadRules:
             - table: THRPT_MVI_1_col
               rows: 10000000

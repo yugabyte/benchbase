@@ -30,10 +30,6 @@ microbenchmark:
         cleanup:
             - DROP TABLE IF EXISTS THRPT_MVI_100KB_row_size;
 
-        iterationCleanup:
-            - DROP TABLE IF EXISTS THRPT_MVI_100KB_row_size;
-            - CREATE TABLE THRPT_MVI_100KB_row_size (dept_id INT, emp_id INT, name VARCHAR(10), email VARCHAR(20), salary FLOAT, hire_date DATE, department VARCHAR(20), payload TEXT, details TEXT, is_active BOOLEAN, last_login TIMESTAMP, primary key(dept_id, emp_id));
-
         loadRules:
             - table: THRPT_MVI_100KB_row_size
               rows: 100000

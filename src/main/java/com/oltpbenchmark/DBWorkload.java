@@ -731,7 +731,10 @@ public class DBWorkload {
                             boolean useThroughputThreshold = xmlConfig.getBoolean("useThroughputThreshold", false);
                             boolean truncateBetweenIterations = xmlConfig.getBoolean("truncateBetweenIterations", false);
                             List<String> iterationCleanupDDLs = xmlConfig.containsKey("microbenchmark/properties/iterationCleanup")
-                                ? xmlConfig.getList(String.class, "microbenchmark/properties/iterationCleanup") : null;
+                                ? xmlConfig.getList(String.class, "microbenchmark/properties/iterationCleanup")
+                                : (xmlConfig.containsKey("microbenchmark/properties/create")
+                                    ? xmlConfig.getList(String.class, "microbenchmark/properties/create")
+                                    : null);
                             int optimalThreads = findOptimalThreadCount(benchList.get(0), minThreads, targetCPU, toleranceCPU, workloadName, workCount, samplingTime,
                                 scalingMinDeltaPercent, threadIncrement, restingTimeSecs, flatMaxScalingSteps, linearPGthread,
                                 useThroughputThreshold, truncateBetweenIterations, iterationCleanupDDLs);
@@ -836,7 +839,10 @@ public class DBWorkload {
                             boolean useThroughputThreshold = xmlConfig.getBoolean("useThroughputThreshold", false);
                             boolean truncateBetweenIterations = xmlConfig.getBoolean("truncateBetweenIterations", false);
                             List<String> iterationCleanupDDLs = xmlConfig.containsKey("microbenchmark/properties/iterationCleanup")
-                                ? xmlConfig.getList(String.class, "microbenchmark/properties/iterationCleanup") : null;
+                                ? xmlConfig.getList(String.class, "microbenchmark/properties/iterationCleanup")
+                                : (xmlConfig.containsKey("microbenchmark/properties/create")
+                                    ? xmlConfig.getList(String.class, "microbenchmark/properties/create")
+                                    : null);
                             int optimalThreads = findOptimalThreadCount(benchList.get(0), minThreads, targetCPU, toleranceCPU, workloadName, workCount, samplingTime,
                                 scalingMinDeltaPercent, threadIncrement, restingTimeSecs, flatMaxScalingSteps, linearPGthread,
                                 useThroughputThreshold, truncateBetweenIterations, iterationCleanupDDLs);
@@ -1677,7 +1683,7 @@ public class DBWorkload {
                         LOG.error("Error executing iterationCleanup DDLs between optimal-thread iterations", e);
                     }
                 } else {
-                        LOG.warn("truncateBetweenIterations is true but no iterationCleanup DDLs found; skipping cleanup");
+                        LOG.warn("truncateBetweenIterations is true but no iterationCleanup or create DDLs found; skipping cleanup");
                 }
             }
 
