@@ -10,37 +10,37 @@ terminals: 1
 collect_pg_stat_statements: true
 use_dist_in_explain: true
 yaml_version: v1.0
-targetCPU: 75
+targetCPU: 80
 toleranceCPU: 5
 optimalThreads: true
-samplingTime: 120
-time: 600
+samplingTime: 180
+useThroughputThreshold: true
+restingTimeSecs: 360
 works:
     work:
-        time_secs: 180
-        active_terminals: 1
+        time_secs: 900
         rate: unlimited
         warmup: 60
 microbenchmark:
     class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
     properties:
-        setAutoCommit: false
+        setAutoCommit: true
         create:
             - DROP TABLE IF EXISTS THRPT_MVI_1;
-            - CREATE TABLE THRPT_MVI_1 (dept_id INT, emp_id INT, name VARCHAR(10), email VARCHAR(20), salary FLOAT, hire_date DATE, department VARCHAR(20), payload JSON, details TEXT, is_active BOOLEAN, last_login TIMESTAMP, primary key(dept_id asc, emp_id asc)) SPLIT AT VALUES ((3), (6));
+            - CREATE TABLE THRPT_MVI_1 (dept_id INT, emp_id INT, name VARCHAR(10), email VARCHAR(20), salary FLOAT, hire_date DATE, department VARCHAR(20), payload TEXT, details TEXT, is_active BOOLEAN, last_login TIMESTAMP, primary key(dept_id asc, emp_id asc)) SPLIT AT VALUES ((4), (7));
         cleanup:
             - DROP TABLE IF EXISTS THRPT_MVI_1;
 
         loadRules:
             - table: THRPT_MVI_1
-              rows: 1000000
+              rows: 10000000
               columns:
                   - name: dept_id
                     util: RandomUniqueCyclicIntGen
                     params: [1,9,1]
                   - name: emp_id
                     util: PrimaryIntGenThroughput
-                    params: [1, 1000000]
+                    params: [1, 10000000]
                   - name: name
                     util: RandomAString
                     params: [10, 10]
@@ -57,8 +57,8 @@ microbenchmark:
                     util: RandomAString
                     params: [20, 20]
                   - name: payload
-                    util: RandomJson
-                    params: [8, 64]
+                    util: RandomAString
+                    params: [512, 512]
                   - name: details
                     util: RandomAString
                     params: [512, 512]
@@ -74,13 +74,13 @@ microbenchmark:
                   - name: THRPT_multivalue_insert_1row
                     weight: 100
                     queries:
-                        - query: INSERT INTO THRPT_MVI_1 VALUES [(?,?,?,?,?,?,?,?::json,?,?,?)][pattern_count]
+                        - query: INSERT INTO THRPT_MVI_1 VALUES [(?,?,?,?,?,?,?,?,?,?,?)][pattern_count]
                           pattern_count: 1
                           bindings:
                               - util: RandomUniqueCyclicIntGen
                                 params: [1,9,1]
                               - util: PrimaryIntGenThroughput
-                                params: [1000001, 100000000]
+                                params: [10000001, 2147483646]
                               - util: RandomAString
                                 params: [10, 10]
                               - util: RandomAString
@@ -91,8 +91,8 @@ microbenchmark:
                                 params: [2000, 2026]
                               - util: RandomAString
                                 params: [20, 20]
-                              - util: RandomJson
-                                params: [8, 64]
+                              - util: RandomAString
+                                params: [512, 512]
                               - util: RandomAString
                                 params: [512, 512]
                               - util: RandomBoolean

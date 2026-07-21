@@ -3,28 +3,27 @@ driver: org.postgresql.Driver
 url: jdbc:postgresql://{{endpoint}}:5432/postgres?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
 username: {{username}}
 password: {{password}}
-batchsize: 128
+batchsize: 32
 isolation: TRANSACTION_REPEATABLE_READ
 loaderThreads: 4
 terminals: 1
 collect_pg_stat_statements: true
 yaml_version: v1.0
-targetCPU: 75
+targetCPU: 80
 toleranceCPU: 5
 optimalThreads: true
-samplingTime: 120
-time: 600
-flatMaxScalingSteps: 2
+samplingTime: 180
+useThroughputThreshold: true
+restingTimeSecs: 360
 works:
     work:
-        time_secs: 180
-        active_terminals: 1
+        time_secs: 900
         rate: unlimited
         warmup: 60
 microbenchmark:
     class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
     properties:
-        setAutoCommit: false
+        setAutoCommit: true
         create:
             - DROP TABLE IF EXISTS THRPT_MVI_500_col;
             - CREATE TABLE THRPT_MVI_500_col (dept_id INT, emp_id INT, payload1 TEXT, payload2 TEXT, payload3 TEXT, payload4 TEXT, payload5 TEXT, payload6 TEXT, payload7 TEXT, payload8 TEXT, payload9 TEXT, payload10 TEXT, payload11 TEXT, payload12 TEXT, payload13 TEXT, payload14 TEXT, payload15 TEXT, payload16 TEXT, payload17 TEXT, payload18 TEXT, payload19 TEXT, payload20 TEXT, payload21 TEXT, payload22 TEXT, payload23 TEXT, payload24 TEXT, payload25 TEXT, payload26 TEXT, payload27 TEXT, payload28 TEXT, payload29 TEXT, payload30 TEXT, payload31 TEXT, payload32 TEXT, payload33 TEXT, payload34 TEXT, payload35 TEXT, payload36 TEXT, payload37 TEXT, payload38 TEXT, payload39 TEXT, payload40 TEXT, payload41 TEXT, payload42 TEXT, payload43 TEXT, payload44 TEXT, payload45 TEXT, payload46 TEXT, payload47 TEXT, payload48 TEXT, payload49 TEXT, payload50 TEXT, payload51 TEXT, payload52 TEXT, payload53 TEXT, payload54 TEXT, payload55 TEXT, payload56 TEXT, payload57 TEXT, payload58 TEXT, payload59 TEXT, payload60 TEXT, payload61 TEXT, payload62 TEXT, payload63 TEXT, payload64 TEXT, payload65 TEXT, payload66 TEXT, payload67 TEXT, payload68 TEXT, payload69 TEXT, payload70 TEXT, payload71 TEXT, payload72 TEXT, payload73 TEXT, payload74 TEXT, payload75 TEXT, payload76 TEXT, payload77 TEXT, payload78 TEXT, payload79 TEXT, payload80 TEXT, payload81 TEXT, payload82 TEXT, payload83 TEXT, payload84 TEXT, payload85 TEXT, payload86 TEXT, payload87 TEXT, payload88 TEXT, payload89 TEXT, payload90 TEXT, payload91 TEXT, payload92 TEXT, payload93 TEXT, payload94 TEXT, payload95 TEXT, payload96 TEXT, payload97 TEXT, payload98 TEXT, payload99 TEXT, payload100 TEXT, payload101 TEXT, payload102 TEXT, payload103 TEXT, payload104 TEXT, payload105 TEXT, payload106 TEXT, payload107 TEXT, payload108 TEXT, payload109 TEXT, payload110 TEXT, payload111 TEXT, payload112 TEXT, payload113 TEXT, payload114 TEXT, payload115 TEXT, payload116 TEXT, payload117 TEXT, payload118 TEXT, payload119 TEXT, payload120 TEXT, payload121 TEXT, payload122 TEXT, payload123 TEXT, payload124 TEXT, payload125 TEXT, payload126 TEXT, payload127 TEXT, payload128 TEXT, payload129 TEXT, payload130 TEXT, payload131 TEXT, payload132 TEXT, payload133 TEXT, payload134 TEXT, payload135 TEXT, payload136 TEXT, payload137 TEXT, payload138 TEXT, payload139 TEXT, payload140 TEXT, payload141 TEXT, payload142 TEXT, payload143 TEXT, payload144 TEXT, payload145 TEXT, payload146 TEXT, payload147 TEXT, payload148 TEXT, payload149 TEXT, payload150 TEXT, payload151 TEXT, payload152 TEXT, payload153 TEXT, payload154 TEXT, payload155 TEXT, payload156 TEXT, payload157 TEXT, payload158 TEXT, payload159 TEXT, payload160 TEXT, payload161 TEXT, payload162 TEXT, payload163 TEXT, payload164 TEXT, payload165 TEXT, payload166 TEXT, payload167 TEXT, payload168 TEXT, payload169 TEXT, payload170 TEXT, payload171 TEXT, payload172 TEXT, payload173 TEXT, payload174 TEXT, payload175 TEXT, payload176 TEXT, payload177 TEXT, payload178 TEXT, payload179 TEXT, payload180 TEXT, payload181 TEXT, payload182 TEXT, payload183 TEXT, payload184 TEXT, payload185 TEXT, payload186 TEXT, payload187 TEXT, payload188 TEXT, payload189 TEXT, payload190 TEXT, payload191 TEXT, payload192 TEXT, payload193 TEXT, payload194 TEXT, payload195 TEXT, payload196 TEXT, payload197 TEXT, payload198 TEXT, payload199 TEXT, payload200 TEXT, payload201 TEXT, payload202 TEXT, payload203 TEXT, payload204 TEXT, payload205 TEXT, payload206 TEXT, payload207 TEXT, payload208 TEXT, payload209 TEXT, payload210 TEXT, payload211 TEXT, payload212 TEXT, payload213 TEXT, payload214 TEXT, payload215 TEXT, payload216 TEXT, payload217 TEXT, payload218 TEXT, payload219 TEXT, payload220 TEXT, payload221 TEXT, payload222 TEXT, payload223 TEXT, payload224 TEXT, payload225 TEXT, payload226 TEXT, payload227 TEXT, payload228 TEXT, payload229 TEXT, payload230 TEXT, payload231 TEXT, payload232 TEXT, payload233 TEXT, payload234 TEXT, payload235 TEXT, payload236 TEXT, payload237 TEXT, payload238 TEXT, payload239 TEXT, payload240 TEXT, payload241 TEXT, payload242 TEXT, payload243 TEXT, payload244 TEXT, payload245 TEXT, payload246 TEXT, payload247 TEXT, payload248 TEXT, payload249 TEXT, payload250 TEXT, payload251 TEXT, payload252 TEXT, payload253 TEXT, payload254 TEXT, payload255 TEXT, payload256 TEXT, payload257 TEXT, payload258 TEXT, payload259 TEXT, payload260 TEXT, payload261 TEXT, payload262 TEXT, payload263 TEXT, payload264 TEXT, payload265 TEXT, payload266 TEXT, payload267 TEXT, payload268 TEXT, payload269 TEXT, payload270 TEXT, payload271 TEXT, payload272 TEXT, payload273 TEXT, payload274 TEXT, payload275 TEXT, payload276 TEXT, payload277 TEXT, payload278 TEXT, payload279 TEXT, payload280 TEXT, payload281 TEXT, payload282 TEXT, payload283 TEXT, payload284 TEXT, payload285 TEXT, payload286 TEXT, payload287 TEXT, payload288 TEXT, payload289 TEXT, payload290 TEXT, payload291 TEXT, payload292 TEXT, payload293 TEXT, payload294 TEXT, payload295 TEXT, payload296 TEXT, payload297 TEXT, payload298 TEXT, payload299 TEXT, payload300 TEXT, payload301 TEXT, payload302 TEXT, payload303 TEXT, payload304 TEXT, payload305 TEXT, payload306 TEXT, payload307 TEXT, payload308 TEXT, payload309 TEXT, payload310 TEXT, payload311 TEXT, payload312 TEXT, payload313 TEXT, payload314 TEXT, payload315 TEXT, payload316 TEXT, payload317 TEXT, payload318 TEXT, payload319 TEXT, payload320 TEXT, payload321 TEXT, payload322 TEXT, payload323 TEXT, payload324 TEXT, payload325 TEXT, payload326 TEXT, payload327 TEXT, payload328 TEXT, payload329 TEXT, payload330 TEXT, payload331 TEXT, payload332 TEXT, payload333 TEXT, payload334 TEXT, payload335 TEXT, payload336 TEXT, payload337 TEXT, payload338 TEXT, payload339 TEXT, payload340 TEXT, payload341 TEXT, payload342 TEXT, payload343 TEXT, payload344 TEXT, payload345 TEXT, payload346 TEXT, payload347 TEXT, payload348 TEXT, payload349 TEXT, payload350 TEXT, payload351 TEXT, payload352 TEXT, payload353 TEXT, payload354 TEXT, payload355 TEXT, payload356 TEXT, payload357 TEXT, payload358 TEXT, payload359 TEXT, payload360 TEXT, payload361 TEXT, payload362 TEXT, payload363 TEXT, payload364 TEXT, payload365 TEXT, payload366 TEXT, payload367 TEXT, payload368 TEXT, payload369 TEXT, payload370 TEXT, payload371 TEXT, payload372 TEXT, payload373 TEXT, payload374 TEXT, payload375 TEXT, payload376 TEXT, payload377 TEXT, payload378 TEXT, payload379 TEXT, payload380 TEXT, payload381 TEXT, payload382 TEXT, payload383 TEXT, payload384 TEXT, payload385 TEXT, payload386 TEXT, payload387 TEXT, payload388 TEXT, payload389 TEXT, payload390 TEXT, payload391 TEXT, payload392 TEXT, payload393 TEXT, payload394 TEXT, payload395 TEXT, payload396 TEXT, payload397 TEXT, payload398 TEXT, payload399 TEXT, payload400 TEXT, payload401 TEXT, payload402 TEXT, payload403 TEXT, payload404 TEXT, payload405 TEXT, payload406 TEXT, payload407 TEXT, payload408 TEXT, payload409 TEXT, payload410 TEXT, payload411 TEXT, payload412 TEXT, payload413 TEXT, payload414 TEXT, payload415 TEXT, payload416 TEXT, payload417 TEXT, payload418 TEXT, payload419 TEXT, payload420 TEXT, payload421 TEXT, payload422 TEXT, payload423 TEXT, payload424 TEXT, payload425 TEXT, payload426 TEXT, payload427 TEXT, payload428 TEXT, payload429 TEXT, payload430 TEXT, payload431 TEXT, payload432 TEXT, payload433 TEXT, payload434 TEXT, payload435 TEXT, payload436 TEXT, payload437 TEXT, payload438 TEXT, payload439 TEXT, payload440 TEXT, payload441 TEXT, payload442 TEXT, payload443 TEXT, payload444 TEXT, payload445 TEXT, payload446 TEXT, payload447 TEXT, payload448 TEXT, payload449 TEXT, payload450 TEXT, payload451 TEXT, payload452 TEXT, payload453 TEXT, payload454 TEXT, payload455 TEXT, payload456 TEXT, payload457 TEXT, payload458 TEXT, payload459 TEXT, payload460 TEXT, payload461 TEXT, payload462 TEXT, payload463 TEXT, payload464 TEXT, payload465 TEXT, payload466 TEXT, payload467 TEXT, payload468 TEXT, payload469 TEXT, payload470 TEXT, payload471 TEXT, payload472 TEXT, payload473 TEXT, payload474 TEXT, payload475 TEXT, payload476 TEXT, payload477 TEXT, payload478 TEXT, payload479 TEXT, payload480 TEXT, payload481 TEXT, payload482 TEXT, payload483 TEXT, payload484 TEXT, payload485 TEXT, payload486 TEXT, payload487 TEXT, payload488 TEXT, payload489 TEXT, payload490 TEXT, payload491 TEXT, payload492 TEXT, payload493 TEXT, payload494 TEXT, payload495 TEXT, payload496 TEXT, payload497 TEXT, payload498 TEXT, payload499 TEXT, payload500 TEXT, PRIMARY KEY(dept_id, emp_id));
@@ -33,14 +32,14 @@ microbenchmark:
 
         loadRules:
             - table: THRPT_MVI_500_col
-              rows: 1000000
+              rows: 10000000
               columns:
                   - name: dept_id
                     util: RandomUniqueCyclicIntGen
                     params: [1,9,1]
                   - name: emp_id
                     util: PrimaryIntGenThroughput
-                    params: [1, 1000000]
+                    params: [1, 10000000]
                   - name: payload
                     count: 500
                     util: RandomAString
@@ -58,7 +57,7 @@ microbenchmark:
                               - util: RandomUniqueCyclicIntGen
                                 params: [1,9,1]
                               - util: PrimaryIntGenThroughput
-                                params: [1000001, 2147483646]
+                                params: [10000001, 2147483646]
                               - util: RandomAString
                                 count: 500
                                 params: [2, 2]

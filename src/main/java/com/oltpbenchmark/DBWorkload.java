@@ -729,9 +729,15 @@ public class DBWorkload {
                             int restingTimeSecs = xmlConfig.getInt("restingTimeSecs", 120);
                             int flatMaxScalingSteps = xmlConfig.getInt("flatMaxScalingSteps", DEFAULT_FLAT_MAX_SCALING_STEPS);
                             boolean useThroughputThreshold = xmlConfig.getBoolean("useThroughputThreshold", false);
+                            boolean truncateBetweenIterations = xmlConfig.getBoolean("truncateBetweenIterations", false);
+                            List<String> iterationCleanupDDLs = xmlConfig.containsKey("microbenchmark/properties/iterationCleanup")
+                                ? xmlConfig.getList(String.class, "microbenchmark/properties/iterationCleanup")
+                                : (xmlConfig.containsKey("microbenchmark/properties/create")
+                                    ? xmlConfig.getList(String.class, "microbenchmark/properties/create")
+                                    : null);
                             int optimalThreads = findOptimalThreadCount(benchList.get(0), minThreads, targetCPU, toleranceCPU, workloadName, workCount, samplingTime,
                                 scalingMinDeltaPercent, threadIncrement, restingTimeSecs, flatMaxScalingSteps, linearPGthread,
-                                useThroughputThreshold);
+                                useThroughputThreshold, truncateBetweenIterations, iterationCleanupDDLs);
 
                             // Sleep between optimal-threads search and the final measured run so system can stabilize
                             if (restingTimeSecs > 0) {
@@ -831,9 +837,15 @@ public class DBWorkload {
                             int restingTimeSecs = xmlConfig.getInt("restingTimeSecs", 120);
                             int flatMaxScalingSteps = xmlConfig.getInt("flatMaxScalingSteps", DEFAULT_FLAT_MAX_SCALING_STEPS);
                             boolean useThroughputThreshold = xmlConfig.getBoolean("useThroughputThreshold", false);
+                            boolean truncateBetweenIterations = xmlConfig.getBoolean("truncateBetweenIterations", false);
+                            List<String> iterationCleanupDDLs = xmlConfig.containsKey("microbenchmark/properties/iterationCleanup")
+                                ? xmlConfig.getList(String.class, "microbenchmark/properties/iterationCleanup")
+                                : (xmlConfig.containsKey("microbenchmark/properties/create")
+                                    ? xmlConfig.getList(String.class, "microbenchmark/properties/create")
+                                    : null);
                             int optimalThreads = findOptimalThreadCount(benchList.get(0), minThreads, targetCPU, toleranceCPU, workloadName, workCount, samplingTime,
                                 scalingMinDeltaPercent, threadIncrement, restingTimeSecs, flatMaxScalingSteps, linearPGthread,
-                                useThroughputThreshold);
+                                useThroughputThreshold, truncateBetweenIterations, iterationCleanupDDLs);
 
                             // Sleep between optimal-threads search and the final measured run so system can stabilize
                             if (restingTimeSecs > 0) {
@@ -1532,7 +1544,7 @@ public class DBWorkload {
      * {@code scalingMinDeltaPercent}, so a single noisy sample early in the sweep no longer
      * poisons the result. Can be overridden via the YAML config key {@code flatMaxScalingSteps}.
      */
-    private static final int DEFAULT_FLAT_MAX_SCALING_STEPS = 3;
+    private static final int DEFAULT_FLAT_MAX_SCALING_STEPS = 2;
 
     /**
      * Default minimum delta percentage for a scaling step to be considered non-flat.
@@ -1544,7 +1556,7 @@ public class DBWorkload {
 
     private static int findOptimalThreadCount(BenchmarkModule bench, int minThreads, double targetCPU, double toleranceCPU, String workloadName, int workCount, int samplingTime,
             double scalingMinDeltaPercent, int threadIncrement, int restingTimeSecs, int flatMaxScalingSteps, boolean linearPGthread,
-            boolean useThroughputThreshold) throws InterruptedException {
+            boolean useThroughputThreshold, boolean truncateBetweenIterations, List<String> iterationCleanupDDLs) throws InterruptedException {
         double minTargetCPU = targetCPU - toleranceCPU;
         double maxTargetCPU = targetCPU + toleranceCPU;
         LOG.info("minTargetCPU: {}, maxTargetCPU: {}", minTargetCPU, maxTargetCPU);
@@ -1585,10 +1597,9 @@ public class DBWorkload {
         // {@code optimalThreads} value if the plateau is later confirmed.
         int flatRunStartThreads = 0;
         boolean flatCpuDetected = false;
-        Double throughputAtPreviousScalingStep = null;
-        Integer threadsAtPreviousThroughputStep = null;
+        double bestThroughput = 0;
+        int bestThroughputThreads = threads;
         int consecutiveFlatThroughputSteps = 0;
-        int flatThroughputRunStartThreads = 0;
         boolean flatThroughputDetected = false;
         Map<Integer, Double> threadThroughputMap = new HashMap<>();
         if (useThroughputThreshold) {
@@ -1657,6 +1668,24 @@ public class DBWorkload {
     );
 
         for(int iter=0; iter<max_iterations; iter++) {
+
+            // Truncate/clean tables between iterations so the next run starts fresh
+            if (iter != 0 && truncateBetweenIterations) {
+                if (iterationCleanupDDLs != null && !iterationCleanupDDLs.isEmpty()) {
+                    LOG.info("Running {} iterationCleanup DDL(s) between optimal-thread iterations", iterationCleanupDDLs.size());
+                    try (Connection cleanupConn = bench.makeConnection();
+                         Statement cleanupStmt = cleanupConn.createStatement()) {
+                        for (String ddl : iterationCleanupDDLs) {
+                            LOG.info("iterationCleanup: {}", ddl);
+                            cleanupStmt.execute(ddl);
+                        }
+                    } catch (SQLException e) {
+                        LOG.error("Error executing iterationCleanup DDLs between optimal-thread iterations", e);
+                    }
+                } else {
+                        LOG.warn("truncateBetweenIterations is true but no iterationCleanup or create DDLs found; skipping cleanup");
+                }
+            }
 
             // Sleep between iterations so the system is stable again
             if(iter!=0 && restingTimeSecs > 0) {
@@ -1847,61 +1876,56 @@ public class DBWorkload {
                 }
 
                 if (useThroughputThreshold) {
-                    optimalThreads = threads;
+                    if (avgMaxCPU >= minTargetCPU && avgMaxCPU <= maxTargetCPU) {
+                        optimalThreads = threads;
+                        LOG.info(
+                            "Throughput threshold mode: CPU {}% is within target range [{}, {}]. Stopping thread search early; using {} threads (best throughput so far: {} req/s @ {} threads).",
+                            String.format("%.2f", avgMaxCPU),
+                            minTargetCPU, maxTargetCPU,
+                            optimalThreads,
+                            String.format("%.2f", bestThroughput),
+                            bestThroughputThreads);
+                        break;
+                    }
+
                     int newThreads = threads + threadIncrement;
                     LOG.info("Throughput threshold mode: adding {} threads. New threads: {}", threadIncrement, newThreads);
 
                     if (threadThroughputMap.containsKey(newThreads)) {
                         LOG.info("newThreads={} already tested. Breaking loop to avoid duplicate testing.", newThreads);
-                        optimalThreads = newThreads;
+                        optimalThreads = bestThroughput > 0 ? bestThroughputThreads : threads;
                         break;
                     }
 
-                    if (throughputAtPreviousScalingStep != null && throughputAtPreviousScalingStep > 0) {
-                        double throughputDeltaPercent = ((iterationThroughput - throughputAtPreviousScalingStep) / throughputAtPreviousScalingStep) * 100.0;
-                        if (throughputDeltaPercent < scalingMinDeltaPercent) {
-                            consecutiveFlatThroughputSteps++;
-                            if (consecutiveFlatThroughputSteps == 1) {
-                                flatThroughputRunStartThreads = threadsAtPreviousThroughputStep;
+                    if (bestThroughput > 0) {
+                        double improvementOverBest =
+                            ((iterationThroughput - bestThroughput) / bestThroughput) * 100.0;
+
+                        if (improvementOverBest >= scalingMinDeltaPercent) {
+                            LOG.info("Throughput improved significantly over global best (best={} req/s @ {} threads -> current={} req/s @ {} threads, delta={}% >= min {}%). Resetting flat-step counter (was {}).", String.format("%.2f", bestThroughput), bestThroughputThreads, String.format("%.2f", iterationThroughput), threads, String.format("%.2f", improvementOverBest), scalingMinDeltaPercent, consecutiveFlatThroughputSteps);
+                            bestThroughput = iterationThroughput;
+                            bestThroughputThreads = threads;
+                            consecutiveFlatThroughputSteps = 0;
+                        } else {
+                            if (iterationThroughput > bestThroughput) {
+                                bestThroughput = iterationThroughput;
+                                bestThroughputThreads = threads;
                             }
-                            LOG.warn(
-                                "Throughput did not increase significantly when scaling threads "
-                                    + "({} threads -> {} threads, delta={}% vs min {}%). "
-                                    + "Consecutive flat steps: {}/{}. Candidate optimalThreads (last good before plateau): {}.",
-                                threadsAtPreviousThroughputStep,
-                                threads,
-                                String.format("%.2f", throughputDeltaPercent),
-                                scalingMinDeltaPercent,
-                                consecutiveFlatThroughputSteps,
-                                flatMaxScalingSteps,
-                                flatThroughputRunStartThreads);
+                            consecutiveFlatThroughputSteps++;
+                            LOG.warn("Throughput did not improve significantly over global best (best={} req/s @ {} threads, current={} req/s @ {} threads, delta={}% vs min {}%). Consecutive non-improving steps: {}/{}.", String.format("%.2f", bestThroughput), bestThroughputThreads, String.format("%.2f", iterationThroughput), threads, String.format("%.2f", improvementOverBest), scalingMinDeltaPercent, consecutiveFlatThroughputSteps, flatMaxScalingSteps);
                             if (consecutiveFlatThroughputSteps >= flatMaxScalingSteps) {
                                 flatThroughputDetected = true;
-                                optimalThreads = flatThroughputRunStartThreads;
-                                LOG.info(
-                                    "Flat throughput plateau confirmed after {} consecutive flat thread increases (min delta {}%). "
-                                        + "Stopping thread search; rolling back to {} threads (last good before plateau) "
-                                        + "and metadata flatThroughput=true. Last throughput {} req/s.",
-                                    flatMaxScalingSteps,
-                                    scalingMinDeltaPercent,
-                                    optimalThreads,
-                                    String.format("%.2f", iterationThroughput));
+                                optimalThreads = bestThroughputThreads;
+                                LOG.info("Throughput plateau confirmed after {} consecutive non-improving steps vs global best (min delta {}%). Stopping thread search; using {} threads (best throughput {} req/s). Current throughput {} req/s.", flatMaxScalingSteps, scalingMinDeltaPercent, optimalThreads, String.format("%.2f", bestThroughput), String.format("%.2f", iterationThroughput));
                                 break;
                             }
-                        } else if (consecutiveFlatThroughputSteps > 0) {
-                            LOG.info(
-                                "Throughput recovered (delta={}% >= min {}%). Resetting consecutive flat-step counter "
-                                    + "(was {}, candidate optimalThreads was {}).",
-                                String.format("%.2f", throughputDeltaPercent),
-                                scalingMinDeltaPercent,
-                                consecutiveFlatThroughputSteps,
-                                flatThroughputRunStartThreads);
-                            consecutiveFlatThroughputSteps = 0;
-                            flatThroughputRunStartThreads = 0;
                         }
+                    } else {
+                        bestThroughput = iterationThroughput;
+                        bestThroughputThreads = threads;
                     }
-                    throughputAtPreviousScalingStep = iterationThroughput;
-                    threadsAtPreviousThroughputStep = threads;
+
+                    optimalThreads = bestThroughputThreads;
                     threads = newThreads;
                 } else if (avgMaxCPU >= minTargetCPU && avgMaxCPU <= maxTargetCPU) {
                     optimalThreads = threads;

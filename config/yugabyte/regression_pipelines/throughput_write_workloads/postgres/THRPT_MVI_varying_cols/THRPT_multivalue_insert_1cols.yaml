@@ -9,22 +9,21 @@ loaderThreads: 4
 terminals: 1
 collect_pg_stat_statements: true
 yaml_version: v1.0
-targetCPU: 75
+targetCPU: 80
 toleranceCPU: 5
 optimalThreads: true
-samplingTime: 120
-time: 600
-flatMaxScalingSteps: 2
+samplingTime: 180
+useThroughputThreshold: true
+restingTimeSecs: 360
 works:
     work:
-        time_secs: 180
-        active_terminals: 1
+        time_secs: 900
         rate: unlimited
         warmup: 60
 microbenchmark:
     class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
     properties:
-        setAutoCommit: false
+        setAutoCommit: true
         create:
             - DROP TABLE IF EXISTS THRPT_MVI_1_col;
             - CREATE TABLE THRPT_MVI_1_col (dept_id INT, emp_id INT, payload TEXT, primary key(dept_id, emp_id));
@@ -33,14 +32,14 @@ microbenchmark:
 
         loadRules:
             - table: THRPT_MVI_1_col
-              rows: 1000000
+              rows: 10000000
               columns:
                   - name: dept_id
                     util: RandomUniqueCyclicIntGen
                     params: [1,9,1]
                   - name: emp_id
                     util: PrimaryIntGenThroughput
-                    params: [1, 1000000]
+                    params: [1, 10000000]
                   - name: payload
                     util: RandomAString
                     params: [1000, 1000]
@@ -57,6 +56,6 @@ microbenchmark:
                               - util: RandomUniqueCyclicIntGen
                                 params: [1,9,1]
                               - util: PrimaryIntGenThroughput
-                                params: [1000001, 2147483646]
+                                params: [10000001, 2147483646]
                               - util: RandomAString
                                 params: [1000, 1000]
