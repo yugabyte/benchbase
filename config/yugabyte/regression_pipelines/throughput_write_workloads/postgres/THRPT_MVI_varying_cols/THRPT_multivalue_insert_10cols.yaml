@@ -3,20 +3,18 @@ driver: org.postgresql.Driver
 url: jdbc:postgresql://{{endpoint}}:5432/postgres?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
 username: {{username}}
 password: {{password}}
-batchsize: 1
+batchsize: 128
 isolation: TRANSACTION_REPEATABLE_READ
 loaderThreads: 4
 terminals: 1
 collect_pg_stat_statements: true
 yaml_version: v1.0
-targetCPU: 75
+targetCPU: 80
 toleranceCPU: 5
 optimalThreads: true
 samplingTime: 180
-flatMaxScalingSteps: 2
 useThroughputThreshold: true
-scalingMinDeltaPercent: 3
-restingTimeSecs: 180
+restingTimeSecs: 360
 works:
     work:
         time_secs: 900
@@ -31,6 +29,10 @@ microbenchmark:
             - CREATE TABLE THRPT_MVI_10_col (dept_id INT, emp_id INT, payload1 TEXT, payload2 TEXT, payload3 TEXT, payload4 TEXT, payload5 TEXT, payload6 TEXT, payload7 TEXT, payload8 TEXT, payload9 TEXT, payload10 TEXT, PRIMARY KEY(dept_id, emp_id));
         cleanup:
             - DROP TABLE IF EXISTS THRPT_MVI_10_col;
+
+        iterationCleanup:
+            - DROP TABLE IF EXISTS THRPT_MVI_10_col;
+            - CREATE TABLE THRPT_MVI_10_col (dept_id INT, emp_id INT, payload1 TEXT, payload2 TEXT, payload3 TEXT, payload4 TEXT, payload5 TEXT, payload6 TEXT, payload7 TEXT, payload8 TEXT, payload9 TEXT, payload10 TEXT, PRIMARY KEY(dept_id, emp_id));
 
         loadRules:
             - table: THRPT_MVI_10_col

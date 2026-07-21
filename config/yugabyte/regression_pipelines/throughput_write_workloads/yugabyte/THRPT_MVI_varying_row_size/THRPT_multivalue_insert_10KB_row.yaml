@@ -10,13 +10,12 @@ terminals: 1
 collect_pg_stat_statements: true
 use_dist_in_explain: true
 yaml_version: v1.0
-targetCPU: 75
+targetCPU: 80
 toleranceCPU: 5
 optimalThreads: true
 samplingTime: 180
 useThroughputThreshold: true
-scalingMinDeltaPercent: 3
-restingTimeSecs: 180
+restingTimeSecs: 360
 works:
     work:
         time_secs: 900
@@ -28,12 +27,12 @@ microbenchmark:
         setAutoCommit: true
         create:
             - DROP TABLE IF EXISTS THRPT_MVI_10KB_row_size;
-            - CREATE TABLE THRPT_MVI_10KB_row_size (dept_id INT, emp_id INT, name VARCHAR(10), email VARCHAR(20), salary FLOAT, hire_date DATE, department VARCHAR(20), details TEXT, is_active BOOLEAN, last_login TIMESTAMP, primary key(dept_id asc, emp_id asc)) SPLIT AT VALUES ((4), (7));
+            - CREATE TABLE THRPT_MVI_10KB_row_size (dept_id INT, emp_id INT, name VARCHAR(10), email VARCHAR(20), salary FLOAT, hire_date DATE, department VARCHAR(20), payload TEXT, details TEXT, is_active BOOLEAN, last_login TIMESTAMP, primary key(dept_id asc, emp_id asc)) SPLIT AT VALUES ((4), (7));
         cleanup:
             - DROP TABLE IF EXISTS THRPT_MVI_10KB_row_size;
         iterationCleanup:
             - DROP TABLE IF EXISTS THRPT_MVI_10KB_row_size;
-            - CREATE TABLE THRPT_MVI_10KB_row_size (dept_id INT, emp_id INT, name VARCHAR(10), email VARCHAR(20), salary FLOAT, hire_date DATE, department VARCHAR(20), details TEXT, is_active BOOLEAN, last_login TIMESTAMP, primary key(dept_id asc, emp_id asc)) SPLIT AT VALUES ((4), (7));
+            - CREATE TABLE THRPT_MVI_10KB_row_size (dept_id INT, emp_id INT, name VARCHAR(10), email VARCHAR(20), salary FLOAT, hire_date DATE, department VARCHAR(20), payload TEXT, details TEXT, is_active BOOLEAN, last_login TIMESTAMP, primary key(dept_id asc, emp_id asc)) SPLIT AT VALUES ((4), (7));
 
         loadRules:
             - table: THRPT_MVI_10KB_row_size
@@ -60,9 +59,12 @@ microbenchmark:
                   - name: department
                     util: RandomAString
                     params: [20, 20]
+                  - name: payload
+                    util: RandomAString
+                    params: [5120, 5120]
                   - name: details
                     util: RandomAString
-                    params: [10240, 10240]
+                    params: [5120, 5120]
                   - name: is_active
                     util: RandomBoolean
                   - name: last_login
@@ -75,7 +77,7 @@ microbenchmark:
                   - name: THRPT_multivalue_insert_10KB_row
                     weight: 100
                     queries:
-                        - query: INSERT INTO THRPT_MVI_10KB_row_size VALUES [(?,?,?,?,?,?,?,?,?,?)][pattern_count]
+                        - query: INSERT INTO THRPT_MVI_10KB_row_size VALUES [(?,?,?,?,?,?,?,?,?,?,?)][pattern_count]
                           pattern_count: 10
                           bindings:
                               - util: RandomUniqueCyclicIntGen
@@ -93,7 +95,9 @@ microbenchmark:
                               - util: RandomAString
                                 params: [20, 20]
                               - util: RandomAString
-                                params: [10240, 10240]
+                                params: [5120, 5120]
+                              - util: RandomAString
+                                params: [5120, 5120]
                               - util: RandomBoolean
                               - util: RandomTimestamp
                                 params: [10000000]

@@ -3,20 +3,18 @@ driver: org.postgresql.Driver
 url: jdbc:postgresql://{{endpoint}}:5432/postgres?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
 username: {{username}}
 password: {{password}}
-batchsize: 1
+batchsize: 128
 isolation: TRANSACTION_REPEATABLE_READ
 loaderThreads: 4
 terminals: 1
 collect_pg_stat_statements: true
 yaml_version: v1.0
-targetCPU: 75
+targetCPU: 80
 toleranceCPU: 5
 optimalThreads: true
 samplingTime: 180
-flatMaxScalingSteps: 2
 useThroughputThreshold: true
-scalingMinDeltaPercent: 3
-restingTimeSecs: 180
+restingTimeSecs: 360
 works:
     work:
         time_secs: 900
@@ -28,11 +26,13 @@ microbenchmark:
         setAutoCommit: true
         create:
             - DROP TABLE IF EXISTS THRPT_MVI_100;
-            - ALTER DATABASE postgres SET synchronous_commit=off;
-            - CREATE TABLE THRPT_MVI_100 (dept_id INT, emp_id INT, name VARCHAR(10), email VARCHAR(20), salary FLOAT, hire_date DATE, department VARCHAR(20), details TEXT, is_active BOOLEAN, last_login TIMESTAMP, primary key(dept_id, emp_id));
+            - CREATE TABLE THRPT_MVI_100 (dept_id INT, emp_id INT, name VARCHAR(10), email VARCHAR(20), salary FLOAT, hire_date DATE, department VARCHAR(20), payload TEXT, details TEXT, is_active BOOLEAN, last_login TIMESTAMP, primary key(dept_id, emp_id));
         cleanup:
             - DROP TABLE IF EXISTS THRPT_MVI_100;
-            - ALTER DATABASE postgres SET synchronous_commit=on;
+
+        iterationCleanup:
+            - DROP TABLE IF EXISTS THRPT_MVI_100;
+            - CREATE TABLE THRPT_MVI_100 (dept_id INT, emp_id INT, name VARCHAR(10), email VARCHAR(20), salary FLOAT, hire_date DATE, department VARCHAR(20), payload TEXT, details TEXT, is_active BOOLEAN, last_login TIMESTAMP, primary key(dept_id, emp_id));
 
         loadRules:
             - table: THRPT_MVI_100
@@ -59,9 +59,12 @@ microbenchmark:
                   - name: department
                     util: RandomAString
                     params: [20, 20]
+                  - name: payload
+                    util: RandomAString
+                    params: [512, 512]
                   - name: details
                     util: RandomAString
-                    params: [1024, 1024]
+                    params: [512, 512]
                   - name: is_active
                     util: RandomBoolean
                   - name: last_login
@@ -74,7 +77,7 @@ microbenchmark:
                   - name: THRPT_multivalue_insert_100row
                     weight: 100
                     queries:
-                        - query: INSERT INTO THRPT_MVI_100 VALUES [(?,?,?,?,?,?,?,?,?,?)][pattern_count]
+                        - query: INSERT INTO THRPT_MVI_100 VALUES [(?,?,?,?,?,?,?,?,?,?,?)][pattern_count]
                           pattern_count: 100
                           bindings:
                               - util: RandomUniqueCyclicIntGen
@@ -92,7 +95,9 @@ microbenchmark:
                               - util: RandomAString
                                 params: [20, 20]
                               - util: RandomAString
-                                params: [1024, 1024]
+                                params: [512, 512]
+                              - util: RandomAString
+                                params: [512, 512]
                               - util: RandomBoolean
                               - util: RandomTimestamp
                                 params: [10000000]

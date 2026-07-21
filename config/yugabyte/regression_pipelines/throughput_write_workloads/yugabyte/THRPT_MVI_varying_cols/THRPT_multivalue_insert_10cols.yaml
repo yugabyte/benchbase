@@ -10,13 +10,12 @@ terminals: 1
 collect_pg_stat_statements: true
 use_dist_in_explain: true
 yaml_version: v1.0
-targetCPU: 75
+targetCPU: 80
 toleranceCPU: 5
 optimalThreads: true
 samplingTime: 180
 useThroughputThreshold: true
-scalingMinDeltaPercent: 3
-restingTimeSecs: 180
+restingTimeSecs: 360
 works:
     work:
         time_secs: 900
