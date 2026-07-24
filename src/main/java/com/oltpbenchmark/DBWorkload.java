@@ -1589,12 +1589,7 @@ public class DBWorkload {
         Double cpuAtPreviousScalingStep = null;
         // Thread count from the previous scaling iteration to be used if flatCPU confirmed
         Integer threadsAtPreviousScalingStep = null;
-        // Counts <b>consecutive</b> flat scaling steps. Reset to 0 whenever a non-flat
-        // step is observed, so an isolated low-CPU sample does not lock the search.
         int consecutiveFlatCpuSteps = 0;
-        // Thread count from BEFORE the current consecutive flat run started -- i.e. the last iteration where the CPU was still climbing meaningfully. Captured the moment
-        // {@code consecutiveFlatCpuSteps} transitions from 0 -> 1, and used as the final
-        // {@code optimalThreads} value if the plateau is later confirmed.
         int flatRunStartThreads = 0;
         boolean flatCpuDetected = false;
         double bestThroughput = 0;
@@ -1875,18 +1870,12 @@ public class DBWorkload {
                     }
                 }
 
-                if (useThroughputThreshold) {
-                    if (avgMaxCPU >= minTargetCPU && avgMaxCPU <= maxTargetCPU) {
-                        optimalThreads = threads;
-                        LOG.info(
-                            "Throughput threshold mode: CPU {}% is within target range [{}, {}]. Stopping thread search early; using {} threads (best throughput so far: {} req/s @ {} threads).",
-                            String.format("%.2f", avgMaxCPU),
-                            minTargetCPU, maxTargetCPU,
-                            optimalThreads,
-                            String.format("%.2f", bestThroughput),
-                            bestThroughputThreads);
-                        break;
-                    }
+                if (avgMaxCPU >= minTargetCPU) {
+                    optimalThreads = threads;
+                    LOG.info("Found optimal threads: {} with MaxCPU: {}", optimalThreads, avgMaxCPU);
+                    break;
+                }
+                else if (useThroughputThreshold) {
 
                     int newThreads = threads + threadIncrement;
                     LOG.info("Throughput threshold mode: adding {} threads. New threads: {}", threadIncrement, newThreads);
@@ -1927,21 +1916,12 @@ public class DBWorkload {
 
                     optimalThreads = bestThroughputThreads;
                     threads = newThreads;
-                } else if (avgMaxCPU >= minTargetCPU && avgMaxCPU <= maxTargetCPU) {
-                    optimalThreads = threads;
-                    LOG.info("Found optimal threads: {} with MaxCPU: {}", optimalThreads, avgMaxCPU);
-                    break;
-                }
+                } 
                 else {
                     int newThreads = 0;
                     if (avgMaxCPU <= targetCPU) optimalThreads = threads;
                     LOG.info("finding new threads for run....");
-                    if(isYugabyteDatabase) {
-                        if(avgMaxCPU > targetCPU) {
-                            LOG.info("MaxCPU is greater than targetCPU. Breaking loop. Current threads: {}", threads);
-                            optimalThreads = Math.max(1, threads);
-                            break;
-                        }
+                    if (isYugabyteDatabase) {
                         newThreads = threads + threadIncrement;
                         LOG.info("Adding {} threads to the current threads. New threads: {}", threadIncrement, newThreads);
                     }else{
