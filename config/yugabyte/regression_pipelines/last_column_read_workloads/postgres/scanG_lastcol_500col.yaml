@@ -1,0 +1,105 @@
+#TEST FOR POSTGRES TABLES
+#GOAL: Measure latency of reading only the LAST column from a table with 500 columns.
+#      Projects only the last column (col_bigint_499) via point lookup and range scans.
+#TESTS:
+#   1. Point lookup returning 1 row
+#   2. Range scan returning 10, 100, 1000 rows
+
+type: POSTGRES
+driver: org.postgresql.Driver
+url: jdbc:postgresql://{{endpoint}}:5432/postgres?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
+username: {{username}}
+password: {{password}}
+batchsize: 128
+isolation: TRANSACTION_READ_COMMITTED
+loaderthreads: 1
+terminals: 1
+collect_pg_stat_statements: true
+use_dist_in_explain: true
+yaml_version: v1.0
+works:
+    work:
+        time_secs: 120
+        active_terminals: 1
+        rate: unlimited
+        warmup: 30
+microbenchmark:
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
+    properties:
+        setAutoCommit: true
+        create:
+            - DROP TABLE IF EXISTS lastcol_500col_1;
+            - CREATE TABLE lastcol_500col_1(col_bigint_id_1 bigint, col_bigint_1 bigint, col_bigint_2 bigint, col_bigint_3 bigint, col_bigint_4 bigint, col_bigint_5 bigint, col_bigint_6 bigint, col_bigint_7 bigint, col_bigint_8 bigint, col_bigint_9 bigint, col_bigint_10 bigint, col_bigint_11 bigint, col_bigint_12 bigint, col_bigint_13 bigint, col_bigint_14 bigint, col_bigint_15 bigint, col_bigint_16 bigint, col_bigint_17 bigint, col_bigint_18 bigint, col_bigint_19 bigint, col_bigint_20 bigint, col_bigint_21 bigint, col_bigint_22 bigint, col_bigint_23 bigint, col_bigint_24 bigint, col_bigint_25 bigint, col_bigint_26 bigint, col_bigint_27 bigint, col_bigint_28 bigint, col_bigint_29 bigint, col_bigint_30 bigint, col_bigint_31 bigint, col_bigint_32 bigint, col_bigint_33 bigint, col_bigint_34 bigint, col_bigint_35 bigint, col_bigint_36 bigint, col_bigint_37 bigint, col_bigint_38 bigint, col_bigint_39 bigint, col_bigint_40 bigint, col_bigint_41 bigint, col_bigint_42 bigint, col_bigint_43 bigint, col_bigint_44 bigint, col_bigint_45 bigint, col_bigint_46 bigint, col_bigint_47 bigint, col_bigint_48 bigint, col_bigint_49 bigint, col_bigint_50 bigint, col_bigint_51 bigint, col_bigint_52 bigint, col_bigint_53 bigint, col_bigint_54 bigint, col_bigint_55 bigint, col_bigint_56 bigint, col_bigint_57 bigint, col_bigint_58 bigint, col_bigint_59 bigint, col_bigint_60 bigint, col_bigint_61 bigint, col_bigint_62 bigint, col_bigint_63 bigint, col_bigint_64 bigint, col_bigint_65 bigint, col_bigint_66 bigint, col_bigint_67 bigint, col_bigint_68 bigint, col_bigint_69 bigint, col_bigint_70 bigint, col_bigint_71 bigint, col_bigint_72 bigint, col_bigint_73 bigint, col_bigint_74 bigint, col_bigint_75 bigint, col_bigint_76 bigint, col_bigint_77 bigint, col_bigint_78 bigint, col_bigint_79 bigint, col_bigint_80 bigint, col_bigint_81 bigint, col_bigint_82 bigint, col_bigint_83 bigint, col_bigint_84 bigint, col_bigint_85 bigint, col_bigint_86 bigint, col_bigint_87 bigint, col_bigint_88 bigint, col_bigint_89 bigint, col_bigint_90 bigint, col_bigint_91 bigint, col_bigint_92 bigint, col_bigint_93 bigint, col_bigint_94 bigint, col_bigint_95 bigint, col_bigint_96 bigint, col_bigint_97 bigint, col_bigint_98 bigint, col_bigint_99 bigint, col_bigint_100 bigint, col_bigint_101 bigint, col_bigint_102 bigint, col_bigint_103 bigint, col_bigint_104 bigint, col_bigint_105 bigint, col_bigint_106 bigint, col_bigint_107 bigint, col_bigint_108 bigint, col_bigint_109 bigint, col_bigint_110 bigint, col_bigint_111 bigint, col_bigint_112 bigint, col_bigint_113 bigint, col_bigint_114 bigint, col_bigint_115 bigint, col_bigint_116 bigint, col_bigint_117 bigint, col_bigint_118 bigint, col_bigint_119 bigint, col_bigint_120 bigint, col_bigint_121 bigint, col_bigint_122 bigint, col_bigint_123 bigint, col_bigint_124 bigint, col_bigint_125 bigint, col_bigint_126 bigint, col_bigint_127 bigint, col_bigint_128 bigint, col_bigint_129 bigint, col_bigint_130 bigint, col_bigint_131 bigint, col_bigint_132 bigint, col_bigint_133 bigint, col_bigint_134 bigint, col_bigint_135 bigint, col_bigint_136 bigint, col_bigint_137 bigint, col_bigint_138 bigint, col_bigint_139 bigint, col_bigint_140 bigint, col_bigint_141 bigint, col_bigint_142 bigint, col_bigint_143 bigint, col_bigint_144 bigint, col_bigint_145 bigint, col_bigint_146 bigint, col_bigint_147 bigint, col_bigint_148 bigint, col_bigint_149 bigint, col_bigint_150 bigint, col_bigint_151 bigint, col_bigint_152 bigint, col_bigint_153 bigint, col_bigint_154 bigint, col_bigint_155 bigint, col_bigint_156 bigint, col_bigint_157 bigint, col_bigint_158 bigint, col_bigint_159 bigint, col_bigint_160 bigint, col_bigint_161 bigint, col_bigint_162 bigint, col_bigint_163 bigint, col_bigint_164 bigint, col_bigint_165 bigint, col_bigint_166 bigint, col_bigint_167 bigint, col_bigint_168 bigint, col_bigint_169 bigint, col_bigint_170 bigint, col_bigint_171 bigint, col_bigint_172 bigint, col_bigint_173 bigint, col_bigint_174 bigint, col_bigint_175 bigint, col_bigint_176 bigint, col_bigint_177 bigint, col_bigint_178 bigint, col_bigint_179 bigint, col_bigint_180 bigint, col_bigint_181 bigint, col_bigint_182 bigint, col_bigint_183 bigint, col_bigint_184 bigint, col_bigint_185 bigint, col_bigint_186 bigint, col_bigint_187 bigint, col_bigint_188 bigint, col_bigint_189 bigint, col_bigint_190 bigint, col_bigint_191 bigint, col_bigint_192 bigint, col_bigint_193 bigint, col_bigint_194 bigint, col_bigint_195 bigint, col_bigint_196 bigint, col_bigint_197 bigint, col_bigint_198 bigint, col_bigint_199 bigint, col_bigint_200 bigint, col_bigint_201 bigint, col_bigint_202 bigint, col_bigint_203 bigint, col_bigint_204 bigint, col_bigint_205 bigint, col_bigint_206 bigint, col_bigint_207 bigint, col_bigint_208 bigint, col_bigint_209 bigint, col_bigint_210 bigint, col_bigint_211 bigint, col_bigint_212 bigint, col_bigint_213 bigint, col_bigint_214 bigint, col_bigint_215 bigint, col_bigint_216 bigint, col_bigint_217 bigint, col_bigint_218 bigint, col_bigint_219 bigint, col_bigint_220 bigint, col_bigint_221 bigint, col_bigint_222 bigint, col_bigint_223 bigint, col_bigint_224 bigint, col_bigint_225 bigint, col_bigint_226 bigint, col_bigint_227 bigint, col_bigint_228 bigint, col_bigint_229 bigint, col_bigint_230 bigint, col_bigint_231 bigint, col_bigint_232 bigint, col_bigint_233 bigint, col_bigint_234 bigint, col_bigint_235 bigint, col_bigint_236 bigint, col_bigint_237 bigint, col_bigint_238 bigint, col_bigint_239 bigint, col_bigint_240 bigint, col_bigint_241 bigint, col_bigint_242 bigint, col_bigint_243 bigint, col_bigint_244 bigint, col_bigint_245 bigint, col_bigint_246 bigint, col_bigint_247 bigint, col_bigint_248 bigint, col_bigint_249 bigint, col_bigint_250 bigint, col_bigint_251 bigint, col_bigint_252 bigint, col_bigint_253 bigint, col_bigint_254 bigint, col_bigint_255 bigint, col_bigint_256 bigint, col_bigint_257 bigint, col_bigint_258 bigint, col_bigint_259 bigint, col_bigint_260 bigint, col_bigint_261 bigint, col_bigint_262 bigint, col_bigint_263 bigint, col_bigint_264 bigint, col_bigint_265 bigint, col_bigint_266 bigint, col_bigint_267 bigint, col_bigint_268 bigint, col_bigint_269 bigint, col_bigint_270 bigint, col_bigint_271 bigint, col_bigint_272 bigint, col_bigint_273 bigint, col_bigint_274 bigint, col_bigint_275 bigint, col_bigint_276 bigint, col_bigint_277 bigint, col_bigint_278 bigint, col_bigint_279 bigint, col_bigint_280 bigint, col_bigint_281 bigint, col_bigint_282 bigint, col_bigint_283 bigint, col_bigint_284 bigint, col_bigint_285 bigint, col_bigint_286 bigint, col_bigint_287 bigint, col_bigint_288 bigint, col_bigint_289 bigint, col_bigint_290 bigint, col_bigint_291 bigint, col_bigint_292 bigint, col_bigint_293 bigint, col_bigint_294 bigint, col_bigint_295 bigint, col_bigint_296 bigint, col_bigint_297 bigint, col_bigint_298 bigint, col_bigint_299 bigint, col_bigint_300 bigint, col_bigint_301 bigint, col_bigint_302 bigint, col_bigint_303 bigint, col_bigint_304 bigint, col_bigint_305 bigint, col_bigint_306 bigint, col_bigint_307 bigint, col_bigint_308 bigint, col_bigint_309 bigint, col_bigint_310 bigint, col_bigint_311 bigint, col_bigint_312 bigint, col_bigint_313 bigint, col_bigint_314 bigint, col_bigint_315 bigint, col_bigint_316 bigint, col_bigint_317 bigint, col_bigint_318 bigint, col_bigint_319 bigint, col_bigint_320 bigint, col_bigint_321 bigint, col_bigint_322 bigint, col_bigint_323 bigint, col_bigint_324 bigint, col_bigint_325 bigint, col_bigint_326 bigint, col_bigint_327 bigint, col_bigint_328 bigint, col_bigint_329 bigint, col_bigint_330 bigint, col_bigint_331 bigint, col_bigint_332 bigint, col_bigint_333 bigint, col_bigint_334 bigint, col_bigint_335 bigint, col_bigint_336 bigint, col_bigint_337 bigint, col_bigint_338 bigint, col_bigint_339 bigint, col_bigint_340 bigint, col_bigint_341 bigint, col_bigint_342 bigint, col_bigint_343 bigint, col_bigint_344 bigint, col_bigint_345 bigint, col_bigint_346 bigint, col_bigint_347 bigint, col_bigint_348 bigint, col_bigint_349 bigint, col_bigint_350 bigint, col_bigint_351 bigint, col_bigint_352 bigint, col_bigint_353 bigint, col_bigint_354 bigint, col_bigint_355 bigint, col_bigint_356 bigint, col_bigint_357 bigint, col_bigint_358 bigint, col_bigint_359 bigint, col_bigint_360 bigint, col_bigint_361 bigint, col_bigint_362 bigint, col_bigint_363 bigint, col_bigint_364 bigint, col_bigint_365 bigint, col_bigint_366 bigint, col_bigint_367 bigint, col_bigint_368 bigint, col_bigint_369 bigint, col_bigint_370 bigint, col_bigint_371 bigint, col_bigint_372 bigint, col_bigint_373 bigint, col_bigint_374 bigint, col_bigint_375 bigint, col_bigint_376 bigint, col_bigint_377 bigint, col_bigint_378 bigint, col_bigint_379 bigint, col_bigint_380 bigint, col_bigint_381 bigint, col_bigint_382 bigint, col_bigint_383 bigint, col_bigint_384 bigint, col_bigint_385 bigint, col_bigint_386 bigint, col_bigint_387 bigint, col_bigint_388 bigint, col_bigint_389 bigint, col_bigint_390 bigint, col_bigint_391 bigint, col_bigint_392 bigint, col_bigint_393 bigint, col_bigint_394 bigint, col_bigint_395 bigint, col_bigint_396 bigint, col_bigint_397 bigint, col_bigint_398 bigint, col_bigint_399 bigint, col_bigint_400 bigint, col_bigint_401 bigint, col_bigint_402 bigint, col_bigint_403 bigint, col_bigint_404 bigint, col_bigint_405 bigint, col_bigint_406 bigint, col_bigint_407 bigint, col_bigint_408 bigint, col_bigint_409 bigint, col_bigint_410 bigint, col_bigint_411 bigint, col_bigint_412 bigint, col_bigint_413 bigint, col_bigint_414 bigint, col_bigint_415 bigint, col_bigint_416 bigint, col_bigint_417 bigint, col_bigint_418 bigint, col_bigint_419 bigint, col_bigint_420 bigint, col_bigint_421 bigint, col_bigint_422 bigint, col_bigint_423 bigint, col_bigint_424 bigint, col_bigint_425 bigint, col_bigint_426 bigint, col_bigint_427 bigint, col_bigint_428 bigint, col_bigint_429 bigint, col_bigint_430 bigint, col_bigint_431 bigint, col_bigint_432 bigint, col_bigint_433 bigint, col_bigint_434 bigint, col_bigint_435 bigint, col_bigint_436 bigint, col_bigint_437 bigint, col_bigint_438 bigint, col_bigint_439 bigint, col_bigint_440 bigint, col_bigint_441 bigint, col_bigint_442 bigint, col_bigint_443 bigint, col_bigint_444 bigint, col_bigint_445 bigint, col_bigint_446 bigint, col_bigint_447 bigint, col_bigint_448 bigint, col_bigint_449 bigint, col_bigint_450 bigint, col_bigint_451 bigint, col_bigint_452 bigint, col_bigint_453 bigint, col_bigint_454 bigint, col_bigint_455 bigint, col_bigint_456 bigint, col_bigint_457 bigint, col_bigint_458 bigint, col_bigint_459 bigint, col_bigint_460 bigint, col_bigint_461 bigint, col_bigint_462 bigint, col_bigint_463 bigint, col_bigint_464 bigint, col_bigint_465 bigint, col_bigint_466 bigint, col_bigint_467 bigint, col_bigint_468 bigint, col_bigint_469 bigint, col_bigint_470 bigint, col_bigint_471 bigint, col_bigint_472 bigint, col_bigint_473 bigint, col_bigint_474 bigint, col_bigint_475 bigint, col_bigint_476 bigint, col_bigint_477 bigint, col_bigint_478 bigint, col_bigint_479 bigint, col_bigint_480 bigint, col_bigint_481 bigint, col_bigint_482 bigint, col_bigint_483 bigint, col_bigint_484 bigint, col_bigint_485 bigint, col_bigint_486 bigint, col_bigint_487 bigint, col_bigint_488 bigint, col_bigint_489 bigint, col_bigint_490 bigint, col_bigint_491 bigint, col_bigint_492 bigint, col_bigint_493 bigint, col_bigint_494 bigint, col_bigint_495 bigint, col_bigint_496 bigint, col_bigint_497 bigint, col_bigint_498 bigint, col_bigint_499 bigint, PRIMARY KEY(col_bigint_id_1 ASC));
+        cleanup:
+            - DROP TABLE IF EXISTS lastcol_500col_1;
+        loadRules:
+            - table: lastcol_500col_
+              count: 1
+              rows: 1000000
+              columns:
+                  - name: col_bigint_id_
+                    count: 1
+                    util: PrimaryIntGen
+                    params: [1, 1000000]
+                  - name: col_bigint_
+                    count: 499
+                    util: RandomNumber
+                    params: [1, 1000000]
+
+        executeRules:
+            - workload: lastcol_500col_point_lookup
+              customTags: schematype=regular,partition=none,pkey=asc,cardinality=single,projection=lastcol,filteron=pkey,filtertype=pointselect,queryshape=scan,returnrows=1
+              run:
+                  - name: lastcol_500col_point_lookup_test
+                    weight: 100
+                    queries:
+                        - query: select col_bigint_499 from lastcol_500col_1 where col_bigint_id_1=(?)
+                          bindings:
+                              count: 1
+                              util: RandomNumber
+                              params: [1, 1000000]
+
+            - workload: lastcol_500col_range_10_rows
+              customTags: schematype=regular,partition=none,pkey=asc,cardinality=multi,projection=lastcol,filteron=pkey,filtertype=rangescan,queryshape=scan,returnrows=10
+              run:
+                  - name: lastcol_500col_range_10_rows_test
+                    weight: 100
+                    queries:
+                        - query: select col_bigint_499 from lastcol_500col_1 where col_bigint_id_1 between ? and ?
+                          bindings:
+                              - util: RandomNumber
+                                params: [1, 999990]
+                                referenceName: id1
+                              - util: ExpressionEval
+                                params:
+                                    - "id1 + 10"
+
+            - workload: lastcol_500col_range_100_rows
+              customTags: schematype=regular,partition=none,pkey=asc,cardinality=multi,projection=lastcol,filteron=pkey,filtertype=rangescan,queryshape=scan,returnrows=100
+              run:
+                  - name: lastcol_500col_range_100_rows_test
+                    weight: 100
+                    queries:
+                        - query: select col_bigint_499 from lastcol_500col_1 where col_bigint_id_1 between ? and ?
+                          bindings:
+                              - util: RandomNumber
+                                params: [1, 999900]
+                                referenceName: id1
+                              - util: ExpressionEval
+                                params:
+                                    - "id1 + 100"
+
+            - workload: lastcol_500col_range_1000_rows
+              customTags: schematype=regular,partition=none,pkey=asc,cardinality=multi,projection=lastcol,filteron=pkey,filtertype=rangescan,queryshape=scan,returnrows=1000
+              run:
+                  - name: lastcol_500col_range_1000_rows_test
+                    weight: 100
+                    queries:
+                        - query: select col_bigint_499 from lastcol_500col_1 where col_bigint_id_1 between ? and ?
+                          bindings:
+                              - util: RandomNumber
+                                params: [1, 999000]
+                                referenceName: id1
+                              - util: ExpressionEval
+                                params:
+                                    - "id1 + 1000"

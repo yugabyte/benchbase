@@ -1,0 +1,105 @@
+#TEST FOR POSTGRES TABLES
+#GOAL: Measure latency of reading only the LAST column from a table with 10 columns.
+#      Projects only the last column (col_bigint_9) via point lookup and range scans.
+#TESTS:
+#   1. Point lookup returning 1 row
+#   2. Range scan returning 10, 100, 1000 rows
+
+type: POSTGRES
+driver: org.postgresql.Driver
+url: jdbc:postgresql://{{endpoint}}:5432/postgres?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
+username: {{username}}
+password: {{password}}
+batchsize: 128
+isolation: TRANSACTION_READ_COMMITTED
+loaderthreads: 1
+terminals: 1
+collect_pg_stat_statements: true
+use_dist_in_explain: true
+yaml_version: v1.0
+works:
+    work:
+        time_secs: 120
+        active_terminals: 1
+        rate: unlimited
+        warmup: 30
+microbenchmark:
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
+    properties:
+        setAutoCommit: true
+        create:
+            - DROP TABLE IF EXISTS lastcol_10col_1;
+            - CREATE TABLE lastcol_10col_1(col_bigint_id_1 bigint, col_bigint_1 bigint, col_bigint_2 bigint, col_bigint_3 bigint, col_bigint_4 bigint, col_bigint_5 bigint, col_bigint_6 bigint, col_bigint_7 bigint, col_bigint_8 bigint, col_bigint_9 bigint, PRIMARY KEY(col_bigint_id_1 ASC));
+        cleanup:
+            - DROP TABLE IF EXISTS lastcol_10col_1;
+        loadRules:
+            - table: lastcol_10col_
+              count: 1
+              rows: 1000000
+              columns:
+                  - name: col_bigint_id_
+                    count: 1
+                    util: PrimaryIntGen
+                    params: [1, 1000000]
+                  - name: col_bigint_
+                    count: 9
+                    util: RandomNumber
+                    params: [1, 1000000]
+
+        executeRules:
+            - workload: lastcol_10col_point_lookup
+              customTags: schematype=regular,partition=none,pkey=asc,cardinality=single,projection=lastcol,filteron=pkey,filtertype=pointselect,queryshape=scan,returnrows=1
+              run:
+                  - name: lastcol_10col_point_lookup_test
+                    weight: 100
+                    queries:
+                        - query: select col_bigint_9 from lastcol_10col_1 where col_bigint_id_1=(?)
+                          bindings:
+                              count: 1
+                              util: RandomNumber
+                              params: [1, 1000000]
+
+            - workload: lastcol_10col_range_10_rows
+              customTags: schematype=regular,partition=none,pkey=asc,cardinality=multi,projection=lastcol,filteron=pkey,filtertype=rangescan,queryshape=scan,returnrows=10
+              run:
+                  - name: lastcol_10col_range_10_rows_test
+                    weight: 100
+                    queries:
+                        - query: select col_bigint_9 from lastcol_10col_1 where col_bigint_id_1 between ? and ?
+                          bindings:
+                              - util: RandomNumber
+                                params: [1, 999990]
+                                referenceName: id1
+                              - util: ExpressionEval
+                                params:
+                                    - "id1 + 10"
+
+            - workload: lastcol_10col_range_100_rows
+              customTags: schematype=regular,partition=none,pkey=asc,cardinality=multi,projection=lastcol,filteron=pkey,filtertype=rangescan,queryshape=scan,returnrows=100
+              run:
+                  - name: lastcol_10col_range_100_rows_test
+                    weight: 100
+                    queries:
+                        - query: select col_bigint_9 from lastcol_10col_1 where col_bigint_id_1 between ? and ?
+                          bindings:
+                              - util: RandomNumber
+                                params: [1, 999900]
+                                referenceName: id1
+                              - util: ExpressionEval
+                                params:
+                                    - "id1 + 100"
+
+            - workload: lastcol_10col_range_1000_rows
+              customTags: schematype=regular,partition=none,pkey=asc,cardinality=multi,projection=lastcol,filteron=pkey,filtertype=rangescan,queryshape=scan,returnrows=1000
+              run:
+                  - name: lastcol_10col_range_1000_rows_test
+                    weight: 100
+                    queries:
+                        - query: select col_bigint_9 from lastcol_10col_1 where col_bigint_id_1 between ? and ?
+                          bindings:
+                              - util: RandomNumber
+                                params: [1, 999000]
+                                referenceName: id1
+                              - util: ExpressionEval
+                                params:
+                                    - "id1 + 1000"
