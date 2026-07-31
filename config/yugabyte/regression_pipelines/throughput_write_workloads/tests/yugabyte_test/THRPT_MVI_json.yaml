@@ -20,23 +20,23 @@ works:
     work:
         time_secs: 600
         rate: unlimited
-        warmup: 60
+        warmup: 120
 microbenchmark:
     class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
     properties:
         setAutoCommit: true
         create:
-            - DROP TABLE IF EXISTS THRPT_MVI_1_sysbench;
-            - CREATE TABLE THRPT_MVI_1_sysbench (k INTEGER, id INTEGER, c CHAR(1024), pad CHAR(60), PRIMARY KEY (k ASC, id ASC)) SPLIT AT VALUES ((4), (7));
+            - DROP TABLE IF EXISTS THRPT_MVI_1_json;
+            - CREATE TABLE THRPT_MVI_1_json (k INTEGER, id INTEGER, c JSON, pad CHAR(60), PRIMARY KEY (k ASC, id ASC)) SPLIT AT VALUES ((4), (7));
         cleanup:
-            - DROP TABLE IF EXISTS THRPT_MVI_1_sysbench;
+            - DROP TABLE IF EXISTS THRPT_MVI_1_json;
 
         iterationCleanup:
-            - DROP TABLE IF EXISTS THRPT_MVI_1_sysbench;
-            - CREATE TABLE THRPT_MVI_1_sysbench (k INTEGER, id INTEGER, c CHAR(1024), pad CHAR(60), PRIMARY KEY (k ASC, id ASC)) SPLIT AT VALUES ((4), (7));
+            - DROP TABLE IF EXISTS THRPT_MVI_1_json;
+            - CREATE TABLE THRPT_MVI_1_json (k INTEGER, id INTEGER, c JSON, pad CHAR(60), PRIMARY KEY (k ASC, id ASC)) SPLIT AT VALUES ((4), (7));
 
         loadRules:
-            - table: THRPT_MVI_1_sysbench
+            - table: THRPT_MVI_1_json
               rows: 10000000
               columns:
                   - name: k
@@ -46,8 +46,8 @@ microbenchmark:
                     util: PrimaryIntGen
                     params: [1, 10000000]
                   - name: c
-                    util: RandomAString
-                    params: [1024, 1024]
+                    util: RandomJson
+                    params: [8, 128]
                   - name: pad
                     util: RandomAString
                     params: [60, 60]
@@ -58,14 +58,14 @@ microbenchmark:
                   - name: THRPT_multivalue_insert_1row
                     weight: 100
                     queries:
-                        - query: INSERT INTO THRPT_MVI_1_sysbench VALUES [(?,?,?,?)][pattern_count]
+                        - query: "INSERT INTO THRPT_MVI_1_json VALUES [(?,?,?::JSON,?)][pattern_count]"
                           pattern_count: 1
                           bindings:
                               - util: RandomUniqueCyclicIntGen
                                 params: [1, 9, 1]
                               - util: PrimaryIntGenThroughput
                                 params: [10000001, 2147483646]
-                              - util: RandomAString
-                                params: [1024, 1024]
+                              - util: RandomJson
+                                params: [8, 128]
                               - util: RandomAString
                                 params: [60, 60]
