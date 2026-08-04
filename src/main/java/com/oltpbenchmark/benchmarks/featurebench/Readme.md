@@ -120,6 +120,7 @@ Utility functions are present inside the folder :-
 | RandomTimestampWithTimeZone | Returns a random Timestamp with timezone which are determinsitic based on total no. of unique timestamps required                    | totalTimestamps                     | Integer                    |
 | RandomTimestampWithTimezoneBetweenDates | Returns a random Timestamp with timezone between the dates provided.                                                                 | start date, end date                | String(date), string(date) |
 | RandomTimestampWithTimezoneBtwMonths | Returns a random Timestamp with timezone between months of the same year                                                             | year, start month, end month        | Integer, Integer, Integer  |
+| RandomUniqueCyclicIntGen | Returns random integers in [lowerRange, upperRange] (inclusive). Each value is visited exactly once per pass in random order; the list is re-shuffled when exhausted. Each value is returned `period` consecutive times before advancing (period defaults to 1). | lowerRange, upperRange, period (optional) | Integer, Integer, Integer |
 
 
 ### Results:-

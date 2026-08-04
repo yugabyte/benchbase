@@ -59,6 +59,10 @@ public class FeatureBenchBenchmark extends BenchmarkModule {
         List<HierarchicalConfiguration<ImmutableNode>> confExecuteRules = conf.configurationsAt("properties/executeRules[" + workcount + "]/run");
         String workloadName = conf.getString("properties/executeRules[" + workcount + "]/workload") != null ? conf.getString("properties/executeRules[" + workcount + "]/workload") : TimeUtil.getCurrentTimeString();
 
+        // Reset the shared per-workload state exactly once, before creating this
+        // workload's workers, so the "run once" init/teardown guards start clean.
+        FeatureBenchWorker.resetSharedState();
+
         for (int i = 0; i < workConf.getTerminals(); ++i) {
             FeatureBenchWorker worker = new FeatureBenchWorker(this, i,
                 conf.getString("class"),

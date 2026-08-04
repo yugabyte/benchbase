@@ -1,0 +1,61 @@
+type: postgres
+driver: org.postgresql.Driver
+url: jdbc:postgresql://{{endpoint}}:5432/postgres?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
+username: {{username}}
+password: {{password}}
+batchsize: 1
+isolation: TRANSACTION_REPEATABLE_READ
+loaderThreads: 4
+terminals: 1
+collect_pg_stat_statements: true
+yaml_version: v1.0
+targetCPU: 75
+toleranceCPU: 5
+optimalThreads: true
+samplingTime: 120
+time: 600
+flatMaxScalingSteps: 2
+works:
+    work:
+        time_secs: 180
+        active_terminals: 1
+        rate: unlimited
+        warmup: 60
+microbenchmark:
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
+    properties:
+        setAutoCommit: true
+        create:
+            - DROP TABLE IF EXISTS THRPT_between_10kb_row;
+            - CREATE TABLE THRPT_between_10kb_row (id INT, lookup_key INT, payload TEXT, PRIMARY KEY(id));
+
+        cleanup:
+            - DROP TABLE IF EXISTS THRPT_between_10kb_row;
+
+        loadRules:
+            - table: THRPT_between_10kb_row
+              rows: 1000000
+              columns:
+                  - name: id
+                    util: RandomUniqueIntGen
+                    params: [1, 1000000]
+                  - name: lookup_key
+                    util: RandomUniqueIntGen
+                    params: [1, 1000000]
+                  - name: payload
+                    util: RandomAString
+                    params: [10240, 10240]
+        executeRules:
+            - workload: THRPT_next_1col_10KB_row_pk_btwn_100
+              run:
+                  - name: THRPT_next_1col_10KB_row_pk_btwn_100
+                    weight: 100
+                    queries:
+                        - query: SELECT * FROM THRPT_between_10kb_row WHERE id between ? and ?;
+                          bindings:
+                              - util: RandomNumber
+                                params: [1, 999900]
+                                referenceName: id1
+                              - util: ExpressionEval
+                                params:
+                                    - "id1 + 100"
