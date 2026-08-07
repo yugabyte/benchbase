@@ -709,7 +709,6 @@ public class DBWorkload {
                         LOG.info("Starting Workload " + (workloads.get(workCount - 1).containsKey("workload") ? workloads.get(workCount - 1).getString("workload") : workCount));
                         // Add optimal thread finding here for current workload
                         if (xmlConfig.containsKey("optimalThreads") && xmlConfig.getBoolean("optimalThreads")) {
-                            int minThreads = xmlConfig.getInt("minThreads", terminals);
                             double targetCPU = xmlConfig.getDouble("targetCPU", 80.0);
                             double toleranceCPU = xmlConfig.getDouble("toleranceCPU", 5.0);
                             int samplingTime = xmlConfig.getInt("samplingTime", 0);
@@ -735,7 +734,7 @@ public class DBWorkload {
                                 : (xmlConfig.containsKey("microbenchmark/properties/create")
                                     ? xmlConfig.getList(String.class, "microbenchmark/properties/create")
                                     : null);
-                            int optimalThreads = findOptimalThreadCount(benchList.get(0), minThreads, targetCPU, toleranceCPU, workloadName, workCount, samplingTime,
+                            int optimalThreads = findOptimalThreadCount(benchList.get(0), terminals, targetCPU, toleranceCPU, workloadName, workCount, samplingTime,
                                 scalingMinDeltaPercent, threadIncrement, restingTimeSecs, flatMaxScalingSteps, linearPGthread,
                                 useThroughputThreshold, truncateBetweenIterations, iterationCleanupDDLs);
 
@@ -817,7 +816,6 @@ public class DBWorkload {
                         LOG.info("Starting Workload " + (workloads.get(workCount - 1).containsKey("workload") ? workloads.get(workCount - 1).getString("workload") : workCount));
                         if (xmlConfig.containsKey("optimalThreads") && xmlConfig.getBoolean("optimalThreads")) {
                             String val = workloads.get(workCount - 1).getString("workload");
-                            int minThreads = xmlConfig.getInt("minThreads", terminals);
                             double targetCPU = xmlConfig.getDouble("targetCPU", 80.0);
                             double toleranceCPU = xmlConfig.getDouble("toleranceCPU", 5.0);
                             int samplingTime = xmlConfig.getInt("samplingTime", 0);
@@ -843,7 +841,7 @@ public class DBWorkload {
                                 : (xmlConfig.containsKey("microbenchmark/properties/create")
                                     ? xmlConfig.getList(String.class, "microbenchmark/properties/create")
                                     : null);
-                            int optimalThreads = findOptimalThreadCount(benchList.get(0), minThreads, targetCPU, toleranceCPU, workloadName, workCount, samplingTime,
+                            int optimalThreads = findOptimalThreadCount(benchList.get(0), terminals, targetCPU, toleranceCPU, workloadName, workCount, samplingTime,
                                 scalingMinDeltaPercent, threadIncrement, restingTimeSecs, flatMaxScalingSteps, linearPGthread,
                                 useThroughputThreshold, truncateBetweenIterations, iterationCleanupDDLs);
 
@@ -1554,7 +1552,7 @@ public class DBWorkload {
      */
     private static final double DEFAULT_SCALING_MIN_DELTA_PERCENT = 5.0;
 
-    private static int findOptimalThreadCount(BenchmarkModule bench, int minThreads, double targetCPU, double toleranceCPU, String workloadName, int workCount, int samplingTime,
+    private static int findOptimalThreadCount(BenchmarkModule bench, int terminals, double targetCPU, double toleranceCPU, String workloadName, int workCount, int samplingTime,
             double scalingMinDeltaPercent, int threadIncrement, int restingTimeSecs, int flatMaxScalingSteps, boolean linearPGthread,
             boolean useThroughputThreshold, boolean truncateBetweenIterations, List<String> iterationCleanupDDLs) throws InterruptedException {
         double minTargetCPU = targetCPU - toleranceCPU;
@@ -1581,7 +1579,7 @@ public class DBWorkload {
         }
         
 
-        int threads = minThreads;
+        int threads = terminals;
         int max_iterations =  50;
         int optimalThreads = threads;
         List<Map<String, Object>> jsonResults = new ArrayList<>();
@@ -1611,12 +1609,10 @@ public class DBWorkload {
         String rdsInstanceIdentifier = null;
         String awsRegion = null;
 
-        // Set start 3 for yugabyteDB
         if (isYugabyteDatabase) {
-            threads = 3;
+            threads = terminals < 3 ? 3 : terminals;
         }
         
-
         if (!isYugabyteDatabase) {
             // Extract RDS instance details from connection URL
             String jdbcUrl = bench.getWorkloadConfiguration().getUrl();
