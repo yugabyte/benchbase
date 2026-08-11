@@ -20,16 +20,16 @@ works:
 microbenchmark:
     class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
     properties:
-        setAutoCommit: false
+        setAutoCommit: true
         create:
             - drop table if exists index_test_1;
             - drop table if exists index_test_2;
             - drop table if exists index_test_3;
             - drop table if exists index_test_4;
-            - create table index_test_1 (pid int, id bigint, col_int_1 int, col_int_2 int, col_int_3 int, col_int_4 int, col_int_5 int, col_int_6 int, col_int_7 int, col_int_8 int, col_int_9 int, col_int_10 int, col_varchar_1 varchar(5000), col_varchar_2 varchar(5000), col_varchar_3 varchar(5000), col_date text, col_boolean boolean, primary key (pid asc, id asc)) SPLIT AT VALUES ((4), (7));
-            - create table index_test_2 (pid int, id bigint, col_int_1 int, col_int_2 int, col_int_3 int, col_int_4 int, col_int_5 int, col_int_6 int, col_int_7 int, col_int_8 int, col_int_9 int, col_int_10 int, col_varchar_1 varchar(5000), col_varchar_2 varchar(5000), col_varchar_3 varchar(5000), col_date text, col_boolean boolean, primary key (pid asc, id asc)) SPLIT AT VALUES ((4), (7));
-            - create table index_test_3 (pid int, id bigint, col_int_1 int, col_int_2 int, col_int_3 int, col_int_4 int, col_int_5 int, col_int_6 int, col_int_7 int, col_int_8 int, col_int_9 int, col_int_10 int, col_varchar_1 varchar(5000), col_varchar_2 varchar(5000), col_varchar_3 varchar(5000), col_date text, col_boolean boolean, primary key (pid asc, id asc)) SPLIT AT VALUES ((4), (7));
-            - create table index_test_4 (pid int, id bigint, col_int_1 int, col_int_2 int, col_int_3 int, col_int_4 int, col_int_5 int, col_int_6 int, col_int_7 int, col_int_8 int, col_int_9 int, col_int_10 int, col_varchar_1 varchar(5000), col_varchar_2 varchar(5000), col_varchar_3 varchar(5000), col_date text, col_boolean boolean, primary key (pid asc, id asc)) SPLIT AT VALUES ((4), (7));
+            - CREATE TABLE index_test_1 (id bigint, col_int_1 int, col_int_2 int, col_int_3 int, col_int_4 int, col_int_5 int, col_int_6 int, col_int_7 int, col_int_8 int, col_int_9 int, col_int_10 int, col_varchar_1 CHAR(500), col_varchar_2 CHAR(500), col_varchar_3 CHAR(500), col_date text, col_boolean boolean, PRIMARY KEY (id ASC));
+            - create table index_test_2 (id bigint, col_int_1 int, col_int_2 int, col_int_3 int, col_int_4 int, col_int_5 int, col_int_6 int, col_int_7 int, col_int_8 int, col_int_9 int, col_int_10 int, col_varchar_1 CHAR(500), col_varchar_2 CHAR(500), col_varchar_3 CHAR(500), col_date text, col_boolean boolean, PRIMARY KEY (id ASC));
+            - create table index_test_3 (id bigint, col_int_1 int, col_int_2 int, col_int_3 int, col_int_4 int, col_int_5 int, col_int_6 int, col_int_7 int, col_int_8 int, col_int_9 int, col_int_10 int, col_varchar_1 CHAR(500), col_varchar_2 CHAR(500), col_varchar_3 CHAR(500), col_date text, col_boolean boolean, PRIMARY KEY (id ASC));
+            - create table index_test_4 (id bigint, col_int_1 int, col_int_2 int, col_int_3 int, col_int_4 int, col_int_5 int, col_int_6 int, col_int_7 int, col_int_8 int, col_int_9 int, col_int_10 int, col_varchar_1 CHAR(500), col_varchar_2 CHAR(500), col_varchar_3 CHAR(500), col_date text, col_boolean boolean, PRIMARY KEY (id ASC));
             - create index index_test_2_idx1 on index_test_2(col_int_1);
             - create index index_test_3_idx1 on index_test_3(col_int_1);
             - create index index_test_3_idx2 on index_test_3(col_int_2);
@@ -54,33 +54,30 @@ microbenchmark:
         loadRules:
             -   table: index_test_
                 count: 4
-                rows: 1000000
+                rows: 10000000
                 columns:
-                    -   name: pid
-                        util: CyclicSeqIntGen
-                        params: [ 1, 9 ]
                     -   name: id
                         util: PrimaryIntGen
                         params:
                             - 1
-                            - 1000000
+                            - 10000000
                     -   name: col_int_
                         count: 10
                         util: PrimaryIntGen
                         params:
                             - 1
-                            - 1000000
+                            - 10000000
                     -   name: col_varchar_
                         count: 3
                         util: RandomAString
                         params:
-                            - 5000
-                            - 5000
+                            - 500
+                            - 500
                     -   name: col_date
                         util: RandomAString
                         params:
-                            - 5000
-                            - 5000
+                            - 500
+                            - 500
                     -   name: col_boolean
                         util: RandomBoolean
         executeRules:
@@ -89,75 +86,67 @@ microbenchmark:
                     -   name: Insert_without_index_test
                         weight: 100
                         queries:
-                            -   query: INSERT INTO index_test_1 (pid, id, col_int_1, col_int_2, col_int_3, col_int_4, col_int_5, col_int_6, col_int_7, col_int_8, col_int_9, col_int_10, col_varchar_1, col_varchar_2, col_varchar_3, col_date, col_boolean) values (?, ?, ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                            -   query: INSERT INTO index_test_1 (id, col_int_1, col_int_2, col_int_3, col_int_4, col_int_5, col_int_6, col_int_7, col_int_8, col_int_9, col_int_10, col_varchar_1, col_varchar_2, col_varchar_3, col_date, col_boolean) values (?, ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
                                 count: 10
                                 bindings:
-                                    -   util: CyclicSeqIntGen
-                                        params: [ 1, 9 ]
                                     -   util: PrimaryIntGen
-                                        params: [ 1000001, 9000000 ]
-                                    -   util: PrimaryIntGen
+                                        params: [ 10000001, 90000000 ]
+                                    -   util: RandomNumber
                                         count: 10
-                                        params: [ 1000001, 9000000 ]
+                                        params: [ 10000001, 90000000 ]
                                     -   util: RandomAString
                                         count: 4
-                                        params: [ 5000, 5000 ]
+                                        params: [ 500, 500 ]
                                     -   util: RandomBoolean
             -   workload: 1_index_test
                 run:
                     -   name: Insert_with_1_index_test
                         weight: 100
                         queries:
-                            -   query: INSERT INTO index_test_2 (pid, id, col_int_1, col_int_2, col_int_3, col_int_4, col_int_5, col_int_6, col_int_7, col_int_8, col_int_9, col_int_10, col_varchar_1, col_varchar_2, col_varchar_3, col_date, col_boolean) values (?, ?, ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                            -   query: INSERT INTO index_test_2 (id, col_int_1, col_int_2, col_int_3, col_int_4, col_int_5, col_int_6, col_int_7, col_int_8, col_int_9, col_int_10, col_varchar_1, col_varchar_2, col_varchar_3, col_date, col_boolean) values (?, ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
                                 count: 10
                                 bindings:
-                                    -   util: CyclicSeqIntGen
-                                        params: [ 1, 9 ]
                                     -   util: PrimaryIntGen
-                                        params: [ 1000001, 9000000 ]
+                                        params: [ 10000001, 90000000 ]
                                     -   util: PrimaryIntGen
                                         count: 10
-                                        params: [ 1000001, 9000000 ]
+                                        params: [ 10000001, 90000000 ]
                                     -   util: RandomAString
                                         count: 4
-                                        params: [ 5000, 5000 ]
+                                        params: [ 500, 500 ]
                                     -   util: RandomBoolean
             -   workload: 5_index_test
                 run:
                     -   name: Insert_with_5_index_test
                         weight: 100
                         queries:
-                            -   query: INSERT INTO index_test_3 (pid, id, col_int_1, col_int_2, col_int_3, col_int_4, col_int_5, col_int_6, col_int_7, col_int_8, col_int_9, col_int_10, col_varchar_1, col_varchar_2, col_varchar_3, col_date, col_boolean) values (?, ?, ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                            -   query: INSERT INTO index_test_3 (id, col_int_1, col_int_2, col_int_3, col_int_4, col_int_5, col_int_6, col_int_7, col_int_8, col_int_9, col_int_10, col_varchar_1, col_varchar_2, col_varchar_3, col_date, col_boolean) values (?, ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
                                 count: 10
                                 bindings:
-                                    -   util: CyclicSeqIntGen
-                                        params: [ 1, 9 ]
                                     -   util: PrimaryIntGen
-                                        params: [ 1000001, 9000000 ]
+                                        params: [ 10000001, 90000000 ]
                                     -   util: PrimaryIntGen
                                         count: 10
-                                        params: [ 1000001, 9000000 ]
+                                        params: [ 10000001, 90000000 ]
                                     -   util: RandomAString
                                         count: 4
-                                        params: [ 5000, 5000 ]
+                                        params: [ 500, 500 ]
                                     -   util: RandomBoolean
             -   workload: 10_index_test
                 run:
                     -   name: Insert_with_10_index_test
                         weight: 100
                         queries:
-                            -   query: INSERT INTO index_test_4 (pid, id, col_int_1, col_int_2, col_int_3, col_int_4, col_int_5, col_int_6, col_int_7, col_int_8, col_int_9, col_int_10, col_varchar_1, col_varchar_2, col_varchar_3, col_date, col_boolean) values (?, ?, ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                            -   query: INSERT INTO index_test_4 (id, col_int_1, col_int_2, col_int_3, col_int_4, col_int_5, col_int_6, col_int_7, col_int_8, col_int_9, col_int_10, col_varchar_1, col_varchar_2, col_varchar_3, col_date, col_boolean) values (?, ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
                                 count: 10
                                 bindings:
-                                    -   util: CyclicSeqIntGen
-                                        params: [ 1, 9 ]
                                     -   util: PrimaryIntGen
-                                        params: [ 1000001, 9000000 ]
+                                        params: [ 10000001, 90000000 ]
                                     -   util: PrimaryIntGen
                                         count: 10
-                                        params: [ 1000001, 9000000 ]
+                                        params: [ 10000001, 90000000 ]
                                     -   util: RandomAString
                                         count: 4
-                                        params: [ 5000, 5000 ]
+                                        params: [ 500, 500 ]
                                     -   util: RandomBoolean
 
