@@ -13,23 +13,23 @@ use_dist_in_explain : true
 yaml_version: v1.0
 works:
     work:
-        time_secs: 600
+        time_secs: 60
         active_terminals: 1
         rate: unlimited
-        warmup: 300
+        warmup: 30
 microbenchmark:
     class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
     properties:
-        setAutoCommit: true
+        setAutoCommit: false
         create:
             - drop table if exists index_test_1;
             - drop table if exists index_test_2;
             - drop table if exists index_test_3;
             - drop table if exists index_test_4;
-            - CREATE TABLE index_test_1 (id bigint, col_int_1 int, col_int_2 int, col_int_3 int, col_int_4 int, col_int_5 int, col_int_6 int, col_int_7 int, col_int_8 int, col_int_9 int, col_int_10 int, col_varchar_1 CHAR(500), col_varchar_2 CHAR(500), col_varchar_3 CHAR(500), col_date text, col_boolean boolean, PRIMARY KEY (id ASC));
-            - create table index_test_2 (id bigint, col_int_1 int, col_int_2 int, col_int_3 int, col_int_4 int, col_int_5 int, col_int_6 int, col_int_7 int, col_int_8 int, col_int_9 int, col_int_10 int, col_varchar_1 CHAR(500), col_varchar_2 CHAR(500), col_varchar_3 CHAR(500), col_date text, col_boolean boolean, PRIMARY KEY (id ASC));
-            - create table index_test_3 (id bigint, col_int_1 int, col_int_2 int, col_int_3 int, col_int_4 int, col_int_5 int, col_int_6 int, col_int_7 int, col_int_8 int, col_int_9 int, col_int_10 int, col_varchar_1 CHAR(500), col_varchar_2 CHAR(500), col_varchar_3 CHAR(500), col_date text, col_boolean boolean, PRIMARY KEY (id ASC));
-            - create table index_test_4 (id bigint, col_int_1 int, col_int_2 int, col_int_3 int, col_int_4 int, col_int_5 int, col_int_6 int, col_int_7 int, col_int_8 int, col_int_9 int, col_int_10 int, col_varchar_1 CHAR(500), col_varchar_2 CHAR(500), col_varchar_3 CHAR(500), col_date text, col_boolean boolean, PRIMARY KEY (id ASC));
+            - create table index_test_1 (id bigint, col_int_1 int, col_int_2 int, col_int_3 int, col_int_4 int, col_int_5 int, col_int_6 int, col_int_7 int, col_int_8 int, col_int_9 int, col_int_10 int, col_varchar_1 varchar(20), col_varchar_2 varchar(20), col_varchar_3 varchar(20), col_date text, col_boolean boolean, primary key (id asc))
+            - create table index_test_2 (id bigint, col_int_1 int, col_int_2 int, col_int_3 int, col_int_4 int, col_int_5 int, col_int_6 int, col_int_7 int, col_int_8 int, col_int_9 int, col_int_10 int, col_varchar_1 varchar(20), col_varchar_2 varchar(20), col_varchar_3 varchar(20), col_date text, col_boolean boolean, primary key (id asc))
+            - create table index_test_3 (id bigint, col_int_1 int, col_int_2 int, col_int_3 int, col_int_4 int, col_int_5 int, col_int_6 int, col_int_7 int, col_int_8 int, col_int_9 int, col_int_10 int, col_varchar_1 varchar(20), col_varchar_2 varchar(20), col_varchar_3 varchar(20), col_date text, col_boolean boolean, primary key (id asc))
+            - create table index_test_4 (id bigint, col_int_1 int, col_int_2 int, col_int_3 int, col_int_4 int, col_int_5 int, col_int_6 int, col_int_7 int, col_int_8 int, col_int_9 int, col_int_10 int, col_varchar_1 varchar(20), col_varchar_2 varchar(20), col_varchar_3 varchar(20), col_date text, col_boolean boolean, primary key (id asc))
             - create index index_test_2_idx1 on index_test_2(col_int_1);
             - create index index_test_3_idx1 on index_test_3(col_int_1);
             - create index index_test_3_idx2 on index_test_3(col_int_2);
@@ -54,30 +54,30 @@ microbenchmark:
         loadRules:
             -   table: index_test_
                 count: 4
-                rows: 10000000
+                rows: 1000000
                 columns:
                     -   name: id
                         util: PrimaryIntGen
                         params:
                             - 1
-                            - 10000000
+                            - 1000000
                     -   name: col_int_
                         count: 10
-                        util: PrimaryIntGen
+                        util: RandomNumber
                         params:
                             - 1
-                            - 10000000
+                            - 1000000
                     -   name: col_varchar_
                         count: 3
                         util: RandomAString
                         params:
-                            - 500
-                            - 500
+                            - 5
+                            - 5
                     -   name: col_date
                         util: RandomAString
                         params:
-                            - 500
-                            - 500
+                            - 5
+                            - 5
                     -   name: col_boolean
                         util: RandomBoolean
         executeRules:
@@ -90,13 +90,13 @@ microbenchmark:
                                 count: 10
                                 bindings:
                                     -   util: PrimaryIntGen
-                                        params: [ 10000001, 90000000 ]
+                                        params: [ 1000001, 9000000 ]
                                     -   util: RandomNumber
                                         count: 10
-                                        params: [ 10000001, 90000000 ]
+                                        params: [ 1000001, 9000000 ]
                                     -   util: RandomAString
                                         count: 4
-                                        params: [ 500, 500 ]
+                                        params: [ 20, 20 ]
                                     -   util: RandomBoolean
             -   workload: 1_index_test
                 run:
@@ -107,13 +107,13 @@ microbenchmark:
                                 count: 10
                                 bindings:
                                     -   util: PrimaryIntGen
-                                        params: [ 10000001, 90000000 ]
-                                    -   util: PrimaryIntGen
+                                        params: [ 1000001, 9000000 ]
+                                    -   util: RandomNumber
                                         count: 10
-                                        params: [ 10000001, 90000000 ]
+                                        params: [ 1000001, 9000000 ]
                                     -   util: RandomAString
                                         count: 4
-                                        params: [ 500, 500 ]
+                                        params: [ 20, 20 ]
                                     -   util: RandomBoolean
             -   workload: 5_index_test
                 run:
@@ -124,13 +124,13 @@ microbenchmark:
                                 count: 10
                                 bindings:
                                     -   util: PrimaryIntGen
-                                        params: [ 10000001, 90000000 ]
-                                    -   util: PrimaryIntGen
+                                        params: [ 1000001, 9000000 ]
+                                    -   util: RandomNumber
                                         count: 10
-                                        params: [ 10000001, 90000000 ]
+                                        params: [ 1000001, 9000000 ]
                                     -   util: RandomAString
                                         count: 4
-                                        params: [ 500, 500 ]
+                                        params: [ 20, 20 ]
                                     -   util: RandomBoolean
             -   workload: 10_index_test
                 run:
@@ -141,12 +141,12 @@ microbenchmark:
                                 count: 10
                                 bindings:
                                     -   util: PrimaryIntGen
-                                        params: [ 10000001, 90000000 ]
-                                    -   util: PrimaryIntGen
+                                        params: [ 1000001, 9000000 ]
+                                    -   util: RandomNumber
                                         count: 10
-                                        params: [ 10000001, 90000000 ]
+                                        params: [ 1000001, 9000000 ]
                                     -   util: RandomAString
                                         count: 4
-                                        params: [ 500, 500 ]
+                                        params: [ 20, 20 ]
                                     -   util: RandomBoolean
-
+                                    

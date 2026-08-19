@@ -21,10 +21,10 @@ yaml_version: v1.1
 use_dist_in_explain : true
 works:
     work:
-        time_secs: 120
+        time_secs: 180
         active_terminals: 1
         rate: unlimited
-        warmup: 30
+        warmup: 60
 microbenchmark:
     class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
     properties:
@@ -50,12 +50,12 @@ microbenchmark:
                       params: [ 1000000 ]
                     - name: col_bigint_card2_
                       count: 1
-                      util: RandomInt
+                      util: CyclicSeqIntGen
                       params: [ 1000001, 1001000 ]
                     - name: col_bigint_card3_
                       count: 1
-                      util: RandomInt
-                      params: [ 1000001, 1010001 ]
+                      util: CyclicSeqIntGen
+                      params: [ 1000001, 1010000 ]
                     - name: col_bigint_id_
                       count: 4
                       util: PrimaryIntGen
@@ -80,6 +80,9 @@ microbenchmark:
                       count: 1
                       util: PrimaryStringGen
                       params: [1, 500]
+
+        afterLoad:
+            - "DO $$ BEGIN FOR i in 1..10 LOOP PERFORM * FROM Indexed1M_1; END LOOP; END $$;"
 
         executeRules:
             - workload: ORDG7_ordby_bigint_non_indexed_column
@@ -146,7 +149,7 @@ microbenchmark:
                   - name: ordby_bckwrd_ind_scan_pkey_filter
                     weight: 100
                     queries:
-                        - query: select col_bigint_id_1 from Indexed1M_1 where col_bigint_card1_1=1000000 and col_bigint_card2_1<1000010 order by col_bigint_card2_1 DESC
+                        - query: select col_bigint_id_1 from Indexed1M_1 where col_bigint_card1_1=1000000 and col_bigint_card2_1<1000100 order by col_bigint_card2_1 DESC
 
             - workload: ORDG7_ordby_fwd_ind_scan_pkey_filter
               customTags: customer=0,schematype=regular,partition=hash,pkey=composite,cardinality=multiple,projection=hashpkey,filtercount=one,filteron=hashpkey,filtertype=comparision,queryshape=orderby,orderbyon=hashpkeydesc
@@ -154,7 +157,7 @@ microbenchmark:
                   - name: ordby_fwd_ind_scan_pkey_filter
                     weight: 100
                     queries:
-                        - query: select col_bigint_id_1 from Indexed1M_1 where col_bigint_card1_1=1000000 and col_bigint_card2_1<1000010 order by col_bigint_card2_1
+                        - query: select col_bigint_id_1 from Indexed1M_1 where col_bigint_card1_1=1000000 and col_bigint_card2_1<1000100 order by col_bigint_card2_1
 
             - workload: ORDG7_ordby_bckwrd_ind_scan_pkey_filter_full_tbl
               customTags: customer=0,schematype=regular,partition=hash,pkey=composite,cardinality=multiple,projection=hashpkey,filtercount=one,filteron=hashpkey,filtertype=comparision,queryshape=orderby,orderbyon=hashpkeydesc

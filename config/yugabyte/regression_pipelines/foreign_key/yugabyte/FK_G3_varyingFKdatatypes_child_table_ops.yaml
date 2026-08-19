@@ -14,14 +14,14 @@ analyze_on_all_tables: true
 yaml_version: v1.0
 works:
     work:
-        time_secs: 300
+        time_secs: 60
         active_terminals: 1
         rate: unlimited
-        warmup: 180
+        warmup: 30
 microbenchmark:
     class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
     properties:
-        setAutoCommit: true
+        setAutoCommit: false
         create:
             - DROP TABLE IF EXISTS employees_with_int_fk;
             - DROP TABLE IF EXISTS employees_with_bigint_fk;
@@ -55,7 +55,7 @@ microbenchmark:
                     params: [1, 100000]
                   - name: name
                     util: RandomAString
-                    params: [20, 20]
+                    params: [1, 20]
                   - name: start_date
                     util: RandomDateBtwYears
                     params: [2000, 2025]
@@ -74,7 +74,7 @@ microbenchmark:
                     params: [1, 100000]
                   - name: name
                     util: RandomAString
-                    params: [20, 20]
+                    params: [1, 20]
                   - name: start_date
                     util: RandomDateBtwYears
                     params: [2000, 2025]
@@ -93,7 +93,7 @@ microbenchmark:
                     params: [1, 6]
                   - name: name
                     util: RandomAString
-                    params: [20, 20]
+                    params: [1, 20]
                   - name: start_date
                     util: RandomDateBtwYears
                     params: [2000, 2025]
@@ -112,21 +112,21 @@ microbenchmark:
                     params: [1, 1000000]
                   - name: name
                     util: RandomAString
-                    params: [20, 20]
+                    params: [1, 20]
                   - name: email
                     util: RandomAString
-                    params: [100, 100]
+                    params: [1, 100]
                   - name: phone
                     util: RandomNstring
-                    params: [15, 15]
+                    params: [10, 15]
                   - name: position
                     util: RandomAString
-                    params: [10, 10]
+                    params: [1, 10]
                   - name: salary
                     util: RandomNoWithDecimalPoints
                     params: [1, 1000000, 2]
                   - name: project_id
-                    util: CyclicSeqIntGen
+                    util: RandomInt
                     params: [1,100000]
             
             - table: employees_with_bigint_fk
@@ -137,21 +137,21 @@ microbenchmark:
                     params: [1, 1000000]
                   - name: name
                     util: RandomAString
-                    params: [20, 20]
+                    params: [1, 20]
                   - name: email
                     util: RandomAString
-                    params: [100, 100]
+                    params: [1, 100]
                   - name: phone
                     util: RandomNstring
-                    params: [15, 15]
+                    params: [10, 15]
                   - name: position
                     util: RandomAString
-                    params: [10, 10]
+                    params: [1, 10]
                   - name: salary
                     util: RandomNoWithDecimalPoints
                     params: [1, 1000000, 2]
                   - name: project_id
-                    util: CyclicSeqIntGen
+                    util: RandomInt
                     params: [1,100000]
 
             - table: employees_with_varchar_fk
@@ -162,16 +162,16 @@ microbenchmark:
                     params: [1, 1000000]
                   - name: name
                     util: RandomAString
-                    params: [20, 20]
+                    params: [1, 20]
                   - name: email
                     util: RandomAString
-                    params: [20, 20]
+                    params: [1, 20]
                   - name: phone
                     util: RandomNstring
-                    params: [15, 15]
+                    params: [10, 15]
                   - name: position
                     util: RandomAString
-                    params: [10, 10]
+                    params: [1, 10]
                   - name: salary
                     util: RandomNoWithDecimalPoints
                     params: [1, 1000000, 2]
@@ -196,13 +196,13 @@ microbenchmark:
                               - util: PrimaryIntGen
                                 params: [1000001, 9000000]
                               - util: RandomAString
-                                params: [20, 20]
+                                params: [1, 20]
                               - util: RandomAString
-                                params: [20, 20]
+                                params: [1, 20]
                               - util: RandomNstring
-                                params: [15, 15]
+                                params: [10, 15]
                               - util: RandomAString
-                                params: [10, 10]
+                                params: [1, 10]
                               - util: RandomNoWithDecimalPoints
                                 params: [1, 1000000, 2]
                               - util: RandomPKString
@@ -230,16 +230,16 @@ microbenchmark:
                               - util: PrimaryIntGen
                                 params: [1000001, 9000000]
                               - util: RandomAString
-                                params: [20, 20]
+                                params: [1, 20]
                               - util: RandomAString
-                                params: [100, 100]
+                                params: [1, 100]
                               - util: RandomNstring
-                                params: [15, 15]
+                                params: [10, 15]
                               - util: RandomAString
-                                params: [10, 10]
+                                params: [1, 10]
                               - util: RandomNoWithDecimalPoints
                                 params: [1, 1000000, 2]
-                              - util: CyclicSeqIntGen
+                              - util: RandomInt
                                 params: [1,100000]
 
             - workload: FK_G3_4_bigint_update
@@ -264,16 +264,16 @@ microbenchmark:
                               - util: PrimaryIntGen
                                 params: [1000001, 9000000]
                               - util: RandomAString
-                                params: [20, 20]
+                                params: [1, 20]
                               - util: RandomAString
-                                params: [100, 100]
+                                params: [1, 100]
                               - util: RandomNstring
-                                params: [15, 15]
+                                params: [10, 15]
                               - util: RandomAString
-                                params: [10, 10]
+                                params: [1, 10]
                               - util: RandomNoWithDecimalPoints
                                 params: [1, 1000000, 2]
-                              - util: CyclicSeqIntGen
+                              - util: RandomInt
                                 params: [1,100000]
 
             - workload: FK_G3_6_int_update
