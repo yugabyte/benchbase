@@ -63,16 +63,16 @@ microbenchmark:
                       util: RandomBoolean
                     - name: col_varchar10_id_
                       count: 1
-                      util: RandomAString
-                      params: [10, 10]
+                      util: PrimaryStringGen
+                      params: [1, 10]
                     - name: col_varchar100_id_
                       count: 2
-                      util: RandomAString
-                      params: [100, 100]
+                      util: PrimaryStringGen
+                      params: [1, 100]
                     - name: col_varchar500_id_
                       count: 1
-                      util: RandomAString
-                      params: [500, 500]
+                      util: PrimaryStringGen
+                      params: [1, 500]
         executeRules:
             - workload: AGGRG3_count_on_all_tupples_columns
               customTags: schematype=regular,partition=range,pkey=asc,aggregate=count,cardinality=single,projection=aggregate,aggregateon=rangeskey

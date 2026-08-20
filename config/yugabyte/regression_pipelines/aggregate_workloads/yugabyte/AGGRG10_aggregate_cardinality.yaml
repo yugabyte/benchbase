@@ -16,14 +16,14 @@ works:
         time_secs: 300
         active_terminals: 1
         rate: unlimited
-        warmup: 180
+        warmup: 120
 microbenchmark:
     class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
     properties:
         setAutoCommit: true
         create:
           - DROP TABLE IF EXISTS pkeyBigint1M_1;
-          - CREATE TABLE pkeyBigint1M_1(split_id int, col_bigint_card1_1 bigint, col_bigint_card2_1 bigint, col_bigint_card3_1 bigint, col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(split_id asc, col_bigint_card1_1 asc, col_bigint_card2_1 asc, col_bigint_card3_1 asc, col_bigint_id_1 asc)) SPLIT AT VALUES ((4), (7));
+          - CREATE TABLE pkeyBigint1M_1(col_bigint_card1_1 bigint, col_bigint_card2_1 bigint, col_bigint_card3_1 bigint, col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_card1_1 , col_bigint_card2_1 , col_bigint_card3_1 , col_bigint_id_1));
         cleanup:
             - DROP TABLE IF EXISTS pkeyBigint1M_1;
 
@@ -32,9 +32,6 @@ microbenchmark:
                 count: 1
                 rows: 1000000
                 columns:
-                    - name: split_id
-                      util: CyclicSeqIntGen
-                      params: [ 1, 9 ]
                     - name: col_bigint_card1_
                       count: 1
                       util: OneNumberFromArray
@@ -64,19 +61,19 @@ microbenchmark:
                       util: RandomBoolean
                     - name: col_varchar10_id_
                       count: 1
-                      util: RandomAString
-                      params: [10, 10]
+                      util: PrimaryStringGen
+                      params: [1, 10]
                     - name: col_varchar100_id_
                       count: 2
-                      util: RandomAString
-                      params: [100, 100]
+                      util: PrimaryStringGen
+                      params: [1, 100]
                     - name: col_varchar500_id_
                       count: 1
-                      util: RandomAString
-                      params: [500, 500]
+                      util: PrimaryStringGen
+                      params: [1, 500]
 
         afterLoad:
-            - "DO $$ BEGIN FOR i IN 1..5 LOOP PERFORM * FROM pkeyBigint1M_1; END LOOP; END $$;"
+            - "DO $$ BEGIN FOR i IN 1..10 LOOP PERFORM * FROM pkeyBigint1M_1; END LOOP; END $$;"
 
         executeRules:
             - workload: AGGRG10_1_count_point_select_multiple_values
@@ -136,4 +133,4 @@ microbenchmark:
                   - name: count_bigint_non_indexed_column
                     weight: 100
                     queries:
-                        - query: select distinct(col_bigint_card2_1) from pkeyBigint1M_1 order by col_bigint_card2_1
+                        - query: select distinct(col_bigint_card3_1) from pkeyBigint1M_1 order by col_bigint_card3_1
