@@ -10,13 +10,13 @@ terminals: 1
 collect_pg_stat_statements: true
 use_dist_in_explain : true
 analyze_on_all_tables: true
-yaml_version: v1.0
+yaml_version: v2.0
 works:
     work:
-        time_secs: 300
+        time_secs: 180
         active_terminals: 1
         rate: unlimited
-        warmup: 120
+        warmup: 60
 microbenchmark:
     class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
     properties:
@@ -72,8 +72,6 @@ microbenchmark:
                       util: PrimaryStringGen
                       params: [1, 500]
 
-        afterLoad:
-            - "DO $$ BEGIN FOR i IN 1..10 LOOP PERFORM * FROM pkeyBigint1M_1; END LOOP; END $$;"
 
         executeRules:
             - workload: AGGRG10_1_count_point_select_multiple_values

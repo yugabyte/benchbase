@@ -16,13 +16,13 @@ loaderthreads: 1
 terminals: 1
 collect_pg_stat_statements: true
 use_dist_in_explain : true
-yaml_version: v1.0
+yaml_version: v2.0
 works:
     work:
-        time_secs: 120
+        time_secs: 180
         active_terminals: 1
         rate: unlimited
-        warmup: 30
+        warmup: 60
 microbenchmark:
     class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
     properties:
@@ -49,7 +49,7 @@ microbenchmark:
                       params: [ 1, 100000 ]
                     - name: col_bigint_
                       count: 5
-                      util: RandomNumber
+                      util: PrimaryIntGen
                       params: [ 1, 100000 ]
                     - name: col_float2_
                       count: 2
@@ -64,16 +64,16 @@ microbenchmark:
                       util: RandomBoolean
                     - name: col_varchar10_id_
                       count: 1
-                      util: PrimaryStringGen
-                      params: [1, 10]
+                      util: RandomAString
+                      params: [10, 10]
                     - name: col_varchar100_id_
                       count: 2
-                      util: PrimaryStringGen
-                      params: [1, 100]
+                      util: RandomAString
+                      params: [100, 100]
                     - name: col_varchar500_id_
                       count: 1
-                      util: PrimaryStringGen
-                      params: [1, 500]
+                      util: RandomAString
+                      params: [500, 500]
               - table: pkeyBigint1M_
                 count: 1
                 rows: 1000000

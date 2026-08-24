@@ -4,7 +4,7 @@
 #Table3	1*10k	1000*10	    10000*1
 type: YUGABYTE
 driver: com.yugabyte.Driver
-url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true&load-balance=true
+url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true&load-balance=false
 username: {{username}}
 password: {{password}}
 batchsize: 128
@@ -13,13 +13,13 @@ loaderthreads: 1
 terminals: 1
 collect_pg_stat_statements: true
 use_dist_in_explain : true
-yaml_version: v1.0
+yaml_version: v2.0
 works:
     work:
         time_secs: 180
         active_terminals: 1
         rate: unlimited
-        warmup: 120
+        warmup: 60
 microbenchmark:
     class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
     properties:
@@ -76,8 +76,6 @@ microbenchmark:
                       util: PrimaryStringGen
                       params: [1, 500]
 
-        afterLoad:
-            - "DO $$ BEGIN FOR i in 1..10 LOOP PERFORM * FROM INDG10_U_pkeyBigint1M_1; END LOOP; END $$;"
 
         executeRules:
 
