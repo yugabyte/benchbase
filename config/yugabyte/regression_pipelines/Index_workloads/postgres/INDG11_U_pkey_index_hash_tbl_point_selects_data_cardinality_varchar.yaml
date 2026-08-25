@@ -123,15 +123,3 @@ microbenchmark:
                               params: [ 1, 50, "id-" ]
                             - util: CyclicSeqStringGen
                               params: [ 1, 10000, "id-" ]
-
-            - workload: INDG11_2_data_cardinality_hashtbl_point_lookup_index_scan_using_comp_skey_third_part_hash_100_two_conditions
-              run:
-                  - name: hashtbl_index_scan_using_sec_index
-                    weight: 100
-                    queries:
-                        - query: select * from INDG11_U_pkeyVarchar10_1 where col_varchar_card1_1=? and col_varchar_card3_1=?
-                          bindings:
-                            - util: RandomUniqueCyclicStringGen
-                              params: [ 1, 50, "id-" ]
-                            - util: CyclicSeqStringGen
-                              params: [ 1, 10000, "id-" ]

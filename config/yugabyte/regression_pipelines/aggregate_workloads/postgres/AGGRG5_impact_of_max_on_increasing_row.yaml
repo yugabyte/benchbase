@@ -14,13 +14,13 @@ isolation: TRANSACTION_REPEATABLE_READ
 loaderthreads: 1
 terminals: 1
 collect_pg_stat_statements: true
-yaml_version: v2.0
+yaml_version: v1.0
 works:
     work:
-        time_secs: 180
+        time_secs: 120
         active_terminals: 1
         rate: unlimited
-        warmup: 60
+        warmup: 30
 microbenchmark:
     class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
     properties:
@@ -47,7 +47,7 @@ microbenchmark:
                       params: [ 1, 100000 ]
                     - name: col_bigint_
                       count: 5
-                      util: PrimaryIntGen
+                      util: RandomNumber
                       params: [ 1, 100000 ]
                     - name: col_float2_
                       count: 2
@@ -62,16 +62,16 @@ microbenchmark:
                       util: RandomBoolean
                     - name: col_varchar10_id_
                       count: 1
-                      util: RandomAString
-                      params: [10, 10]
+                      util: PrimaryStringGen
+                      params: [1, 10]
                     - name: col_varchar100_id_
                       count: 2
-                      util: RandomAString
-                      params: [100, 100]
+                      util: PrimaryStringGen
+                      params: [1, 100]
                     - name: col_varchar500_id_
                       count: 1
-                      util: RandomAString
-                      params: [500, 500]
+                      util: PrimaryStringGen
+                      params: [1, 500]
               - table: pkeyBigint1M_
                 count: 1
                 rows: 1000000
