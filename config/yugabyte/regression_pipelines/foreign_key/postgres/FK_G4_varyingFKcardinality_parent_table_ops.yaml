@@ -20,6 +20,7 @@ microbenchmark:
     class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
     properties:
         setAutoCommit: false
+        defaultAfterLoadTableScan: false
         create:
             - DROP TABLE IF EXISTS employees_with_1_fk_1_to_1_cardinality;
             - DROP TABLE IF EXISTS projects_with_1_ref_1_to_1_cardinality;

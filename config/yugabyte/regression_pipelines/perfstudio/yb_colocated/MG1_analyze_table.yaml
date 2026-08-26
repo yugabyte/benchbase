@@ -21,6 +21,7 @@ microbenchmark:
     class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
     properties:
         setAutoCommit: true
+        defaultAfterLoadTableScan: false
         create:
             - drop table IF EXISTS nets_10M_1;
             - drop table IF EXISTS nets_50M_1;
