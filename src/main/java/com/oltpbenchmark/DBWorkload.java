@@ -709,7 +709,6 @@ public class DBWorkload {
                         LOG.info("Starting Workload " + (workloads.get(workCount - 1).containsKey("workload") ? workloads.get(workCount - 1).getString("workload") : workCount));
                         // Add optimal thread finding here for current workload
                         if (xmlConfig.containsKey("optimalThreads") && xmlConfig.getBoolean("optimalThreads")) {
-                            int minThreads = xmlConfig.getInt("minThreads", terminals);
                             double targetCPU = xmlConfig.getDouble("targetCPU", 80.0);
                             double toleranceCPU = xmlConfig.getDouble("toleranceCPU", 5.0);
                             int samplingTime = xmlConfig.getInt("samplingTime", 0);
@@ -735,7 +734,7 @@ public class DBWorkload {
                                 : (xmlConfig.containsKey("microbenchmark/properties/create")
                                     ? xmlConfig.getList(String.class, "microbenchmark/properties/create")
                                     : null);
-                            int optimalThreads = findOptimalThreadCount(benchList.get(0), minThreads, targetCPU, toleranceCPU, workloadName, workCount, samplingTime,
+                            int optimalThreads = findOptimalThreadCount(benchList.get(0), terminals, targetCPU, toleranceCPU, workloadName, workCount, samplingTime,
                                 scalingMinDeltaPercent, threadIncrement, restingTimeSecs, flatMaxScalingSteps, linearPGthread,
                                 useThroughputThreshold, truncateBetweenIterations, iterationCleanupDDLs);
 
@@ -817,7 +816,6 @@ public class DBWorkload {
                         LOG.info("Starting Workload " + (workloads.get(workCount - 1).containsKey("workload") ? workloads.get(workCount - 1).getString("workload") : workCount));
                         if (xmlConfig.containsKey("optimalThreads") && xmlConfig.getBoolean("optimalThreads")) {
                             String val = workloads.get(workCount - 1).getString("workload");
-                            int minThreads = xmlConfig.getInt("minThreads", terminals);
                             double targetCPU = xmlConfig.getDouble("targetCPU", 80.0);
                             double toleranceCPU = xmlConfig.getDouble("toleranceCPU", 5.0);
                             int samplingTime = xmlConfig.getInt("samplingTime", 0);
@@ -843,7 +841,7 @@ public class DBWorkload {
                                 : (xmlConfig.containsKey("microbenchmark/properties/create")
                                     ? xmlConfig.getList(String.class, "microbenchmark/properties/create")
                                     : null);
-                            int optimalThreads = findOptimalThreadCount(benchList.get(0), minThreads, targetCPU, toleranceCPU, workloadName, workCount, samplingTime,
+                            int optimalThreads = findOptimalThreadCount(benchList.get(0), terminals, targetCPU, toleranceCPU, workloadName, workCount, samplingTime,
                                 scalingMinDeltaPercent, threadIncrement, restingTimeSecs, flatMaxScalingSteps, linearPGthread,
                                 useThroughputThreshold, truncateBetweenIterations, iterationCleanupDDLs);
 
@@ -1554,7 +1552,7 @@ public class DBWorkload {
      */
     private static final double DEFAULT_SCALING_MIN_DELTA_PERCENT = 5.0;
 
-    private static int findOptimalThreadCount(BenchmarkModule bench, int minThreads, double targetCPU, double toleranceCPU, String workloadName, int workCount, int samplingTime,
+    private static int findOptimalThreadCount(BenchmarkModule bench, int terminals, double targetCPU, double toleranceCPU, String workloadName, int workCount, int samplingTime,
             double scalingMinDeltaPercent, int threadIncrement, int restingTimeSecs, int flatMaxScalingSteps, boolean linearPGthread,
             boolean useThroughputThreshold, boolean truncateBetweenIterations, List<String> iterationCleanupDDLs) throws InterruptedException {
         double minTargetCPU = targetCPU - toleranceCPU;
@@ -1581,7 +1579,7 @@ public class DBWorkload {
         }
         
 
-        int threads = minThreads;
+        int threads = terminals;
         int max_iterations =  50;
         int optimalThreads = threads;
         List<Map<String, Object>> jsonResults = new ArrayList<>();
@@ -1589,12 +1587,7 @@ public class DBWorkload {
         Double cpuAtPreviousScalingStep = null;
         // Thread count from the previous scaling iteration to be used if flatCPU confirmed
         Integer threadsAtPreviousScalingStep = null;
-        // Counts <b>consecutive</b> flat scaling steps. Reset to 0 whenever a non-flat
-        // step is observed, so an isolated low-CPU sample does not lock the search.
         int consecutiveFlatCpuSteps = 0;
-        // Thread count from BEFORE the current consecutive flat run started -- i.e. the last iteration where the CPU was still climbing meaningfully. Captured the moment
-        // {@code consecutiveFlatCpuSteps} transitions from 0 -> 1, and used as the final
-        // {@code optimalThreads} value if the plateau is later confirmed.
         int flatRunStartThreads = 0;
         boolean flatCpuDetected = false;
         double bestThroughput = 0;
@@ -1616,12 +1609,10 @@ public class DBWorkload {
         String rdsInstanceIdentifier = null;
         String awsRegion = null;
 
-        // Set start 3 for yugabyteDB
         if (isYugabyteDatabase) {
-            threads = 3;
+            threads = terminals < 3 ? 3 : terminals;
         }
         
-
         if (!isYugabyteDatabase) {
             // Extract RDS instance details from connection URL
             String jdbcUrl = bench.getWorkloadConfiguration().getUrl();
@@ -1875,18 +1866,12 @@ public class DBWorkload {
                     }
                 }
 
-                if (useThroughputThreshold) {
-                    if (avgMaxCPU >= minTargetCPU && avgMaxCPU <= maxTargetCPU) {
-                        optimalThreads = threads;
-                        LOG.info(
-                            "Throughput threshold mode: CPU {}% is within target range [{}, {}]. Stopping thread search early; using {} threads (best throughput so far: {} req/s @ {} threads).",
-                            String.format("%.2f", avgMaxCPU),
-                            minTargetCPU, maxTargetCPU,
-                            optimalThreads,
-                            String.format("%.2f", bestThroughput),
-                            bestThroughputThreads);
-                        break;
-                    }
+                if (avgMaxCPU >= minTargetCPU) {
+                    optimalThreads = threads;
+                    LOG.info("Found optimal threads: {} with MaxCPU: {}", optimalThreads, avgMaxCPU);
+                    break;
+                }
+                else if (useThroughputThreshold) {
 
                     int newThreads = threads + threadIncrement;
                     LOG.info("Throughput threshold mode: adding {} threads. New threads: {}", threadIncrement, newThreads);
@@ -1927,21 +1912,12 @@ public class DBWorkload {
 
                     optimalThreads = bestThroughputThreads;
                     threads = newThreads;
-                } else if (avgMaxCPU >= minTargetCPU && avgMaxCPU <= maxTargetCPU) {
-                    optimalThreads = threads;
-                    LOG.info("Found optimal threads: {} with MaxCPU: {}", optimalThreads, avgMaxCPU);
-                    break;
-                }
+                } 
                 else {
                     int newThreads = 0;
                     if (avgMaxCPU <= targetCPU) optimalThreads = threads;
                     LOG.info("finding new threads for run....");
-                    if(isYugabyteDatabase) {
-                        if(avgMaxCPU > targetCPU) {
-                            LOG.info("MaxCPU is greater than targetCPU. Breaking loop. Current threads: {}", threads);
-                            optimalThreads = Math.max(1, threads);
-                            break;
-                        }
+                    if (isYugabyteDatabase) {
                         newThreads = threads + threadIncrement;
                         LOG.info("Adding {} threads to the current threads. New threads: {}", threadIncrement, newThreads);
                     }else{
