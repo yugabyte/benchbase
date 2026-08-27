@@ -50,7 +50,6 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
     public YBMicroBenchmark ybm = null;
     public int sizeOfLoadRule = 0;
     static AtomicBoolean isAfterLoadDone = new AtomicBoolean(false);
-    private final List<String> loadedTableNames = new ArrayList<>();
     PreparedStatement stmt;
 
     public FeatureBenchLoader(FeatureBenchBenchmark benchmark) {
@@ -131,17 +130,14 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
                 for (int i = 0; i < loadRuleConfig.getInt("count"); i++) {
                     String[] tableNames = loadRuleConfig.getString("table").split(",");
                     for (String tableName : tableNames) {
-                        String resolvedName = tableName.strip() + String.valueOf(i + 1);
-                        loadedTableNames.add(resolvedName);
-                        loaderThreads.add(new GeneratorYaml(resolvedName, loadRuleConfig.getLong("rows"), columns));
+                        loaderThreads.add(new GeneratorYaml((tableName.strip()
+                            + String.valueOf(i + 1)), loadRuleConfig.getLong("rows"), columns));
                     }
                 }
             } else {
                 String[] tableNames = loadRuleConfig.getString("table").split(",");
                 for (String tableName : tableNames) {
-                    String resolvedName = tableName.strip();
-                    loadedTableNames.add(resolvedName);
-                    loaderThreads.add(new GeneratorYaml(resolvedName,
+                    loaderThreads.add(new GeneratorYaml(tableName.strip(),
                         loadRuleConfig.getLong("rows"), columns));
                 }
             }
@@ -297,7 +293,6 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
         @Override
         public void afterLoad() {
             if (numberOfGeneratorFinished.get() != sizeOfLoadRule) return;
-            defaultAfterLoadTableScan();
             afterLoadPhaseYaml();
         }
     }
@@ -339,32 +334,7 @@ public class FeatureBenchLoader extends Loader<FeatureBenchBenchmark> {
 
         @Override
         public void afterLoad() {
-            defaultAfterLoadTableScan();
             afterLoadPhase();
-        }
-    }
-
-    private synchronized void defaultAfterLoadTableScan() {
-        if (isAfterLoadDone.get()) return;
-        boolean doDefaultScan = config.getBoolean("defaultAfterLoadTableScan", true);
-        if (!doDefaultScan) return;
-        if (loadedTableNames.isEmpty()) return;
-
-        try {
-            Connection conn = benchmark.makeConnection();
-            Statement stmtObj = conn.createStatement();
-            for (String table : loadedTableNames) {
-                String scanQuery = "DO $$ DECLARE r RECORD; BEGIN "
-                    + "FOR r IN SELECT * FROM " + table + " LOOP END LOOP; END $$;";
-                for (int i = 0; i < 5; i++) {
-                    LOG.info("Running default afterLoad full table scan on '{}' (iteration {}/5)", table, i + 1);
-                    stmtObj.execute(scanQuery);
-                }
-            }
-            stmtObj.close();
-            conn.close();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
         }
     }
 }

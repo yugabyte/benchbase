@@ -682,6 +682,12 @@ public class DBWorkload {
                     LOG.debug("Skipping loading benchmark database records");
                 }
 
+                // Warm table cache before execute (auto-skipped for blind-insert-only workloads)
+                if (isBooleanOptionSet(argsLine, "execute")) {
+                    for (BenchmarkModule benchmark : benchList)
+                        if (benchmark.getBenchmarkName().equalsIgnoreCase("featurebench"))
+                            runDefaultAfterLoadTableScan(benchmark, xmlConfig);
+                }
 
                 // Check optimalThreads constraint for execute phase
                 if (isBooleanOptionSet(argsLine, "execute") && isOptionTrueForOptimalThreads(xmlConfig, "optimalThreads")) {
@@ -1223,6 +1229,80 @@ public class DBWorkload {
     private static void runLoader(BenchmarkModule bench) throws SQLException, InterruptedException {
         LOG.debug(String.format("Loading %s Database", bench));
         bench.loadDatabase();
+    }
+
+    private static boolean preExecuteScanDone = false;
+    private static final long MAX_ROWS_FOR_SCAN = 10_000_000L;
+
+    /**
+     * Warms the table cache before execute by scanning every table 5 times.
+     * Skipped when: disabled via YAML flag, no YAML executeRules (custom-class
+     * benchmarks like bulkload), every query is a plain INSERT...VALUES, or
+     * a table has more than 50M rows (per loadRules).
+     */
+    private static synchronized void runDefaultAfterLoadTableScan(BenchmarkModule benchmark,
+            HierarchicalConfiguration<ImmutableNode> xmlConfig) {
+        if (preExecuteScanDone) return;
+        if (!xmlConfig.getBoolean("microbenchmark/properties/defaultAfterLoadTableScan", true)) return;
+        if (!workloadReadsExistingRows(xmlConfig)) return;
+
+        int iterations = xmlConfig.getInt("microbenchmark/properties/defaultAfterLoadTableScanIterations", 5);
+        Map<String, Long> tableRows = getRowCountsFromLoadRules(xmlConfig);
+        Collection<com.oltpbenchmark.catalog.Table> tables = benchmark.getCatalog().getTables();
+        if (tables.isEmpty()) return;
+
+        try (Connection conn = benchmark.makeConnection();
+             Statement stmt = conn.createStatement()) {
+            for (com.oltpbenchmark.catalog.Table table : tables) {
+                long rows = tableRows.getOrDefault(table.getName(), 0L);
+                if (rows > MAX_ROWS_FOR_SCAN) {
+                    LOG.info("Skipping pre-execute table scan on '{}': {} rows exceeds {}", table.getName(), rows, MAX_ROWS_FOR_SCAN);
+                    continue;
+                }
+                String scanQuery = "DO $$ DECLARE r RECORD; BEGIN "
+                        + "FOR r IN SELECT * FROM " + table.getName() + " LOOP END LOOP; END $$;";
+                for (int i = 0; i < iterations; i++) {
+                    LOG.info("Running pre-execute full table scan on '{}' (iteration {}/{})", table.getName(), i + 1, iterations);
+                    stmt.execute(scanQuery);
+                }
+            }
+            preExecuteScanDone = true;
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to run pre-execute table scan", e);
+        }
+    }
+
+    private static Map<String, Long> getRowCountsFromLoadRules(HierarchicalConfiguration<ImmutableNode> xmlConfig) {
+        Map<String, Long> map = new HashMap<>();
+        List<HierarchicalConfiguration<ImmutableNode>> rules = xmlConfig.configurationsAt("microbenchmark/properties/loadRules");
+        for (HierarchicalConfiguration<ImmutableNode> rule : rules) {
+            long rows = rule.getLong("rows", 0);
+            String[] tables = rule.getString("table", "").split(",");
+            if (rule.containsKey("count")) {
+                int count = rule.getInt("count");
+                for (int i = 0; i < count; i++)
+                    for (String t : tables) map.put(t.strip() + (i + 1), rows);
+            } else {
+                for (String t : tables) map.put(t.strip(), rows);
+            }
+        }
+        return map;
+    }
+
+    private static boolean workloadReadsExistingRows(HierarchicalConfiguration<ImmutableNode> xmlConfig) {
+        List<HierarchicalConfiguration<ImmutableNode>> rules =
+                xmlConfig.configurationsAt("microbenchmark/properties/executeRules");
+        if (rules.isEmpty()) return false;
+        for (HierarchicalConfiguration<ImmutableNode> wl : rules)
+            for (HierarchicalConfiguration<ImmutableNode> run : wl.configurationsAt("run"))
+                for (HierarchicalConfiguration<ImmutableNode> q : run.configurationsAt("queries")) {
+                    String sql = q.getString("query", "").strip().toUpperCase();
+                    if (sql.isEmpty()) continue;
+                    boolean blindInsert = sql.startsWith("INSERT")
+                            && !sql.contains("ON CONFLICT") && !sql.contains("RETURNING") && !sql.contains("SELECT");
+                    if (!blindInsert) return true;
+                }
+        return false;
     }
 
     private static Results runWorkload(List<BenchmarkModule> benchList, int intervalMonitor, int workcount) throws IOException {
