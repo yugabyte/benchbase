@@ -18,7 +18,7 @@ time: 600
 useThroughputThreshold: true
 works:
     work:
-        time_secs: 600
+        time_secs: 180
         rate: unlimited
         warmup: 60
 microbenchmark:
@@ -27,13 +27,13 @@ microbenchmark:
         setAutoCommit: true
         create:
             - DROP TABLE IF EXISTS THRPT_MVI_1_sysbench;
-            - CREATE TABLE THRPT_MVI_1_sysbench (k INTEGER, id INTEGER, c CHAR(1024), pad CHAR(60), PRIMARY KEY (k ASC, id ASC)) SPLIT AT VALUES ((4), (7));
+            - CREATE TABLE THRPT_MVI_1_sysbench (k INTEGER, id INTEGER, c CHAR(120), pad CHAR(60), PRIMARY KEY (k ASC, id ASC)) SPLIT AT VALUES ((4), (7));
         cleanup:
             - DROP TABLE IF EXISTS THRPT_MVI_1_sysbench;
 
         iterationCleanup:
             - DROP TABLE IF EXISTS THRPT_MVI_1_sysbench;
-            - CREATE TABLE THRPT_MVI_1_sysbench (k INTEGER, id INTEGER, c CHAR(1024), pad CHAR(60), PRIMARY KEY (k ASC, id ASC)) SPLIT AT VALUES ((4), (7));
+            - CREATE TABLE THRPT_MVI_1_sysbench (k INTEGER, id INTEGER, c CHAR(120), pad CHAR(60), PRIMARY KEY (k ASC, id ASC)) SPLIT AT VALUES ((4), (7));
 
         loadRules:
             - table: THRPT_MVI_1_sysbench
@@ -47,7 +47,7 @@ microbenchmark:
                     params: [1, 10000000]
                   - name: c
                     util: RandomAString
-                    params: [1024, 1024]
+                    params: [120, 120]
                   - name: pad
                     util: RandomAString
                     params: [60, 60]
@@ -66,6 +66,6 @@ microbenchmark:
                               - util: PrimaryIntGenThroughput
                                 params: [10000001, 2147483646]
                               - util: RandomAString
-                                params: [1024, 1024]
+                                params: [120, 120]
                               - util: RandomAString
                                 params: [60, 60]
