@@ -28,6 +28,8 @@ import com.oltpbenchmark.util.ThreadUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -73,6 +75,14 @@ public abstract class BenchmarkModule {
     public BenchmarkModule(WorkloadConfiguration workConf) {
         this.workConf = workConf;
         this.dialects = new StatementDialects(workConf);
+        if (workConf.getXmlConfig().getBoolean("use_hikari_pool", false)) {
+            try {
+                createDataSource();
+            } catch (Exception e) {
+                LOG.error("Failed to create Data Source", e);
+                throw e;
+            }
+        }
     }
 
     // --------------------------------------------------------------------------
@@ -80,14 +90,37 @@ public abstract class BenchmarkModule {
     // --------------------------------------------------------------------------
 
     public final Connection makeConnection() throws SQLException {
-
-        if (StringUtils.isEmpty(workConf.getUsername())) {
+        if (workConf.getXmlConfig().getBoolean("use_hikari_pool", false)) {
+            return hikariDataSource.getConnection();
+        } else if (StringUtils.isEmpty(workConf.getUsername())) {
             return DriverManager.getConnection(workConf.getUrl());
         } else {
             return DriverManager.getConnection(
                     workConf.getUrl(),
                     workConf.getUsername(),
                     workConf.getPassword());
+        }
+    }
+
+    protected HikariDataSource hikariDataSource;
+
+    public void createDataSource() {
+        HikariConfig config = new HikariConfig();
+        config.setJdbcUrl(workConf.getUrl());
+        if (!StringUtils.isEmpty(workConf.getUsername())) {
+            config.setUsername(workConf.getUsername());
+            config.setPassword(workConf.getPassword());
+            /* take max_pool_size from xmlConfig, default is = number of terminals*/
+            config.setMaximumPoolSize(workConf.getXmlConfig().getInt("max_pool_size", workConf.getTerminals()));
+            config.setMinimumIdle(5);
+        }
+        config.setTransactionIsolation(workConf.getIsolationString());
+        hikariDataSource = new HikariDataSource(config);
+    }
+
+    public void closeDataSource() {
+        if (workConf.getXmlConfig().getBoolean("use_hikari_pool", false)) {
+            this.hikariDataSource.close();
         }
     }
 
