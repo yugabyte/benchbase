@@ -19,6 +19,7 @@ loaderthreads: 1
 terminals: 1
 collect_pg_stat_statements: true
 yaml_version: v1.1
+yaml_change_description: Aggregate function count on 2nd elelemt of composite pkey
 works:
     work:
         time_secs: 120
@@ -112,6 +113,8 @@ microbenchmark:
 
         executeRules:
             - workload: AGGRG8_count_bigint_comp_pkey_first_ele
+              workload_change_description: Aggregate function count on 1st elelemt of composite pkey
+              workload_version: 1.2
               run:
                   - name: pg_count_bigint_comp_pkey_first_ele
                     weight: 100
