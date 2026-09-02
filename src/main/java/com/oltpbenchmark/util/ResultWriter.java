@@ -239,7 +239,7 @@ public class ResultWriter {
         }
         Map<String, Object> detailedSummaryMap = new TreeMap<>();
         Map<String, Object> metadata = new TreeMap<>();
-        metadata.put("yaml_version", expConf.getString("yaml_version", "v1.0"));
+        metadata.put("yaml_version", parseYamlVersion(expConf.getString("yaml_version", "v1.0")));
         metadata.put("yaml_change_description", expConf.getString("yaml_change_description", ""));
         if (workloadName != null && !workloadName.isEmpty()) {
             List<HierarchicalConfiguration<ImmutableNode>> executeRules =
@@ -265,6 +265,18 @@ public class ResultWriter {
         detailedSummaryMap.put("queries", results.getFeaturebenchAdditionalResults().getJsonResultsList());
         os.println(JSONUtil.format(JSONUtil.toJSONString(detailedSummaryMap)));
         return detailedSummaryMap;
+    }
+
+    private static Object parseYamlVersion(String version) {
+        if (version == null) return 1.0;
+        String trimmed = version.strip();
+        if (!trimmed.isEmpty() && (trimmed.charAt(0) == 'v' || trimmed.charAt(0) == 'V'))
+            trimmed = trimmed.substring(1).strip();
+        try {
+            return Double.valueOf(trimmed);
+        } catch (NumberFormatException e) {
+            return trimmed;
+        }
     }
 
     public static Map<String, Object> transactionsMap(Results results) {
