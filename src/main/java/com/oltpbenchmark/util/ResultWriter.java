@@ -246,7 +246,7 @@ public class ResultWriter {
                     expConf.configurationsAt("microbenchmark/properties/executeRules");
             for (HierarchicalConfiguration<ImmutableNode> rule : executeRules) {
                 if (workloadName.equals(rule.getString("workload"))) {
-                    metadata.put("change_description", rule.getString("change_description", ""));
+                    metadata.put("workload_change_description", rule.getString("workload_change_description", ""));
                     metadata.put("workload_version", rule.getString("workload_version", ""));
                     break;
                 }
