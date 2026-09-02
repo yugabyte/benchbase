@@ -683,10 +683,10 @@ public class DBWorkload {
                 }
 
                 // Warm table cache before execute (auto-skipped for blind-insert-only workloads)
-                if (isBooleanOptionSet(argsLine, "execute")) {
+                if (isBooleanOptionSet(argsLine, "execute") && isWorkloadSelectedToRun(argsLine, workloads, uniqueRunWorkloads, workCount)) {
                     for (BenchmarkModule benchmark : benchList)
                         if (benchmark.getBenchmarkName().equalsIgnoreCase("featurebench"))
-                            runDefaultAfterLoadTableScan(benchmark, xmlConfig);
+                            runDefaultAfterLoadTableScan(benchmark, xmlConfig, workCount);
                 }
 
                 // Check optimalThreads constraint for execute phase
@@ -1231,29 +1231,37 @@ public class DBWorkload {
         bench.loadDatabase();
     }
 
-    private static boolean preExecuteScanDone = false;
     private static final long MAX_ROWS_FOR_SCAN = 10_000_000L;
 
-    /**
-     * Warms the table cache before execute by scanning every table 5 times.
-     * Skipped when: disabled via YAML flag, no YAML executeRules (custom-class
-     * benchmarks like bulkload), every query is a plain INSERT...VALUES, or
-     * a table has more than 50M rows (per loadRules).
-     */
-    private static synchronized void runDefaultAfterLoadTableScan(BenchmarkModule benchmark,
-            HierarchicalConfiguration<ImmutableNode> xmlConfig) {
-        if (preExecuteScanDone) return;
+    private static boolean isWorkloadSelectedToRun(CommandLine argsLine, List<HierarchicalConfiguration<ImmutableNode>> workloads, Set<String> uniqueRunWorkloads, int workCount) {
+        if (!argsLine.hasOption("workloads")) return true;
+        if (workloads == null || workloads.isEmpty()) return true;
+        String name = workloads.get(workCount - 1).getString("workload");
+        return uniqueRunWorkloads.contains(name) || uniqueRunWorkloads.contains("DEFAULT_WORKLOAD");
+    }
+
+    /*** Warms the table cache before execute by scanning only the tables referenced in the current workload's queries (up to 5 iterations each by default). Runs once per workload (identified by workCount). Skipped when: disabled via YAML flag, the workload's queries are all blind INSERTs, or a table has more than 10M rows (per loadRules). */
+    private static void runDefaultAfterLoadTableScan(BenchmarkModule benchmark, HierarchicalConfiguration<ImmutableNode> xmlConfig, int workCount) {
         if (!xmlConfig.getBoolean("microbenchmark/properties/defaultAfterLoadTableScan", true)) return;
-        if (!workloadReadsExistingRows(xmlConfig)) return;
+
+        List<HierarchicalConfiguration<ImmutableNode>> allWorkloads = xmlConfig.configurationsAt("microbenchmark/properties/executeRules");
+        if (allWorkloads.isEmpty()) return;
+
+        HierarchicalConfiguration<ImmutableNode> currentWorkload = allWorkloads.get(workCount - 1);
+        if (!workloadReadsExistingRows(currentWorkload)) return;
 
         int iterations = xmlConfig.getInt("microbenchmark/properties/defaultAfterLoadTableScanIterations", 5);
         Map<String, Long> tableRows = getRowCountsFromLoadRules(xmlConfig);
         Collection<com.oltpbenchmark.catalog.Table> tables = benchmark.getCatalog().getTables();
         if (tables.isEmpty()) return;
 
+        Set<String> referencedTables = getTablesReferencedByWorkload(currentWorkload, tables);
+        if (referencedTables.isEmpty()) return;
+
         try (Connection conn = benchmark.makeConnection();
              Statement stmt = conn.createStatement()) {
             for (com.oltpbenchmark.catalog.Table table : tables) {
+                if (!referencedTables.contains(table.getName().toLowerCase())) continue;
                 long rows = tableRows.getOrDefault(table.getName(), 0L);
                 if (rows > MAX_ROWS_FOR_SCAN) {
                     LOG.info("Skipping pre-execute table scan on '{}': {} rows exceeds {}", table.getName(), rows, MAX_ROWS_FOR_SCAN);
@@ -1266,10 +1274,32 @@ public class DBWorkload {
                     stmt.execute(scanQuery);
                 }
             }
-            preExecuteScanDone = true;
         } catch (SQLException e) {
             throw new RuntimeException("Failed to run pre-execute table scan", e);
         }
+    }
+
+    /*** Returns the lowercase names of catalog tables that appear in the given workload's query strings. Uses word-boundary matching so e.g. table "orders" won't false-match "reorders".*/
+    private static Set<String> getTablesReferencedByWorkload(HierarchicalConfiguration<ImmutableNode> workload, Collection<com.oltpbenchmark.catalog.Table> catalogTables) {
+        List<String> queries = new ArrayList<>();
+        for (HierarchicalConfiguration<ImmutableNode> run : workload.configurationsAt("run"))
+            for (HierarchicalConfiguration<ImmutableNode> q : run.configurationsAt("queries")) {
+                String sql = q.getString("query", "").strip();
+                if (!sql.isEmpty()) queries.add(sql.toLowerCase());
+            }
+
+        Set<String> referenced = new HashSet<>();
+        for (com.oltpbenchmark.catalog.Table table : catalogTables) {
+            String name = table.getName().toLowerCase();
+            Pattern pattern = Pattern.compile("\\b" + Pattern.quote(name) + "\\b", Pattern.CASE_INSENSITIVE);
+            for (String sql : queries) {
+                if (pattern.matcher(sql).find()) {
+                    referenced.add(name);
+                    break;
+                }
+            }
+        }
+        return referenced;
     }
 
     private static Map<String, Long> getRowCountsFromLoadRules(HierarchicalConfiguration<ImmutableNode> xmlConfig) {
@@ -1289,19 +1319,14 @@ public class DBWorkload {
         return map;
     }
 
-    private static boolean workloadReadsExistingRows(HierarchicalConfiguration<ImmutableNode> xmlConfig) {
-        List<HierarchicalConfiguration<ImmutableNode>> rules =
-                xmlConfig.configurationsAt("microbenchmark/properties/executeRules");
-        if (rules.isEmpty()) return false;
-        for (HierarchicalConfiguration<ImmutableNode> wl : rules)
-            for (HierarchicalConfiguration<ImmutableNode> run : wl.configurationsAt("run"))
-                for (HierarchicalConfiguration<ImmutableNode> q : run.configurationsAt("queries")) {
-                    String sql = q.getString("query", "").strip().toUpperCase();
-                    if (sql.isEmpty()) continue;
-                    boolean blindInsert = sql.startsWith("INSERT")
-                            && !sql.contains("ON CONFLICT") && !sql.contains("RETURNING") && !sql.contains("SELECT");
-                    if (!blindInsert) return true;
-                }
+    private static boolean workloadReadsExistingRows(HierarchicalConfiguration<ImmutableNode> workload) {
+        for (HierarchicalConfiguration<ImmutableNode> run : workload.configurationsAt("run"))
+            for (HierarchicalConfiguration<ImmutableNode> q : run.configurationsAt("queries")) {
+                String sql = q.getString("query", "").strip().toUpperCase();
+                if (sql.isEmpty()) continue;
+                boolean blindInsert = sql.startsWith("INSERT") && !sql.contains("ON CONFLICT") && !sql.contains("RETURNING") && !sql.contains("SELECT");
+                if (!blindInsert) return true;
+            }
         return false;
     }
 
