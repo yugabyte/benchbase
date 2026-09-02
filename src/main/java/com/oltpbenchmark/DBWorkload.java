@@ -1109,7 +1109,7 @@ public class DBWorkload {
                 }
                 if(workload_name == null || workload_name.isEmpty())
                     workload_name = baseFileName;
-                workloadToSummaryMap.put(workload_name, rw.writeDetailedSummary(ps, customTags, skipReport));
+                workloadToSummaryMap.put(workload_name, rw.writeDetailedSummary(ps, customTags, skipReport, workload_name));
 
                 try {
                     FileWriter writer = new FileWriter(filePathForOutputJson);
