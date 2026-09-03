@@ -15,8 +15,7 @@ loaderthreads: 1
 terminals: 1
 collect_pg_stat_statements: true
 use_dist_in_explain : true
-yaml_version: v1.1
-yaml_change_description: Aggregate function max on 0.1M rows
+yaml_version: v1.0
 works:
     work:
         time_secs: 120
@@ -146,8 +145,6 @@ microbenchmark:
                       params: [1, 500]
         executeRules:
             - workload: AGGRG5_max_bigint_1L_table_rows
-              workload_change_description: Aggregate function max on 0.1M rows
-              workload_version: 1.2
               customTags: customer=2,schematype=regular,partition=range,pkey=asc,aggregate=max,cardinality=single,projection=aggregate,aggregateon=rangepkey
               run:
                   - name: yb_distinct_bigint_non_indexed_column
