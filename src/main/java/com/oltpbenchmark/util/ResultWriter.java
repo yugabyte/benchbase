@@ -239,7 +239,7 @@ public class ResultWriter {
         }
         Map<String, Object> detailedSummaryMap = new TreeMap<>();
         Map<String, Object> metadata = new TreeMap<>();
-        metadata.put("yaml_version", parseYamlVersion(expConf.getString("yaml_version", "v1.0")));
+        metadata.put("yaml_version", parseYamlVersion(expConf.getString("yaml_version", null)));
         metadata.put("yaml_change_description", expConf.getString("yaml_change_description", ""));
         if (workloadName != null && !workloadName.isEmpty()) {
             List<HierarchicalConfiguration<ImmutableNode>> executeRules =
@@ -247,7 +247,7 @@ public class ResultWriter {
             for (HierarchicalConfiguration<ImmutableNode> rule : executeRules) {
                 if (workloadName.equals(rule.getString("workload"))) {
                     metadata.put("workload_change_description", rule.getString("workload_change_description", ""));
-                    metadata.put("workload_version", rule.getString("workload_version", ""));
+                    metadata.put("workload_version", rule.getDouble("workload_version", 1.0));
                     break;
                 }
             }
