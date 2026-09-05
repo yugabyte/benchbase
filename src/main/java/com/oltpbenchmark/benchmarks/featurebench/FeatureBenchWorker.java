@@ -459,6 +459,16 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
 
     @Override
     public void tearDown() {
+        if (this.usingHikari) {
+            try {
+                if (this.conn == null || this.conn.isClosed()) {
+                    this.conn = this.getBenchmark().makeConnection();
+                    this.conn.setAutoCommit(true);
+                }
+            } catch (SQLException ex) {
+                throw new RuntimeException("Failed to connect to database", ex);
+            }
+        }
         synchronized (FeatureBenchWorker.class) {
             // Collect exactly once, on the first tearDown() invocation to get here (whose
             // connection is still open). See the isPGStatStatementCollected/isCleanUpDone
@@ -533,6 +543,15 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                 } catch (SQLException e) {
                     LOG.error("Connection couldn't be closed.", e);
                 }
+            }
+        }
+        if(usingHikari) {
+            try {
+                if (this.conn != null && !this.conn.isClosed()) {
+                    this.conn.close();
+                }
+            } catch (SQLException ex) {
+                throw new RuntimeException("Failed to connect to database", ex);
             }
         }
     }
