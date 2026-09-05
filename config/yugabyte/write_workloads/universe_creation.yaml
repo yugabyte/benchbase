@@ -1,27 +1,15 @@
 benchmarks:
-    - name: perf-sysbench
+    - name: perf-featurebench
       workloadSpec:
-          type: sysbench
+          type: featurebench
           properties:
               create: false
               load: false
-              run: false
-              client-instance-type: c5.xlarge
-              sysbench-repo-branch: master
-              tables: 100
-              table_size: 4000000
-              workload_subtype: oltp_read_only
-              load_threads: 10
-              run_threads: 10
-              point_selects: 10
-              num_rows_in_insert: 10
-              test-user: <>
-              time: 100
-              warmup-time: 100
-              range_key_partitioning: false
-              range_selects: false
-              serial_cache_size: 1000
-              thread-init-timeout: 90
+              execute: false
+              client-instance-type: c5.large
+              benchbase-repo-branch: master
+              test-user: sagarwal
+              yaml-relative-path: config/yugabyte/scan_workloads/yugabyte/scanG4_yb_pkey_rangeScan_INclause_increasingRows_.yaml
               yb_owner: perf-team
       clusterSpec:
           platformId: 301
@@ -45,12 +33,10 @@ benchmarks:
           #       - "name": "ysql_yb_enable_expression_pushdown"
           #          "value": true
       jobGroup:
-          - name: sysbench
+          - name: featurebench
             numClusters: 1
             reuse: true
             clusterSpec:
                 overrides: {}
             workloadSpec:
-                overrides:
-                    workload_subtype:
-                        - '{"workload": "oltp_read_only", "threads": [120]}'
+                overrides: {}
