@@ -1242,7 +1242,7 @@ public class DBWorkload {
 
     /*** Warms the table cache before execute by scanning only the tables referenced in the current workload's queries (up to 5 iterations each by default). Runs once per workload (identified by workCount). Skipped when: disabled via YAML flag, the workload's queries are all blind INSERTs, or a table has more than 10M rows (per loadRules). */
     private static void runDefaultAfterLoadTableScan(BenchmarkModule benchmark, HierarchicalConfiguration<ImmutableNode> xmlConfig, int workCount) {
-        if (!xmlConfig.getBoolean("microbenchmark/properties/defaultAfterLoadTableScan", true)) return;
+        if (!xmlConfig.getBoolean("microbenchmark/properties/preExecuteTableScan", true)) return;
 
         List<HierarchicalConfiguration<ImmutableNode>> allWorkloads = xmlConfig.configurationsAt("microbenchmark/properties/executeRules");
         if (allWorkloads.isEmpty()) return;
@@ -1250,7 +1250,7 @@ public class DBWorkload {
         HierarchicalConfiguration<ImmutableNode> currentWorkload = allWorkloads.get(workCount - 1);
         if (!workloadReadsExistingRows(currentWorkload)) return;
 
-        int iterations = xmlConfig.getInt("microbenchmark/properties/defaultAfterLoadTableScanIterations", 5);
+        int iterations = xmlConfig.getInt("microbenchmark/properties/preExecuteTableScanIterations", 5);
         Map<String, Long> tableRows = getRowCountsFromLoadRules(xmlConfig);
         Collection<com.oltpbenchmark.catalog.Table> tables = benchmark.getCatalog().getTables();
         if (tables.isEmpty()) return;
