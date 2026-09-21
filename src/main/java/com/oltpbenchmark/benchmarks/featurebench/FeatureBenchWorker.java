@@ -66,6 +66,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
     // final state, so this is safe at any terminal count.
     private final boolean executeCustom;
     private final boolean hasExecuteRules;
+    private final boolean rawSql;
     // Keyed by the Query object (identity semantics -- Query does not override equals/hashCode)
     // rather than by the SQL text, so each lookup in the hot loop is an identity hash + reference
     // compare instead of a full String.equals() over the (potentially very long) SQL. Each worker
@@ -92,13 +93,15 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                               String workloadClass,
                               HierarchicalConfiguration<ImmutableNode> workerConfig,
                               List<ExecuteRule> executeRules,
-                              String workloadName) {
+                              String workloadName,
+                              boolean rawSql) {
         super(benchmarkModule, id);
         this.executeRules = executeRules;
         this.config = workerConfig;
         this.workloadName = workloadName;
         this.executeCustom = config.containsKey("execute") && config.getBoolean("execute");
         this.hasExecuteRules = executeRules != null && !executeRules.isEmpty();
+        this.rawSql = rawSql;
         // NOTE: per-workload shared state is reset once in
         // FeatureBenchBenchmark.makeWorkersImpl (via resetSharedState()) before any
         // worker is constructed -- not here -- so the "run once" guards do not depend
@@ -112,10 +115,10 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
         }
     }
 
-    private static boolean isDDLStatement(String sql) {
-        String s = sql.trim().toUpperCase();
-        return s.startsWith("CREATE ") || s.startsWith("DROP ")
-            || s.startsWith("ALTER ") || s.startsWith("TRUNCATE ");
+    private static String sqlQuote(Object val) {
+        if (val == null) return "NULL";
+        if (val instanceof Number || val instanceof Boolean) return String.valueOf(val);
+        return "'" + String.valueOf(val).replace("'", "''") + "'";
     }
 
     /**
@@ -137,9 +140,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             preparedStatementsPerQuery = new IdentityHashMap<>();
             for (ExecuteRule executeRule : executeRules) {
                 for (Query query : executeRule.getQueries()) {
-                    if (isDDLStatement(query.getQuery())) {
-                        continue;
-                    }
+                    if (rawSql) continue;
                     PreparedStatement stmt = conn.prepareStatement(query.getQuery());
                     preparedStatementsPerQuery.put(query, stmt);
                 }
@@ -224,9 +225,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                 for (ExecuteRule er : executeRules) {
                     for (Query query : er.getQueries()) {
                         String querystmt = query.getQuery();
-                        if (isDDLStatement(querystmt)) {
-                            continue;
-                        }
+                        if (rawSql) continue;
                         try {
                             PreparedStatement stmt = conn.prepareStatement((query.isSelectQuery() ? explainSelect : query.isUpdateQuery() ? explainUpdate : explainOthers) + querystmt);
                             List<UtilToMethod> baseUtils = query.getBaseUtils();
@@ -432,12 +431,12 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                 List<UtilToMethod> baseUtils = query.getBaseUtils();
                 int count = query.getCount();
 
-                if (isDDLStatement(query.getQuery())) {
+                if (rawSql) {
                     for (int i = 0; i < count; i++) {
                         Object[] generatedValues = generateParameterValues(baseUtils);
                         String ddlSql = query.getQuery();
                         for (Object val : generatedValues) {
-                            ddlSql = ddlSql.replaceFirst("\\?", String.valueOf(val));
+                            ddlSql = ddlSql.replaceFirst("\\?", Matcher.quoteReplacement(sqlQuote(val)));
                         }
                         try (Statement ddlStmt = conn.createStatement()) {
                             ddlStmt.execute(ddlSql);
