@@ -112,6 +112,12 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
         }
     }
 
+    private static boolean isDDLStatement(String sql) {
+        String s = sql.trim().toUpperCase();
+        return s.startsWith("CREATE ") || s.startsWith("DROP ")
+            || s.startsWith("ALTER ") || s.startsWith("TRUNCATE ");
+    }
+
     /**
      * Reset the shared, static per-workload state. Must be called exactly once per
      * workload run, BEFORE the workers for that run are created (see
@@ -131,6 +137,9 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             preparedStatementsPerQuery = new IdentityHashMap<>();
             for (ExecuteRule executeRule : executeRules) {
                 for (Query query : executeRule.getQueries()) {
+                    if (isDDLStatement(query.getQuery())) {
+                        continue;
+                    }
                     PreparedStatement stmt = conn.prepareStatement(query.getQuery());
                     preparedStatementsPerQuery.put(query, stmt);
                 }
@@ -215,6 +224,9 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                 for (ExecuteRule er : executeRules) {
                     for (Query query : er.getQueries()) {
                         String querystmt = query.getQuery();
+                        if (isDDLStatement(querystmt)) {
+                            continue;
+                        }
                         try {
                             PreparedStatement stmt = conn.prepareStatement((query.isSelectQuery() ? explainSelect : query.isUpdateQuery() ? explainUpdate : explainOthers) + querystmt);
                             List<UtilToMethod> baseUtils = query.getBaseUtils();
@@ -417,23 +429,33 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             ExecuteRule executeRule = executeRules.get(executeRuleIndex);
             boolean zeroRowsTransaction = false;
             for (Query query : executeRule.getQueries()) {
-                PreparedStatement stmt = this.preparedStatementsPerQuery.get(query);
                 List<UtilToMethod> baseUtils = query.getBaseUtils();
                 int count = query.getCount();
+
+                if (isDDLStatement(query.getQuery())) {
+                    for (int i = 0; i < count; i++) {
+                        Object[] generatedValues = generateParameterValues(baseUtils);
+                        String ddlSql = query.getQuery();
+                        for (Object val : generatedValues) {
+                            ddlSql = ddlSql.replaceFirst("\\?", String.valueOf(val));
+                        }
+                        try (Statement ddlStmt = conn.createStatement()) {
+                            ddlStmt.execute(ddlSql);
+                        }
+                    }
+                    continue;
+                }
+
+                PreparedStatement stmt = this.preparedStatementsPerQuery.get(query);
                 
                 for (int i = 0; i < count; i++) {
-                    // Generate parameter values with expression evaluation
                     Object[] generatedValues = generateParameterValues(baseUtils);
                     
-                    // Set all parameters in the prepared statement
                     for (int j = 0; j < generatedValues.length; j++) {
                         stmt.setObject(j + 1, generatedValues[j]);
                     }
                     
                     if (query.isSelectQuery() || query.isReturningQuery()) {
-                        // try-with-resources so the (possibly large) result set is
-                        // released as soon as we finish counting rows, rather than
-                        // lingering on the cached PreparedStatement until its next reuse.
                         try (ResultSet rs = stmt.executeQuery()) {
                             long countSet = 0;
                             while (rs.next()) countSet++;
