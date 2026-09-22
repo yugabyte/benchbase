@@ -11,9 +11,8 @@ collect_pg_stat_statements: true
 yaml_version: v1.0
 works:
     work:
-        time_secs: 120
+        time_secs: 0
         rate: unlimited
-        warmup: 10
 microbenchmark:
     class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
     properties:
@@ -26,7 +25,7 @@ microbenchmark:
 
         executeRules:
             - workload: create_table_ddl
-              time_secs: 300
+              executeNtimes: 1000
               raw_sql: true
               run:
                   - name: create_table_ddl
@@ -38,7 +37,7 @@ microbenchmark:
                                 params: [1, 1000000]
             
             - workload: insert_data
-              time_secs: 600
+              executeNtimes: 1000
               raw_sql: true
               skipReport: true
               run:
@@ -51,7 +50,7 @@ microbenchmark:
                                 params: [1, 1000000]
 
             - workload: create_index_ddl
-              time_secs: 300
+              executeNtimes: 1000
               raw_sql: true
               run:
                   - name: create_index_ddl
@@ -64,6 +63,7 @@ microbenchmark:
                                 params: [1, 1000000]
 
             - workload: alter_table_add_col_ddl
+              executeNtimes: 1000
               raw_sql: true
               run:
                   - name: alter_table_add_col_ddl
@@ -75,6 +75,7 @@ microbenchmark:
                                 params: [1, 1000000]
 
             - workload: alter_table_drop_col_ddl
+              executeNtimes: 1000
               raw_sql: true
               run:
                   - name: alter_table_drop_col_ddl
@@ -86,7 +87,7 @@ microbenchmark:
                                 params: [1, 1000000]
 
             - workload: drop_index_ddl  
-              time_secs: 30
+              executeNtimes: 1000
               raw_sql: true
               run:
                   - name: drop_index_ddl
@@ -98,6 +99,7 @@ microbenchmark:
                                 params: [1, 1000000]
 
             - workload: drop_table_ddl
+              executeNtimes: 1000
               raw_sql: true
               run:
                   - name: drop_table_ddl

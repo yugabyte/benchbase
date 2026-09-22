@@ -431,7 +431,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             if (executeNtimes > 0) {
                 int current = executeNtimesCounter.incrementAndGet();
                 if (current > executeNtimes) {
-                    this.configuration.getWorkloadState().getBenchmarkState().startCoolDown();
+                    this.configuration.getWorkloadState().signalLatencyComplete();
                     return TransactionStatus.SUCCESS;
                 }
             }

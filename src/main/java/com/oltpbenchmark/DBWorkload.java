@@ -442,6 +442,21 @@ public class DBWorkload {
                         if(workloads != null && workloads.size() >= workCount && workloads.get(workCount-1).containsKey("time_secs")){
                             time = workloads.get(workCount-1).getInt("time_secs");
                         }
+                        int executeNtimes = work.getInt("/executeNtimes", 0);
+                        if (workloads != null && workloads.size() >= workCount && workloads.get(workCount-1).containsKey("executeNtimes")) {
+                            executeNtimes = workloads.get(workCount-1).getInt("executeNtimes");
+                        }
+                        if (executeNtimes <= 0) {
+                            String xmlPath = "microbenchmark/properties/executeRules[" + workCount + "]/executeNtimes";
+                            if (xmlConfig.containsKey(xmlPath)) {
+                                executeNtimes = xmlConfig.getInt(xmlPath);
+                            }
+                        }
+                        if (executeNtimes > 0) {
+                            wrkld.setExecuteNtimes(executeNtimes);
+                            time = 0;
+                            LOG.info("executeNtimes={} set; will run each transaction exactly N times instead of using a timer.", executeNtimes);
+                        }
                     } else {
                         weight_strings = Arrays.asList(work.getString("weights[not(@bench)]").split("\\s*,\\s*"));
                     }
@@ -484,12 +499,12 @@ public class DBWorkload {
                     // a serial (rather than random) order.
                     boolean serial = Boolean.parseBoolean(work.getString("serial", Boolean.FALSE.toString()));
 
+                    if (wrkld.getExecuteNtimes() > 0) serial = true;
 
                     int activeTerminals;
                     activeTerminals = work.getInt("active_terminals[not(@bench)]", terminals);
                     activeTerminals = work.getInt("active_terminals" + pluginTest, activeTerminals);
-                    // If using serial, we should have only one terminal
-                    if (serial && activeTerminals != 1) {
+                    if (serial && wrkld.getExecuteNtimes() <= 0 && activeTerminals != 1) {
                         LOG.warn("Serial ordering is enabled, so # of active terminals is clamped to 1.");
                         activeTerminals = 1;
                     }

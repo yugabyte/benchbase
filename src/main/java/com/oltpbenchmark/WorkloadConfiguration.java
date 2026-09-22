@@ -53,6 +53,7 @@ public class WorkloadConfiguration {
     
     // Variable to store is an test to find optimal threads
     private boolean isOptimalThreadsWorkload = false;
+    private int executeNtimes = 0;
 
     /**
      * If true, establish a new connection for each transaction, otherwise use one persistent connection per client
@@ -142,6 +143,14 @@ public class WorkloadConfiguration {
 
     public void setIsOptimalThreadsWorkload(boolean isOptimalThreadsWorkload) {
         this.isOptimalThreadsWorkload = isOptimalThreadsWorkload;
+    }
+
+    public int getExecuteNtimes() {
+        return executeNtimes;
+    }
+
+    public void setExecuteNtimes(int executeNtimes) {
+        this.executeNtimes = executeNtimes;
     }
 
     /**
