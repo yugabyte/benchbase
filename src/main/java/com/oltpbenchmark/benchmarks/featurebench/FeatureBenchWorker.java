@@ -44,6 +44,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 
 
@@ -431,7 +432,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             if (executeNtimes > 0) {
                 int current = executeNtimesCounter.incrementAndGet();
                 if (current > executeNtimes) {
-                    this.configuration.getWorkloadState().signalLatencyComplete();
+                    this.configuration.getWorkloadState().getBenchmarkState().startCoolDown();
                     return TransactionStatus.SUCCESS;
                 }
             }
@@ -662,6 +663,13 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
         return Arrays.asList(cleaned.split("\\W+"));
     }
 
+    private List<String> tokenizeQueryForRawSql(String query) {
+        return tokenizeQuery(query).stream()
+            .map(t -> t.replaceAll("\\d+", ""))
+            .filter(t -> !t.isEmpty())
+            .collect(Collectors.toList());
+    }
+
     private double cosineSimilarity(List<String> tokens1, List<String> tokens2) {
         Map<String, Integer> freq1 = getFrequencyMap(tokens1);
         Map<String, Integer> freq2 = getFrequencyMap(tokens2);
@@ -725,14 +733,15 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
     }
 
     private static final double RAW_SQL_SIMILARITY_THRESHOLD = 0.85;
-    private static final String[] PG_STAT_SUMMABLE_FIELDS = {
+    private static final String[] PG_STAT_SUM_FIELDS = {
         "calls", "total_exec_time", "total_plan_time",
-        "min_exec_time", "max_exec_time", "mean_exec_time",
         "rows", "shared_blks_hit", "shared_blks_read"
     };
+    private static final String[] PG_STAT_MIN_FIELDS = {"min_exec_time", "min_plan_time"};
+    private static final String[] PG_STAT_MAX_FIELDS = {"max_exec_time", "max_plan_time"};
 
     private JSONObject aggregateMatchingPgStatRows(JSONObject pgStatOutputs, String inputQuery) {
-        List<String> inputTokens = tokenizeQuery(inputQuery);
+        List<String> inputTokens = tokenizeQueryForRawSql(inputQuery);
         List<JSONObject> matched = new ArrayList<>();
 
         for (String key : pgStatOutputs.keySet()) {
@@ -740,7 +749,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             String pgQuery = row.getString("query").trim();
             if (pgQuery.toLowerCase().startsWith("explain")) continue;
 
-            double similarity = cosineSimilarity(inputTokens, tokenizeQuery(pgQuery));
+            double similarity = cosineSimilarity(inputTokens, tokenizeQueryForRawSql(pgQuery));
             if (similarity >= RAW_SQL_SIMILARITY_THRESHOLD) {
                 matched.add(row);
             }
@@ -750,19 +759,68 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
 
         JSONObject aggregated = new JSONObject(matched.get(0).toMap());
         aggregated.put("aggregated_row_count", matched.size());
-        for (String field : PG_STAT_SUMMABLE_FIELDS) {
+
+        for (String field : PG_STAT_SUM_FIELDS) {
             double sum = 0;
             boolean found = false;
             for (JSONObject row : matched) {
                 if (row.has(field)) {
-                    try {
-                        sum += Double.parseDouble(row.getString(field));
-                        found = true;
-                    } catch (NumberFormatException ignored) {}
+                    try { sum += Double.parseDouble(row.getString(field)); found = true; }
+                    catch (NumberFormatException ignored) {}
                 }
             }
             if (found) aggregated.put(field, String.valueOf(sum));
         }
+
+        for (String field : PG_STAT_MIN_FIELDS) {
+            double min = Double.MAX_VALUE;
+            boolean found = false;
+            for (JSONObject row : matched) {
+                if (row.has(field)) {
+                    try { min = Math.min(min, Double.parseDouble(row.getString(field))); found = true; }
+                    catch (NumberFormatException ignored) {}
+                }
+            }
+            if (found) aggregated.put(field, String.valueOf(min));
+        }
+
+        for (String field : PG_STAT_MAX_FIELDS) {
+            double max = Double.MIN_VALUE;
+            boolean found = false;
+            for (JSONObject row : matched) {
+                if (row.has(field)) {
+                    try { max = Math.max(max, Double.parseDouble(row.getString(field))); found = true; }
+                    catch (NumberFormatException ignored) {}
+                }
+            }
+            if (found) aggregated.put(field, String.valueOf(max));
+        }
+
+        double totalExecTime = 0, totalCalls = 0;
+        for (JSONObject row : matched) {
+            try {
+                if (row.has("total_exec_time") && row.has("calls")) {
+                    totalExecTime += Double.parseDouble(row.getString("total_exec_time"));
+                    totalCalls += Double.parseDouble(row.getString("calls"));
+                }
+            } catch (NumberFormatException ignored) {}
+        }
+        if (totalCalls > 0) {
+            aggregated.put("mean_exec_time", String.valueOf(totalExecTime / totalCalls));
+        }
+
+        double totalPlanTime = 0;
+        for (JSONObject row : matched) {
+            try {
+                if (row.has("total_plan_time")) {
+                    totalPlanTime += Double.parseDouble(row.getString("total_plan_time"));
+                }
+            } catch (NumberFormatException ignored) {}
+        }
+        if (totalCalls > 0) {
+            aggregated.put("mean_plan_time", String.valueOf(totalPlanTime / totalCalls));
+        }
+
         return aggregated;
     }
 

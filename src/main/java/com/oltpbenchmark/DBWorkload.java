@@ -454,7 +454,7 @@ public class DBWorkload {
                         }
                         if (executeNtimes > 0) {
                             wrkld.setExecuteNtimes(executeNtimes);
-                            time = 0;
+                            time = Integer.MAX_VALUE / 2;
                             LOG.info("executeNtimes={} set; will run each transaction exactly N times instead of using a timer.", executeNtimes);
                         }
                     } else {
@@ -499,12 +499,11 @@ public class DBWorkload {
                     // a serial (rather than random) order.
                     boolean serial = Boolean.parseBoolean(work.getString("serial", Boolean.FALSE.toString()));
 
-                    if (wrkld.getExecuteNtimes() > 0) serial = true;
-
                     int activeTerminals;
                     activeTerminals = work.getInt("active_terminals[not(@bench)]", terminals);
                     activeTerminals = work.getInt("active_terminals" + pluginTest, activeTerminals);
-                    if (serial && wrkld.getExecuteNtimes() <= 0 && activeTerminals != 1) {
+                    // If using serial, we should have only one terminal
+                    if (serial && activeTerminals != 1) {
                         LOG.warn("Serial ordering is enabled, so # of active terminals is clamped to 1.");
                         activeTerminals = 1;
                     }
