@@ -41,6 +41,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.sql.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -87,6 +88,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
     // "connection closed" failure while collecting pg_stat_statements.)
     static AtomicBoolean isPGStatStatementCollected = new AtomicBoolean(false);
     static AtomicBoolean isCleanUpDone = new AtomicBoolean(false);
+    static AtomicInteger executeNtimesCounter = new AtomicInteger(0);
 
     public FeatureBenchWorker(FeatureBenchBenchmark benchmarkModule,
                               int id,
@@ -132,6 +134,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
         isInitializeDone.set(false);
         isPGStatStatementCollected.set(false);
         isCleanUpDone.set(false);
+        executeNtimesCounter.set(0);
         queryToExplainMap.clear();
     }
 
@@ -424,6 +427,15 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                 return TransactionStatus.SUCCESS;
             }
 
+            int executeNtimes = this.configuration.getExecuteNtimes();
+            if (executeNtimes > 0) {
+                int current = executeNtimesCounter.incrementAndGet();
+                if (current > executeNtimes) {
+                    this.configuration.getWorkloadState().getBenchmarkState().startCoolDown();
+                    return TransactionStatus.SUCCESS;
+                }
+            }
+
             int executeRuleIndex = txnType.getId() - 1;
             ExecuteRule executeRule = executeRules.get(executeRuleIndex);
             boolean zeroRowsTransaction = false;
@@ -523,7 +535,17 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                 for (Map.Entry<String, Integer> entry : queryStringsAndRC.entrySet()) {
                     JSONObject inner = new JSONObject();
                     inner.put("query", entry.getKey());
-                    inner.put("pg_stat_statements", pgStatOutputs == null ? new JSONObject() : findQueryInPgStatUsingCosine(pgStatOutputs, entry.getKey()));
+
+                    JSONObject pgStatForQuery = new JSONObject();
+                    if (pgStatOutputs != null) {
+                        if (rawSql) {
+                            pgStatForQuery = aggregateMatchingPgStatRows(pgStatOutputs, entry.getKey());
+                        } else {
+                            pgStatForQuery = findQueryInPgStatUsingCosine(pgStatOutputs, entry.getKey());
+                        }
+                        if (pgStatForQuery == null) pgStatForQuery = new JSONObject();
+                    }
+                    inner.put("pg_stat_statements", pgStatForQuery);
 
                     if (entry.getValue() != -1)
                         inner.put("explainPlanRcValidationSuccess", Integer.parseInt((String) queryToExplainMap.getOrDefault(entry.getKey(), new JSONObject()).get("ExplainPlanRows")) == entry.getValue());
@@ -700,6 +722,48 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
         }
 
         return matchedKey != null ? (JSONObject) pgStatOutputs.get(matchedKey) : null;
+    }
+
+    private static final double RAW_SQL_SIMILARITY_THRESHOLD = 0.85;
+    private static final String[] PG_STAT_SUMMABLE_FIELDS = {
+        "calls", "total_exec_time", "total_plan_time",
+        "min_exec_time", "max_exec_time", "mean_exec_time",
+        "rows", "shared_blks_hit", "shared_blks_read"
+    };
+
+    private JSONObject aggregateMatchingPgStatRows(JSONObject pgStatOutputs, String inputQuery) {
+        List<String> inputTokens = tokenizeQuery(inputQuery);
+        List<JSONObject> matched = new ArrayList<>();
+
+        for (String key : pgStatOutputs.keySet()) {
+            JSONObject row = (JSONObject) pgStatOutputs.get(key);
+            String pgQuery = row.getString("query").trim();
+            if (pgQuery.toLowerCase().startsWith("explain")) continue;
+
+            double similarity = cosineSimilarity(inputTokens, tokenizeQuery(pgQuery));
+            if (similarity >= RAW_SQL_SIMILARITY_THRESHOLD) {
+                matched.add(row);
+            }
+        }
+
+        if (matched.isEmpty()) return null;
+
+        JSONObject aggregated = new JSONObject(matched.get(0).toMap());
+        aggregated.put("aggregated_row_count", matched.size());
+        for (String field : PG_STAT_SUMMABLE_FIELDS) {
+            double sum = 0;
+            boolean found = false;
+            for (JSONObject row : matched) {
+                if (row.has(field)) {
+                    try {
+                        sum += Double.parseDouble(row.getString(field));
+                        found = true;
+                    } catch (NumberFormatException ignored) {}
+                }
+            }
+            if (found) aggregated.put(field, String.valueOf(sum));
+        }
+        return aggregated;
     }
 
     private JSONArray callPGStatUserIndexes() throws SQLException{
