@@ -446,14 +446,12 @@ public class DBWorkload {
                         if (workloads != null && workloads.size() >= workCount && workloads.get(workCount-1).containsKey("executeNtimes")) {
                             executeNtimes = workloads.get(workCount-1).getInt("executeNtimes");
                         }
-                        if (executeNtimes <= 0) {
-                            String xmlPath = "microbenchmark/properties/executeRules[" + workCount + "]/executeNtimes";
-                            if (xmlConfig.containsKey(xmlPath)) {
-                                executeNtimes = xmlConfig.getInt(xmlPath);
-                            }
-                        }
+                        wrkld.setExecuteNtimes(executeNtimes);
                         if (executeNtimes > 0) {
-                            wrkld.setExecuteNtimes(executeNtimes);
+                            if (terminals > 1) {
+                                LOG.error("executeNtimes mode requires terminals=1. Current terminals={}. Multi-terminal executeNtimes is not supported.", terminals);
+                                System.exit(-1);
+                            }
                             time = Integer.MAX_VALUE / 2;
                             LOG.info("executeNtimes={} set; will run each transaction exactly N times instead of using a timer.", executeNtimes);
                         }

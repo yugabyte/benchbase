@@ -537,15 +537,10 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                     JSONObject inner = new JSONObject();
                     inner.put("query", entry.getKey());
 
-                    JSONObject pgStatForQuery = new JSONObject();
-                    if (pgStatOutputs != null) {
-                        if (rawSql) {
-                            pgStatForQuery = aggregateMatchingPgStatRows(pgStatOutputs, entry.getKey());
-                        } else {
-                            pgStatForQuery = findQueryInPgStatUsingCosine(pgStatOutputs, entry.getKey());
-                        }
-                        if (pgStatForQuery == null) pgStatForQuery = new JSONObject();
-                    }
+                    JSONObject pgStatForQuery = pgStatOutputs == null ? null
+                        : rawSql ? aggregateMatchingPgStatRows(pgStatOutputs, entry.getKey())
+                                 : findQueryInPgStatUsingCosine(pgStatOutputs, entry.getKey());
+                    if (pgStatForQuery == null) pgStatForQuery = new JSONObject();
                     inner.put("pg_stat_statements", pgStatForQuery);
 
                     if (entry.getValue() != -1)
@@ -757,7 +752,8 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
 
         if (matched.isEmpty()) return null;
 
-        JSONObject aggregated = new JSONObject(matched.get(0).toMap());
+        JSONObject aggregated = new JSONObject();
+        aggregated.put("query", matched.get(0).getString("query"));
         aggregated.put("aggregated_row_count", matched.size());
 
         for (String field : PG_STAT_SUM_FIELDS) {

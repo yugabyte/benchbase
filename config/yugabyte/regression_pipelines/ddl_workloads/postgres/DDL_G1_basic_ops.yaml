@@ -17,95 +17,93 @@ microbenchmark:
     class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
     properties:
         setAutoCommit: true
-        create:
-            - DO $$ BEGIN EXECUTE (SELECT string_agg('DROP TABLE ' || tablename || ' CASCADE', '; ') FROM pg_tables WHERE tablename LIKE 'employees_%'); END $$;
 
         cleanup:
-            - DO $$ BEGIN EXECUTE (SELECT string_agg('DROP TABLE ' || tablename || ' CASCADE', '; ') FROM pg_tables WHERE tablename LIKE 'employees_%'); END $$;
+            - DO $$ DECLARE _sql text; BEGIN SELECT string_agg('DROP TABLE ' || tablename || ' CASCADE', '; ') INTO _sql FROM pg_tables WHERE tablename LIKE 'ddl_g1_employees_%'; IF _sql IS NOT NULL THEN EXECUTE _sql; END IF; END $$;
 
         executeRules:
             - workload: create_table_ddl
-              executeNtimes: 1000
+              executeNtimes: 500
               raw_sql: true
               run:
                   - name: create_table_ddl
                     weight: 100
                     queries:
-                        - query: CREATE TABLE employees_? (dept_id INT, emp_id INT, name VARCHAR(10), email VARCHAR(20), salary FLOAT, hire_date DATE, department VARCHAR(20), payload TEXT, details TEXT, is_active BOOLEAN, last_login TIMESTAMP, primary key(dept_id, emp_id));
+                        - query: CREATE TABLE ddl_g1_employees_? (dept_id INT, emp_id INT, name VARCHAR(10), email VARCHAR(20), salary FLOAT, hire_date DATE, department VARCHAR(20), payload TEXT, details TEXT, is_active BOOLEAN, last_login TIMESTAMP, primary key(dept_id, emp_id));
                           bindings:
                               - util: PrimaryIntGen
-                                params: [1, 1000000]
+                                params: [1, 500]
             
             - workload: insert_data
-              executeNtimes: 1000
+              executeNtimes: 500
               raw_sql: true
               skipReport: true
               run:
                   - name: insert_data
                     weight: 100
                     queries:
-                        - query: INSERT INTO employees_? (dept_id,emp_id,name,email,salary,hire_date,department,payload,details,is_active,last_login) SELECT i/1000,i,'Employee','employee@test.com',50000,CURRENT_DATE,'Engineering',repeat('x',256),repeat('x',256),true,CURRENT_TIMESTAMP FROM generate_series(1,100000)i;
+                        - query: INSERT INTO ddl_g1_employees_? (dept_id,emp_id,name,email,salary,hire_date,department,payload,details,is_active,last_login) SELECT i/1000,i,'Employee','employee@test.com',50000,CURRENT_DATE,'Engineering',repeat('x',256),repeat('x',256),true,CURRENT_TIMESTAMP FROM generate_series(1,100000)i;
                           bindings:
                               - util: CyclicSeqIntGen
-                                params: [1, 1000000]
+                                params: [1, 500]
 
             - workload: create_index_ddl
-              executeNtimes: 1000
+              executeNtimes: 500
               raw_sql: true
               run:
                   - name: create_index_ddl
                     weight: 100
                     queries:
-                        - query: CREATE INDEX idx_employees_?_id ON employees_? (emp_id);
+                        - query: CREATE INDEX idx_ddl_g1_employees_?_id ON ddl_g1_employees_? (emp_id);
                           bindings:
                               - util: PrimaryIntGen
                                 count: 2
-                                params: [1, 1000000]
+                                params: [1, 500]
 
             - workload: alter_table_add_col_ddl
-              executeNtimes: 1000
+              executeNtimes: 500
               raw_sql: true
               run:
                   - name: alter_table_add_col_ddl
                     weight: 100
                     queries:
-                        - query: ALTER TABLE employees_? ADD COLUMN address VARCHAR(100);
+                        - query: ALTER TABLE ddl_g1_employees_? ADD COLUMN address VARCHAR(100);
                           bindings:
                               - util: PrimaryIntGen
-                                params: [1, 1000000]
+                                params: [1, 500]
 
             - workload: alter_table_drop_col_ddl
-              executeNtimes: 1000
+              executeNtimes: 500
               raw_sql: true
               run:
                   - name: alter_table_drop_col_ddl
                     weight: 100
                     queries:
-                        - query: ALTER TABLE employees_? DROP COLUMN address;
+                        - query: ALTER TABLE ddl_g1_employees_? DROP COLUMN address;
                           bindings:
                               - util: PrimaryIntGen
-                                params: [1, 1000000]
+                                params: [1, 500]
 
             - workload: drop_index_ddl  
-              executeNtimes: 1000
+              executeNtimes: 500
               raw_sql: true
               run:
                   - name: drop_index_ddl
                     weight: 100
                     queries:
-                        - query: DROP INDEX idx_employees_?_id;
+                        - query: DROP INDEX idx_ddl_g1_employees_?_id;
                           bindings:
                               - util: PrimaryIntGen
-                                params: [1, 1000000]
+                                params: [1, 500]
 
             - workload: drop_table_ddl
-              executeNtimes: 1000
+              executeNtimes: 500
               raw_sql: true
               run:
                   - name: drop_table_ddl
                     weight: 100
                     queries:
-                        - query: DROP TABLE employees_?;
+                        - query: DROP TABLE ddl_g1_employees_?;
                           bindings:
                               - util: PrimaryIntGen
-                                params: [1, 1000000]
+                                params: [1, 500]
