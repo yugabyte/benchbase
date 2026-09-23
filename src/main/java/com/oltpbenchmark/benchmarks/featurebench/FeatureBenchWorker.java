@@ -41,8 +41,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.sql.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 
 
@@ -66,6 +68,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
     // final state, so this is safe at any terminal count.
     private final boolean executeCustom;
     private final boolean hasExecuteRules;
+    private final boolean rawSql;
     // Keyed by the Query object (identity semantics -- Query does not override equals/hashCode)
     // rather than by the SQL text, so each lookup in the hot loop is an identity hash + reference
     // compare instead of a full String.equals() over the (potentially very long) SQL. Each worker
@@ -86,19 +89,22 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
     // "connection closed" failure while collecting pg_stat_statements.)
     static AtomicBoolean isPGStatStatementCollected = new AtomicBoolean(false);
     static AtomicBoolean isCleanUpDone = new AtomicBoolean(false);
+    static AtomicInteger executeNtimesCounter = new AtomicInteger(0);
 
     public FeatureBenchWorker(FeatureBenchBenchmark benchmarkModule,
                               int id,
                               String workloadClass,
                               HierarchicalConfiguration<ImmutableNode> workerConfig,
                               List<ExecuteRule> executeRules,
-                              String workloadName) {
+                              String workloadName,
+                              boolean rawSql) {
         super(benchmarkModule, id);
         this.executeRules = executeRules;
         this.config = workerConfig;
         this.workloadName = workloadName;
         this.executeCustom = config.containsKey("execute") && config.getBoolean("execute");
         this.hasExecuteRules = executeRules != null && !executeRules.isEmpty();
+        this.rawSql = rawSql;
         // NOTE: per-workload shared state is reset once in
         // FeatureBenchBenchmark.makeWorkersImpl (via resetSharedState()) before any
         // worker is constructed -- not here -- so the "run once" guards do not depend
@@ -112,6 +118,12 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
         }
     }
 
+    private static String sqlQuote(Object val) {
+        if (val == null) return "NULL";
+        if (val instanceof Number || val instanceof Boolean) return String.valueOf(val);
+        return "'" + String.valueOf(val).replace("'", "''") + "'";
+    }
+
     /**
      * Reset the shared, static per-workload state. Must be called exactly once per
      * workload run, BEFORE the workers for that run are created (see
@@ -123,6 +135,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
         isInitializeDone.set(false);
         isPGStatStatementCollected.set(false);
         isCleanUpDone.set(false);
+        executeNtimesCounter.set(0);
         queryToExplainMap.clear();
     }
 
@@ -131,6 +144,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
             preparedStatementsPerQuery = new IdentityHashMap<>();
             for (ExecuteRule executeRule : executeRules) {
                 for (Query query : executeRule.getQueries()) {
+                    if (rawSql) continue;
                     PreparedStatement stmt = conn.prepareStatement(query.getQuery());
                     preparedStatementsPerQuery.put(query, stmt);
                 }
@@ -215,6 +229,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                 for (ExecuteRule er : executeRules) {
                     for (Query query : er.getQueries()) {
                         String querystmt = query.getQuery();
+                        if (rawSql) continue;
                         try {
                             PreparedStatement stmt = conn.prepareStatement((query.isSelectQuery() ? explainSelect : query.isUpdateQuery() ? explainUpdate : explainOthers) + querystmt);
                             List<UtilToMethod> baseUtils = query.getBaseUtils();
@@ -413,27 +428,46 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                 return TransactionStatus.SUCCESS;
             }
 
+            int executeNtimes = this.configuration.getExecuteNtimes();
+            if (executeNtimes > 0) {
+                int current = executeNtimesCounter.incrementAndGet();
+                if (current > executeNtimes) {
+                    this.configuration.getWorkloadState().getBenchmarkState().startCoolDown();
+                    return TransactionStatus.SUCCESS;
+                }
+            }
+
             int executeRuleIndex = txnType.getId() - 1;
             ExecuteRule executeRule = executeRules.get(executeRuleIndex);
             boolean zeroRowsTransaction = false;
             for (Query query : executeRule.getQueries()) {
-                PreparedStatement stmt = this.preparedStatementsPerQuery.get(query);
                 List<UtilToMethod> baseUtils = query.getBaseUtils();
                 int count = query.getCount();
+
+                if (rawSql) {
+                    for (int i = 0; i < count; i++) {
+                        Object[] generatedValues = generateParameterValues(baseUtils);
+                        String ddlSql = query.getQuery();
+                        for (Object val : generatedValues) {
+                            ddlSql = ddlSql.replaceFirst("\\?", Matcher.quoteReplacement(sqlQuote(val)));
+                        }
+                        try (Statement ddlStmt = conn.createStatement()) {
+                            ddlStmt.execute(ddlSql);
+                        }
+                    }
+                    continue;
+                }
+
+                PreparedStatement stmt = this.preparedStatementsPerQuery.get(query);
                 
                 for (int i = 0; i < count; i++) {
-                    // Generate parameter values with expression evaluation
                     Object[] generatedValues = generateParameterValues(baseUtils);
                     
-                    // Set all parameters in the prepared statement
                     for (int j = 0; j < generatedValues.length; j++) {
                         stmt.setObject(j + 1, generatedValues[j]);
                     }
                     
                     if (query.isSelectQuery() || query.isReturningQuery()) {
-                        // try-with-resources so the (possibly large) result set is
-                        // released as soon as we finish counting rows, rather than
-                        // lingering on the cached PreparedStatement until its next reuse.
                         try (ResultSet rs = stmt.executeQuery()) {
                             long countSet = 0;
                             while (rs.next()) countSet++;
@@ -502,7 +536,12 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                 for (Map.Entry<String, Integer> entry : queryStringsAndRC.entrySet()) {
                     JSONObject inner = new JSONObject();
                     inner.put("query", entry.getKey());
-                    inner.put("pg_stat_statements", pgStatOutputs == null ? new JSONObject() : findQueryInPgStatUsingCosine(pgStatOutputs, entry.getKey()));
+
+                    JSONObject pgStatForQuery = pgStatOutputs == null ? null
+                        : rawSql ? aggregateMatchingPgStatRows(pgStatOutputs, entry.getKey())
+                                 : findQueryInPgStatUsingCosine(pgStatOutputs, entry.getKey());
+                    if (pgStatForQuery == null) pgStatForQuery = new JSONObject();
+                    inner.put("pg_stat_statements", pgStatForQuery);
 
                     if (entry.getValue() != -1)
                         inner.put("explainPlanRcValidationSuccess", Integer.parseInt((String) queryToExplainMap.getOrDefault(entry.getKey(), new JSONObject()).get("ExplainPlanRows")) == entry.getValue());
@@ -619,6 +658,13 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
         return Arrays.asList(cleaned.split("\\W+"));
     }
 
+    private List<String> tokenizeQueryForRawSql(String query) {
+        return tokenizeQuery(query).stream()
+            .map(t -> t.replaceAll("\\d+", ""))
+            .filter(t -> !t.isEmpty())
+            .collect(Collectors.toList());
+    }
+
     private double cosineSimilarity(List<String> tokens1, List<String> tokens2) {
         Map<String, Integer> freq1 = getFrequencyMap(tokens1);
         Map<String, Integer> freq2 = getFrequencyMap(tokens2);
@@ -679,6 +725,99 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
         }
 
         return matchedKey != null ? (JSONObject) pgStatOutputs.get(matchedKey) : null;
+    }
+
+    private static final double RAW_SQL_SIMILARITY_THRESHOLD = 0.85;
+    private static final String[] PG_STAT_SUM_FIELDS = {
+        "calls", "total_exec_time", "total_plan_time",
+        "rows", "shared_blks_hit", "shared_blks_read"
+    };
+    private static final String[] PG_STAT_MIN_FIELDS = {"min_exec_time", "min_plan_time"};
+    private static final String[] PG_STAT_MAX_FIELDS = {"max_exec_time", "max_plan_time"};
+
+    private JSONObject aggregateMatchingPgStatRows(JSONObject pgStatOutputs, String inputQuery) {
+        List<String> inputTokens = tokenizeQueryForRawSql(inputQuery);
+        List<JSONObject> matched = new ArrayList<>();
+
+        for (String key : pgStatOutputs.keySet()) {
+            JSONObject row = (JSONObject) pgStatOutputs.get(key);
+            String pgQuery = row.getString("query").trim();
+            if (pgQuery.toLowerCase().startsWith("explain")) continue;
+
+            double similarity = cosineSimilarity(inputTokens, tokenizeQueryForRawSql(pgQuery));
+            if (similarity >= RAW_SQL_SIMILARITY_THRESHOLD) {
+                matched.add(row);
+            }
+        }
+
+        if (matched.isEmpty()) return null;
+
+        JSONObject aggregated = new JSONObject();
+        aggregated.put("query", matched.get(0).getString("query"));
+        aggregated.put("aggregated_row_count", matched.size());
+
+        for (String field : PG_STAT_SUM_FIELDS) {
+            double sum = 0;
+            boolean found = false;
+            for (JSONObject row : matched) {
+                if (row.has(field)) {
+                    try { sum += Double.parseDouble(row.getString(field)); found = true; }
+                    catch (NumberFormatException ignored) {}
+                }
+            }
+            if (found) aggregated.put(field, String.valueOf(sum));
+        }
+
+        for (String field : PG_STAT_MIN_FIELDS) {
+            double min = Double.MAX_VALUE;
+            boolean found = false;
+            for (JSONObject row : matched) {
+                if (row.has(field)) {
+                    try { min = Math.min(min, Double.parseDouble(row.getString(field))); found = true; }
+                    catch (NumberFormatException ignored) {}
+                }
+            }
+            if (found) aggregated.put(field, String.valueOf(min));
+        }
+
+        for (String field : PG_STAT_MAX_FIELDS) {
+            double max = Double.MIN_VALUE;
+            boolean found = false;
+            for (JSONObject row : matched) {
+                if (row.has(field)) {
+                    try { max = Math.max(max, Double.parseDouble(row.getString(field))); found = true; }
+                    catch (NumberFormatException ignored) {}
+                }
+            }
+            if (found) aggregated.put(field, String.valueOf(max));
+        }
+
+        double totalExecTime = 0, totalCalls = 0;
+        for (JSONObject row : matched) {
+            try {
+                if (row.has("total_exec_time") && row.has("calls")) {
+                    totalExecTime += Double.parseDouble(row.getString("total_exec_time"));
+                    totalCalls += Double.parseDouble(row.getString("calls"));
+                }
+            } catch (NumberFormatException ignored) {}
+        }
+        if (totalCalls > 0) {
+            aggregated.put("mean_exec_time", String.valueOf(totalExecTime / totalCalls));
+        }
+
+        double totalPlanTime = 0;
+        for (JSONObject row : matched) {
+            try {
+                if (row.has("total_plan_time")) {
+                    totalPlanTime += Double.parseDouble(row.getString("total_plan_time"));
+                }
+            } catch (NumberFormatException ignored) {}
+        }
+        if (totalCalls > 0) {
+            aggregated.put("mean_plan_time", String.valueOf(totalPlanTime / totalCalls));
+        }
+
+        return aggregated;
     }
 
     private JSONArray callPGStatUserIndexes() throws SQLException{

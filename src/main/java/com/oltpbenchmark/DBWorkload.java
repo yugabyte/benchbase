@@ -442,6 +442,19 @@ public class DBWorkload {
                         if(workloads != null && workloads.size() >= workCount && workloads.get(workCount-1).containsKey("time_secs")){
                             time = workloads.get(workCount-1).getInt("time_secs");
                         }
+                        int executeNtimes = work.getInt("/executeNtimes", 0);
+                        if (workloads != null && workloads.size() >= workCount && workloads.get(workCount-1).containsKey("executeNtimes")) {
+                            executeNtimes = workloads.get(workCount-1).getInt("executeNtimes");
+                        }
+                        wrkld.setExecuteNtimes(executeNtimes);
+                        if (executeNtimes > 0) {
+                            if (terminals > 1) {
+                                LOG.error("executeNtimes mode requires terminals=1. Current terminals={}. Multi-terminal executeNtimes is not supported.", terminals);
+                                System.exit(-1);
+                            }
+                            time = Integer.MAX_VALUE / 2;
+                            LOG.info("executeNtimes={} set; will run each transaction exactly N times instead of using a timer.", executeNtimes);
+                        }
                     } else {
                         weight_strings = Arrays.asList(work.getString("weights[not(@bench)]").split("\\s*,\\s*"));
                     }
@@ -483,7 +496,6 @@ public class DBWorkload {
                     // We now have the option to run all queries exactly once in
                     // a serial (rather than random) order.
                     boolean serial = Boolean.parseBoolean(work.getString("serial", Boolean.FALSE.toString()));
-
 
                     int activeTerminals;
                     activeTerminals = work.getInt("active_terminals[not(@bench)]", terminals);
