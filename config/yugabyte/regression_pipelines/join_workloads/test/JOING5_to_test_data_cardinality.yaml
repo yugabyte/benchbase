@@ -1,0 +1,196 @@
+#100000	col1	col2	    col3      col4
+#Table1	1*1M	1000*1k	    10000*100
+#Table2	1*1L	1000*100	10000*10
+#Table3	1*10k	100*100	    1000*10
+type: YUGABYTE
+driver: com.yugabyte.Driver
+url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true&load-balance=false
+username: {{username}}
+password: {{password}}
+batchsize: 128
+isolation: TRANSACTION_REPEATABLE_READ
+loaderthreads: 1
+terminals: 1
+collect_pg_stat_statements: true
+use_dist_in_explain : true
+yaml_version: v1.0
+works:
+    work:
+        time_secs: 180
+        active_terminals: 1
+        rate: unlimited
+        warmup: 60
+microbenchmark:
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
+    properties:
+        setAutoCommit: true
+        create:
+          - DROP TABLE IF EXISTS pkeyBigint1M_1;
+          - DROP TABLE IF EXISTS pkeyBigint1M_2;
+          - DROP TABLE IF EXISTS pkeyBigint10k_1;
+          - CREATE TABLE pkeyBigint1M_1(col_bigint_card1_1 bigint, col_bigint_card2_1 bigint, col_bigint_card3_1 bigint, col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_card1_1, col_bigint_card2_1, col_bigint_card3_1, col_bigint_id_1));
+          - CREATE TABLE pkeyBigint1M_2(col_bigint_card1_1 bigint, col_bigint_card2_1 bigint, col_bigint_card3_1 bigint, col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_card1_1, col_bigint_card2_1, col_bigint_card3_1, col_bigint_id_1));
+          - CREATE TABLE pkeyBigint10k_1(col_bigint_card1_1 bigint, col_bigint_card2_1 bigint, col_bigint_card3_1 bigint, col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_float2_1 float(2), col_float2_2 float(2), col_float5_1 float(5), col_float5_2 float(5), col_boolean_1 boolean, col_varchar10_id_1 varchar(10), col_varchar100_id_1 varchar(100), col_varchar100_id_2 varchar(100), col_varchar500_id_1 varchar(500), PRIMARY KEY(col_bigint_card1_1, col_bigint_card2_1, col_bigint_card3_1, col_bigint_id_1));
+        cleanup:
+            - DROP TABLE IF EXISTS pkeyBigint1M_1;
+            - DROP TABLE IF EXISTS pkeyBigint1M_2;
+            - DROP TABLE IF EXISTS pkeyBigint10k_1;
+
+        loadRules:
+              - table: pkeyBigint1M_
+                count: 2
+                rows: 1000000
+                columns:
+                    - name: col_bigint_card1_
+                      count: 1
+                      util: CyclicSeqIntGen
+                      params: [ 1000001, 1000100 ]
+                    - name: col_bigint_card2_
+                      count: 1
+                      util: CyclicSeqIntGen
+                      params: [ 1000001, 1001000 ]
+                    - name: col_bigint_card3_
+                      count: 1
+                      util: CyclicSeqIntGen
+                      params: [ 1000001, 1010000 ]
+                    - name: col_bigint_id_
+                      count: 3
+                      util: PrimaryIntGen
+                      params: [ 1, 1000000 ]
+                    - name: col_float2_
+                      count: 2
+                      util: RandomNoWithDecimalPoints
+                      params: [ 1, 1000000, 2 ]
+                    - name: col_float5_
+                      count: 2
+                      util: RandomNoWithDecimalPoints
+                      params: [ 1, 1000000, 5 ]
+                    - name: col_boolean_
+                      count: 1
+                      util: RandomBoolean
+                    - name: col_varchar10_id_
+                      count: 1
+                      util: PrimaryStringGen
+                      params: [1, 10]
+                    - name: col_varchar100_id_
+                      count: 2
+                      util: PrimaryStringGen
+                      params: [1, 10]
+                    - name: col_varchar500_id_
+                      count: 1
+                      util: PrimaryStringGen
+                      params: [1, 10]
+
+              #Table3	1*10k	100*100	    1000*10
+              - table: pkeyBigint10k_
+                count: 1
+                rows: 10000
+                columns:
+                    - name: col_bigint_card1_
+                      count: 1
+                      util: CyclicSeqIntGen
+                      params: [ 1000001, 1000010 ]
+                    - name: col_bigint_card2_
+                      count: 1
+                      util: CyclicSeqIntGen
+                      params: [ 1000001, 1000100 ]
+                    - name: col_bigint_card3_
+                      count: 1
+                      util: CyclicSeqIntGen
+                      params: [ 1000001, 1001000 ]
+                    - name: col_bigint_id_
+                      count: 3
+                      util: PrimaryIntGen
+                      params: [ 1, 1000000 ]
+                    - name: col_float2_
+                      count: 2
+                      util: RandomNoWithDecimalPoints
+                      params: [ 1, 1000000, 2 ]
+                    - name: col_float5_
+                      count: 2
+                      util: RandomNoWithDecimalPoints
+                      params: [ 1, 1000000, 5 ]
+                    - name: col_boolean_
+                      count: 1
+                      util: RandomBoolean
+                    - name: col_varchar10_id_
+                      count: 1
+                      util: PrimaryStringGen
+                      params: [1, 10]
+                    - name: col_varchar100_id_
+                      count: 2
+                      util: PrimaryStringGen
+                      params: [1, 10]
+                    - name: col_varchar500_id_
+                      count: 1
+                      util: PrimaryStringGen
+                      params: [1, 10]
+
+        executeRules:
+
+            - workload: JoinG5_1_1Mtbl_join_1Mtbl_two_conditions_indexscan_two_filters
+              customTags: customer=3,schematype=regular,partition=hash,pkey=composite,cardinality=multiple,projection=all,filtercount=two,filteron=mixedpkey,filtertype=pointselect,filterother=IN,queryshape=join,joinon=mixedpkey,joinconditions=two
+              run:
+                  - name: hashtbl_index_scan_using_sec_index
+                    weight: 100
+                    queries:
+                        - query: select * from pkeyBigint1M_1 as a join pkeyBigint1M_2 as b on a.col_bigint_card1_1=b.col_bigint_card1_1 and a.col_bigint_card3_1=b.col_bigint_card3_1 where b.col_bigint_card1_1=1000058 and  b.col_bigint_card2_1 in (1000058);
+
+            - workload: JoinG5_2_1Mtbl_join_1Mtbl_two_conditions_indexscan_two_filters
+              customTags: schematype=regular,partition=hash,pkey=composite,cardinality=multiple,projection=all,filtercount=two,filteron=mixedpkey,filtertype=pointselect,filterother=IN,queryshape=join,joinon=mixedpkey,joinconditions=two
+              run:
+                  - name: hashtbl_index_scan_using_sec_index
+                    weight: 100
+                    queries:
+                        - query: select * from pkeyBigint1M_1 as a join pkeyBigint1M_2 as b on a.col_bigint_card1_1=b.col_bigint_card1_1 and a.col_bigint_card2_1=b.col_bigint_card2_1 where b.col_bigint_card1_1=1000058 and  b.col_bigint_card3_1 in (1000058);
+
+            - workload: JoinG5_3_1Mtbl_join_1Mtbl_two_conditions_indexscan_two_filters
+              customTags: customer=7,schematype=regular,partition=hash,pkey=composite,cardinality=multiple,projection=all,filtercount=two,filteron=mixedpkey,filtertype=pointselect,filterother=IN,queryshape=join,joinon=mixedpkey,joinconditions=two
+              run:
+                  - name: hashtbl_index_scan_using_sec_index
+                    weight: 100
+                    queries:
+                        - query: select * from pkeyBigint1M_1 as a join pkeyBigint1M_2 as b on a.col_bigint_card1_1=b.col_bigint_card1_1 and a.col_bigint_card2_1=b.col_bigint_card2_1 where b.col_bigint_card1_1=1000058 and b.col_bigint_card2_1 in (1000058);
+
+
+            - workload: JoinG5_4_1Mtbl_join_1Mtbl_two_conditions_seqscan_two_filters
+              customTags: schematype=regular,partition=hash,pkey=composite,cardinality=multiple,projection=all,filtercount=one,filteron=rangepkey,filtertype=pointselect,filterother=IN,queryshape=join,joinon=rangepkey,joinconditions=two
+              run:
+                  - name: hashtbl_index_scan_using_sec_index
+                    weight: 100
+                    queries:
+                        - query: select * from pkeyBigint1M_1 as a join pkeyBigint1M_2 as b on a.col_bigint_card2_1=b.col_bigint_card2_1 and a.col_bigint_card3_1=b.col_bigint_card3_1 where b.col_bigint_card2_1 in (1000058);
+
+
+            -   workload: JoinG5_5_1Mtbl_join_10ktbl_two_conditions_indexscan_two_filters
+                customTags: customer=1,schematype=regular,partition=hash,pkey=composite,cardinality=multiple,projection=all,filtercount=two,filteron=mixedpkey,filtertype=pointselect,filterother=IN,queryshape=join,joinon=mixedpkey,joinconditions=two
+                run:
+                    -   name: hashtbl_index_scan_using_sec_index
+                        weight: 100
+                        queries:
+                            -   query: select * from pkeyBigint1M_1 as a join pkeyBigint10k_1 as b on a.col_bigint_card1_1=b.col_bigint_card1_1 and a.col_bigint_card3_1=b.col_bigint_card3_1 where b.col_bigint_card1_1=1000010 and  b.col_bigint_card2_1 in (1000010);
+
+            -   workload: JoinG5_6_1Mtbl_join_10ktbl_two_conditions_indexscan_two_filters
+                customTags: customer=3,schematype=regular,partition=hash,pkey=composite,cardinality=multiple,projection=all,filtercount=two,filteron=mixedpkey,filtertype=pointselect,filterother=IN,queryshape=join,joinon=mixedpkey,joinconditions=two
+                run:
+                    -   name: hashtbl_index_scan_using_sec_index
+                        weight: 100
+                        queries:
+                            -   query: select * from pkeyBigint1M_1 as a join pkeyBigint10k_1 as b on a.col_bigint_card1_1=b.col_bigint_card1_1 and a.col_bigint_card2_1=b.col_bigint_card2_1 where b.col_bigint_card1_1=1000010 and  b.col_bigint_card3_1 in (1000010);
+
+            -   workload: JoinG5_7_1Mtbl_join_10ktbl_two_conditions_indexscan_two_filters
+                customTags: customer=8,schematype=regular,partition=hash,pkey=composite,cardinality=multiple,projection=all,filtercount=two,filteron=mixedpkey,filtertype=pointselect,filterother=IN,queryshape=join,joinon=mixedpkey,joinconditions=two
+                run:
+                    -   name: hashtbl_index_scan_using_sec_index
+                        weight: 100
+                        queries:
+                            -   query: select * from pkeyBigint1M_1 as a join pkeyBigint10k_1 as b on a.col_bigint_card1_1=b.col_bigint_card1_1 and a.col_bigint_card2_1=b.col_bigint_card2_1 where b.col_bigint_card1_1=1000010 and  b.col_bigint_card2_1 in (1000010);
+
+
+            -   workload: JoinG5_8_1Mtbl_join_10ktbl_two_conditions_seqscan_two_filters
+                customTags: schematype=regular,partition=hash,pkey=composite,cardinality=multiple,projection=all,filtercount=one,filteron=rangepkey,filtertype=pointselect,filterother=IN,queryshape=join,joinon=rangepkey,joinconditions=two
+                run:
+                    -   name: hashtbl_index_scan_using_sec_index
+                        weight: 100
+                        queries:
+                            -   query: select * from pkeyBigint1M_1 as a join pkeyBigint10k_1 as b on a.col_bigint_card2_1=b.col_bigint_card2_1 and a.col_bigint_card3_1=b.col_bigint_card3_1 where b.col_bigint_card2_1 in (1000010);
