@@ -16,6 +16,7 @@ toleranceCPU: 5
 optimalThreads: true
 samplingTime: 120
 time: 600
+analyze_on_all_tables: true
 works:
     work:
         time_secs: 180
