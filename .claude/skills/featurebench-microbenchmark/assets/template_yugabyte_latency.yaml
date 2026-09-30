@@ -1,0 +1,88 @@
+#TEST FOR YUGABYTE REGULAR TABLES
+#GOAL<N>: <one line: what behaviour this file measures and which dimension is varied>
+#TESTS:
+#    <PREFIX>_1: <what workload 1 measures>
+#    <PREFIX>_2: <what workload 2 measures>
+#Data: <table> <rows> rows; <col> has <K> distinct values x <M> rows each
+type: YUGABYTE
+driver: com.yugabyte.Driver
+url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true&load-balance=false
+username: {{username}}
+password: {{password}}
+batchsize: 128
+isolation: TRANSACTION_REPEATABLE_READ
+loaderThreads: 1
+terminals: 1
+collect_pg_stat_statements: true
+use_dist_in_explain: true
+yaml_version: v1.0
+works:
+    work:
+        time_secs: 180
+        active_terminals: 1
+        rate: unlimited
+        warmup: 60
+microbenchmark:
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
+    properties:
+        setAutoCommit: true
+        create:
+            - DROP TABLE IF EXISTS <prefix>_tbl_1;
+            - CREATE TABLE <prefix>_tbl_1(col_bigint_id_1 bigint, col_bigint_card1_1 bigint, col_bigint_1 bigint, col_float2_1 float(2), col_boolean_1 boolean, col_varchar100_1 varchar(100), PRIMARY KEY(col_bigint_id_1 ASC));
+            - CREATE INDEX <prefix>_tbl_1_card1_idx ON <prefix>_tbl_1(col_bigint_card1_1 ASC);
+        cleanup:
+            - DROP TABLE IF EXISTS <prefix>_tbl_1;
+        loadRules:
+            - table: <prefix>_tbl_
+              count: 1
+              rows: 1000000
+              columns:
+                  - name: col_bigint_id_
+                    count: 1
+                    util: PrimaryIntGen
+                    params: [1, 1000000]
+                  - name: col_bigint_card1_
+                    count: 1
+                    util: CyclicSeqIntGen          # exactly 1000 distinct values, 1000 rows each, identical every load
+                    params: [1000001, 1001000]
+                  - name: col_bigint_
+                    count: 1
+                    util: CyclicSeqIntGen
+                    params: [1, 1000000]
+                  - name: col_float2_
+                    count: 1
+                    util: RandomNoWithDecimalPoints
+                    params: [1, 1000000, 2]
+                  - name: col_boolean_
+                    count: 1
+                    util: RandomBoolean
+                  - name: col_varchar100_
+                    count: 1
+                    util: RandomAString
+                    params: [100, 100]             # fixed length keeps row size constant
+
+        executeRules:
+            - workload: <PREFIX>_1_<descriptor>
+              customTags: schematype=regular,partition=range,pkey=asc,cardinality=single,projection=all,filtercount=one,filteron=rangepkey,filtertype=pointselect,queryshape=scan
+              run:
+                  - name: <descriptor>_point_lookup
+                    weight: 100
+                    queries:
+                        - query: select * from <prefix>_tbl_1 where col_bigint_id_1 = ?
+                          bindings:
+                              - util: RandomInt
+                                params: [1, 1000000]      # inside the loaded range -> never zero rows
+            - workload: <PREFIX>_2_<descriptor>
+              customTags: schematype=regular,partition=range,pkey=asc,cardinality=multiple,projection=all,filtercount=one,filteron=rangeskey,filtertype=comparision,queryshape=scan
+              run:
+                  - name: <descriptor>_fixed_width_range
+                    weight: 100
+                    queries:
+                        - query: select * from <prefix>_tbl_1 where col_bigint_card1_1 between ? and ?
+                          bindings:
+                              - util: RandomInt
+                                params: [1000001, 1000950]  # upper bound leaves room for the +50 width
+                                referenceName: start_value
+                              - util: ExpressionEval
+                                params:
+                                    - "start_value + 50"
