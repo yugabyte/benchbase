@@ -161,6 +161,18 @@ public class ThreadBench implements Thread.UncaughtExceptionHandler {
         // Allow workers to start work.
         testState.blockForStart();
 
+        // When warmup is zero, transition to MEASURE immediately so that fast workloads don't finish entirely inside the WARMUP state while the main loop sleeps through its first interval (~1 s for unlimited rate).
+        if (phase != null && phase.getWarmupTime() == 0 && !phase.isLatencyRun()) {
+            synchronized (testState) {
+                if (testState.getState() == State.WARMUP) {
+                    testState.startMeasure();
+                    start = System.nanoTime();
+                    executionStartEpoch = System.currentTimeMillis();
+                    LOG.info("{} :: Warmup is 0s, starting measurements immediately.", StringUtil.bold("MEASURE"));
+                }
+            }
+        }
+
         // Main Loop
         while (true) {
             // posting new work... and resetting the queue in case we have new
@@ -290,11 +302,15 @@ public class ThreadBench implements Thread.UncaughtExceptionHandler {
                 // If we're not doing serial executions, this function has no
                 // effect and is thus safe to call regardless.
                 phase.resetSerial();
-            } else if (state == State.EXIT) {
-                // All threads have noticed the done, meaning all measured
-                // requests have definitely finished.
-                // Time to quit.
-                break;
+            } else if (state == State.DONE || state == State.EXIT) {
+                // Capture measureEnd on the first transition out of MEASURE (DONE or EXIT) so throughput reflects actual transaction time, not the ThreadBench polling delay.
+                if (measureEnd < 0) {
+                    measureEnd = System.nanoTime();
+                    executionEndEpoch = System.currentTimeMillis();
+                }
+                if (state == State.EXIT) {
+                    break;
+                }
             }
         }
 
@@ -330,6 +346,12 @@ public class ThreadBench implements Thread.UncaughtExceptionHandler {
                 stats = DistributionStatistics.computeStatistics(latencies);
             }
 
+            if (measureEnd < 0) {
+                measureEnd = System.nanoTime();
+            }
+            if (executionStartEpoch < 0) {
+                executionStartEpoch = System.currentTimeMillis();
+            }
             Results results = new Results(measureEnd - start, requests, stats, samples);
             results.setExecutionStartEpoch(executionStartEpoch);
             // If the measure phase end was never reached (e.g. early exit), fall back to "now".

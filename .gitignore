@@ -55,3 +55,6 @@ build/
 
 # vim swap files
 .*.swp
+
+# generated skill zips (skills/install.py zip)
+skills/dist/

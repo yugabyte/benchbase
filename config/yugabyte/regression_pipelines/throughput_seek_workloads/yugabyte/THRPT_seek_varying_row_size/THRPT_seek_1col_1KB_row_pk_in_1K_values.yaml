@@ -9,7 +9,8 @@ loaderThreads: 4
 terminals: 1
 collect_pg_stat_statements: true
 use_dist_in_explain: true
-yaml_version: v1.0
+yaml_version: v2.0
+yaml_change_description: Correcting active_terminals parameter
 targetCPU: 75
 toleranceCPU: 5
 optimalThreads: true
@@ -18,7 +19,6 @@ time: 600
 works:
     work:
         time_secs: 180
-        active_terminals: 1
         rate: unlimited
         warmup: 60
 microbenchmark:

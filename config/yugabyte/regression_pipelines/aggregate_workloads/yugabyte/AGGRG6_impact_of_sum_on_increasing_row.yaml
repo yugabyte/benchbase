@@ -15,13 +15,13 @@ loaderthreads: 1
 terminals: 1
 collect_pg_stat_statements: true
 use_dist_in_explain : true
-yaml_version: v1.0
+yaml_version: v2.0
 works:
     work:
-        time_secs: 120
+        time_secs: 180
         active_terminals: 1
         rate: unlimited
-        warmup: 30
+        warmup: 60
 microbenchmark:
     class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
     properties:
@@ -48,7 +48,7 @@ microbenchmark:
                       params: [ 1, 100000 ]
                     - name: col_bigint_
                       count: 5
-                      util: RandomNumber
+                      util: CyclicSeqIntGen
                       params: [ 1, 100000 ]
                     - name: col_float2_
                       count: 2
@@ -83,7 +83,7 @@ microbenchmark:
                       params: [ 1, 1000000 ]
                     - name: col_bigint_
                       count: 5
-                      util: RandomNumber
+                      util: CyclicSeqIntGen
                       params: [ 1, 1000000 ]
                     - name: col_float2_
                       count: 2
@@ -118,7 +118,7 @@ microbenchmark:
                       params: [ 1, 10000000 ]
                     - name: col_bigint_
                       count: 5
-                      util: RandomNumber
+                      util: CyclicSeqIntGen
                       params: [ 1, 10000000 ]
                     - name: col_float2_
                       count: 2
@@ -143,6 +143,7 @@ microbenchmark:
                       count: 1
                       util: PrimaryStringGen
                       params: [1, 500]
+
         executeRules:
             - workload: AGGRG6_sum_bigint_1L_table_rows
               customTags: schematype=regular,partition=range,pkey=asc,aggregate=sum,cardinality=single,projection=aggregate,aggregateon=rangepkey
