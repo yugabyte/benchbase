@@ -52,7 +52,7 @@ microbenchmark:
         executeRules:
 
             - workload: sparse_1000col_select_3cols_point_lookup
-              customTags: schematype=regular,partition=hash,pkey=asc,cardinality=single,projection=sparse,filteron=pkey,filtertype=pointselect,queryshape=scan,selectcols=3,returnrows=1
+              customTags: schematype=regular,partition=range,pkey=asc,cardinality=single,projection=sparse,filteron=pkey,filtertype=pointselect,queryshape=scan,selectcols=3,returnrows=1
               run:
                   - name: sparse_1000col_select_3cols_point_lookup_test
                     weight: 100
@@ -64,7 +64,7 @@ microbenchmark:
                               params: [1, 1000000]
 
             - workload: sparse_1000col_select_3cols_range_100_rows
-              customTags: schematype=regular,partition=hash,pkey=asc,cardinality=multi,projection=sparse,filteron=pkey,filtertype=rangescan,queryshape=scan,selectcols=3,returnrows=100
+              customTags: schematype=regular,partition=range,pkey=asc,cardinality=multi,projection=sparse,filteron=pkey,filtertype=rangescan,queryshape=scan,selectcols=3,returnrows=100
               run:
                   - name: sparse_1000col_select_3cols_range_100_rows_test
                     weight: 100
@@ -79,7 +79,7 @@ microbenchmark:
                                     - "id1 + 100"
 
             - workload: sparse_1000col_update_3cols
-              customTags: schematype=regular,partition=hash,pkey=asc,cardinality=single,projection=sparse,filteron=pkey,filtertype=pointselect,queryshape=update,updatecols=3
+              customTags: schematype=regular,partition=range,pkey=asc,cardinality=single,projection=sparse,filteron=pkey,filtertype=pointselect,queryshape=update,updatecols=3
               run:
                   - name: sparse_1000col_update_3cols_test
                     weight: 100
@@ -96,7 +96,7 @@ microbenchmark:
                                 params: [1, 1000000]
 
             - workload: sparse_1000col_update_lastcol_only
-              customTags: schematype=regular,partition=hash,pkey=asc,cardinality=single,projection=lastcol,filteron=pkey,filtertype=pointselect,queryshape=update,updatecols=1
+              customTags: schematype=regular,partition=range,pkey=asc,cardinality=single,projection=lastcol,filteron=pkey,filtertype=pointselect,queryshape=update,updatecols=1
               run:
                   - name: sparse_1000col_update_lastcol_only_test
                     weight: 100

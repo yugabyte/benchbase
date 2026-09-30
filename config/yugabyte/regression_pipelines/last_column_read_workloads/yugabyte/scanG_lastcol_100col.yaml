@@ -48,7 +48,7 @@ microbenchmark:
 
         executeRules:
             - workload: lastcol_100col_point_lookup
-              customTags: schematype=regular,partition=hash,pkey=asc,cardinality=single,projection=lastcol,filteron=pkey,filtertype=pointselect,queryshape=scan,returnrows=1
+              customTags: schematype=regular,partition=range,pkey=asc,cardinality=single,projection=lastcol,filteron=pkey,filtertype=pointselect,queryshape=scan,returnrows=1
               run:
                   - name: lastcol_100col_point_lookup_test
                     weight: 100
@@ -60,7 +60,7 @@ microbenchmark:
                               params: [1, 1000000]
 
             - workload: lastcol_100col_range_10_rows
-              customTags: schematype=regular,partition=hash,pkey=asc,cardinality=multi,projection=lastcol,filteron=pkey,filtertype=rangescan,queryshape=scan,returnrows=10
+              customTags: schematype=regular,partition=range,pkey=asc,cardinality=multi,projection=lastcol,filteron=pkey,filtertype=rangescan,queryshape=scan,returnrows=10
               run:
                   - name: lastcol_100col_range_10_rows_test
                     weight: 100
@@ -75,7 +75,7 @@ microbenchmark:
                                     - "id1 + 10"
 
             - workload: lastcol_100col_range_100_rows
-              customTags: schematype=regular,partition=hash,pkey=asc,cardinality=multi,projection=lastcol,filteron=pkey,filtertype=rangescan,queryshape=scan,returnrows=100
+              customTags: schematype=regular,partition=range,pkey=asc,cardinality=multi,projection=lastcol,filteron=pkey,filtertype=rangescan,queryshape=scan,returnrows=100
               run:
                   - name: lastcol_100col_range_100_rows_test
                     weight: 100
@@ -90,7 +90,7 @@ microbenchmark:
                                     - "id1 + 100"
 
             - workload: lastcol_100col_range_1000_rows
-              customTags: schematype=regular,partition=hash,pkey=asc,cardinality=multi,projection=lastcol,filteron=pkey,filtertype=rangescan,queryshape=scan,returnrows=1000
+              customTags: schematype=regular,partition=range,pkey=asc,cardinality=multi,projection=lastcol,filteron=pkey,filtertype=rangescan,queryshape=scan,returnrows=1000
               run:
                   - name: lastcol_100col_range_1000_rows_test
                     weight: 100
