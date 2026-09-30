@@ -15,10 +15,9 @@ username: {{username}}
 password: {{password}}
 batchsize: 128
 isolation: TRANSACTION_READ_COMMITTED
-loaderthreads: 1
+loaderThreads: 1
 terminals: 1
 collect_pg_stat_statements: true
-use_dist_in_explain: true
 yaml_version: v1.0
 works:
     work:
@@ -76,7 +75,7 @@ microbenchmark:
                                 referenceName: id1
                               - util: ExpressionEval
                                 params:
-                                    - "id1 + 100"
+                                    - "id1 + 99"
 
             - workload: sparse_1000col_update_3cols
               customTags: schematype=regular,partition=none,pkey=asc,cardinality=single,projection=sparse,filteron=pkey,filtertype=pointselect,queryshape=update,updatecols=3

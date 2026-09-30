@@ -12,10 +12,9 @@ username: {{username}}
 password: {{password}}
 batchsize: 128
 isolation: TRANSACTION_READ_COMMITTED
-loaderthreads: 1
+loaderThreads: 1
 terminals: 1
 collect_pg_stat_statements: true
-use_dist_in_explain: true
 yaml_version: v1.0
 works:
     work:
@@ -72,7 +71,7 @@ microbenchmark:
                                 referenceName: id1
                               - util: ExpressionEval
                                 params:
-                                    - "id1 + 10"
+                                    - "id1 + 9"
 
             - workload: lastcol_500col_range_100_rows
               customTags: schematype=regular,partition=none,pkey=asc,cardinality=multi,projection=lastcol,filteron=pkey,filtertype=rangescan,queryshape=scan,returnrows=100
@@ -87,7 +86,7 @@ microbenchmark:
                                 referenceName: id1
                               - util: ExpressionEval
                                 params:
-                                    - "id1 + 100"
+                                    - "id1 + 99"
 
             - workload: lastcol_500col_range_1000_rows
               customTags: schematype=regular,partition=none,pkey=asc,cardinality=multi,projection=lastcol,filteron=pkey,filtertype=rangescan,queryshape=scan,returnrows=1000
@@ -102,4 +101,4 @@ microbenchmark:
                                 referenceName: id1
                               - util: ExpressionEval
                                 params:
-                                    - "id1 + 1000"
+                                    - "id1 + 999"
