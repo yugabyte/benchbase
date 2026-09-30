@@ -27,7 +27,7 @@ Column key: **Seq** = sequential and stateful; **Rand** = random; **Det** = retu
 | PrimaryIntGen | `[lo, hi]` | int lo..hi, +1 per call | Seq | yes, but the slices overlap by 1-2 keys and never reach the top | The standard load PK (`rows` must be ≤ hi-lo+1). **Throws "Out of bounds" when exhausted**, which kills the worker. For execute-phase INSERTs, size hi ≥ terminals × rate × (warmup+time). |
 | PrimaryIntGenThroughput | `[lo, hi]` | int | Seq, **JVM-wide shared counter** | no (shared) | INSERT keys for multi-terminal / `optimalThreads` runs, with no duplicates across workers or iterations. Throughput files use `[10000001, 2147483646]`. |
 | RandomUniqueIntGen | `[lo, hi]` | int, shuffled permutation, no repeats | Rand, unique | yes, exact disjoint chunks | Unique keys in random order. Holds the whole list in memory. Throws when exhausted. #214 replaced it with PrimaryIntGen for id columns. |
-| CyclicSeqIntGen | `[lo, hi]` | int lo..hi, then wraps | Seq, cyclic | yes, each worker wraps within its own slice | **The main variance-safe generator.** Loading gives exact uniform cardinality (hi-lo+1 distinct values). Executing sweeps keys evenly. Never throws. |
+| CyclicSeqIntGen | `[lo, hi]` | int lo..hi, then wraps | Seq, cyclic | yes, each worker wraps within its own slice | Loading gives exact uniform cardinality (hi-lo+1 distinct values). Executing sweeps keys evenly. Never throws. |
 | RandomUniqueCyclicIntGen | `[lo, hi, period?=1]` | int; each value repeated `period` times in a row, every value once per pass, reshuffled per pass | Rand, cyclic | no, JVM-wide shared shuffle | "K distinct values × `period` rows each", e.g. `[1000001, 1000050, 10000]` = 50 values × 10k rows. |
 | RandomInt | `[min, max]` | int, inclusive | Rand | no | Random lookup keys in execute bindings. Avoid it in loadRules for filtered columns. |
 | RandomNumber | `[min, max]` | int, inclusive | Rand | no | Same as RandomInt, but without a min ≤ max check. |
@@ -122,7 +122,7 @@ Loader bug: the cast is looked up by column index before `count` expansion. Put 
 | "K values × M rows each", random order | `RandomUniqueCyclicIntGen [lo, lo+K-1, M]` |
 | Load filler text | `RandomAString [L, L]` (fixed length) |
 | Load float | `RandomNoWithDecimalPoints [1, 1000000, 2]` |
-| Execute point lookup | `RandomInt [1, N]` (random) or `CyclicSeqIntGen [1, N]` (even sweep, lowest variance) |
+| Execute point lookup | `RandomInt [1, N]` (random) or `CyclicSeqIntGen [1, N]` (even sweep) |
 | Execute fixed-width range | `RandomInt` + `referenceName` + `ExpressionEval "x + W"`, with the RandomInt upper bound = hi - W |
 | Execute IN-list of K | binding `count: K`, or `split_min_max_for_count: K` for distinct values |
 | Execute INSERT, one terminal | `PrimaryIntGen [N+1, big]` |

@@ -26,9 +26,9 @@ Keys are case-sensitive. A misspelled key is **silently ignored**, for example `
 | `loaderThreads` | #cores | **camelCase only.** The pool size for per-table loaders (one thread per loadRules table). |
 | `collect_pg_stat_statements` | false | Resets pg_stat_statements before MEASURE and snapshots it in tearDown. Standard: `true`. |
 | `use_dist_in_explain` | false | Adds `dist,debug` to EXPLAIN. **Throws on POSTGRES.** Standard `true` on YB variants. |
-| `disable_explain` | false | Skips the pre-run EXPLAIN. Needed when a query can't be EXPLAINed (ANALYZE, DDL, CALL…) unless the workload uses `raw_sql`. |
+| `disable_explain` | false | Skips the pre-run EXPLAIN. Set it (or `raw_sql` on the workload) when a query can't be EXPLAINed (ANALYZE, DDL, CALL…); otherwise the EXPLAIN pass fails quietly (§6.1). |
 | `force_capture_explain_analyze` | false | EXPLAIN ANALYZE for INSERT/DELETE too, which **executes them 4×**. |
-| `analyze_on_all_tables` | false | YB: `ALTER DATABASE … SET yb_enable_optimizer_statistics to true` at create, then `ANALYZE;` before each workload. **The GUC is YB-only**; on postgres, put `ANALYZE t1, t2;` in `afterLoad` instead. |
+| `analyze_on_all_tables` | false | **Not used in these microbenchmarks; don't add it.** (It issues a YB-only `ALTER DATABASE … SET yb_enable_optimizer_statistics`, which fails on Postgres.) |
 | `yaml_version` | 1.0 | Metadata. New files use `v1.0`. **Bump it on every behavioural edit** (v1.0→v1.1 for small fixes, v2.0 for changes that break comparability). |
 | `yaml_change_description` | "" | One line explaining the bump. |
 | `optimalThreads` | false | Thread-scaling search. Only one workload per invocation (the pipeline runs `--workloads` one at a time). |
@@ -61,7 +61,7 @@ microbenchmark:
 | `setAutoCommit` | **Defaults to false** in FeatureBench. With false, every query in one `run` entry is a single transaction, committed by the framework. Pipelines set `true` unless the test is about multi-statement transactions or locking (FK, locking_semantics, skiplocked, MG2). |
 | `create` | List of SQL statements, run once on `--create=true`. Start with `DROP TABLE IF EXISTS` for every table. Create secondary indexes here unless the test is about post-load index builds. Any error aborts the run. |
 | `loadRules` | See §4. Required whenever `--load=true` ("Empty Load Rules" otherwise). |
-| `afterLoad` | DDL run once, after all loader threads finish. Used for FK constraints and backfilled indexes (FK, scanG13), and for `ANALYZE` on postgres. **It never runs if any loader thread failed.** |
+| `afterLoad` | DDL run once, after all loader threads finish. Used for FK constraints and backfilled indexes (FK, scanG13). **It never runs if any loader thread failed.** |
 | `executeRules` | See §5. |
 | `executeOnce` | A YAML block shaped like executeRules. Its queries run once, serially, without bindings, timed as one transaction. Only used when there are **no** executeRules (e.g. insertG3's index backfill). |
 | `cleanup` | Runs on `--cleanup=true`. Mirror every DROP (and reset any `ALTER DATABASE … SET`). |
@@ -120,7 +120,10 @@ executeRules:
 
 ## 6. Behaviours that bite
 
-1. **Pre-run EXPLAIN executes queries.** Unless `disable_explain: true`, the first worker EXPLAINs every query 4× before warmup. SELECT and UPDATE use `EXPLAIN (ANALYZE…)`, **so UPDATEs really run 4 times**. Plain INSERT and DELETE use plain EXPLAIN. Non-EXPLAINable statements (ANALYZE, CREATE, DROP, ALTER, VACUUM, CALL, DO, SET) fail the run unless the workload has `raw_sql: true` or the file has `disable_explain: true`.
+1. **Pre-run EXPLAIN executes queries, and its failures are silent.** Unless `disable_explain: true`, the first worker EXPLAINs every query 4× before warmup. SELECT and UPDATE use `EXPLAIN (ANALYZE…)`, **so UPDATEs really run 4 times**; plain INSERT and DELETE use plain EXPLAIN.
+   - If a statement can't be EXPLAINed (ANALYZE, CREATE, DROP, ALTER, VACUUM, CALL, DO, SET), the server error inside `runExplainAnalyse` is rethrown and caught in `initialize()` (`FeatureBenchWorker.java:253`), which only calls `printStackTrace()`. **The workload still runs**, but EXPLAIN output is lost for that query **and every query after it** in the file (the loop stops).
+   - Missing EXPLAIN rows in `detailed.json` mean you should look for a stack trace near "Running explain" in the log. `explain-plan-rc-validation` on the affected queries then has nothing to check.
+   - Use `raw_sql: true` on such workloads (it skips EXPLAIN for them) or `disable_explain: true` for the file.
 2. **Zero rows count as failure.** A SELECT with 0 rows, or an UPDATE/DELETE affecting 0 rows, makes the transaction ZERO_ROWS. If a workload has no successful transactions, the process exits(1). Keep bind ranges inside the loaded key space, and set `zeroRowsValidation: false` only for statements that legitimately return nothing (ANALYZE, DDL).
 3. **Sequential generators throw when exhausted** (PrimaryIntGen, RandomUniqueIntGen, PrimaryIntGenThroughput). In the execute phase this kills the worker. Size INSERT key ranges generously.
 4. **PrimaryIntGen slices overlap** by 1-2 keys between workers. Multi-terminal inserts then hit duplicate keys. Use PrimaryIntGenThroughput instead.

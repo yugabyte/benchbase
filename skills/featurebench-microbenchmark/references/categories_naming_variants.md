@@ -32,15 +32,11 @@ Pick the category by the **primary thing being measured**. Don't go by the SQL k
 | `bulkload` | COPY bulk load (code-driven Goal classes) | YB-bulkload · 1az |
 | `perfstudio` | YAMLs run by PerfStudio pipelines (MG1 analyze) | PerfStudio only |
 
-If nothing fits, propose a **new category** in the plan. A new category means:
-- a new dir with its own variant sub-dirs;
-- perf-devops changes before nightly will pick it up. Model them on perf-devops PR #1483: a payload-row data migration, `_FEATUREBENCH_YAML_PATHS`, the template-case lists, plot and alerting registration, the UI tag lists, and the jenkins-helpers runner.
-
-Until those land, the new category's YAMLs can only be run ad hoc, by borrowing an existing row that has the right universe class. Say this explicitly to the user.
+If nothing fits, propose a **new category** in the plan: a new dir with its own variant sub-dirs. Tell the user that nightly won't pick it up until perf-devops registers it. The perf-devops `add-featurebench-workload` skill covers that; it is outside this skill.
 
 ## 2. Naming
 
-Run `python3 .claude/skills/featurebench-microbenchmark/scripts/fbtool.py next-id <category>`. It prints the prefixes in use, the highest number, and the next free id.
+Run `python3 skills/featurebench-microbenchmark/scripts/fbtool.py next-id <category>`. It prints the prefixes in use, the highest number, and the next free id.
 
 - **New files take max+1**, never a gap. Gaps come from deleted files (scanG1/4/6, AGGRG1, ORDG1, INDG9), and reusing a number would merge the new test's history with a dead one.
 
@@ -99,7 +95,6 @@ loaderThreads: 1
 terminals: 1
 collect_pg_stat_statements: true
 use_dist_in_explain: true
-analyze_on_all_tables: true        # when plans depend on stats (recommended for read tests)
 yaml_version: v1.0
 works:
     work:
@@ -114,7 +109,7 @@ works:
 type: POSTGRES
 driver: org.postgresql.Driver
 url: jdbc:postgresql://{{endpoint}}:5432/postgres?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
-# no use_dist_in_explain, no analyze_on_all_tables (put ANALYZE <tables>; in afterLoad), no createdb
+# no use_dist_in_explain, no createdb
 ```
 
 **yb_colocated/**: the yugabyte header plus one line right after `url` (keep `load-balance=false`):
@@ -152,7 +147,7 @@ The next/seek throughput files use `targetCPU: 75`, `samplingTime: 120`, `time_s
 **Multi-terminal contention** (range_write, locking, skiplocked): `terminals: 24` or `10`, no `active_terminals`, `setAutoCommit: false`, `time_secs: 120-300`, `warmup: 30-60`.
 
 **Per-category norms:**
-- foreign_key: `time_secs: 60`, `warmup: 30`, plus `analyze_on_all_tables` on YB.
+- foreign_key: `time_secs: 60`, `warmup: 30`.
 - write_workloads: `time_secs: 60`, `warmup: 30`, `loaderThreads: 4`.
 - ddl: `time_secs: 0` + per-workload `executeNtimes`.
 
@@ -161,7 +156,7 @@ The next/seek throughput files use `targetCPU: 75`, `samplingTime: 120`, `time_s
 `fbtool.py variants <yugabyte.yaml> --to postgres,yb_colocated[,yugabyte_range] [--write]` applies these rules. Always read its `REVIEW:` notes.
 
 **yugabyte → postgres**
-- header: type, driver, url (see §4); drop `use_dist_in_explain`, `analyze_on_all_tables` (the tool adds `ANALYZE` to afterLoad) and `createdb`
+- header: type, driver, url (see §4); drop `use_dist_in_explain` and `createdb`
 - `PRIMARY KEY((a,b) HASH, c ASC)` → `PRIMARY KEY(a, b, c)`. ASC/DESC/HASH are not allowed in a PG PK constraint.
 - index `(col HASH)` → `(col)`. ASC/DESC stay (they are valid in PG indexes).
 - remove `SPLIT AT VALUES (...)` and `SPLIT INTO n TABLETS`

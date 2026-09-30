@@ -7,8 +7,6 @@ Run from the benchbase repo root (or pass --repo).
     fbtool.py variants <yugabyte.yaml> [--to postgres,yb_colocated,yugabyte_range] [--write]
                                                  # derive sibling variants from the yugabyte master copy
     fbtool.py lint <file-or-dir> [...]           # static checks (+ cross-variant consistency)
-    fbtool.py smoke <file.yaml> --out <copy.yaml> [--endpoint 127.0.0.1] [--time 20] [--warmup 5]
-                                                 # rendered, shortened copy for a local run
 
 Only needs Python 3 + PyYAML. Nothing here talks to a database.
 """
@@ -203,7 +201,6 @@ def cmd_next_id(args):
     print(f"category        : {args.category}")
     print(f"naming pattern  : {info[0]}")
     print(f"nightly tag     : YB-{info[1]}   (colocated: YB-COLOCATED-{info[1].split(' ')[0]} where it exists)")
-    print(f"universe class  : {info[2]}")
     if prefixes:
         print("numbered prefixes (max -> next; gaps from deleted files are NOT reused):")
         for p, nums in sorted(prefixes.items(), key=lambda kv: -len(kv[1])):
@@ -364,6 +361,9 @@ def make_variant(src_text, target, notes):
     out = []
     for ln in lines:
         s = ln.strip()
+        if re.match(r"^analyze_on_all_tables\s*:", ln):
+            notes.add("dropped analyze_on_all_tables (not used in these microbenchmarks)")
+            continue
         if s.startswith("#TEST FOR"):
             out.append(HEADER_COMMENT[target] + "\n")
             continue
@@ -376,9 +376,6 @@ def make_variant(src_text, target, notes):
                 out.append(f"url: {URLS['postgres']}\n"); continue
             if re.match(r"^use_dist_in_explain\s*:", ln):
                 notes.add("dropped use_dist_in_explain (throws on POSTGRES)"); continue
-            if re.match(r"^analyze_on_all_tables\s*:\s*true", ln):
-                notes.add("dropped analyze_on_all_tables (issues a YB-only GUC); ANALYZE added to afterLoad instead")
-                continue
             if re.match(r"^createdb\s*:", ln):
                 notes.add("dropped createdb"); continue
         elif target == "yb_colocated":
@@ -400,15 +397,6 @@ def make_variant(src_text, target, notes):
         out.append(ln)
     text = rewrite_sql("".join(out), target, notes)
 
-    if target == "postgres" and "dropped analyze_on_all_tables" in " ".join(notes):
-        data, _ = load_yaml_text(text)
-        tables = sorted({t for t in created_tables(data)})
-        stmt = "ANALYZE " + ", ".join(tables) + ";" if tables else "ANALYZE;"
-        if re.search(r"^\s*afterLoad\s*:", text, re.M):
-            text = re.sub(r"^(\s*)afterLoad\s*:\s*\n", lambda m: f"{m.group(0)}{m.group(1)}    - {stmt}\n", text, count=1, flags=re.M)
-        else:
-            text = re.sub(r"^(\s*)loadRules\s*:", lambda m: f"{m.group(1)}afterLoad:\n{m.group(1)}    - {stmt}\n{m.group(0)}",
-                          text, count=1, flags=re.M)
     return text
 
 
@@ -583,6 +571,8 @@ def lint_file(path, rep, utils):
     if not iso:
         rep.warn(where, "no isolation set: default is TRANSACTION_SERIALIZABLE; pipelines use TRANSACTION_REPEATABLE_READ")
 
+    if "analyze_on_all_tables" in data and variant != "postgres":
+        rep.warn(where, "analyze_on_all_tables is not used in these microbenchmarks - remove it")
     typ = str(data.get("type", "")).upper()
     url = str(data.get("url", ""))
     drv = str(data.get("driver", ""))
@@ -597,7 +587,7 @@ def lint_file(path, rep, utils):
             rep.err(where, "postgres url must be jdbc:postgresql://{{endpoint}}:5432/postgres?...")
         if data.get("use_dist_in_explain"): rep.err(where, "use_dist_in_explain throws on POSTGRES")
         if data.get("analyze_on_all_tables"):
-            rep.err(where, "analyze_on_all_tables issues 'ALTER DATABASE .. SET yb_enable_optimizer_statistics' (YB-only); put ANALYZE in afterLoad instead")
+            rep.err(where, "analyze_on_all_tables issues 'ALTER DATABASE .. SET yb_enable_optimizer_statistics' (YB-only) and fails on POSTGRES")
         if "createdb" in data: rep.err(where, "createdb does not belong in the postgres variant")
     elif variant in ("yugabyte", "yb_colocated", "yugabyte_range"):
         if typ != "YUGABYTE": rep.err(where, f"{variant} variant must have type: YUGABYTE")
@@ -832,7 +822,9 @@ def lint_file(path, rep, utils):
                     check_bind_ranges(sql, blist, load_ranges, rep, qw)
                 if not raw and NON_EXPLAINABLE.match(sql):
                     if explain_on:
-                        rep.err(qw, "statement cannot be wrapped in EXPLAIN: set disable_explain: true or raw_sql: true on the workload")
+                        rep.warn(qw, "statement cannot be EXPLAINed: the pre-run EXPLAIN fails quietly (only a stack trace) and "
+                                     "EXPLAIN output is lost for this and every later query in the file - set raw_sql: true "
+                                     "on the workload or disable_explain: true")
                     if er.get("zeroRowsValidation", True) and not raw:
                         rep.warn(qw, "DDL/utility statements report 0 rows: set zeroRowsValidation: false")
                 if not blist and re.search(r"\bwhere\b.*?(=|<|>|\bbetween\b|\bin\s*\()\s*'?-?\d", sql, re.I | re.S) \
@@ -917,31 +909,6 @@ def cmd_lint(args):
     return 1 if n_err else 0
 
 
-# --------------------------------------------------------------------------------------------- smoke
-def cmd_smoke(args):
-    src = Path(args.file)
-    text = src.read_text()
-    text = JINJA.sub(lambda m: {"endpoint": args.endpoint, "username": args.user,
-                                "password": args.password}.get(m.group(1), m.group(0)), text)
-    if args.sslmode:
-        text = re.sub(r"sslmode=\w+", f"sslmode={args.sslmode}", text)
-    text = re.sub(r"(^\s+time_secs\s*:\s*)\d+", lambda m: f"{m.group(1)}{args.time}", text, flags=re.M)
-    text = re.sub(r"(^\s+warmup\s*:\s*)\d+", lambda m: f"{m.group(1)}{args.warmup}", text, flags=re.M)
-    Path(args.out).write_text(text)
-    data, _ = load_yaml_text(text)
-    props = ((data.get("microbenchmark") or {}).get("properties")) or {}
-    load = "true" if props.get("loadRules") else "false"
-    print(f"wrote {args.out} (time_secs={args.time}, warmup={args.warmup}, endpoint={args.endpoint})")
-    print("run from the repo root:")
-    print(f'  mvn clean compile exec:java -P yugabyte -Dexec.args="-b featurebench -c {args.out} '
-          f'--create=true --load={load} --execute=true --cleanup=true"')
-    print("or with a built dist (./build.sh):")
-    print(f"  java -jar target/benchbase-yugabyte/benchbase.jar -b featurebench -c {args.out} "
-          f"--create=true --load={load} --execute=true --cleanup=true")
-    print("then check each workload's 'Completed Transactions' / 'Zero Rows' / 'Unexpected SQL Errors' and "
-          "results/<workload>/<ts>/featurebench.detailed.json. Do not commit the smoke copy.")
-
-
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--repo", help="benchbase repo root (default: search upward from cwd)")
@@ -953,11 +920,6 @@ def main():
     s = sub.add_parser("lint"); s.add_argument("paths", nargs="+")
     s.add_argument("--no-siblings", action="store_true", help="do not auto-include sibling variant copies")
     s.add_argument("--quiet", action="store_true", help="hide INFO lines"); s.set_defaults(fn=cmd_lint)
-    s = sub.add_parser("smoke"); s.add_argument("file"); s.add_argument("--out", required=True)
-    s.add_argument("--endpoint", default="127.0.0.1"); s.add_argument("--user", default="yugabyte")
-    s.add_argument("--password", default="yugabyte"); s.add_argument("--time", type=int, default=20)
-    s.add_argument("--warmup", type=int, default=5); s.add_argument("--sslmode", default="disable")
-    s.set_defaults(fn=cmd_smoke)
     args = ap.parse_args()
     sys.exit(args.fn(args) or 0)
 
