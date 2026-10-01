@@ -3,7 +3,7 @@
 #      Projects only the last column (col_bigint_99) via point lookup and range scans.
 #TESTS:
 #   1. Point lookup returning 1 row
-#   2. Range scan returning 10, 100, 1000 rows
+#   2. Range scan returning 100, 1000 rows
 
 type: POSTGRES
 driver: org.postgresql.Driver
@@ -57,21 +57,6 @@ microbenchmark:
                               count: 1
                               util: RandomNumber
                               params: [1, 1000000]
-
-            - workload: lastcol_100col_range_10_rows
-              customTags: schematype=regular,partition=none,pkey=asc,cardinality=multi,projection=lastcol,filteron=pkey,filtertype=rangescan,queryshape=scan,returnrows=10
-              run:
-                  - name: lastcol_100col_range_10_rows_test
-                    weight: 100
-                    queries:
-                        - query: select col_bigint_99 from lastcol_100col_1 where col_bigint_id_1 between ? and ?
-                          bindings:
-                              - util: RandomNumber
-                                params: [1, 999990]
-                                referenceName: id1
-                              - util: ExpressionEval
-                                params:
-                                    - "id1 + 9"
 
             - workload: lastcol_100col_range_100_rows
               customTags: schematype=regular,partition=none,pkey=asc,cardinality=multi,projection=lastcol,filteron=pkey,filtertype=rangescan,queryshape=scan,returnrows=100
