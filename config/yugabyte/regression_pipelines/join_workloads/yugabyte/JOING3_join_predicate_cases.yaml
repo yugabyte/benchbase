@@ -76,16 +76,16 @@ microbenchmark:
                       util: RandomBoolean
                     - name: col_varchar10_id_
                       count: 1
-                      util: PrimaryStringGen
-                      params: [1, 10]
+                      util: RandomAString
+                      params: [10, 10]
                     - name: col_varchar100_id_
                       count: 2
-                      util: PrimaryStringGen
-                      params: [1, 100]
+                      util: RandomAString
+                      params: [100, 100]
                     - name: col_varchar500_id_
                       count: 1
-                      util: PrimaryStringGen
-                      params: [1, 500]
+                      util: RandomAString
+                      params: [100, 100]
 
               - table: Hashtbl_
                 count: 3
@@ -112,16 +112,16 @@ microbenchmark:
                       util: RandomBoolean
                     - name: col_varchar10_id_
                       count: 1
-                      util: PrimaryStringGen
-                      params: [1, 10]
+                      util: RandomAString
+                      params: [10, 10]
                     - name: col_varchar100_id_
                       count: 2
-                      util: PrimaryStringGen
-                      params: [1, 100]
+                      util: RandomAString
+                      params: [100, 100]
                     - name: col_varchar500_id_
                       count: 1
-                      util: PrimaryStringGen
-                      params: [1, 500]
+                      util: RandomAString
+                      params: [100, 100]
 
         executeRules:
             - workload: JOING3_1_join_on_pk_of_range_and_hash_tbl
