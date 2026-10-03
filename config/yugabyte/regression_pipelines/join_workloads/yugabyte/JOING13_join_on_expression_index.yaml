@@ -10,6 +10,8 @@
 #    JOING13_4: join on (varchar::bigint) cast expression index, 1000 outer rows
 #Data: JOING13_outer_1 and JOING13_inner_1 1000000 rows each; row i has col_bigint_skey_1 = 1000000+i, col_varchar10_lower_1 = 'id-'||(1000000+i),
 #      and in the inner table col_varchar10_upper_1 = 'ID-'||(1000000+i), col_varchar10_num_1 = '0'||(1000000+i). Each outer row matches exactly one inner row.
+#Keys (joinmixed, as in JOING3): the outer PK is ASC so the 1000-row BETWEEN filter is a range scan; on a HASH PK it would scan all 1M rows.
+#      The inner table is reached only through its secondary indexes, so it keeps the default HASH PK. All four workloads share both tables.
 type: YUGABYTE
 driver: com.yugabyte.Driver
 url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true&load-balance=false

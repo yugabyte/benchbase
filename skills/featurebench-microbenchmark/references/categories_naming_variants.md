@@ -204,6 +204,7 @@ One comma-separated `key=value` string per workload. Use only the existing vocab
 - `orderbyon` = rangeskey | rangepkey | rangepkeydesc | hashpkey | hashpkeydesc | hashskey | nonindexed
 - `columndatatype` = bigint | varchar | uuid | float | date
 - `indexed` = true
+- `indexexpr` = none | lower | cast | arithmetic, the key expression of the index the workload reads. `none` marks the plain-column baseline paired with an expression workload
 - `customer` = <n>, which flags a customer-reported pattern (ask the user)
 - vector only: `dim`, `magnitude`, `distance` (l2|ip|cosine), `filter`, `top_k`, `m`, `ef_construction`, `operation`, `deletetype`, `column`
 
