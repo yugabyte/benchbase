@@ -1,15 +1,13 @@
 #TEST FOR POSTGRES
 #GOAL15: 100-row range-scan latency through ASC expression (functional) indexes vs plain ASC secondary indexes that return the same rows.
-#        Varied dimension: index key kind (plain column, (a + b), varchar::bigint cast, lower(varchar)).
+#        Varied dimension: index key kind (plain column, (a + b), lower(varchar)).
 #TESTS:
 #    INDG15_1: baseline, plain bigint ASC index, BETWEEN over 100 keys
 #    INDG15_2: (col_bigint_id_3 + col_bigint_id_4) ASC expression index, BETWEEN over 100 rows
-#    INDG15_3: (varchar::bigint) ASC cast expression index, BETWEEN over 100 rows
-#    INDG15_4: baseline, plain varchar ASC index, BETWEEN over 100 rows
-#    INDG15_5: lower(varchar) ASC expression index, BETWEEN over 100 rows
-#    INDG15_6: lower(varchar) ASC expression index, ORDER BY lower(col) LIMIT 100 served by the index (no sort)
+#    INDG15_3: baseline, plain varchar ASC index, ORDER BY col LIMIT 100 served by the index (no sort)
+#    INDG15_4: lower(varchar) ASC expression index, ORDER BY lower(col) LIMIT 100 served by the index (no sort)
 #Data: INDG15_U_tbl_1 1000000 rows; row i has col_bigint_id_1..4 = i (so id_3 + id_4 = 2i), col_varchar10_lower_1 = 'id-'||(1000000+i),
-#      col_varchar10_upper_1 = 'ID-'||(1000000+i), col_varchar10_num_1 = '0'||(1000000+i). Fixed-width strings sort like their numbers.
+#      col_varchar10_upper_1 = 'ID-'||(1000000+i). Fixed-width strings sort like their numbers.
 type: POSTGRES
 driver: org.postgresql.Driver
 url: jdbc:postgresql://{{endpoint}}:5432/postgres?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
@@ -33,10 +31,9 @@ microbenchmark:
         setAutoCommit: true
         create:
             - DROP TABLE IF EXISTS INDG15_U_tbl_1;
-            - CREATE TABLE INDG15_U_tbl_1(col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_bigint_id_4 bigint, col_varchar10_lower_1 varchar(10), col_varchar10_upper_1 varchar(10), col_varchar10_num_1 varchar(10), col_float2_1 float(2), col_boolean_1 boolean, col_varchar100_1 varchar(100), PRIMARY KEY(col_bigint_id_1));
+            - CREATE TABLE INDG15_U_tbl_1(col_bigint_id_1 bigint, col_bigint_id_2 bigint, col_bigint_id_3 bigint, col_bigint_id_4 bigint, col_varchar10_lower_1 varchar(10), col_varchar10_upper_1 varchar(10), col_float2_1 float(2), col_boolean_1 boolean, col_varchar100_1 varchar(100), PRIMARY KEY(col_bigint_id_1));
             - CREATE INDEX INDG15_U_tbl_1_bigint_idx ON INDG15_U_tbl_1(col_bigint_id_2 ASC);
             - CREATE INDEX INDG15_U_tbl_1_sum_idx ON INDG15_U_tbl_1((col_bigint_id_3 + col_bigint_id_4) ASC);
-            - CREATE INDEX INDG15_U_tbl_1_cast_idx ON INDG15_U_tbl_1((col_varchar10_num_1::bigint) ASC);
             - CREATE INDEX INDG15_U_tbl_1_varchar_idx ON INDG15_U_tbl_1(col_varchar10_lower_1 ASC);
             - CREATE INDEX INDG15_U_tbl_1_lower_idx ON INDG15_U_tbl_1(lower(col_varchar10_upper_1) ASC);
         cleanup:
@@ -58,10 +55,6 @@ microbenchmark:
                     count: 1
                     util: CyclicSeqStringGen
                     params: [1, 1000000, "ID-"]
-                  - name: col_varchar10_num_
-                    count: 1
-                    util: CyclicSeqStringGen
-                    params: [1, 1000000, "0"]
                   - name: col_float2_
                     count: 1
                     util: RandomNoWithDecimalPoints
@@ -105,52 +98,18 @@ microbenchmark:
                                 params:
                                     - "start_value + 199"
 
-            - workload: INDG15_3_cast_expr_skey_range_select
-              customTags: schematype=regular,partition=hash,pkey=single,cardinality=multiple,projection=all,filtercount=one,filteron=rangeskey,filtertype=comparision,queryshape=scan,columndatatype=varchar,indexexpr=cast
+            - workload: INDG15_3_plain_varchar_skey_orderby_limit
+              customTags: schematype=regular,partition=hash,pkey=single,cardinality=multiple,projection=all,filtercount=one,filteron=rangeskey,filtertype=comparision,queryshape=orderby,orderbyon=rangeskey,columndatatype=varchar,indexexpr=none
               run:
-                  - name: range_select_cast_expr_skey
+                  - name: orderby_limit_plain_varchar_skey
                     weight: 100
                     queries:
-                        - query: select * from INDG15_U_tbl_1 where (col_varchar10_num_1::bigint) between ? and ?
+                        - query: select * from INDG15_U_tbl_1 where col_varchar10_lower_1 >= ('id-' || ?) order by col_varchar10_lower_1 limit 100
                           bindings:
                               - util: RandomInt
                                 params: [1000001, 1999901]
-                                referenceName: start_value
-                              - util: ExpressionEval
-                                params:
-                                    - "start_value + 99"
 
-            - workload: INDG15_4_plain_varchar_skey_range_select
-              customTags: schematype=regular,partition=hash,pkey=single,cardinality=multiple,projection=all,filtercount=one,filteron=rangeskey,filtertype=comparision,queryshape=scan,columndatatype=varchar,indexexpr=none
-              run:
-                  - name: range_select_plain_varchar_skey
-                    weight: 100
-                    queries:
-                        - query: select * from INDG15_U_tbl_1 where col_varchar10_lower_1 between ('id-' || ?) and ('id-' || ?)
-                          bindings:
-                              - util: RandomInt
-                                params: [1000001, 1999901]
-                                referenceName: start_value
-                              - util: ExpressionEval
-                                params:
-                                    - "start_value + 99"
-
-            - workload: INDG15_5_lower_expr_skey_range_select
-              customTags: schematype=regular,partition=hash,pkey=single,cardinality=multiple,projection=all,filtercount=one,filteron=rangeskey,filtertype=comparision,queryshape=scan,columndatatype=varchar,indexexpr=lower
-              run:
-                  - name: range_select_lower_expr_skey
-                    weight: 100
-                    queries:
-                        - query: select * from INDG15_U_tbl_1 where lower(col_varchar10_upper_1) between lower('ID-' || ?) and lower('ID-' || ?)
-                          bindings:
-                              - util: RandomInt
-                                params: [1000001, 1999901]
-                                referenceName: start_value
-                              - util: ExpressionEval
-                                params:
-                                    - "start_value + 99"
-
-            - workload: INDG15_6_lower_expr_skey_orderby_limit
+            - workload: INDG15_4_lower_expr_skey_orderby_limit
               customTags: schematype=regular,partition=hash,pkey=single,cardinality=multiple,projection=all,filtercount=one,filteron=rangeskey,filtertype=comparision,queryshape=orderby,orderbyon=rangeskey,columndatatype=varchar,indexexpr=lower
               run:
                   - name: orderby_limit_lower_expr_skey

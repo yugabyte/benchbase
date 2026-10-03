@@ -42,12 +42,12 @@ Run `python3 skills/featurebench-microbenchmark/scripts/fbtool.py next-id <categ
 
 | Category | File pattern | Example | Current next (Sep 2026, re-check with next-id) |
 |---|---|---|---|
-| Index_workloads | `INDG<N>_U_<desc>` | `INDG13_U_compare_index_scan` | INDG14_U_ |
+| Index_workloads | `INDG<N>_U_<desc>` | `INDG13_U_compare_index_scan` | INDG16_U_ |
 | aggregate_workloads | `AGGRG<N>_<desc>` | `AGGRG10_aggregate_cardinality` | AGGRG11_ |
 | conditional_workloads | `CW<N>_<desc>` | `CW6_on_conflict_do_update_range` | CW7_ |
 | ddl_workloads | `DDL_G<N>_<desc>` | `DDL_G1_basic_ops` | DDL_G2_ |
 | foreign_key | `FK_G<N>_<desc>` | `FK_G4_varyingFKcardinality_parent_table_ops` | FK_G5_ |
-| join_workloads | `JOING<N>_<desc>` | `JOING12_compate_indexscan_on_rangetbl` | JOING13_ |
+| join_workloads | `JOING<N>_<desc>` | `JOING12_compate_indexscan_on_rangetbl` | JOING14_ |
 | miscellaneous | `MG<N>_<desc>` | `MG3_multi_statement_json_trigger_index` | MG4_ |
 | orderby_workloads | `ORDG<N>_<desc>` | `ORDG8_orderby_backwardscan_post_updates` | ORDG9_ |
 | range_write_workloads | `RW_G<N>_<desc>` | `RW_G7_update_varying_pk_columns` | RW_G8_ |
