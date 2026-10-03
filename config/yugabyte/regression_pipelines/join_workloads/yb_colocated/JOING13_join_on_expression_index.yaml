@@ -1,7 +1,8 @@
 #TEST FOR YUGABYTE COLOCATED TABLES
 #GOAL13: Join latency when the inner table is reached through an expression (functional) index vs a plain secondary index.
 #        Varied dimension: inner join key (plain varchar, lower(varchar), plain bigint, varchar::bigint cast).
-#        Plain var = var joins can use batched nested loop; expression inner keys are only batched with yb_enable_cbo=on.
+#        All four use YB batched nested loop. With an expression inner key the batch is matched by a join filter over
+#        every outer x inner pair (Rows Removed by Join Filter ~ 999000), so JOING13_2/JOING13_4 track that cost.
 #TESTS:
 #    JOING13_1: baseline, join on plain varchar secondary index, 1000 outer rows
 #    JOING13_2: join on lower(varchar) expression index, 1000 outer rows
