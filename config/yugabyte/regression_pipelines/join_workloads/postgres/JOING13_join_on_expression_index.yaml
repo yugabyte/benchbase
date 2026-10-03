@@ -1,0 +1,167 @@
+#TEST FOR POSTGRES
+#GOAL13: Join latency when the inner table is reached through an expression (functional) index vs a plain secondary index.
+#        Varied dimension: inner join key (plain varchar, lower(varchar), plain bigint, varchar::bigint cast).
+#TESTS:
+#    JOING13_1: baseline, join on plain varchar secondary index, 1000 outer rows
+#    JOING13_2: join on lower(varchar) expression index, 1000 outer rows
+#    JOING13_3: baseline, join on plain bigint secondary index, 1000 outer rows
+#    JOING13_4: join on (varchar::bigint) cast expression index, 1000 outer rows
+#Data: JOING13_outer_1 and JOING13_inner_1 1000000 rows each; row i has col_bigint_skey_1 = 1000000+i, col_varchar10_lower_1 = 'id-'||(1000000+i),
+#      and in the inner table col_varchar10_upper_1 = 'ID-'||(1000000+i), col_varchar10_num_1 = '0'||(1000000+i). Each outer row matches exactly one inner row.
+type: POSTGRES
+driver: org.postgresql.Driver
+url: jdbc:postgresql://{{endpoint}}:5432/postgres?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
+username: {{username}}
+password: {{password}}
+batchsize: 128
+isolation: TRANSACTION_REPEATABLE_READ
+loaderThreads: 1
+terminals: 1
+collect_pg_stat_statements: true
+yaml_version: v1.0
+works:
+    work:
+        time_secs: 180
+        active_terminals: 1
+        rate: unlimited
+        warmup: 60
+microbenchmark:
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
+    properties:
+        setAutoCommit: true
+        create:
+            - DROP TABLE IF EXISTS JOING13_outer_1;
+            - DROP TABLE IF EXISTS JOING13_inner_1;
+            - CREATE TABLE JOING13_outer_1(col_bigint_id_1 bigint, col_bigint_skey_1 bigint, col_varchar10_lower_1 varchar(10), col_float2_1 float(2), col_boolean_1 boolean, col_varchar100_1 varchar(100), PRIMARY KEY(col_bigint_id_1));
+            - CREATE TABLE JOING13_inner_1(col_bigint_id_1 bigint, col_bigint_skey_1 bigint, col_varchar10_lower_1 varchar(10), col_varchar10_upper_1 varchar(10), col_varchar10_num_1 varchar(10), col_float2_1 float(2), col_boolean_1 boolean, col_varchar100_1 varchar(100), PRIMARY KEY(col_bigint_id_1));
+            - CREATE INDEX JOING13_inner_1_varchar_idx ON JOING13_inner_1(col_varchar10_lower_1);
+            - CREATE INDEX JOING13_inner_1_lower_idx ON JOING13_inner_1(lower(col_varchar10_upper_1));
+            - CREATE INDEX JOING13_inner_1_bigint_idx ON JOING13_inner_1(col_bigint_skey_1);
+            - CREATE INDEX JOING13_inner_1_cast_idx ON JOING13_inner_1((col_varchar10_num_1::bigint));
+        cleanup:
+            - DROP TABLE IF EXISTS JOING13_outer_1;
+            - DROP TABLE IF EXISTS JOING13_inner_1;
+        loadRules:
+            - table: JOING13_outer_
+              count: 1
+              rows: 1000000
+              columns:
+                  - name: col_bigint_id_
+                    count: 1
+                    util: PrimaryIntGen
+                    params: [1, 1000000]
+                  - name: col_bigint_skey_
+                    count: 1
+                    util: PrimaryIntGen
+                    params: [1000001, 2000000]
+                  - name: col_varchar10_lower_
+                    count: 1
+                    util: CyclicSeqStringGen
+                    params: [1, 1000000, "id-"]
+                  - name: col_float2_
+                    count: 1
+                    util: RandomNoWithDecimalPoints
+                    params: [1, 1000000, 2]
+                  - name: col_boolean_
+                    count: 1
+                    util: RandomBoolean
+                  - name: col_varchar100_
+                    count: 1
+                    util: RandomAString
+                    params: [100, 100]
+            - table: JOING13_inner_
+              count: 1
+              rows: 1000000
+              columns:
+                  - name: col_bigint_id_
+                    count: 1
+                    util: PrimaryIntGen
+                    params: [1, 1000000]
+                  - name: col_bigint_skey_
+                    count: 1
+                    util: PrimaryIntGen
+                    params: [1000001, 2000000]
+                  - name: col_varchar10_lower_
+                    count: 1
+                    util: CyclicSeqStringGen
+                    params: [1, 1000000, "id-"]
+                  - name: col_varchar10_upper_
+                    count: 1
+                    util: CyclicSeqStringGen
+                    params: [1, 1000000, "ID-"]
+                  - name: col_varchar10_num_
+                    count: 1
+                    util: CyclicSeqStringGen
+                    params: [1, 1000000, "0"]
+                  - name: col_float2_
+                    count: 1
+                    util: RandomNoWithDecimalPoints
+                    params: [1, 1000000, 2]
+                  - name: col_boolean_
+                    count: 1
+                    util: RandomBoolean
+                  - name: col_varchar100_
+                    count: 1
+                    util: RandomAString
+                    params: [100, 100]
+
+        executeRules:
+            - workload: JOING13_1_join_on_plain_varchar_skey
+              customTags: schematype=regular,partition=joinmixed,pkey=joinmixed,cardinality=single,projection=multiple,filtercount=one,filteron=rangepkey,filtertype=comparision,queryshape=join,joinon=hashskey,columndatatype=varchar,indexexpr=none
+              run:
+                  - name: join_on_plain_varchar_skey
+                    weight: 100
+                    queries:
+                        - query: select o.col_bigint_id_1, i.col_bigint_id_1 from JOING13_outer_1 o join JOING13_inner_1 i on i.col_varchar10_lower_1 = o.col_varchar10_lower_1 where o.col_bigint_id_1 between ? and ?
+                          bindings:
+                              - util: RandomInt
+                                params: [1, 999001]
+                                referenceName: start_value
+                              - util: ExpressionEval
+                                params:
+                                    - "start_value + 999"
+
+            - workload: JOING13_2_join_on_lower_expr_skey
+              customTags: schematype=regular,partition=joinmixed,pkey=joinmixed,cardinality=single,projection=multiple,filtercount=one,filteron=rangepkey,filtertype=comparision,queryshape=join,joinon=hashskey,columndatatype=varchar,indexexpr=lower
+              run:
+                  - name: join_on_lower_expr_skey
+                    weight: 100
+                    queries:
+                        - query: select o.col_bigint_id_1, i.col_bigint_id_1 from JOING13_outer_1 o join JOING13_inner_1 i on lower(i.col_varchar10_upper_1) = o.col_varchar10_lower_1 where o.col_bigint_id_1 between ? and ?
+                          bindings:
+                              - util: RandomInt
+                                params: [1, 999001]
+                                referenceName: start_value
+                              - util: ExpressionEval
+                                params:
+                                    - "start_value + 999"
+
+            - workload: JOING13_3_join_on_plain_bigint_skey
+              customTags: schematype=regular,partition=joinmixed,pkey=joinmixed,cardinality=single,projection=multiple,filtercount=one,filteron=rangepkey,filtertype=comparision,queryshape=join,joinon=hashskey,columndatatype=bigint,indexexpr=none
+              run:
+                  - name: join_on_plain_bigint_skey
+                    weight: 100
+                    queries:
+                        - query: select o.col_bigint_id_1, i.col_bigint_id_1 from JOING13_outer_1 o join JOING13_inner_1 i on i.col_bigint_skey_1 = o.col_bigint_skey_1 where o.col_bigint_id_1 between ? and ?
+                          bindings:
+                              - util: RandomInt
+                                params: [1, 999001]
+                                referenceName: start_value
+                              - util: ExpressionEval
+                                params:
+                                    - "start_value + 999"
+
+            - workload: JOING13_4_join_on_cast_expr_skey
+              customTags: schematype=regular,partition=joinmixed,pkey=joinmixed,cardinality=single,projection=multiple,filtercount=one,filteron=rangepkey,filtertype=comparision,queryshape=join,joinon=hashskey,columndatatype=varchar,indexexpr=cast
+              run:
+                  - name: join_on_cast_expr_skey
+                    weight: 100
+                    queries:
+                        - query: select o.col_bigint_id_1, i.col_bigint_id_1 from JOING13_outer_1 o join JOING13_inner_1 i on (i.col_varchar10_num_1::bigint) = o.col_bigint_skey_1 where o.col_bigint_id_1 between ? and ?
+                          bindings:
+                              - util: RandomInt
+                                params: [1, 999001]
+                                referenceName: start_value
+                              - util: ExpressionEval
+                                params:
+                                    - "start_value + 999"
