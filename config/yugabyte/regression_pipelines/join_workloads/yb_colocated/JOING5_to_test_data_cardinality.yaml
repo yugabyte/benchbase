@@ -136,7 +136,13 @@ microbenchmark:
                   - name: hashtbl_index_scan_using_sec_index
                     weight: 100
                     queries:
-                        - query: select * from pkeyBigint1M_1 as a join pkeyBigint1M_2 as b on a.col_bigint_card1_1=b.col_bigint_card1_1 and a.col_bigint_card3_1=b.col_bigint_card3_1 where b.col_bigint_card1_1=1000058 and  b.col_bigint_card2_1 in (1000058);
+                        - query: select * from pkeyBigint1M_1 as a join pkeyBigint1M_2 as b on a.col_bigint_card1_1=b.col_bigint_card1_1 and a.col_bigint_card3_1=b.col_bigint_card3_1 where b.col_bigint_card1_1=? and  b.col_bigint_card2_1 in (?);
+                          bindings:
+                              - util: ExpressionEval
+                                params: [ "1000001 + (filter_val - 1000001) % 100" ]
+                              - util: RandomUniqueCyclicIntGen
+                                params: [ 1000001, 1001000 ]
+                                referenceName: filter_val
 
             - workload: JoinG5_2_1Mtbl_join_1Mtbl_two_conditions_indexscan_two_filters
               customTags: schematype=colocated,partition=range,pkey=asc,cardinality=multiple,projection=all,filtercount=two,filteron=rangepkey,filtertype=pointselect,filterother=IN,queryshape=join,joinon=rangepkey,joinconditions=two
@@ -144,7 +150,13 @@ microbenchmark:
                   - name: hashtbl_index_scan_using_sec_index
                     weight: 100
                     queries:
-                        - query: select * from pkeyBigint1M_1 as a join pkeyBigint1M_2 as b on a.col_bigint_card1_1=b.col_bigint_card1_1 and a.col_bigint_card2_1=b.col_bigint_card2_1 where b.col_bigint_card1_1=1000058 and  b.col_bigint_card3_1 in (1000058);
+                        - query: select * from pkeyBigint1M_1 as a join pkeyBigint1M_2 as b on a.col_bigint_card1_1=b.col_bigint_card1_1 and a.col_bigint_card2_1=b.col_bigint_card2_1 where b.col_bigint_card1_1=? and  b.col_bigint_card3_1 in (?);
+                          bindings:
+                              - util: ExpressionEval
+                                params: [ "1000001 + (filter_val - 1000001) % 100" ]
+                              - util: RandomUniqueCyclicIntGen
+                                params: [ 1000001, 1010000 ]
+                                referenceName: filter_val
 
             - workload: JoinG5_3_1Mtbl_join_1Mtbl_two_conditions_indexscan_two_filters
               customTags: customer=7,schematype=colocated,partition=range,pkey=asc,cardinality=multiple,projection=all,filtercount=two,filteron=rangepkey,filtertype=pointselect,filterother=IN,queryshape=join,joinon=rangepkey,joinconditions=two
@@ -152,7 +164,13 @@ microbenchmark:
                   - name: hashtbl_index_scan_using_sec_index
                     weight: 100
                     queries:
-                        - query: select * from pkeyBigint1M_1 as a join pkeyBigint1M_2 as b on a.col_bigint_card1_1=b.col_bigint_card1_1 and a.col_bigint_card2_1=b.col_bigint_card2_1 where b.col_bigint_card1_1=1000058 and b.col_bigint_card2_1 in (1000058);
+                        - query: select * from pkeyBigint1M_1 as a join pkeyBigint1M_2 as b on a.col_bigint_card1_1=b.col_bigint_card1_1 and a.col_bigint_card2_1=b.col_bigint_card2_1 where b.col_bigint_card1_1=? and b.col_bigint_card2_1 in (?);
+                          bindings:
+                              - util: ExpressionEval
+                                params: [ "1000001 + (filter_val - 1000001) % 100" ]
+                              - util: RandomUniqueCyclicIntGen
+                                params: [ 1000001, 1001000 ]
+                                referenceName: filter_val
 
 
             - workload: JoinG5_4_1Mtbl_join_1Mtbl_two_conditions_seqscan_two_filters
@@ -161,7 +179,10 @@ microbenchmark:
                   - name: hashtbl_index_scan_using_sec_index
                     weight: 100
                     queries:
-                        - query: select * from pkeyBigint1M_1 as a join pkeyBigint1M_2 as b on a.col_bigint_card2_1=b.col_bigint_card2_1 and a.col_bigint_card3_1=b.col_bigint_card3_1 where b.col_bigint_card2_1 in (1000058);
+                        - query: select * from pkeyBigint1M_1 as a join pkeyBigint1M_2 as b on a.col_bigint_card2_1=b.col_bigint_card2_1 and a.col_bigint_card3_1=b.col_bigint_card3_1 where b.col_bigint_card2_1 in (?);
+                          bindings:
+                              - util: RandomUniqueCyclicIntGen
+                                params: [ 1000001, 1001000 ]
 
 
             -   workload: JoinG5_5_1Mtbl_join_10ktbl_two_conditions_indexscan_two_filters
@@ -170,7 +191,13 @@ microbenchmark:
                     -   name: hashtbl_index_scan_using_sec_index
                         weight: 100
                         queries:
-                            -   query: select * from pkeyBigint1M_1 as a join pkeyBigint10k_1 as b on a.col_bigint_card1_1=b.col_bigint_card1_1 and a.col_bigint_card3_1=b.col_bigint_card3_1 where b.col_bigint_card1_1=1000010 and  b.col_bigint_card2_1 in (1000010);
+                            -   query: select * from pkeyBigint1M_1 as a join pkeyBigint10k_1 as b on a.col_bigint_card1_1=b.col_bigint_card1_1 and a.col_bigint_card3_1=b.col_bigint_card3_1 where b.col_bigint_card1_1=? and  b.col_bigint_card2_1 in (?);
+                                bindings:
+                                    - util: ExpressionEval
+                                      params: [ "1000001 + (filter_val - 1000001) % 10" ]
+                                    - util: RandomUniqueCyclicIntGen
+                                      params: [ 1000001, 1000100 ]
+                                      referenceName: filter_val
 
             -   workload: JoinG5_6_1Mtbl_join_10ktbl_two_conditions_indexscan_two_filters
                 customTags: customer=3,schematype=colocated,partition=range,pkey=asc,cardinality=multiple,projection=all,filtercount=two,filteron=rangepkey,filtertype=pointselect,filterother=IN,queryshape=join,joinon=rangepkey,joinconditions=two
@@ -178,7 +205,13 @@ microbenchmark:
                     -   name: hashtbl_index_scan_using_sec_index
                         weight: 100
                         queries:
-                            -   query: select * from pkeyBigint1M_1 as a join pkeyBigint10k_1 as b on a.col_bigint_card1_1=b.col_bigint_card1_1 and a.col_bigint_card2_1=b.col_bigint_card2_1 where b.col_bigint_card1_1=1000010 and  b.col_bigint_card3_1 in (1000010);
+                            -   query: select * from pkeyBigint1M_1 as a join pkeyBigint10k_1 as b on a.col_bigint_card1_1=b.col_bigint_card1_1 and a.col_bigint_card2_1=b.col_bigint_card2_1 where b.col_bigint_card1_1=? and  b.col_bigint_card3_1 in (?);
+                                bindings:
+                                    - util: ExpressionEval
+                                      params: [ "1000001 + (filter_val - 1000001) % 10" ]
+                                    - util: RandomUniqueCyclicIntGen
+                                      params: [ 1000001, 1001000 ]
+                                      referenceName: filter_val
 
             -   workload: JoinG5_7_1Mtbl_join_10ktbl_two_conditions_indexscan_two_filters
                 customTags: customer=8,schematype=colocated,partition=range,pkey=asc,cardinality=multiple,projection=all,filtercount=two,filteron=rangepkey,filtertype=pointselect,filterother=IN,queryshape=join,joinon=rangepkey,joinconditions=two
@@ -186,7 +219,13 @@ microbenchmark:
                     -   name: hashtbl_index_scan_using_sec_index
                         weight: 100
                         queries:
-                            -   query: select * from pkeyBigint1M_1 as a join pkeyBigint10k_1 as b on a.col_bigint_card1_1=b.col_bigint_card1_1 and a.col_bigint_card2_1=b.col_bigint_card2_1 where b.col_bigint_card1_1=1000010 and  b.col_bigint_card2_1 in (1000010);
+                            -   query: select * from pkeyBigint1M_1 as a join pkeyBigint10k_1 as b on a.col_bigint_card1_1=b.col_bigint_card1_1 and a.col_bigint_card2_1=b.col_bigint_card2_1 where b.col_bigint_card1_1=? and  b.col_bigint_card2_1 in (?);
+                                bindings:
+                                    - util: ExpressionEval
+                                      params: [ "1000001 + (filter_val - 1000001) % 10" ]
+                                    - util: RandomUniqueCyclicIntGen
+                                      params: [ 1000001, 1000100 ]
+                                      referenceName: filter_val
 
 
             -   workload: JoinG5_8_1Mtbl_join_10ktbl_two_conditions_seqscan_two_filters
@@ -195,4 +234,7 @@ microbenchmark:
                     -   name: hashtbl_index_scan_using_sec_index
                         weight: 100
                         queries:
-                            -   query: select * from pkeyBigint1M_1 as a join pkeyBigint10k_1 as b on a.col_bigint_card2_1=b.col_bigint_card2_1 and a.col_bigint_card3_1=b.col_bigint_card3_1 where b.col_bigint_card2_1 in (1000010);
+                            -   query: select * from pkeyBigint1M_1 as a join pkeyBigint10k_1 as b on a.col_bigint_card2_1=b.col_bigint_card2_1 and a.col_bigint_card3_1=b.col_bigint_card3_1 where b.col_bigint_card2_1 in (?);
+                                bindings:
+                                    - util: RandomUniqueCyclicIntGen
+                                      params: [ 1000001, 1000100 ]
