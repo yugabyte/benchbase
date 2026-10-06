@@ -1,15 +1,17 @@
 #TEST FOR YUGABYTE REGULAR TABLES
 #GOAL14: Point-select latency through expression (functional) indexes vs plain secondary indexes that return the same row.
-#        Varied dimension: index key kind (plain column, lower(varchar), lower(varchar) + INCLUDE).
+#        Varied dimension: index key kind (plain column, lower(varchar), lower(varchar) + INCLUDE, (base + seq) arithmetic).
 #TESTS:
 #    INDG14_1: baseline, plain varchar secondary index, 1-row point select
 #    INDG14_2: lower(varchar) expression index, lower(col) = lower(?), 1 row
-#    INDG14_3: lower(varchar) expression index with INCLUDE (col), index-only scan, 1 row
-#Data: INDG14_U_tbl_1 1000000 rows; row i has col_varchar10_lower_1 = 'id-'||(1000000+i),
-#      col_varchar10_upper_1/2 = 'ID-'||(1000000+i). Every lookup key is unique.
+#    INDG14_3: lower(varchar) expression index with INCLUDE (col), index-only scan of the included column, 1 row
+#    INDG14_4: baseline, plain bigint secondary index, 1-row point select
+#    INDG14_5: (col_bigint_base_1 + col_bigint_seq_1) arithmetic expression index, 1 row
+#Data: INDG14_U_tbl_1 1000000 rows of about 1KB; row i has col_varchar10_lower_1 = 'id-'||(1000000+i), col_varchar10_upper_1/2 = 'ID-'||(1000000+i),
+#      col_bigint_skey_1 = 1000000+i, col_bigint_base_1 = 1000000 and col_bigint_seq_1 = i, so base + seq = skey. Every lookup key is unique.
 type: YUGABYTE
 driver: com.yugabyte.Driver
-url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true&load-balance=false
+url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true&load-balance=true
 username: {{username}}
 password: {{password}}
 batchsize: 128
@@ -18,7 +20,7 @@ loaderThreads: 1
 terminals: 1
 collect_pg_stat_statements: true
 use_dist_in_explain: true
-yaml_version: v1.0
+yaml_version: 1.0
 works:
     work:
         time_secs: 180
@@ -31,40 +33,59 @@ microbenchmark:
         setAutoCommit: true
         create:
             - DROP TABLE IF EXISTS INDG14_U_tbl_1;
-            - CREATE TABLE INDG14_U_tbl_1(col_bigint_id_1 bigint, col_varchar10_lower_1 varchar(10), col_varchar10_upper_1 varchar(10), col_varchar10_upper_2 varchar(10), col_float2_1 float(2), col_boolean_1 boolean, col_varchar100_1 varchar(100), PRIMARY KEY((col_bigint_id_1) HASH));
+            - CREATE TABLE INDG14_U_tbl_1(col_bigint_id_1 bigint, col_varchar10_lower_1 varchar(10), col_varchar10_upper_1 varchar(10), col_varchar10_upper_2 varchar(10), col_bigint_skey_1 bigint, col_bigint_base_1 bigint, col_bigint_seq_1 bigint, col_float2_1 float(2), col_boolean_1 boolean, col_varchar100_1 varchar(100), col_varchar100_2 varchar(100), col_varchar100_3 varchar(100), col_varchar100_4 varchar(100), col_varchar500_1 varchar(500), PRIMARY KEY((col_bigint_id_1) HASH));
             - CREATE INDEX INDG14_U_tbl_1_varchar_idx ON INDG14_U_tbl_1(col_varchar10_lower_1);
             - CREATE INDEX INDG14_U_tbl_1_lower_idx ON INDG14_U_tbl_1(lower(col_varchar10_upper_1));
             - CREATE INDEX INDG14_U_tbl_1_lower_incl_idx ON INDG14_U_tbl_1(lower(col_varchar10_upper_2)) INCLUDE (col_varchar10_upper_2);
+            - CREATE INDEX INDG14_U_tbl_1_bigint_idx ON INDG14_U_tbl_1(col_bigint_skey_1);
+            - CREATE INDEX INDG14_U_tbl_1_sum_idx ON INDG14_U_tbl_1((col_bigint_base_1 + col_bigint_seq_1));
         cleanup:
             - DROP TABLE IF EXISTS INDG14_U_tbl_1;
         loadRules:
-            - table: INDG14_U_tbl_
-              count: 1
+            - table: INDG14_U_tbl_1
               rows: 1000000
               columns:
-                  - name: col_bigint_id_
-                    count: 1
+                  - name: col_bigint_id_1
                     util: PrimaryIntGen
                     params: [1, 1000000]
-                  - name: col_varchar10_lower_
-                    count: 1
+                  - name: col_varchar10_lower_1
                     util: CyclicSeqStringGen
                     params: [1, 1000000, "id-"]
-                  - name: col_varchar10_upper_
-                    count: 2
+                  - name: col_varchar10_upper_1
                     util: CyclicSeqStringGen
                     params: [1, 1000000, "ID-"]
-                  - name: col_float2_
-                    count: 1
+                  - name: col_varchar10_upper_2
+                    util: CyclicSeqStringGen
+                    params: [1, 1000000, "ID-"]
+                  - name: col_bigint_skey_1
+                    util: PrimaryIntGen
+                    params: [1000001, 2000000]
+                  - name: col_bigint_base_1
+                    util: OneNumberFromArray
+                    params: [1000000]
+                  - name: col_bigint_seq_1
+                    util: PrimaryIntGen
+                    params: [1, 1000000]
+                  - name: col_float2_1
                     util: RandomNoWithDecimalPoints
                     params: [1, 1000000, 2]
-                  - name: col_boolean_
-                    count: 1
+                  - name: col_boolean_1
                     util: RandomBoolean
-                  - name: col_varchar100_
-                    count: 1
+                  - name: col_varchar100_1
                     util: RandomAString
                     params: [100, 100]
+                  - name: col_varchar100_2
+                    util: RandomAString
+                    params: [100, 100]
+                  - name: col_varchar100_3
+                    util: RandomAString
+                    params: [100, 100]
+                  - name: col_varchar100_4
+                    util: RandomAString
+                    params: [100, 100]
+                  - name: col_varchar500_1
+                    util: RandomAString
+                    params: [500, 500]
 
         executeRules:
             - workload: INDG14_1_plain_varchar_skey_point_select
@@ -99,3 +120,25 @@ microbenchmark:
                           bindings:
                               - util: RandomUniqueCyclicStringGen
                                 params: [1, 1000000, "ID-"]
+
+            - workload: INDG14_4_plain_bigint_skey_point_select
+              customTags: schematype=regular,partition=hash,pkey=single,cardinality=single,projection=all,filtercount=one,filteron=hashskey,filtertype=pointselect,queryshape=scan,columndatatype=bigint,indexexpr=none
+              run:
+                  - name: point_select_plain_bigint_skey
+                    weight: 100
+                    queries:
+                        - query: select * from INDG14_U_tbl_1 where col_bigint_skey_1 = ?
+                          bindings:
+                              - util: RandomUniqueCyclicIntGen
+                                params: [1000001, 2000000, 1]
+
+            - workload: INDG14_5_arithmetic_expr_skey_point_select
+              customTags: schematype=regular,partition=hash,pkey=single,cardinality=single,projection=all,filtercount=one,filteron=hashskey,filtertype=pointselect,queryshape=scan,columndatatype=bigint,indexexpr=arithmetic
+              run:
+                  - name: point_select_arithmetic_expr_skey
+                    weight: 100
+                    queries:
+                        - query: select * from INDG14_U_tbl_1 where (col_bigint_base_1 + col_bigint_seq_1) = ?
+                          bindings:
+                              - util: RandomUniqueCyclicIntGen
+                                params: [1000001, 2000000, 1]

@@ -18,7 +18,7 @@ isolation: TRANSACTION_REPEATABLE_READ
 loaderThreads: 1
 terminals: 1
 collect_pg_stat_statements: true
-yaml_version: v1.0
+yaml_version: 1.0
 works:
     work:
         time_secs: 180
@@ -42,66 +42,50 @@ microbenchmark:
             - DROP TABLE IF EXISTS JOING13_outer_1;
             - DROP TABLE IF EXISTS JOING13_inner_1;
         loadRules:
-            - table: JOING13_outer_
-              count: 1
+            - table: JOING13_outer_1
               rows: 1000000
               columns:
-                  - name: col_bigint_id_
-                    count: 1
+                  - name: col_bigint_id_1
                     util: PrimaryIntGen
                     params: [1, 1000000]
-                  - name: col_bigint_skey_
-                    count: 1
+                  - name: col_bigint_skey_1
                     util: PrimaryIntGen
                     params: [1000001, 2000000]
-                  - name: col_varchar10_lower_
-                    count: 1
+                  - name: col_varchar10_lower_1
                     util: CyclicSeqStringGen
                     params: [1, 1000000, "id-"]
-                  - name: col_float2_
-                    count: 1
+                  - name: col_float2_1
                     util: RandomNoWithDecimalPoints
                     params: [1, 1000000, 2]
-                  - name: col_boolean_
-                    count: 1
+                  - name: col_boolean_1
                     util: RandomBoolean
-                  - name: col_varchar100_
-                    count: 1
+                  - name: col_varchar100_1
                     util: RandomAString
                     params: [100, 100]
-            - table: JOING13_inner_
-              count: 1
+            - table: JOING13_inner_1
               rows: 1000000
               columns:
-                  - name: col_bigint_id_
-                    count: 1
+                  - name: col_bigint_id_1
                     util: PrimaryIntGen
                     params: [1, 1000000]
-                  - name: col_bigint_skey_
-                    count: 1
+                  - name: col_bigint_skey_1
                     util: PrimaryIntGen
                     params: [1000001, 2000000]
-                  - name: col_varchar10_lower_
-                    count: 1
+                  - name: col_varchar10_lower_1
                     util: CyclicSeqStringGen
                     params: [1, 1000000, "id-"]
-                  - name: col_varchar10_upper_
-                    count: 1
+                  - name: col_varchar10_upper_1
                     util: CyclicSeqStringGen
                     params: [1, 1000000, "ID-"]
-                  - name: col_varchar10_num_
-                    count: 1
+                  - name: col_varchar10_num_1
                     util: CyclicSeqStringGen
                     params: [1, 1000000, "0"]
-                  - name: col_float2_
-                    count: 1
+                  - name: col_float2_1
                     util: RandomNoWithDecimalPoints
                     params: [1, 1000000, 2]
-                  - name: col_boolean_
-                    count: 1
+                  - name: col_boolean_1
                     util: RandomBoolean
-                  - name: col_varchar100_
-                    count: 1
+                  - name: col_varchar100_1
                     util: RandomAString
                     params: [100, 100]
 
