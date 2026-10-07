@@ -42,6 +42,14 @@ public class BulkloadUtils {
     }
 
     public static void createTable(Connection conn, String tableName, int numOfColumns) {
+        createTable(conn, tableName, numOfColumns, 0);
+    }
+
+    /**
+     * hashTablets > 0 (YugabyteDB only): hash-shard the PK and pre-split into that many tablets.
+     * Otherwise YugabyteDB gets a range-sharded PK (id asc), as before.
+     */
+    public static void createTable(Connection conn, String tableName, int numOfColumns, int hashTablets) {
         StringBuilder createStmt = new StringBuilder();
         createStmt.append(String.format("CREATE TABLE %s (id INT, ", tableName));
         for (int i = 1; i <= numOfColumns; i++) {
@@ -49,7 +57,11 @@ public class BulkloadUtils {
         }
         try {
             if (conn.getMetaData().getUserName().equalsIgnoreCase("yugabyte")) {
-                createStmt.append("primary key (id asc) );");
+                if (hashTablets > 0) {
+                    createStmt.append(String.format("primary key (id hash) ) SPLIT INTO %d TABLETS;", hashTablets));
+                } else {
+                    createStmt.append("primary key (id asc) );");
+                }
             } else {
                 createStmt.append("primary key (id) );");
             }

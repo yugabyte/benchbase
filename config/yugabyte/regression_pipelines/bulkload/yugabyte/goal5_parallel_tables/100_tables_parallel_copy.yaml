@@ -1,0 +1,29 @@
+
+type: YUGABYTE
+driver: com.yugabyte.Driver
+url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=disable&ApplicationName=featurebench&reWriteBatchedInserts=true
+username: {{username}}
+password: {{password}}
+batchsize: 512
+isolation: TRANSACTION_REPEATABLE_READ
+collect_pg_stat_statements: false
+terminals: 1
+yaml_version: 1.0
+works:
+    work:
+        rate: unlimited
+        serial: true
+microbenchmark:
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.bulkload.Goal5
+    properties:
+        setAutoCommit: true
+        # Goal5 - 1 :: create 100 tables with 15 fields -> parallel COPY of 300K rows into each (30M total, only PK)
+        workload: load_100tables_parallel
+        tableName: orders
+        tableCount: 100
+        parallelism: 100
+        columns: 15
+        rows: 30000000
+        filePath: bulkload/goal5/30m_orders.csv
+        stringLength: 32
+        tablets: 50
