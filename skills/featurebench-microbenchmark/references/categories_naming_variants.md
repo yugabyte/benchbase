@@ -42,12 +42,12 @@ Run `python3 skills/featurebench-microbenchmark/scripts/fbtool.py next-id <categ
 
 | Category | File pattern | Example | Current next (Sep 2026, re-check with next-id) |
 |---|---|---|---|
-| Index_workloads | `INDG<N>_U_<desc>` | `INDG13_U_compare_index_scan` | INDG14_U_ |
+| Index_workloads | `INDG<N>_U_<desc>` | `INDG13_U_compare_index_scan` | INDG16_U_ |
 | aggregate_workloads | `AGGRG<N>_<desc>` | `AGGRG10_aggregate_cardinality` | AGGRG11_ |
 | conditional_workloads | `CW<N>_<desc>` | `CW6_on_conflict_do_update_range` | CW7_ |
 | ddl_workloads | `DDL_G<N>_<desc>` | `DDL_G1_basic_ops` | DDL_G2_ |
 | foreign_key | `FK_G<N>_<desc>` | `FK_G4_varyingFKcardinality_parent_table_ops` | FK_G5_ |
-| join_workloads | `JOING<N>_<desc>` | `JOING12_compate_indexscan_on_rangetbl` | JOING13_ |
+| join_workloads | `JOING<N>_<desc>` | `JOING12_compate_indexscan_on_rangetbl` | JOING14_ |
 | miscellaneous | `MG<N>_<desc>` | `MG3_multi_statement_json_trigger_index` | MG4_ |
 | orderby_workloads | `ORDG<N>_<desc>` | `ORDG8_orderby_backwardscan_post_updates` | ORDG9_ |
 | range_write_workloads | `RW_G<N>_<desc>` | `RW_G7_update_varying_pk_columns` | RW_G8_ |
@@ -59,7 +59,7 @@ Run `python3 skills/featurebench-microbenchmark/scripts/fbtool.py next-id <categ
 
 - `<desc>` is snake_case (scan uses camelCase). It names the varied dimension: `_varying_rows`, `_increasingColumn`, `_data_cardinality`, `_hash_tbl_`, `_range_tbl_`.
 - **Workload names:** `<PREFIX>_<k>_<descriptor>`, e.g. `AGGRG11_1_count_point_select`. They must be identical in every variant, because results are keyed by (file basename, workload name). **Never rename an existing file or workload**; that breaks trend history.
-- **Table names** carry the file prefix, lowercase or matching the file's case (`aggrg10_pkeyBigint1M_1`, `CW3_accounts_1`). Every file runs on the same universe in sorted order, so unprefixed names like `rangetbl_1` collide between files (fixed in f56eedd0). End table names with `_<n>` so `table: x_` + `count: 1` works.
+- **Table names** carry the file prefix, lowercase or matching the file's case (`aggrg10_pkeyBigint1M_1`, `CW3_accounts_1`). Every file runs on the same universe in sorted order, so unprefixed names like `rangetbl_1` collide between files (fixed in f56eedd0). End table names with `_<n>`, e.g. `x_1`, and use that full name in `loadRules`.
 - **Header comment** block at the top of the file:
   ```
   #TEST FOR YUGABYTE REGULAR TABLES
@@ -95,7 +95,7 @@ loaderThreads: 1
 terminals: 1
 collect_pg_stat_statements: true
 use_dist_in_explain: true
-yaml_version: v1.0
+yaml_version: 1.0
 works:
     work:
         time_secs: 180
@@ -128,7 +128,7 @@ loaderThreads: 4
 terminals: 1
 collect_pg_stat_statements: true
 use_dist_in_explain: true
-yaml_version: v1.0
+yaml_version: 1.0
 targetCPU: 80
 toleranceCPU: 5
 optimalThreads: true
@@ -204,6 +204,7 @@ One comma-separated `key=value` string per workload. Use only the existing vocab
 - `orderbyon` = rangeskey | rangepkey | rangepkeydesc | hashpkey | hashpkeydesc | hashskey | nonindexed
 - `columndatatype` = bigint | varchar | uuid | float | date
 - `indexed` = true
+- `indexexpr` = none | lower | cast | arithmetic, the key expression of the index the workload reads. `none` marks the plain-column baseline paired with an expression workload
 - `customer` = <n>, which flags a customer-reported pattern (ask the user)
 - vector only: `dim`, `magnitude`, `distance` (l2|ip|cosine), `filter`, `top_k`, `m`, `ef_construction`, `operation`, `deletetype`, `column`
 

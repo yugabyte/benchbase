@@ -29,7 +29,7 @@ Keys are case-sensitive. A misspelled key is **silently ignored**, for example `
 | `disable_explain` | false | Skips the pre-run EXPLAIN. Set it (or `raw_sql` on the workload) when a query can't be EXPLAINed (ANALYZE, DDL, CALL…); otherwise the EXPLAIN pass fails quietly (§6.1). |
 | `force_capture_explain_analyze` | false | EXPLAIN ANALYZE for INSERT/DELETE too, which **executes them 4×**. |
 | `analyze_on_all_tables` | false | **Not used in these microbenchmarks; don't add it.** (It issues a YB-only `ALTER DATABASE … SET yb_enable_optimizer_statistics`, which fails on Postgres.) |
-| `yaml_version` | 1.0 | Metadata. New files use `v1.0`. **Bump it on every behavioural edit** (v1.0→v1.1 for small fixes, v2.0 for changes that break comparability). |
+| `yaml_version` | 1.0 | Metadata, written as a number. New files use `1.0`. **Bump it on every behavioural edit** (1.0→1.1 for small fixes, 2.0 for changes that break comparability). Older files use the string `v1.0`; benchbase strips the `v`, so both report as a number. |
 | `yaml_change_description` | "" | One line explaining the bump. |
 | `optimalThreads` | false | Thread-scaling search. Only one workload per invocation (the pipeline runs `--workloads` one at a time). |
 | `targetCPU`, `toleranceCPU`, `samplingTime`, `restingTimeSecs`, `flatMaxScalingSteps`, `useThroughputThreshold`, `scalingMinDeltaPercent`, `threadIncrement`, `linearPGthread`, `truncateBetweenIterations` | 80, 5, 0, 120, 2, false, 5, 3, false, false | optimalThreads tuning. Copy these from an existing throughput file. |
@@ -71,15 +71,15 @@ microbenchmark:
 
 ```yaml
 loadRules:
-    - table: scang14_tbl_        # + count: 2  -> scang14_tbl_1, scang14_tbl_2 (same rule cloned)
-      count: 1
+    - table: scang14_tbl_1       # the table name as created
       rows: 1000000
       columns:
-          - name: col_bigint_    # + count: 5 -> col_bigint_1..col_bigint_5 (independent instances)
-            count: 5
+          - name: col_bigint_1   # the column name as created
             util: CyclicSeqIntGen
             params: [1, 1000000]
 ```
+- Write the real table and column names, without `count`. Don't write `count: 1`.
+- `count: N` is optional, for N copies. `table: scang14_tbl_` + `count: 2` loads `scang14_tbl_1` and `scang14_tbl_2` with the same rule. `name: col_bigint_` + `count: 5` fills `col_bigint_1`..`col_bigint_5` with independent generator instances.
 - A loader builds `INSERT INTO t (listed cols) VALUES (?, …)`. Columns that aren't listed get their defaults (serial, identity, default now()).
 - `table: "a, b"` loads identical data into two tables.
 - One thread loads each table. Table count × rows drives load time.

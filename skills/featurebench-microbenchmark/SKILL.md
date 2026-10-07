@@ -80,10 +80,10 @@ Rules that prevent the historical mistakes:
 - **Header:** copy it exactly from `references/categories_naming_variants.md` §4.
   - Use `loaderThreads` in camelCase; the lowercase spelling is silently ignored.
   - Use only the `{{endpoint}}`, `{{username}}` and `{{password}}` placeholders.
-  - New files start at `yaml_version: v1.0`.
+  - New files start at `yaml_version: 1.0`, written as a number. Older files use the string `v1.0`.
   - Don't add `analyze_on_all_tables`.
 - **create:** `DROP TABLE IF EXISTS` first, then the tables, then secondary indexes. Write PKs as constraints, `PRIMARY KEY(col ASC)` or `PRIMARY KEY((a) HASH, b ASC)`, so the variant transforms stay mechanical. `cleanup` mirrors every drop.
-- **loadRules:** `table: <name>_` + `count: 1` gives `<name>_1`. Size PK generators to cover `rows`. Choose generators from the cheat sheet in `references/utils.md`.
+- **loadRules:** use the real table and column names as created (`table: <prefix>_tbl_1`, `name: col_bigint_id_1`), without `count`. `count: N` is only for N copies of the same table or column; never write `count: 1`. Size PK generators to cover `rows`. Choose generators from the cheat sheet in `references/utils.md`.
 - **executeRules:**
   - Every `run` needs `name` plus an integer `weight`.
   - The `?` count must equal the number of generated values.
@@ -137,7 +137,7 @@ fbtool lint config/yugabyte/regression_pipelines/<category>/*/<FILE>.yaml
 The steps are the same, with these additions:
 - Keep the file and workload names; renaming breaks result history.
 - Change all variants together. #182 fixed a copy that had been updated in only one variant.
-- Bump `yaml_version`: v1.x → v1.(x+1) for fixes, v2.0 when results aren't comparable with history.
+- Bump `yaml_version`: 1.x → 1.(x+1) for fixes, 2.0 when results aren't comparable with history. Write the bumped value as a number, even if the file had `v1.x`.
 - Add a `yaml_change_description`, and optionally `workload_version` / `workload_change_description` per workload.
 
 ## Guardrails
