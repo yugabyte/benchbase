@@ -2,11 +2,11 @@
 #GOAL14: Latency of reading only the LAST column, or a few sparse columns, as the table gets wider
 #        (10, 100 and 1000 bigint columns, 1M rows, range primary key).
 #TESTS:
-#   1-9.   Point lookup (1 row) and PK range scans (100 and 1000 rows) projecting only the last column,
-#          on the 10, 100 and 1000 column tables
-#   10-11. SELECT the first, middle and last columns (col_bigint_1, col_bigint_500, col_bigint_999)
-#          of the 1000 column table by point lookup and by a 100 row range scan
-#   12-13. UPDATE those 3 columns, and only the last column, by PK on the 1000 column table
+#   1-6. Point lookup (1 row) and a PK range scan (1000 rows) projecting only the last column,
+#        on the 10, 100 and 1000 column tables
+#   7.   SELECT the first, middle and last columns (col_bigint_1, col_bigint_500, col_bigint_999)
+#        of the 1000 column table by point lookup
+#   8-9. UPDATE those 3 columns, and only the last column, by PK on the 1000 column table
 
 type: POSTGRES
 driver: org.postgresql.Driver
@@ -93,25 +93,10 @@ microbenchmark:
                               util: RandomNumber
                               params: [1, 1000000]
 
-            - workload: scanG14_2_lastcol_10col_range_100_rows
-              customTags: schematype=regular,partition=none,pkey=asc,cardinality=multi,projection=lastcol,filteron=pkey,filtertype=rangescan,queryshape=scan,returnrows=100
-              run:
-                  - name: scanG14_2_lastcol_10col_range_100_rows_test
-                    weight: 100
-                    queries:
-                        - query: select col_bigint_9 from scang14_lastcol_10col_1 where col_bigint_id_1 between ? and ?
-                          bindings:
-                              - util: RandomNumber
-                                params: [1, 999900]
-                                referenceName: id1
-                              - util: ExpressionEval
-                                params:
-                                    - "id1 + 99"
-
-            - workload: scanG14_3_lastcol_10col_range_1000_rows
+            - workload: scanG14_2_lastcol_10col_range_1000_rows
               customTags: schematype=regular,partition=none,pkey=asc,cardinality=multi,projection=lastcol,filteron=pkey,filtertype=rangescan,queryshape=scan,returnrows=1000
               run:
-                  - name: scanG14_3_lastcol_10col_range_1000_rows_test
+                  - name: scanG14_2_lastcol_10col_range_1000_rows_test
                     weight: 100
                     queries:
                         - query: select col_bigint_9 from scang14_lastcol_10col_1 where col_bigint_id_1 between ? and ?
@@ -123,10 +108,10 @@ microbenchmark:
                                 params:
                                     - "id1 + 999"
 
-            - workload: scanG14_4_lastcol_100col_point_lookup
+            - workload: scanG14_3_lastcol_100col_point_lookup
               customTags: schematype=regular,partition=none,pkey=asc,cardinality=single,projection=lastcol,filteron=pkey,filtertype=pointselect,queryshape=scan,returnrows=1
               run:
-                  - name: scanG14_4_lastcol_100col_point_lookup_test
+                  - name: scanG14_3_lastcol_100col_point_lookup_test
                     weight: 100
                     queries:
                         - query: select col_bigint_99 from scang14_lastcol_100col_1 where col_bigint_id_1=(?)
@@ -135,25 +120,10 @@ microbenchmark:
                               util: RandomNumber
                               params: [1, 1000000]
 
-            - workload: scanG14_5_lastcol_100col_range_100_rows
-              customTags: schematype=regular,partition=none,pkey=asc,cardinality=multi,projection=lastcol,filteron=pkey,filtertype=rangescan,queryshape=scan,returnrows=100
-              run:
-                  - name: scanG14_5_lastcol_100col_range_100_rows_test
-                    weight: 100
-                    queries:
-                        - query: select col_bigint_99 from scang14_lastcol_100col_1 where col_bigint_id_1 between ? and ?
-                          bindings:
-                              - util: RandomNumber
-                                params: [1, 999900]
-                                referenceName: id1
-                              - util: ExpressionEval
-                                params:
-                                    - "id1 + 99"
-
-            - workload: scanG14_6_lastcol_100col_range_1000_rows
+            - workload: scanG14_4_lastcol_100col_range_1000_rows
               customTags: schematype=regular,partition=none,pkey=asc,cardinality=multi,projection=lastcol,filteron=pkey,filtertype=rangescan,queryshape=scan,returnrows=1000
               run:
-                  - name: scanG14_6_lastcol_100col_range_1000_rows_test
+                  - name: scanG14_4_lastcol_100col_range_1000_rows_test
                     weight: 100
                     queries:
                         - query: select col_bigint_99 from scang14_lastcol_100col_1 where col_bigint_id_1 between ? and ?
@@ -165,10 +135,10 @@ microbenchmark:
                                 params:
                                     - "id1 + 999"
 
-            - workload: scanG14_7_lastcol_1000col_point_lookup
+            - workload: scanG14_5_lastcol_1000col_point_lookup
               customTags: schematype=regular,partition=none,pkey=asc,cardinality=single,projection=lastcol,filteron=pkey,filtertype=pointselect,queryshape=scan,returnrows=1
               run:
-                  - name: scanG14_7_lastcol_1000col_point_lookup_test
+                  - name: scanG14_5_lastcol_1000col_point_lookup_test
                     weight: 100
                     queries:
                         - query: select col_bigint_999 from scang14_lastcol_1000col_1 where col_bigint_id_1=(?)
@@ -177,25 +147,10 @@ microbenchmark:
                               util: RandomNumber
                               params: [1, 1000000]
 
-            - workload: scanG14_8_lastcol_1000col_range_100_rows
-              customTags: schematype=regular,partition=none,pkey=asc,cardinality=multi,projection=lastcol,filteron=pkey,filtertype=rangescan,queryshape=scan,returnrows=100
-              run:
-                  - name: scanG14_8_lastcol_1000col_range_100_rows_test
-                    weight: 100
-                    queries:
-                        - query: select col_bigint_999 from scang14_lastcol_1000col_1 where col_bigint_id_1 between ? and ?
-                          bindings:
-                              - util: RandomNumber
-                                params: [1, 999900]
-                                referenceName: id1
-                              - util: ExpressionEval
-                                params:
-                                    - "id1 + 99"
-
-            - workload: scanG14_9_lastcol_1000col_range_1000_rows
+            - workload: scanG14_6_lastcol_1000col_range_1000_rows
               customTags: schematype=regular,partition=none,pkey=asc,cardinality=multi,projection=lastcol,filteron=pkey,filtertype=rangescan,queryshape=scan,returnrows=1000
               run:
-                  - name: scanG14_9_lastcol_1000col_range_1000_rows_test
+                  - name: scanG14_6_lastcol_1000col_range_1000_rows_test
                     weight: 100
                     queries:
                         - query: select col_bigint_999 from scang14_lastcol_1000col_1 where col_bigint_id_1 between ? and ?
@@ -207,10 +162,10 @@ microbenchmark:
                                 params:
                                     - "id1 + 999"
 
-            - workload: scanG14_10_sparse_1000col_select_3cols_point_lookup
+            - workload: scanG14_7_sparse_1000col_select_3cols_point_lookup
               customTags: schematype=regular,partition=none,pkey=asc,cardinality=single,projection=sparse,filteron=pkey,filtertype=pointselect,queryshape=scan,selectcols=3,returnrows=1
               run:
-                  - name: scanG14_10_sparse_1000col_select_3cols_point_lookup_test
+                  - name: scanG14_7_sparse_1000col_select_3cols_point_lookup_test
                     weight: 100
                     queries:
                         - query: select col_bigint_1, col_bigint_500, col_bigint_999 from scang14_lastcol_1000col_1 where col_bigint_id_1=(?)
@@ -219,25 +174,10 @@ microbenchmark:
                               util: RandomNumber
                               params: [1, 1000000]
 
-            - workload: scanG14_11_sparse_1000col_select_3cols_range_100_rows
-              customTags: schematype=regular,partition=none,pkey=asc,cardinality=multi,projection=sparse,filteron=pkey,filtertype=rangescan,queryshape=scan,selectcols=3,returnrows=100
-              run:
-                  - name: scanG14_11_sparse_1000col_select_3cols_range_100_rows_test
-                    weight: 100
-                    queries:
-                        - query: select col_bigint_1, col_bigint_500, col_bigint_999 from scang14_lastcol_1000col_1 where col_bigint_id_1 between ? and ?
-                          bindings:
-                              - util: RandomNumber
-                                params: [1, 999900]
-                                referenceName: id1
-                              - util: ExpressionEval
-                                params:
-                                    - "id1 + 99"
-
-            - workload: scanG14_12_sparse_1000col_update_3cols
+            - workload: scanG14_8_sparse_1000col_update_3cols
               customTags: schematype=regular,partition=none,pkey=asc,cardinality=single,projection=sparse,filteron=pkey,filtertype=pointselect,queryshape=update,updatecols=3
               run:
-                  - name: scanG14_12_sparse_1000col_update_3cols_test
+                  - name: scanG14_8_sparse_1000col_update_3cols_test
                     weight: 100
                     queries:
                         - query: update scang14_lastcol_1000col_1 set col_bigint_1=?, col_bigint_500=?, col_bigint_999=? where col_bigint_id_1=(?)
@@ -251,10 +191,10 @@ microbenchmark:
                               - util: RandomNumber
                                 params: [1, 1000000]
 
-            - workload: scanG14_13_sparse_1000col_update_lastcol_only
+            - workload: scanG14_9_sparse_1000col_update_lastcol_only
               customTags: schematype=regular,partition=none,pkey=asc,cardinality=single,projection=lastcol,filteron=pkey,filtertype=pointselect,queryshape=update,updatecols=1
               run:
-                  - name: scanG14_13_sparse_1000col_update_lastcol_only_test
+                  - name: scanG14_9_sparse_1000col_update_lastcol_only_test
                     weight: 100
                     queries:
                         - query: update scang14_lastcol_1000col_1 set col_bigint_999=? where col_bigint_id_1=(?)
