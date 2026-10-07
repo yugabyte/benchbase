@@ -564,7 +564,7 @@ def lint_file(path, rep, utils):
         if k not in data:
             rep.err(where, f"missing required key {k}")
     if "yaml_version" not in data:
-        rep.warn(where, "missing yaml_version (use v1.0 for new files; bump on behavioural edits)")
+        rep.warn(where, "missing yaml_version (use 1.0 for new files; bump on behavioural edits)")
     iso = data.get("isolation")
     if iso and iso not in ISOLATIONS:
         rep.err(where, f"isolation {iso!r} is not one of {sorted(ISOLATIONS)} (silently falls back to SERIALIZABLE)")
@@ -686,7 +686,7 @@ def lint_file(path, rep, utils):
         loaded.update(tabs)
         for t in tabs:
             if ctables and t not in ctables:
-                rep.err(w, f"loads table {t!r} which create does not create (remember table: foo_ + count: 1 -> foo_1)")
+                rep.err(w, f"loads table {t!r} which create does not create (use the created name, e.g. table: foo_1; with count, table: foo_ + count: 1 -> foo_1)")
         rows = int(r.get("rows", 0) or 0)
         seen_counted = False
         for j, c in enumerate(as_list(r.get("columns"))):

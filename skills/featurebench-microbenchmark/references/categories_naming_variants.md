@@ -59,7 +59,7 @@ Run `python3 skills/featurebench-microbenchmark/scripts/fbtool.py next-id <categ
 
 - `<desc>` is snake_case (scan uses camelCase). It names the varied dimension: `_varying_rows`, `_increasingColumn`, `_data_cardinality`, `_hash_tbl_`, `_range_tbl_`.
 - **Workload names:** `<PREFIX>_<k>_<descriptor>`, e.g. `AGGRG11_1_count_point_select`. They must be identical in every variant, because results are keyed by (file basename, workload name). **Never rename an existing file or workload**; that breaks trend history.
-- **Table names** carry the file prefix, lowercase or matching the file's case (`aggrg10_pkeyBigint1M_1`, `CW3_accounts_1`). Every file runs on the same universe in sorted order, so unprefixed names like `rangetbl_1` collide between files (fixed in f56eedd0). End table names with `_<n>` so `table: x_` + `count: 1` works.
+- **Table names** carry the file prefix, lowercase or matching the file's case (`aggrg10_pkeyBigint1M_1`, `CW3_accounts_1`). Every file runs on the same universe in sorted order, so unprefixed names like `rangetbl_1` collide between files (fixed in f56eedd0). End table names with `_<n>`, e.g. `x_1`, and use that full name in `loadRules`.
 - **Header comment** block at the top of the file:
   ```
   #TEST FOR YUGABYTE REGULAR TABLES
@@ -95,7 +95,7 @@ loaderThreads: 1
 terminals: 1
 collect_pg_stat_statements: true
 use_dist_in_explain: true
-yaml_version: v1.0
+yaml_version: 1.0
 works:
     work:
         time_secs: 180
@@ -128,7 +128,7 @@ loaderThreads: 4
 terminals: 1
 collect_pg_stat_statements: true
 use_dist_in_explain: true
-yaml_version: v1.0
+yaml_version: 1.0
 targetCPU: 80
 toleranceCPU: 5
 optimalThreads: true
