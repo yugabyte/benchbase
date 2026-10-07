@@ -8,7 +8,8 @@ isolation: TRANSACTION_REPEATABLE_READ
 loaderthreads: 1
 terminals: 1
 collect_pg_stat_statements: true
-yaml_version: v1.0
+yaml_version: 2.0
+yaml_change_description: Correcting data distribution to remove variation
 works:
     work:
         time_secs: 600
@@ -52,7 +53,7 @@ microbenchmark:
                       params: [ 1, 1000000 ]
                     - name: col_bigint_
                       count: 2
-                      util: RandomNumber
+                      util: CyclicSeqIntGen
                       params: [ 1, 1000000 ]
                     - name: col_float2_
                       count: 2
@@ -67,16 +68,16 @@ microbenchmark:
                       util: RandomBoolean
                     - name: col_varchar10_id_
                       count: 1
-                      util: PrimaryStringGen
-                      params: [1, 10]
+                      util: RandomAString
+                      params: [10, 10]
                     - name: col_varchar100_id_
                       count: 2
-                      util: PrimaryStringGen
-                      params: [1, 100]
+                      util: RandomAString
+                      params: [100, 100]
                     - name: col_varchar500_id_
                       count: 1
-                      util: PrimaryStringGen
-                      params: [1, 500]
+                      util: RandomAString
+                      params: [500, 500]
 
               - table: Hashtbl_
                 count: 2
@@ -88,7 +89,7 @@ microbenchmark:
                       params: [ 1, 1000000 ]
                     - name: col_bigint_
                       count: 2
-                      util: RandomNumber
+                      util: CyclicSeqIntGen
                       params: [ 1, 1000000 ]
                     - name: col_float2_
                       count: 2
@@ -103,16 +104,16 @@ microbenchmark:
                       util: RandomBoolean
                     - name: col_varchar10_id_
                       count: 1
-                      util: PrimaryStringGen
-                      params: [1, 10]
+                      util: RandomAString
+                      params: [10, 10]
                     - name: col_varchar100_id_
                       count: 2
-                      util: PrimaryStringGen
-                      params: [1, 100]
+                      util: RandomAString
+                      params: [100, 100]
                     - name: col_varchar500_id_
                       count: 1
-                      util: PrimaryStringGen
-                      params: [1, 500]
+                      util: RandomAString
+                      params: [500, 500]
 
         executeRules:
             - workload: JOING3_1_join_on_pk_of_range_and_hash_tbl
