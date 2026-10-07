@@ -10,7 +10,7 @@
 #      col_varchar10_upper_1 = 'ID-'||(1000000+i). Fixed-width strings sort like their numbers.
 type: YUGABYTE
 driver: com.yugabyte.Driver
-url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true&load-balance=true
+url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true&load-balance=false
 username: {{username}}
 password: {{password}}
 batchsize: 128
