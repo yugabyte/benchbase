@@ -6,7 +6,7 @@ password: {{password}}
 batchsize: 128
 isolation: TRANSACTION_REPEATABLE_READ
 loaderThreads: 4
-terminals: 1
+terminals: 15
 collect_pg_stat_statements: true
 use_dist_in_explain: true
 yaml_version: v2.0
