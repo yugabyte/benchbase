@@ -1,27 +1,36 @@
 package com.oltpbenchmark.benchmarks.featurebench.utils;
 
-
-import org.json.JSONObject;
-
-import java.lang.reflect.InvocationTargetException;
-import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 public class RandomJson implements BaseUtil {
 
-    protected int fields;
-    protected int valueLength;
-    protected int nestedness;
+    private final String jsonStr;
 
     public RandomJson(List<Object> values) {
         if (values.size() < 2) {
             throw new RuntimeException("Incorrect number of parameters for util function "
                 + this.getClass());
         }
-        this.fields = (int)values.get(0);
-        this.valueLength = (int)values.get(1);
-        if (values.size() > 2)
-            this.nestedness = (int)values.get(2);
+        int fields = (int) values.get(0);
+        int valueLength = (int) values.get(1);
+
+        byte[] alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".getBytes();
+        Random rng = new Random();
+        byte[] valBytes = new byte[valueLength];
+        for (int i = 0; i < valueLength; i++) {
+            valBytes[i] = alpha[rng.nextInt(52)];
+        }
+        String val = new String(valBytes);
+
+        StringBuilder sb = new StringBuilder(2 + fields * (6 + valueLength));
+        sb.append('{');
+        for (int i = 0; i < fields; i++) {
+            if (i > 0) sb.append(',');
+            sb.append('"').append(i).append("\":\"").append(val).append('"');
+        }
+        sb.append('}');
+        this.jsonStr = sb.toString();
     }
 
     public RandomJson(List<Object> values, int workerId, int totalWorkers) {
@@ -29,12 +38,7 @@ public class RandomJson implements BaseUtil {
     }
 
     @Override
-    public Object run() throws ClassNotFoundException, InvocationTargetException,
-        NoSuchMethodException, InstantiationException, IllegalAccessException {
-        JSONObject outer = new JSONObject();
-        for (int i = 0; i < fields; i++) {
-            outer.put(Integer.toString(i), new RandomStringAlphabets(Collections.singletonList(valueLength)).run());
-        }
-        return outer.toString();
+    public Object run() {
+        return jsonStr;
     }
 }
