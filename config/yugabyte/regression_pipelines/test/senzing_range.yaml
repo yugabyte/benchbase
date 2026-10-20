@@ -1,0 +1,115 @@
+type: YUGABYTE
+driver: com.yugabyte.Driver
+url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true&load-balance=true
+username: {{username}}
+password: {{password}}
+batchsize: 128
+isolation: TRANSACTION_READ_COMMITTED
+loaderThreads: 1
+terminals: 600                    # ~700 active sessions sampled, same as the original
+collect_pg_stat_statements: true
+use_dist_in_explain: true
+yaml_version: 1.1
+yaml_change_description: "Add lib_feat_uk-style unique index, 600 terminals, flush-driven hot tablets"
+works:
+    work:
+        time_secs: 600
+        rate: unlimited
+        warmup: 120
+microbenchmark:
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
+    properties:
+        setAutoCommit: false          # each run = one txn, committed by the framework
+        create:
+            - DROP TABLE IF EXISTS repro_lib_feat;
+            - DROP SEQUENCE IF EXISTS repro_lib_feat_id_seq;
+            - CREATE SEQUENCE repro_lib_feat_id_seq CACHE 1000;
+            - CREATE TABLE repro_lib_feat(feat_hash bigint NOT NULL, status varchar(16) NOT NULL, anonymized char(1) NOT NULL, lib_feat_id bigint NOT NULL DEFAULT nextval('repro_lib_feat_id_seq'), feat_desc varchar(150), felem_values text NOT NULL, PRIMARY KEY(feat_hash ASC, status ASC, anonymized ASC)) SPLIT AT VALUES ((200001), (400001), (600001), (800001), (1000001));
+        afterLoad:
+            - CREATE UNIQUE INDEX repro_lib_feat_uk ON repro_lib_feat (lib_feat_id HASH) INCLUDE (feat_desc, status, anonymized, feat_hash, felem_values) SPLIT INTO 6 TABLETS;
+        cleanup:
+            - DROP TABLE IF EXISTS repro_lib_feat;
+            - DROP SEQUENCE IF EXISTS repro_lib_feat_id_seq;
+        loadRules:
+            - table: repro_lib_feat
+              rows: 1200000
+              columns:
+                  - name: feat_hash
+                    util: PrimaryIntGen
+                    params: [1, 1200000]
+                  - name: status
+                    util: OneStringFromArray
+                    params: [ACTIVE, PENDING, INACTIVE, DELETED, SUSPENDED, ARCHIVED]
+                  - name: anonymized
+                    util: OneStringFromArray
+                    params: [N]
+                  - name: feat_desc
+                    util: RandomAString
+                    params: [150, 150]
+                  - name: felem_values
+                    util: RandomAString
+                    params: [800, 800]          # ~1 KB row with feat_desc; lib_feat_id comes from the sequence
+
+        executeRules:
+            - workload: TEST_1_hot_tablet_lookup_upsert_txn
+              customTags: schematype=regular,partition=range,pkey=asc,cardinality=multiple,projection=all,filtercount=multi,filteron=rangepkey,filtertype=pointselect,queryshape=insert
+              zeroRowsValidation: false       # lookups legitimately miss, as in the original (13-56% hit rate)
+              run:
+                  - name: lookup_then_upsert
+                    weight: 100
+                    queries:
+                        - query: >-
+                            SELECT lib_feat_id, feat_hash, status, anonymized, feat_desc, felem_values FROM repro_lib_feat
+                            WHERE (feat_hash, status) IN ((?, 'ACTIVE'), (?, 'PENDING'), (?, 'ACTIVE'), (?, 'PENDING'),
+                            (?, 'ACTIVE'), (?, 'PENDING'), (?, 'ACTIVE'), (?, 'PENDING'))
+                          bindings:                       # order: T1, T2, T3 x2, T4, T5, T6 x2
+                              - util: RandomInt
+                                params: [1, 200000]
+                              - util: RandomInt
+                                params: [200001, 400000]
+                              - util: RandomInt
+                                split_min_max_for_count: 2
+                                params: [400001, 401000]
+                              - util: RandomInt
+                                params: [600001, 800000]
+                              - util: RandomInt
+                                params: [800001, 1000000]
+                              - util: RandomInt
+                                split_min_max_for_count: 2
+                                params: [1000001, 1001000]
+                        - query: >-
+                            INSERT INTO repro_lib_feat(feat_hash, status, anonymized, feat_desc, felem_values) VALUES
+                            (?, 'ACTIVE', 'N', md5(random()::text), repeat(md5(random()::text), 25)),
+                            (?, 'ACTIVE', 'N', md5(random()::text), repeat(md5(random()::text), 25)),
+                            (?, 'PENDING', 'N', md5(random()::text), repeat(md5(random()::text), 25)),
+                            (?, 'ACTIVE', 'N', md5(random()::text), repeat(md5(random()::text), 25)),
+                            (?, 'PENDING', 'N', md5(random()::text), repeat(md5(random()::text), 25)),
+                            (?, 'ACTIVE', 'N', md5(random()::text), repeat(md5(random()::text), 25)),
+                            (?, 'PENDING', 'N', md5(random()::text), repeat(md5(random()::text), 25)),
+                            (?, 'PENDING', 'N', md5(random()::text), repeat(md5(random()::text), 25)),
+                            (?, 'ACTIVE', 'N', md5(random()::text), repeat(md5(random()::text), 25)),
+                            (?, 'PENDING', 'N', md5(random()::text), repeat(md5(random()::text), 25)),
+                            (?, 'ACTIVE', 'N', md5(random()::text), repeat(md5(random()::text), 25)),
+                            (?, 'PENDING', 'N', md5(random()::text), repeat(md5(random()::text), 25)),
+                            (?, 'ACTIVE', 'N', md5(random()::text), repeat(md5(random()::text), 25)),
+                            (?, 'PENDING', 'N', md5(random()::text), repeat(md5(random()::text), 25))
+                            ON CONFLICT (feat_hash, status, anonymized) DO UPDATE SET feat_hash = repro_lib_feat.feat_hash,
+                            status = repro_lib_feat.status, anonymized = repro_lib_feat.anonymized
+                            RETURNING lib_feat_id, feat_hash, status, anonymized, feat_desc
+                          bindings:                       # order: T1, T2 x2, T3 x4, T4, T5 x2, T6 x4 (split => distinct keys per statement)
+                              - util: RandomInt
+                                params: [1, 200000]
+                              - util: RandomInt
+                                split_min_max_for_count: 2
+                                params: [200001, 400000]
+                              - util: RandomInt
+                                split_min_max_for_count: 4
+                                params: [400001, 401000]
+                              - util: RandomInt
+                                params: [600001, 800000]
+                              - util: RandomInt
+                                split_min_max_for_count: 2
+                                params: [800001, 1000000]
+                              - util: RandomInt
+                                split_min_max_for_count: 4
+                                params: [1000001, 1001000]
