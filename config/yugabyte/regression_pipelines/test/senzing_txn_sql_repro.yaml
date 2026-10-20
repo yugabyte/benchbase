@@ -1,0 +1,209 @@
+type: YUGABYTE
+driver: com.yugabyte.Driver
+url: jdbc:yugabytedb://{{endpoint}}:5433/yugabyte?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true&load-balance=true&prepareThreshold=0
+username: {{username}}
+password: {{password}}
+batchsize: 128
+isolation: TRANSACTION_READ_COMMITTED
+loaderThreads: 2
+terminals: 600
+collect_pg_stat_statements: true
+disable_explain: true
+yaml_version: 1.0
+works:
+    work:
+        time_secs: 600
+        rate: unlimited
+        warmup: 120
+microbenchmark:
+    class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
+    properties:
+        setAutoCommit: true           # txn.sql: each statement runs in its own transaction
+        create:
+            - DROP TABLE IF EXISTS repro_t1;
+            - DROP TABLE IF EXISTS repro_t2;
+            - DROP TABLE IF EXISTS repro_t3;
+            - CREATE TABLE repro_t1 (k varchar(40) NOT NULL, kind smallint NOT NULL, flag char(1) NOT NULL DEFAULT 'N', id bigint NOT NULL, descr varchar(150), payload text, PRIMARY KEY (k HASH, kind ASC, flag ASC)) SPLIT INTO 6 TABLETS;
+            - CREATE UNIQUE INDEX repro_t1_uk ON repro_t1 (id HASH) INCLUDE (descr, kind, flag, k, payload) SPLIT INTO 6 TABLETS;
+            - CREATE TABLE repro_t2 (a bigint NOT NULL, b bigint NOT NULL, kind smallint, PRIMARY KEY (a HASH, b ASC)) SPLIT INTO 6 TABLETS;
+            - CREATE TABLE repro_t3 (id bigint NOT NULL, state text, touched timestamptz, PRIMARY KEY (id HASH)) SPLIT INTO 6 TABLETS;
+        cleanup:
+            - DROP TABLE IF EXISTS repro_t1;
+            - DROP TABLE IF EXISTS repro_t2;
+            - DROP TABLE IF EXISTS repro_t3;
+        loadRules:
+            - table: repro_t1
+              rows: 2000000
+              columns:
+                  - name: k
+                    util: HashedPrimaryStringGen   # md5(g), g = 0, 1, 2, ...
+                    params: [0, 32]
+                  - name: kind
+                    util: CyclicSeqIntGen          # 1, 2, ..., 97, 1, ... = (g % 97) + 1 for g = 0, 1, 2, ...
+                    params: [1, 97]
+                  - name: id
+                    util: PrimaryIntGen            # id = g
+                    params: [0, 1999999]
+                  - name: descr
+                    util: RandomAString
+                    params: [10, 10]
+                  - name: payload
+                    util: HashedPrimaryStringGen   # md5(g) repeated to 1024 chars = repeat(md5(g::text), 32)
+                    params: [0, 1024]
+            - table: repro_t3
+              rows: 1000000
+              columns:
+                  - name: id
+                    util: PrimaryIntGen
+                    params: [1, 1000000]
+                  - name: state
+                    util: OneStringFromArray
+                    params: ["ok"]
+                  - name: touched
+                    util: CurrentTime
+
+        executeRules:
+            - workload: REPRO_1_txn_sql_loop
+              customTags: schematype=regular,partition=hash,pkey=hash,cardinality=multiple,projection=all,filtercount=two,filteron=hashpkey,filtertype=IN
+              zeroRowsValidation: false       # a 10-key lookup can find nothing (each random key exists ~50% of the time)
+              run:
+                  - name: txn_sql_loop
+                    weight: 100
+                    queries:
+                        - query: SELECT id, descr, kind, flag, k, payload FROM repro_t1 WHERE (k, kind) IN ((CASE WHEN ? <= 22 THEN md5('ORGANIZATION') ELSE md5(?::text) END, CASE WHEN ? <= 22 THEN 72 ELSE (? % 97) + 1 END), (CASE WHEN ? <= 13 THEN md5('PERSON') ELSE md5(?::text) END, CASE WHEN ? <= 13 THEN 72 ELSE (? % 97) + 1 END), (md5(?::text), (? % 97) + 1), (md5(?::text), (? % 97) + 1), (md5(?::text), (? % 97) + 1), (md5(?::text), (? % 97) + 1), (md5(?::text), (? % 97) + 1), (md5(?::text), (? % 97) + 1), (md5(?::text), (? % 97) + 1), (md5(?::text), (? % 97) + 1))
+                          bindings:
+                              - util: RandomInt
+                                params: [1, 100]
+                                referenceName: ho
+                              - util: RandomInt
+                                params: [1, 4000000]
+                                referenceName: r1
+                              - util: ExpressionEval
+                                params: ["ho"]
+                              - util: ExpressionEval
+                                params: ["r1"]
+                              - util: RandomInt
+                                params: [1, 100]
+                                referenceName: hp
+                              - util: RandomInt
+                                params: [1, 4000000]
+                                referenceName: r2
+                              - util: ExpressionEval
+                                params: ["hp"]
+                              - util: ExpressionEval
+                                params: ["r2"]
+                              - util: RandomInt
+                                params: [1, 4000000]
+                                referenceName: r3
+                              - util: ExpressionEval
+                                params: ["r3"]
+                              - util: RandomInt
+                                params: [1, 4000000]
+                                referenceName: r4
+                              - util: ExpressionEval
+                                params: ["r4"]
+                              - util: RandomInt
+                                params: [1, 4000000]
+                                referenceName: r5
+                              - util: ExpressionEval
+                                params: ["r5"]
+                              - util: RandomInt
+                                params: [1, 4000000]
+                                referenceName: r6
+                              - util: ExpressionEval
+                                params: ["r6"]
+                              - util: RandomInt
+                                params: [1, 4000000]
+                                referenceName: r7
+                              - util: ExpressionEval
+                                params: ["r7"]
+                              - util: RandomInt
+                                params: [1, 4000000]
+                                referenceName: r8
+                              - util: ExpressionEval
+                                params: ["r8"]
+                              - util: RandomInt
+                                params: [1, 4000000]
+                                referenceName: r9
+                              - util: ExpressionEval
+                                params: ["r9"]
+                              - util: RandomInt
+                                params: [1, 4000000]
+                                referenceName: r10
+                              - util: ExpressionEval
+                                params: ["r10"]
+                        - query: SELECT id, descr, kind, flag, k, payload FROM repro_t1 WHERE (k, kind) IN ((CASE WHEN ? <= 22 THEN md5('ORGANIZATION') ELSE md5(?::text) END, CASE WHEN ? <= 22 THEN 72 ELSE (? % 97) + 1 END), (CASE WHEN ? <= 13 THEN md5('PERSON') ELSE md5(?::text) END, CASE WHEN ? <= 13 THEN 72 ELSE (? % 97) + 1 END), (md5(?::text), (? % 97) + 1), (md5(?::text), (? % 97) + 1), (md5(?::text), (? % 97) + 1), (md5(?::text), (? % 97) + 1), (md5(?::text), (? % 97) + 1), (md5(?::text), (? % 97) + 1), (md5(?::text), (? % 97) + 1), (md5(?::text), (? % 97) + 1))
+                          bindings:
+                              - util: RandomInt
+                                params: [1, 100]
+                                referenceName: ho
+                              - util: RandomInt
+                                params: [1, 4000000]
+                                referenceName: r11
+                              - util: ExpressionEval
+                                params: ["ho"]
+                              - util: ExpressionEval
+                                params: ["r11"]
+                              - util: RandomInt
+                                params: [1, 100]
+                                referenceName: hp
+                              - util: RandomInt
+                                params: [1, 4000000]
+                                referenceName: r12
+                              - util: ExpressionEval
+                                params: ["hp"]
+                              - util: ExpressionEval
+                                params: ["r12"]
+                              - util: RandomInt
+                                params: [1, 4000000]
+                                referenceName: r13
+                              - util: ExpressionEval
+                                params: ["r13"]
+                              - util: RandomInt
+                                params: [1, 4000000]
+                                referenceName: r14
+                              - util: ExpressionEval
+                                params: ["r14"]
+                              - util: RandomInt
+                                params: [1, 4000000]
+                                referenceName: r15
+                              - util: ExpressionEval
+                                params: ["r15"]
+                              - util: RandomInt
+                                params: [1, 4000000]
+                                referenceName: r16
+                              - util: ExpressionEval
+                                params: ["r16"]
+                              - util: RandomInt
+                                params: [1, 4000000]
+                                referenceName: r17
+                              - util: ExpressionEval
+                                params: ["r17"]
+                              - util: RandomInt
+                                params: [1, 4000000]
+                                referenceName: r18
+                              - util: ExpressionEval
+                                params: ["r18"]
+                              - util: RandomInt
+                                params: [1, 4000000]
+                                referenceName: r19
+                              - util: ExpressionEval
+                                params: ["r19"]
+                              - util: RandomInt
+                                params: [1, 4000000]
+                                referenceName: r20
+                              - util: ExpressionEval
+                                params: ["r20"]
+                        - query: INSERT INTO repro_t1 (k, kind, flag, id, descr, payload) SELECT md5(x::text), (x % 97) + 1, 'N', x, 'desc', repeat(md5(x::text), 32) FROM (SELECT (random() * 1e12)::bigint + 10000000 AS x FROM generate_series(1, 14)) s ON CONFLICT (k, kind, flag) DO UPDATE SET descr = EXCLUDED.descr RETURNING id
+                        - query: INSERT INTO repro_t2 SELECT ?, (random() * 1e9)::bigint, 1 FROM generate_series(1, 10) ON CONFLICT DO NOTHING
+                          bindings:
+                              - util: CyclicSeqIntGen
+                                params: [1, 50000000]     # :e - must stay identical to the next query's generator
+                        - query: SELECT b, kind FROM repro_t2 WHERE a = ?
+                          bindings:
+                              - util: CyclicSeqIntGen
+                                params: [1, 50000000]     # :e - same sequence as the insert above -> reads its 10 rows
+                        - query: UPDATE repro_t3 SET touched = now() WHERE id = ?
+                          bindings:
+                              - util: RandomInt
+                                params: [1, 1000000]      # :e2
