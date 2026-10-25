@@ -17,7 +17,8 @@ loaderthreads: 1
 terminals: 1
 collect_pg_stat_statements: true
 use_dist_in_explain : true
-yaml_version: v1.0
+yaml_version: 1.1
+yaml_change_description: Increasing run time and warmup to remove variation
 works:
     work:
         time_secs: 180
