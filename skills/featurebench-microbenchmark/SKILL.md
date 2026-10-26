@@ -81,7 +81,7 @@ Rules that prevent the historical mistakes:
   - Use `loaderThreads` in camelCase; the lowercase spelling is silently ignored.
   - Use only the `{{endpoint}}`, `{{username}}` and `{{password}}` placeholders.
   - New files start at `yaml_version: 1.0`, written as a number. Older files use the string `v1.0`.
-  - Don't add `analyze_on_all_tables`.
+  - Add `analyze_on_all_tables: true` right after `use_dist_in_explain`, so the planner works from real statistics. It runs one database-wide `ANALYZE` after load and `afterLoad`, and turns on `yb_enable_optimizer_statistics`. Leave it out of bulkload, write_workloads, throughput_write_workloads and vector_workloads, and out of files that time ANALYZE themselves. It is YB-only; the postgres variant drops it.
 - **create:** `DROP TABLE IF EXISTS` first, then the tables, then secondary indexes. Write PKs as constraints, `PRIMARY KEY(col ASC)` or `PRIMARY KEY((a) HASH, b ASC)`, so the variant transforms stay mechanical. `cleanup` mirrors every drop.
 - **loadRules:** use the real table and column names as created (`table: <prefix>_tbl_1`, `name: col_bigint_id_1`), without `count`. `count: N` is only for N copies of the same table or column; never write `count: 1`. Size PK generators to cover `rows`. Choose generators from the cheat sheet in `references/utils.md`.
 - **executeRules:**

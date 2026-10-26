@@ -28,7 +28,7 @@ Keys are case-sensitive. A misspelled key is **silently ignored**, for example `
 | `use_dist_in_explain` | false | Adds `dist,debug` to EXPLAIN. **Throws on POSTGRES.** Standard `true` on YB variants. |
 | `disable_explain` | false | Skips the pre-run EXPLAIN. Set it (or `raw_sql` on the workload) when a query can't be EXPLAINed (ANALYZE, DDL, CALL…); otherwise the EXPLAIN pass fails quietly (§6.1). |
 | `force_capture_explain_analyze` | false | EXPLAIN ANALYZE for INSERT/DELETE too, which **executes them 4×**. |
-| `analyze_on_all_tables` | false | **Not used in these microbenchmarks; don't add it.** (It issues a YB-only `ALTER DATABASE … SET yb_enable_optimizer_statistics`, which fails on Postgres.) |
+| `analyze_on_all_tables` | false | **YB variants only.** The create phase runs `ALTER DATABASE … SET yb_enable_optimizer_statistics = true` (fails on Postgres), and one database-wide `ANALYZE` runs after load and `afterLoad`, before execute. Runs with `--load=false` skip the ANALYZE. Standard on YB variants except bulkload, write_workloads, throughput_write_workloads (a database-wide ANALYZE deadlocked on freshly loaded tables in `insertG2_varying_columns`), vector_workloads, and files that time ANALYZE themselves. |
 | `yaml_version` | 1.0 | Metadata, written as a number. New files use `1.0`. **Bump it on every behavioural edit** (1.0→1.1 for small fixes, 2.0 for changes that break comparability). Older files use the string `v1.0`; benchbase strips the `v`, so both report as a number. |
 | `yaml_change_description` | "" | One line explaining the bump. |
 | `optimalThreads` | false | Thread-scaling search. Only one workload per invocation (the pipeline runs `--workloads` one at a time). |
