@@ -684,6 +684,12 @@ public class DBWorkload {
                             LOG.info("Loading data into {} database...", benchmark.getBenchmarkName().toUpperCase());
                             runLoader(benchmark);
                             LOG.info("Finished loading data into {} database...", benchmark.getBenchmarkName().toUpperCase());
+                            // Runs once after load and afterLoad, so statistics are fresh before execute
+                            // and ANALYZE time stays out of each workload's warmup/measure window.
+                            if (benchmark.getBenchmarkName().equalsIgnoreCase("featurebench")
+                                && benchmark.getWorkloadConfiguration().getXmlConfig().getBoolean("analyze_on_all_tables", false)) {
+                                runAnalyze(benchmark);
+                            }
                         }
                     } catch (Throwable ex) {
                         LOG.error("Unexpected error when loading benchmark database records.", ex);
@@ -1235,6 +1241,15 @@ public class DBWorkload {
     private static void runLoader(BenchmarkModule bench) throws SQLException, InterruptedException {
         LOG.debug(String.format("Loading %s Database", bench));
         bench.loadDatabase();
+    }
+
+    private static void runAnalyze(BenchmarkModule bench) throws SQLException {
+        LOG.info("Running analyze on all tables");
+        long analyzeStart = System.currentTimeMillis();
+        try (Connection conn = bench.makeConnection(); Statement stmt = conn.createStatement()) {
+            stmt.execute("ANALYZE;");
+        }
+        LOG.info("Elapsed time in analyze phase: {} milliseconds", System.currentTimeMillis() - analyzeStart);
     }
 
     private static Results runWorkload(List<BenchmarkModule> benchList, int intervalMonitor, int workcount) throws IOException {
