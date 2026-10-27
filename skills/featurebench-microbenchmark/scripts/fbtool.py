@@ -32,6 +32,8 @@ UNIQUE_KEY_UTILS = {"PrimaryIntGen", "RandomUniqueIntGen", "PrimaryIntGenThrough
 RANDOM_LOAD_UTILS = {"RandomNumber", "RandomInt", "RowRandomBoundedInt", "OneNumberFromArray",
                      "RandomUniqueIntGen"}
 CAST_UTILS = ("Json", "ArrayGen", "VectorGen")
+# YB categories that leave out analyze_on_all_tables (load during execute, ANALYZE deadlocks, or not adopted)
+ANALYZE_EXCLUDED_CATEGORIES = {"bulkload", "ddl_workloads", "range_write_workloads", "write_workloads", "throughput_write_workloads", "vector_workloads"}
 
 COLOCATED_CREATEDB = "drop database if exists yb_colocated; create database yb_colocated with colocated=true"
 URLS = {
@@ -361,9 +363,6 @@ def make_variant(src_text, target, notes):
     out = []
     for ln in lines:
         s = ln.strip()
-        if re.match(r"^analyze_on_all_tables\s*:", ln):
-            notes.add("dropped analyze_on_all_tables (not used in these microbenchmarks)")
-            continue
         if s.startswith("#TEST FOR"):
             out.append(HEADER_COMMENT[target] + "\n")
             continue
@@ -376,6 +375,8 @@ def make_variant(src_text, target, notes):
                 out.append(f"url: {URLS['postgres']}\n"); continue
             if re.match(r"^use_dist_in_explain\s*:", ln):
                 notes.add("dropped use_dist_in_explain (throws on POSTGRES)"); continue
+            if re.match(r"^analyze_on_all_tables\s*:", ln):
+                notes.add("dropped analyze_on_all_tables (YB-only)"); continue
             if re.match(r"^createdb\s*:", ln):
                 notes.add("dropped createdb"); continue
         elif target == "yb_colocated":
@@ -571,8 +572,8 @@ def lint_file(path, rep, utils):
     if not iso:
         rep.warn(where, "no isolation set: default is TRANSACTION_SERIALIZABLE; pipelines use TRANSACTION_REPEATABLE_READ")
 
-    if "analyze_on_all_tables" in data and variant != "postgres":
-        rep.warn(where, "analyze_on_all_tables is not used in these microbenchmarks - remove it")
+    if data.get("analyze_on_all_tables") and variant != "postgres" and cat in ANALYZE_EXCLUDED_CATEGORIES:
+        rep.warn(where, f"analyze_on_all_tables is not used in {cat} - remove it")
     typ = str(data.get("type", "")).upper()
     url = str(data.get("url", ""))
     drv = str(data.get("driver", ""))

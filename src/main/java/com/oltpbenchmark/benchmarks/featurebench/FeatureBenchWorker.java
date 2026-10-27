@@ -189,19 +189,6 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                 }
             }
 
-            if (this.getWorkloadConfiguration().getXmlConfig().getBoolean("analyze_on_all_tables", false)) {
-                LOG.info("Running analyze on all tables");
-                try {
-                    Statement stmt = conn.createStatement();
-                    stmt.execute("ANALYZE;");
-                    if (!conn.getAutoCommit())
-                        conn.commit();
-                } catch (SQLException e) {
-                    throw new RuntimeException("Failed to run ANALYZE for workload '"
-                        + this.workloadName + "'.", e);
-                }
-            }
-
             String outputDirectory = "results";
             FileUtil.makeDirIfNotExists(outputDirectory);
 

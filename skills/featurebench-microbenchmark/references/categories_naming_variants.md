@@ -95,6 +95,7 @@ loaderThreads: 1
 terminals: 1
 collect_pg_stat_statements: true
 use_dist_in_explain: true
+analyze_on_all_tables: true
 yaml_version: 1.0
 works:
     work:
@@ -109,7 +110,7 @@ works:
 type: POSTGRES
 driver: org.postgresql.Driver
 url: jdbc:postgresql://{{endpoint}}:5432/postgres?sslmode=require&ApplicationName=featurebench&reWriteBatchedInserts=true
-# no use_dist_in_explain, no createdb
+# no use_dist_in_explain, no analyze_on_all_tables, no createdb
 ```
 
 **yb_colocated/**: the yugabyte header plus one line right after `url` (keep `load-balance=false`):
@@ -156,7 +157,7 @@ The next/seek throughput files use `targetCPU: 75`, `samplingTime: 120`, `time_s
 `fbtool.py variants <yugabyte.yaml> --to postgres,yb_colocated[,yugabyte_range] [--write]` applies these rules. Always read its `REVIEW:` notes.
 
 **yugabyte → postgres**
-- header: type, driver, url (see §4); drop `use_dist_in_explain` and `createdb`
+- header: type, driver, url (see §4); drop `use_dist_in_explain`, `analyze_on_all_tables` and `createdb`
 - `PRIMARY KEY((a,b) HASH, c ASC)` → `PRIMARY KEY(a, b, c)`. ASC/DESC/HASH are not allowed in a PG PK constraint.
 - index `(col HASH)` → `(col)`. ASC/DESC stay (they are valid in PG indexes).
 - remove `SPLIT AT VALUES (...)` and `SPLIT INTO n TABLETS`
