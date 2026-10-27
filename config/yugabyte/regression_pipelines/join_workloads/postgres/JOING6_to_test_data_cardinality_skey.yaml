@@ -13,7 +13,7 @@ loaderthreads: 1
 terminals: 1
 collect_pg_stat_statements: true
 yaml_version: 2.1
-yaml_change_description: Fixing bindings in JoinG6_5, JoinG6_6, JoinG6_7
+yaml_change_description: Narrowing JoinG6_5, JoinG6_6, JoinG6_7 bindings to the 10 keys that match the data (other keys returned 0 rows)
 works:
     work:
         time_secs: 180
