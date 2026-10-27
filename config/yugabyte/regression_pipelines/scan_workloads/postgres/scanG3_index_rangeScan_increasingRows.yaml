@@ -16,13 +16,14 @@ isolation: TRANSACTION_REPEATABLE_READ
 loaderthreads: 1
 terminals: 1
 collect_pg_stat_statements: true
-yaml_version: v1.0
+yaml_version: 2.0
+yaml_change_description: Increasing run time and warmup to remove variation
 works:
     work:
-        time_secs: 120
+        time_secs: 180
         active_terminals: 1
         rate: unlimited
-        warmup: 30
+        warmup: 60
 microbenchmark:
     class: com.oltpbenchmark.benchmarks.featurebench.customworkload.YBDefaultMicroBenchmark
     properties:
