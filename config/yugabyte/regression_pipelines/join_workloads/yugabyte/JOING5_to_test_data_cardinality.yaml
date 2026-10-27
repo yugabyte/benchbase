@@ -13,8 +13,8 @@ loaderthreads: 1
 terminals: 1
 collect_pg_stat_statements: true
 use_dist_in_explain : true
-yaml_version: 2.0
-yaml_change_description: Correcting data distribution to remove variation
+yaml_version: 2.1
+yaml_change_description: Fixing bindings in JoinG5_5, JoinG5_6, JoinG5_7
 works:
     work:
         time_secs: 180
@@ -195,7 +195,7 @@ microbenchmark:
                                     - util: ExpressionEval
                                       params: [ "1000001 + (filter_val - 1000001) % 10" ]
                                     - util: RandomUniqueCyclicIntGen
-                                      params: [ 1000001, 1000100 ]
+                                      params: [ 1000001, 1000010 ]
                                       referenceName: filter_val
 
             -   workload: JoinG5_6_1Mtbl_join_10ktbl_two_conditions_indexscan_two_filters
@@ -209,7 +209,7 @@ microbenchmark:
                                     - util: ExpressionEval
                                       params: [ "1000001 + (filter_val - 1000001) % 10" ]
                                     - util: RandomUniqueCyclicIntGen
-                                      params: [ 1000001, 1001000 ]
+                                      params: [ 1000001, 1000010 ]
                                       referenceName: filter_val
 
             -   workload: JoinG5_7_1Mtbl_join_10ktbl_two_conditions_indexscan_two_filters
@@ -223,7 +223,7 @@ microbenchmark:
                                     - util: ExpressionEval
                                       params: [ "1000001 + (filter_val - 1000001) % 10" ]
                                     - util: RandomUniqueCyclicIntGen
-                                      params: [ 1000001, 1000100 ]
+                                      params: [ 1000001, 1000010 ]
                                       referenceName: filter_val
 
 
