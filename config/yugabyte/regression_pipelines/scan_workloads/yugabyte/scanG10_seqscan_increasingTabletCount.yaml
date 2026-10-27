@@ -16,7 +16,9 @@ loaderthreads: 1
 terminals: 1
 collect_pg_stat_statements: true
 use_dist_in_explain : true
-yaml_version: v1.1
+analyze_on_all_tables: true
+yaml_version: v1.2
+yaml_change_description: Enabling analyze_on_all_tables
 works:
     work:
         time_secs: 120
