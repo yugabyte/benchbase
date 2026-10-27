@@ -33,7 +33,7 @@ RANDOM_LOAD_UTILS = {"RandomNumber", "RandomInt", "RowRandomBoundedInt", "OneNum
                      "RandomUniqueIntGen"}
 CAST_UTILS = ("Json", "ArrayGen", "VectorGen")
 # YB categories that leave out analyze_on_all_tables (load during execute, ANALYZE deadlocks, or not adopted)
-ANALYZE_EXCLUDED_CATEGORIES = {"bulkload", "write_workloads", "throughput_write_workloads", "vector_workloads"}
+ANALYZE_EXCLUDED_CATEGORIES = {"bulkload", "ddl_workloads", "range_write_workloads", "write_workloads", "throughput_write_workloads", "vector_workloads"}
 
 COLOCATED_CREATEDB = "drop database if exists yb_colocated; create database yb_colocated with colocated=true"
 URLS = {
