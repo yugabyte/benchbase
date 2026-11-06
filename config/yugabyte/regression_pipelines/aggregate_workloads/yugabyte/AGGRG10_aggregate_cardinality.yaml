@@ -10,7 +10,8 @@ terminals: 1
 collect_pg_stat_statements: true
 use_dist_in_explain : true
 analyze_on_all_tables: true
-yaml_version: v2.0
+yaml_version: v2.1
+yaml_change_description: "Creating ndistinct statistics on correlated pkey columns (col_bigint_card2_1, col_bigint_card3_1) in afterLoad, before ANALYZE, so the planner estimates the pkey prefix group count correctly (yugabyte-db issue 35913)"
 works:
     work:
         time_secs: 180
@@ -72,6 +73,12 @@ microbenchmark:
                       util: PrimaryStringGen
                       params: [1, 500]
 
+        # col_bigint_card2_1 (1000 values) is a function of col_bigint_card3_1 (10000 values), so the pkey prefix
+        # (card1, card2, card3) has 10000 groups. Without these statistics the planner multiplies the per-column
+        # distinct counts and overestimates the groups 10x, which makes AGGRG10_6 skip the Distinct Index Scan.
+        # afterLoad runs before analyze_on_all_tables' ANALYZE. See https://github.com/yugabyte/yugabyte-db/issues/35913
+        afterLoad:
+            - CREATE STATISTICS IF NOT EXISTS pkeyBigint1M_1_card2_card3_ndistinct (ndistinct) ON col_bigint_card2_1, col_bigint_card3_1 FROM pkeyBigint1M_1;
 
         executeRules:
             - workload: AGGRG10_1_count_point_select_multiple_values
