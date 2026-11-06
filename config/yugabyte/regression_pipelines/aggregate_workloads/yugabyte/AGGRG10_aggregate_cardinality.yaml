@@ -76,7 +76,6 @@ microbenchmark:
         # col_bigint_card2_1 (1000 values) is a function of col_bigint_card3_1 (10000 values), so the pkey prefix
         # (card1, card2, card3) has 10000 groups. Without these statistics the planner multiplies the per-column
         # distinct counts and overestimates the groups 10x, which makes AGGRG10_6 skip the Distinct Index Scan.
-        # afterLoad runs before analyze_on_all_tables' ANALYZE. See https://github.com/yugabyte/yugabyte-db/issues/35913
         afterLoad:
             - CREATE STATISTICS IF NOT EXISTS pkeyBigint1M_1_card2_card3_ndistinct (ndistinct) ON col_bigint_card2_1, col_bigint_card3_1 FROM pkeyBigint1M_1;
 
