@@ -18,10 +18,12 @@ loaderthreads: 1
 terminals: 1
 collect_pg_stat_statements: true
 use_dist_in_explain : true
-yaml_version: v1.0
+analyze_on_all_tables: true
+yaml_version: 2.0
+yaml_change_description: Increasing run time and warmup to remove variation, and enabling analyze_on_all_tables
 works:
     work:
-        time_secs: 120
+        time_secs: 180
         active_terminals: 1
         rate: unlimited
         warmup: 60

@@ -27,10 +27,12 @@ import com.oltpbenchmark.api.collectors.DBParameterCollectorGen;
 import com.oltpbenchmark.types.DatabaseType;
 import org.json.JSONObject;
 import org.apache.commons.cli.CommandLine;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
 import org.apache.commons.configuration2.XMLConfiguration;
 import org.apache.commons.configuration2.YAMLConfiguration;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.configuration2.io.FileHandler;
+import org.apache.commons.configuration2.tree.ImmutableNode;
 
 import java.io.PrintStream;
 import java.util.*;
@@ -228,7 +230,7 @@ public class ResultWriter {
         }
     }
 
-    public Map<String, Object> writeDetailedSummary(PrintStream os, String customTags, Boolean skipReport) {
+    public Map<String, Object> writeDetailedSummary(PrintStream os, String customTags, Boolean skipReport, String workloadName) {
         Map<String, Object> summaryMap = buildSummaryMap(dbType, collector, benchType, results);
         summaryMap.put("Transaction Distribution", transactionsMap(results));
         summaryMap.put("Help", help());
@@ -237,7 +239,19 @@ public class ResultWriter {
         }
         Map<String, Object> detailedSummaryMap = new TreeMap<>();
         Map<String, Object> metadata = new TreeMap<>();
-        metadata.put("yaml_version", expConf.getString("yaml_version", "v1.0"));
+        metadata.put("yaml_version", parseYamlVersion(expConf.getString("yaml_version", null)));
+        metadata.put("yaml_change_description", expConf.getString("yaml_change_description", ""));
+        if (workloadName != null && !workloadName.isEmpty()) {
+            List<HierarchicalConfiguration<ImmutableNode>> executeRules =
+                    expConf.configurationsAt("microbenchmark/properties/executeRules");
+            for (HierarchicalConfiguration<ImmutableNode> rule : executeRules) {
+                if (workloadName.equals(rule.getString("workload"))) {
+                    metadata.put("workload_change_description", rule.getString("workload_change_description", ""));
+                    metadata.put("workload_version", rule.getDouble("workload_version", 1.0));
+                    break;
+                }
+            }
+        }
         metadata.put("customTags", formatCustomTags(customTags));
         metadata.put("skipReport",skipReport);
         metadata.put("executionStartEpoch", results.getExecutionStartEpoch());
@@ -251,6 +265,18 @@ public class ResultWriter {
         detailedSummaryMap.put("queries", results.getFeaturebenchAdditionalResults().getJsonResultsList());
         os.println(JSONUtil.format(JSONUtil.toJSONString(detailedSummaryMap)));
         return detailedSummaryMap;
+    }
+
+    private static Object parseYamlVersion(String version) {
+        if (version == null) return 1.0;
+        String trimmed = version.strip();
+        if (!trimmed.isEmpty() && (trimmed.charAt(0) == 'v' || trimmed.charAt(0) == 'V'))
+            trimmed = trimmed.substring(1).strip();
+        try {
+            return Double.valueOf(trimmed);
+        } catch (NumberFormatException e) {
+            return trimmed;
+        }
     }
 
     public static Map<String, Object> transactionsMap(Results results) {

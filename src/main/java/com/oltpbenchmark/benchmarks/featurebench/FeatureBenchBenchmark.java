@@ -58,6 +58,7 @@ public class FeatureBenchBenchmark extends BenchmarkModule {
         HierarchicalConfiguration<ImmutableNode> conf = workConf.getXmlConfig().configurationAt("microbenchmark");
         List<HierarchicalConfiguration<ImmutableNode>> confExecuteRules = conf.configurationsAt("properties/executeRules[" + workcount + "]/run");
         String workloadName = conf.getString("properties/executeRules[" + workcount + "]/workload") != null ? conf.getString("properties/executeRules[" + workcount + "]/workload") : TimeUtil.getCurrentTimeString();
+        boolean rawSql = conf.getBoolean("properties/executeRules[" + workcount + "]/raw_sql", false);
 
         // Reset the shared per-workload state exactly once, before creating this
         // workload's workers, so the "run once" init/teardown guards start clean.
@@ -67,8 +68,7 @@ public class FeatureBenchBenchmark extends BenchmarkModule {
             FeatureBenchWorker worker = new FeatureBenchWorker(this, i,
                 conf.getString("class"),
                 conf.configurationAt("properties"),
-                configToExecuteRules(confExecuteRules, i, workConf.getTerminals()),
-                workloadName);
+                configToExecuteRules(confExecuteRules, i, workConf.getTerminals()), workloadName, rawSql);
             workers.add(worker);
         }
         return workers;
