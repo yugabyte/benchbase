@@ -313,7 +313,8 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                 jsonObject.put("Execution Time(ms)", matcher.group(2));
                 jsonObject.put("Peak Memory Usage(kB)", matcher.group(3));
             }
-            Pattern rowsPattern = Pattern.compile("\\(actual[^)]*rows=(\\d+)\\s+loops=");
+            // PG18+ prints actual rows with two decimals (rows=1.00); older versions print an integer.
+            Pattern rowsPattern = Pattern.compile("\\(actual[^)]*rows=(\\d+(?:\\.\\d+)?)\\s+loops=");
             Matcher rowsMatcher = rowsPattern.matcher(data.toString());
             if (rowsMatcher.find()) {
                 jsonObject.put("ExplainPlanRows", rowsMatcher.group(1));
@@ -531,7 +532,7 @@ public class FeatureBenchWorker extends Worker<FeatureBenchBenchmark> {
                     inner.put("pg_stat_statements", pgStatForQuery);
 
                     if (entry.getValue() != -1)
-                        inner.put("explainPlanRcValidationSuccess", Integer.parseInt((String) queryToExplainMap.getOrDefault(entry.getKey(), new JSONObject()).get("ExplainPlanRows")) == entry.getValue());
+                        inner.put("explainPlanRcValidationSuccess", Double.parseDouble((String) queryToExplainMap.getOrDefault(entry.getKey(), new JSONObject()).get("ExplainPlanRows")) == entry.getValue());
                     inner.put("explain", queryToExplainMap.getOrDefault(entry.getKey(), new JSONObject()));
                     inner.put("prepared_statements", pgPreparedStatementOutputs == null ? new JSONObject() : pgPreparedStatementOutputs);
                     jsonResultsList.add(inner);
